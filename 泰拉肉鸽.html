@@ -76,11 +76,11 @@ a{color:var(--accent);text-decoration:none}
 (function(){
 var W=900,H=500,C=document.getElementById('rg'),X=C.getContext('2d');
 var GY=420,PL=[],SP=[],EN=[],SH=[],EB=[],PS=[],CM=0;
-var P={x:120,y:200,vx:0,vy:0,f:1,w:28,h:28,hp:6,mh:6,sh:0,sp:240,ju:560,gr:1500,as:1,dm:1,cr:0,db:0,pt:1,sz:1,lf:0,im:0,mu:1,at:0,iv:0};
+var P={x:120,y:200,vx:0,vy:0,f:1,w:28,h:28,hp:6,mh:6,sh:0,sp:240,ju:560,gr:1500,as:1,dm:1,cr:0,db:0,pt:1,sz:1,lf:0,im:0,at:0,iv:0};
 var WAVE=0,K=0,HI=+(localStorage.getItem('wRogue')||0),ST='title',TT=0,BW=0,GM=0,UP=[],KF={L:0,R:0,J:0,A:0,D:0},AEP=0,DR=[],DROP=0,AU=null,MU=0,PA=0,VIB=0,DM=[],PK=0,HG=0,AV={x:1,y:0};
 var HD=document.getElementById('hudH'),HW=document.getElementById('hudW'),HIEl=document.getElementById('hi'),UPG=document.getElementById('upg'),OV=document.getElementById('over'),OVT=document.getElementById('ovT'),OVD=document.getElementById('ovD'),U0=document.getElementById('u0'),U1=document.getElementById('u1'),U2=document.getElementById('u2'),UPGS=document.getElementById('upgS');
 HIEl.textContent=HI;
-var UD=['攻速 +25%','伤害 +1','移速 +20%','生命上限 +2 并回 2','回复 4 生命','护盾 +1','暴击 25%','弹幕翻倍','子弹穿透 +1','子弹增大','击杀回 1 生命','尖刺免疫','散射 +1'];
+var UD=['攻速 +25%','伤害 +1','移速 +20%','生命上限 +2 并回 2','回复 4 生命','护盾 +1','暴击 25%','弹幕翻倍','子弹穿透 +1','子弹增大','击杀回 1 生命','尖刺免疫'];
 function bu(x,y,n,c){if(PS.length>220)PS.splice(0,PS.length-220);for(var i=0;i<n;i++)PS.push({x:x,y:y,v:(Math.random()-.5)*11,h:(Math.random()-.5)*11-2,l:34,c:c||'#FF5C7A'})}
 function sf(f,d,o){if(MU)return;try{if(!AU)AU=new(window.AudioContext||window.webkitAudioContext)();var a=AU.createOscillator(),g=AU.createGain();a.type=o||'square';a.frequency.value=f;g.gain.setValueAtTime(.1,AU.currentTime);g.gain.exponentialRampToValueAtTime(.001,AU.currentTime+(d||.15));a.connect(g);g.connect(AU.destination);a.start();a.stop(AU.currentTime+(d||.15))}catch(e){}}
 function gs(){for(var i=PS.length-1;i>=0;i--){var q=PS[i];q.x+=q.v;q.y+=q.h;q.h+=.6;q.l--;X.fillStyle=q.c;X.fillRect(q.x-2,q.y-2,4,4);if(q.l<=0)PS.splice(i,1)}}
@@ -88,17 +88,17 @@ function cld(a){return P.x+8<a.x+a.w&&P.x+P.w-8>a.x&&P.y+4<a.y+a.h&&P.y+P.h>a.y}
 function cld2(x,y,xx,yy){return x+8<xx+26&&x+P.w-8>xx&&y+4<yy+30&&y+P.h>yy}
 function hurt(n){if(P.iv>0)return;P.iv=.6;VIB=14;sf(130,.22,'sawtooth');if(P.sh>0){P.sh--;bu(P.x+P.w/2,P.y+P.h/2,8,'#8FF0E2')}else{P.hp-=n;bu(P.x+P.w/2,P.y+P.h/2,12);P.vx=-P.f*150}if(P.hp<=0){P.hp=0;ST='over';OVT.textContent='干员倒下';OVD.innerHTML='存活至 第 '+WAVE+' 波<br>击杀 '+K+' 名敌人 · 强化 '+HG+' 次 · 拾取 '+PK+' 件<br>'+(WAVE>HI?'新的最高波次记录！':'');if(WAVE>HI){HI=WAVE;localStorage.setItem('wRogue',HI);HIEl.textContent=HI}OV.style.display='block'}}
 function gen(){while(PL[PL.length-1].x<CM+W+260){var px=PL[PL.length-1].x+150+Math.random()*170,py=GY-70-Math.random()*130,pw=96+Math.random()*72;PL.push({x:px,y:py,w:pw,h:14});if(Math.random()<.28)SP.push({x:px+24+Math.random()*(pw-56),y:py-10,w:22,h:10})}while(PL[0].x+PL[0].w<CM-120)PL.shift();while(SP.length&&SP[0].x<CM-60)SP.shift()}
-function fire(){if(P.at>0)return;P.at=1/P.as;var cr=P.cr>0&&Math.random()<P.cr,d=cr?P.dm*2:P.dm,n=(1+2*P.mu)*(P.db?2:1),sp=.22+.12*P.mu,ba=Math.atan2(AV.y,AV.x);
-for(var i=0;i<n;i++){var a=ba+(i/(n-1)-.5)*sp*2;SH.push({x:P.x+(AV.x>0?P.w:0)-4,y:P.y+P.h/2-8,vx:560*Math.cos(a),vy:560*Math.sin(a),dm:d,cr:cr,pt:P.pt,sz:P.sz})}
-bu(P.x+(AV.x>0?P.w:0),P.y+P.h/2-6,4,'#8FF0E2');sf(880,.07)}
+function fire(){if(P.at>0)return;P.at=1/P.as;var cr=P.cr>0&&Math.random()<P.cr,d=cr?P.dm*2:P.dm,ba=Math.atan2(AV.y,AV.x),gx=P.x+(AV.x>0?P.w:0)-4,gy=P.y+P.h/2-8;
+if(P.db){SH.push({x:gx,y:gy-7,vx:560*Math.cos(ba),vy:560*Math.sin(ba),dm:d,cr:cr,pt:P.pt,sz:P.sz});SH.push({x:gx,y:gy+7,vx:560*Math.cos(ba),vy:560*Math.sin(ba),dm:d,cr:cr,pt:P.pt,sz:P.sz})}
+else SH.push({x:gx,y:gy,vx:560*Math.cos(ba),vy:560*Math.sin(ba),dm:d,cr:cr,pt:P.pt,sz:P.sz});bu(P.x+(AV.x>0?P.w:0),P.y+P.h/2-6,4,'#8FF0E2');sf(880,.07)}
 function wave(){WAVE++;BW=WAVE%5===0;GM=0;sf(BW?110:440,.22,BW?'sawtooth':'triangle');var n=BW?1:2+Math.min(6,WAVE);
 for(var i=0;i<n;i++){if(BW)EN.push({x:CM+W+120,y:GY-86,w:66,h:80,hp:16+WAVE*5,ty:4,dm:2+Math.floor(WAVE/4),cd:0});
 else{var t=Math.random(),ty=t<.5?0:t<.75?1:t<.9?2:3,py=ty===0?GY-34:ty===1?GY-40-Math.random()*30:140+Math.random()*200;EN.push({x:CM+W+90+Math.random()*180,y:py,w:ty===3?40:30,h:ty===3?46:34,hp:ty===3?7+WAVE:ty===1?3:2+Math.floor(WAVE/2),ty:ty,dm:1,cd:0,vx:0})}}
 GM=n;TT=2;if(BW)TT=2.6}
-function waveEnd(){ST='upg';HG++;sf(523,.1,'triangle');setTimeout(function(){sf(659,.12,'triangle')},90);UP=[];var u=[0,1,2,3,4,5,6,7,8,9,10,11,12];for(var i=0;i<3;i++){var j=Math.floor(Math.random()*u.length);UP.push(u.splice(j,1)[0])}U0.textContent=UD[UP[0]];U1.textContent=UD[UP[1]];U2.textContent=UD[UP[2]];UPGS.textContent='当前：攻速 '+(P.as*100|0)+'% · 伤害 '+P.dm+' · 生命 '+P.hp+'/'+P.mh;UPG.style.display='block'}
-function apply(u){switch(u){case 0:P.as*=1.25;break;case 1:P.dm++;break;case 2:P.sp*=1.2;break;case 3:P.mh+=2;P.hp=Math.min(P.mh,P.hp+2);break;case 4:P.hp=Math.min(P.mh,P.hp+4);break;case 5:P.sh++;break;case 6:P.cr+=.25;break;case 7:P.db=1;break;case 8:P.pt++;break;case 9:P.sz+=.4;break;case 10:P.lf=1;break;case 11:P.im=1;break;case 12:P.mu++}}
+function waveEnd(){ST='upg';HG++;sf(523,.1,'triangle');setTimeout(function(){sf(659,.12,'triangle')},90);UP=[];var u=[0,1,2,3,4,5,6,7,8,9,10,11];for(var i=0;i<3;i++){var j=Math.floor(Math.random()*u.length);UP.push(u.splice(j,1)[0])}U0.textContent=UD[UP[0]];U1.textContent=UD[UP[1]];U2.textContent=UD[UP[2]];UPGS.textContent='当前：攻速 '+(P.as*100|0)+'% · 伤害 '+P.dm+' · 生命 '+P.hp+'/'+P.mh;UPG.style.display='block'}
+function apply(u){switch(u){case 0:P.as*=1.25;break;case 1:P.dm++;break;case 2:P.sp*=1.2;break;case 3:P.mh+=2;P.hp=Math.min(P.mh,P.hp+2);break;case 4:P.hp=Math.min(P.mh,P.hp+4);break;case 5:P.sh++;break;case 6:P.cr+=.25;break;case 7:P.db=1;break;case 8:P.pt++;break;case 9:P.sz+=.4;break;case 10:P.lf=1;break;case 11:P.im=1}}
 function chooseUpg(i){UPG.style.display='none';apply(UP[i]);wave()}
-function restart(){OV.style.display='none';P={x:120,y:200,vx:0,vy:0,f:1,w:28,h:28,hp:6,mh:6,sh:0,sp:240,ju:560,gr:1500,as:1,dm:1,cr:0,db:0,pt:1,sz:1,lf:0,im:0,mu:1,at:0,iv:0};PL=[{x:-2e5,y:GY,w:4e5,h:14}];SP=[];EN=[];SH=[];EB=[];PS=[];DR=[];DM=[];DROP=0;PA=0;VIB=0;PK=0;HG=0;CM=0;WAVE=0;K=0;gen();ST='run';wave()}
+function restart(){OV.style.display='none';P={x:120,y:200,vx:0,vy:0,f:1,w:28,h:28,hp:6,mh:6,sh:0,sp:240,ju:560,gr:1500,as:1,dm:1,cr:0,db:0,pt:1,sz:1,lf:0,im:0,at:0,iv:0};PL=[{x:-2e5,y:GY,w:4e5,h:14}];SP=[];EN=[];SH=[];EB=[];PS=[];DR=[];DM=[];DROP=0;PA=0;VIB=0;PK=0;HG=0;CM=0;WAVE=0;K=0;gen();ST='run';wave()}
 window.chooseUpg=chooseUpg;window.restart=restart;
 var MUEl=document.getElementById('mu');MUEl.addEventListener('click',function(){MU=!MU;MUEl.textContent=MU?'OFF':'SND'});if('ontouchstart' in window){MU=1;MUEl.textContent='OFF'}
 function loop(t){
@@ -167,7 +167,7 @@ X.font='600 12px '+'"Cascadia Mono",Consolas,monospace';X.textAlign='left';
 X.fillStyle='#FF5C7A';for(var i=0;i<P.hp;i++)X.fillRect(12+i*15,10,12,12);
 X.fillStyle='#8FF0E2';for(var i=0;i<P.sh;i++)X.fillRect(12+i*15,26,12,7);
 X.fillStyle='#9BA9AD';X.fillText('WAVE '+WAVE+'  KILL '+K+'  HI '+HI,12,52);
-var bk='';if(P.db)bk+='DB ';if(P.pt>1)bk+='PT'+P.pt+' ';if(P.cr)bk+='CR'+(P.cr*100|0)+'% ';if(P.lf)bk+='LF ';if(P.im)bk+='IM ';if(P.sz>1)bk+='SZ ';if(P.mu>1)bk+='MU'+P.mu+' ';
+var bk='';if(P.db)bk+='DB ';if(P.pt>1)bk+='PT'+P.pt+' ';if(P.cr)bk+='CR'+(P.cr*100|0)+'% ';if(P.lf)bk+='LF ';if(P.im)bk+='IM ';if(P.sz>1)bk+='SZ ';
 X.fillStyle='rgba(255,194,75,.9)';X.fillText((bk?bk:'')+'DMG '+P.dm+'  SPD '+(P.sp|0),12,68);
 if(BW&&EN.length>0){X.strokeStyle='rgba(255,92,122,'+(0.25+0.18*Math.sin(t/150)).toFixed(3)+')';X.lineWidth=3;X.strokeRect(4,4,W-8,H-8)}
 if(TT>0){X.save();X.globalAlpha=Math.min(1,TT);X.textAlign='center';X.fillStyle=BW?'rgba(255,92,122,.95)':'rgba(230,237,239,.95)';X.font='700 34px '+'"Cascadia Mono",Consolas,monospace';X.fillText(BW?'WARNING // BOSS':'WAVE '+WAVE,W/2,150);X.restore()}
