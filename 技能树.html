@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PRTS · wtz 技能树</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%233FE0C8' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%233FE0C8'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0A0C0E;--bg2:#07090A;--panel:#11151A;--panel2:#181D23;
+  --line:rgba(63,224,200,.14);--line2:rgba(63,224,200,.3);
+  --ink:#E6EDEF;--ink2:#9BA9AD;--ink3:#66767A;
+  --accent:#3FE0C8;--accent2:#8FF0E2;--accent-soft:rgba(63,224,200,.11);
+  --ok:#2EE6A8;--warn:#FFC24B;--bad:#FF5C7A;
+  --mono:"Cascadia Mono",Consolas,"Courier New",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+::selection{background:var(--accent);color:#04231d}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line2)}
+:focus-visible{outline:1.5px solid var(--accent);outline-offset:2px}
+
+#status{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;height:36px;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(7,9,10,.92);backdrop-filter:blur(8px);font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink3)}
+#status .st-l{color:var(--accent)}
+#status .st-l::after{content:"▮";margin-left:8px;color:var(--accent);animation:blink 1.1s steps(1) infinite}
+#status .st-c{margin-left:auto;display:flex;gap:14px}
+#status .st-c a{color:var(--ink3);transition:color .2s}
+#status .st-c a:hover{color:var(--accent)}
+
+.stage{position:relative;max-width:100%;margin:0 auto;padding:18px 16px 30px}
+.tree-card{position:relative;border:1px solid var(--line2);background:var(--panel);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.tree-head{display:flex;align-items:baseline;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);font-family:var(--mono)}
+.tree-head .b-no{color:var(--accent);font-size:12px}
+.tree-head h2{font-size:18px;letter-spacing:.2em;font-weight:700}
+.tree-head .b-code{margin-left:auto;font-size:10.5px;letter-spacing:.3em;color:var(--ink3)}
+.tree-svg{position:relative;width:100%;display:block;overflow-x:auto}
+.tree-svg svg{width:7200px;height:4680px;max-width:none;display:block;background:var(--bg2)}
+#detail{position:absolute;top:74px;right:18px;width:min(330px,86vw);border:1px solid var(--line2);background:rgba(13,17,21,.96);box-shadow:0 18px 50px rgba(0,0,0,.55);padding:20px 20px 18px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .22s,transform .22s;z-index:10;backdrop-filter:blur(6px)}
+#detail.on{opacity:1;transform:none;pointer-events:auto}
+#detail .d-lv{font-family:var(--mono);font-size:10.5px;letter-spacing:.26em;padding:3px 10px;display:inline-block;border:1px solid}
+#detail h3{font-size:19px;font-weight:700;letter-spacing:.06em;margin:10px 0 4px}
+#detail .d-sub{font-family:var(--mono);font-size:11px;color:var(--ink3);letter-spacing:.14em;margin-bottom:12px}
+#detail .d-row{display:flex;gap:10px;margin-top:10px;font-size:12.5px;line-height:1.75;color:var(--ink2)}
+#detail .d-row b{flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink3);min-width:56px;padding-top:1px}
+#detail .d-src{font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+#detail .d-src b{color:var(--accent)}
+.hint{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink3);text-align:center;padding:14px 10px 4px}
+
+/* SVG 节点 */
+.nd{cursor:pointer;transition:transform .15s}
+.nd:hover{transform:scale(1.08)}
+.nd text{pointer-events:none;user-select:none}
+.nd .lab{font-family:"Microsoft YaHei",sans-serif}
+.nd .lab2{font-family:var(--mono)}
+.nd .r{transition:fill .15s,stroke .15s}
+.nd.sel .r{stroke-width:5}
+.core{cursor:pointer}
+.core .r{transition:transform .15s}
+.core:hover .r{transform:scale(1.04)}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.75}}
+.pulse{animation:pulse 2.6s ease-in-out infinite}
+@keyframes draw{to{stroke-dashoffset:0}}
+.ln{stroke-dasharray:8 7;animation:draw 1.1s linear forwards}
+@keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+.nd-pop{transform-box:fill-box;transform-origin:center;animation:pop .3s ease both}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ln{stroke-dasharray:none}}
+@media(max-width:640px){#detail{position:fixed;top:auto;bottom:10px;right:10px;left:10px;width:auto;max-height:46vh;overflow-y:auto}.tree-head h2{font-size:15px}}
+.crt{position:fixed;inset:0;z-index:55;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(230,237,239,.02) 0 1px,transparent 1px 4px)}
+</style>
+</head>
+<body>
+<header id="status">
+  <span class="st-l">PRTS // 技能树</span>
+  <span class="st-c">
+    <a href="index.html">指挥中心</a>
+    <a href="终端接口.html">终端接口</a>
+  </span>
+</header>
+
+<main class="stage">
+  <div class="tree-card">
+    <div class="tree-head">
+      <span class="b-no">SKILL // TREE</span>
+      <h2>wtz 的技能树</h2>
+      <span class="b-code">3 DOMAINS · 33 NODES</span>
+    </div>
+    <div class="tree-svg">
+      <svg id="tree" viewBox="0 0 7200 4680" role="img" aria-label="wtz 技能树：三个领域从中央圆形延展">
+        <defs>
+          <radialGradient id="coreG" cx="50%" cy="42%" r="60%">
+            <stop offset="0%" stop-color="rgba(63,224,200,.5)"/>
+            <stop offset="100%" stop-color="rgba(63,224,200,.08)"/>
+          </radialGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="14" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect width="7200" height="4680" fill="#07090A"/>
+        <g stroke="rgba(63,224,200,.05)" stroke-width="2">
+          <path d="M0 780H7200M0 1560H7200M0 2340H7200M0 3120H7200M0 3900H7200"/>
+          <path d="M900 0V4680M1800 0V4680M2700 0V4680M3600 0V4680M4500 0V4680M5400 0V4680M6300 0V4680"/>
+        </g>
+        <circle cx="3600" cy="2220" r="1392" fill="none" stroke="rgba(63,224,200,.07)" stroke-width="2"/>
+        <circle cx="3600" cy="2220" r="900" fill="none" stroke="rgba(63,224,200,.09)" stroke-width="2" stroke-dasharray="18 36"/>
+        <g id="lines"></g>
+        <g id="nodes"></g>
+        <g class="core" data-core="1" role="button" aria-label="wtz 技能树核心">
+          <circle class="pulse" cx="3600" cy="2220" r="708" fill="url(#coreG)" stroke="rgba(63,224,200,.55)" stroke-width="2.5"/>
+          <circle class="r" cx="3600" cy="2220" r="576" fill="#0B1417" stroke="var(--accent)" stroke-width="4" filter="url(#glow)"/>
+          <text x="3600" y="2112" text-anchor="middle" fill="var(--accent2)" font-size="60" font-weight="900" font-family="Microsoft YaHei,sans-serif" letter-spacing="36">WTZ</text>
+          <text x="3600" y="2316" text-anchor="middle" fill="var(--ink2)" font-size="30" font-family="Microsoft YaHei,sans-serif" letter-spacing="24">技能树</text>
+          <text x="3600" y="2484" text-anchor="middle" fill="var(--ink3)" font-size="20" font-family="var(--mono)" letter-spacing="12">3 DOMAINS</text>
+        </g>
+      </svg>
+    </div>
+    <p class="hint">点击中央圆形查看总览 · 点击任意节点查看技能详情</p>
+  </div>
+  <div id="detail" role="dialog" aria-label="技能详情"></div>
+</main>
+<div class="crt" aria-hidden="true"></div>
+
+<script>
+var TREES=[
+{name:'游戏模组开发',sub:'MINECRAFT MODDING',color:'#3FE0C8',theta:210,span:48,
+pre:[
+{n:'Minecraft 基础',s:'启动器与游玩',d:'熟悉 PCL 启动器与 Forge 环境，掌握基本生存与指令。',src:'PCL · forge · .minecraft',nxt:'进阶：命令方块与数据包'},
+{n:'Java 基础',s:'编程语言入门',d:'变量、类、方法、循环——所有模组的地基。',src:'wtz_mod 的 build.gradle',nxt:'集合、泛型、异常'}],
+got:[
+{n:'Forge 模组工程',s:'Gradle 构建',d:'从零搭起 Forge 开发环境，能独立完成编译与调试。',src:'wtz_mod（build.gradle · gradle）',nxt:'多版本分支管理'},
+{n:'自定义护甲',s:'装备与贴图',d:'自绘护甲贴图（armor_1~4）并注册进游戏。',src:'wtz_mod/armor_*.png',nxt:'盔甲属性与模型'},
+{n:'干员立绘入模',s:'资源整合',d:'把干员立绘（amiya / closure）做成模组资源。',src:'wtz_mod/amiya_art.png',nxt:'阵营音乐与语音'},
+{n:'自研模组玩法',s:'沉浸式法阵 / 矿石战争',d:'自制玩法向模组：法阵、矿石战争与物理机关。',src:'noida 下 沉浸式法阵 · 矿石战争',nxt:'数值平衡与存档'},
+{n:'音效与数据导出',s:'资源管线',d:'自备 wav 音效接入；Python 导出建筑 NBT 数据。',src:'audio_backup_矿石战争 · export_nbt_48.py',nxt:'自动化资源管线'}],
+nxt:[
+{n:'实体 AI 与 Boss 战',s:'更深的游戏性',d:'自定义怪物行为、技能与 Boss 阶段。',src:'——',nxt:'学习 NBT 与 AI 调度'},
+{n:'Fabric / NeoForge',s:'多加载器',d:'同一份模组跑通多加载器，扩大受众。',src:'——',nxt:'混用架构与移植'},
+{n:'联机与插件生态',s:'服务器侧',d:'把作品搬上服务器：插件、权限、数据同步。',src:'——',nxt:'Spigot / Bukkit API'},
+{n:'作品发布',s:'CurseForge · Modrinth',d:'整理文档、版本、多平台发布与维护。',src:'——',nxt:'社区运营'}]},
+{name:'3D 建模与动画',sub:'BLENDER · MMD',color:'#8A7BFF',theta:330,span:48,
+pre:[
+{n:'3D 空间概念',s:'坐标与视角',d:'理解三维坐标、模型轴心与视图操作。',src:'MMD932 工程',nxt:'关键帧与曲线'},
+{n:'模型格式认知',s:'glb · pmx · vmd',d:'分清网格、骨骼、动画文件与配布包结构。',src:'model · 1.glb · 1.pmm',nxt:'格式转换与解算'}],
+got:[
+{n:'Blender 建模',s:'场景与工程',d:'独立完成 Blender 工程：建模、场景、导出。',src:'test.blend · K_test.blend',nxt:'雕刻与拓扑'},
+{n:'MMD 动画制作',s:'MikuMikuDance',d:'用 MMD 编排动作、镜头与特效（MMEffect）。',src:'MMD932 · 1.pmm · cp.vmd',nxt:'镜头语言与节奏'},
+{n:'配布模型整备',s:'星穹铁道 / 阮梅素体',d:'导入并整备各游戏配布模型（昔涟、银狼、遐蝶等）。',src:'model 目录',nxt:'角色专属骨骼绑定'},
+{n:'物理与布料解算',s:'火花布料',d:'处理衣物布料与物理优化，避免穿模抖动。',src:'model/火花布料解算 · 物理优化',nxt:'刚体与约束'},
+{n:'动画渲染出片',s:'输出管线',d:'完成渲染设置并导出成片（cyrene 视频等）。',src:'cyrene-lll_x264.mp4',nxt:'多机位与调色'}],
+nxt:[
+{n:'骨骼绑定与权重',s:'Rigging',d:'给新模型绑定骨骼、刷权重，让人物真正动起来。',src:'——',nxt:'权重镜像与修形'},
+{n:'PBR 材质与贴图',s:'写实材质',d:'法线、粗糙度、金属度——让表面读得懂。',src:'——',nxt:'Substance 流程'},
+{n:'灯光与运镜',s:'电影感',d:'三点布光与镜头运动，把场景拍出故事。',src:'——',nxt:'色彩管理'},
+{n:'游戏模型导出',s:'glTF · FBX',d:'为游戏引擎优化并导出模型。',src:'——',nxt:'LOD 与面数预算'}]},
+{name:'程序与数字创作',sub:'CODE · AGENT · MEDIA',color:'#F5A32C',theta:90,span:48,
+pre:[
+{n:'HTML / CSS 基础',s:'网页骨架',d:'结构、样式、盒模型——所有前端的地基。',src:'prts 项目',nxt:'布局与响应式'},
+{n:'Python 基础',s:'脚本思维',d:'用脚本自动化重复劳动。',src:'gen_keys.py',nxt:'面向对象与标准库'}],
+got:[
+{n:'网页前端开发',s:'PRTS 终端站',d:'独立开发多页 PRTS 站点：终端接口、指挥中心、8 个小游戏。',src:'prts（index · 泰拉大典 · 莱茵）',nxt:'动画与工程化'},
+{n:'Python 自动化',s:'密钥与导出',d:'编写密钥生成脚本与 NBT 导出工具。',src:'gen_keys.py · export_*.py',nxt:'脚本框架化'},
+{n:'AI Agent 开发',s:'Cyrene-Agent',d:'搭建带 skills / prompts / scripts 的 AI Agent 工程。',src:'Cyrene-Agent（node · src）',nxt:'工具调用与多模态'},
+{n:'视频剪辑',s:'剪映成片',d:'剪辑、加字幕音效、导出成品视频。',src:'JianyingPro · cyrene 视频',nxt:'特效与调色'},
+{n:'音频制作',s:'游戏音效',d:'设计并导出游戏音效（矿石战争 wav 系列）。',src:'audio_backup_矿石战争',nxt:'混音与母带'}],
+nxt:[
+{n:'JS 框架与工程化',s:'Vue / React',d:'组件化开发与构建工具链。',src:'——',nxt:'TypeScript'},
+{n:'后端与接口',s:'数据怎么来',d:'数据库、接口、鉴权——把站点做成系统。',src:'——',nxt:'Node / Go'},
+{n:'游戏引擎',s:'Godot · Unity',d:'把 3D 与编程合流，做自己的完整游戏。',src:'——',nxt:'物理与寻路'},
+{n:'开源与发布',s:'GitHub 协作',d:'版本管理、PR、文档，把作品交给世界。',src:'——',nxt:'社区贡献'}]}
+];
+var NS={},pref={pre:{t:'前置 · 基础',c:'#66767A'},got:{t:'已学会',c:'#3FE0C8'},nxt:{t:'可继续学习',c:'#F5A32C'}};
+var svg=document.getElementById('tree'),lns=document.getElementById('lines'),nds=document.getElementById('nodes'),D=document.getElementById('detail');
+function T(t){return document.createElementNS('http://www.w3.org/2000/svg',t)}
+function xy(cx,cy,r,th){var a=th*Math.PI/180;return{x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)}}
+function link(x1,y1,x2,y2,c){
+var p=T('path');
+var mx=(x1+x2)/2,my=(y1+y2)/2;
+p.setAttribute('d','M'+x1+' '+y1+' Q'+mx+' '+my+' '+x2+' '+y2);
+p.setAttribute('fill','none');p.setAttribute('stroke',c);p.setAttribute('stroke-width','2.2');p.setAttribute('class','ln');
+p.style.strokeDashoffset=1400;lns.appendChild(p);return p;
+}
+function node(n,pos,tc,lv,tree){
+var g=T('g');g.setAttribute('class','nd nd-pop');g.setAttribute('role','button');g.setAttribute('tabindex','0');
+var cir=T('circle');cir.setAttribute('cx',pos.x);cir.setAttribute('cy',pos.y);cir.setAttribute('r','34');cir.setAttribute('class','r');
+var stroke=tc;
+if(lv==='pre'){cir.setAttribute('fill','#0E1114');cir.setAttribute('stroke','rgba(102,118,122,.7)');cir.setAttribute('stroke-width','2.4')}
+else if(lv==='got'){cir.setAttribute('fill',tc);cir.setAttribute('stroke',tc);cir.setAttribute('stroke-width','2.4')}
+else{cir.setAttribute('fill','#0E1114');cir.setAttribute('stroke',tc);cir.setAttribute('stroke-dasharray','10 8');cir.setAttribute('stroke-width','2.8')}
+g.appendChild(cir);
+var dot=T('circle');dot.setAttribute('cx',pos.x);dot.setAttribute('cy',pos.y);dot.setAttribute('r','9');dot.setAttribute('fill',lv==='pre'?'#3A4147':tc);g.appendChild(dot);
+var t1=T('text');t1.setAttribute('x',pos.x);t1.setAttribute('y',pos.y+84);t1.setAttribute('text-anchor','middle');t1.setAttribute('class','lab');t1.setAttribute('font-size','20');t1.setAttribute('font-weight','600');t1.setAttribute('fill','var(--ink)');
+var lines1=(n.n||'').length>6?n.n.slice(0,6)+'…':n.n;t1.textContent=lines1;g.appendChild(t1);
+var t2=T('text');t2.setAttribute('x',pos.x);t2.setAttribute('y',pos.y+116);t2.setAttribute('text-anchor','middle');t2.setAttribute('class','lab2');t2.setAttribute('font-size','13');t2.setAttribute('letter-spacing','2');t2.setAttribute('fill','var(--ink3)');
+t2.textContent=n.s||'';g.appendChild(t2);
+var id=tree+':'+lv+':'+n.n;n.id=id;n.lv=lv;n.tree=tree;NS[id]=n;
+function open(){sel(g,id)}
+g.addEventListener('click',open);g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
+nds.appendChild(g);
+var lbl={x:pos.x,y:pos.y+124};
+return{id:id,g:g,lbl:lbl};
+}
+function sel(g,id){
+var cs=nds.querySelectorAll('.nd');for(var i=0;i<cs.length;i++)cs[i].classList.remove('sel');
+g.classList.add('sel');
+var n=NS[id];
+if(!n){return}
+var m=n.tree;
+D.innerHTML='';
+var lv=document.createElement('span');lv.className='d-lv';lv.style.color=pref[n.lv].c;lv.style.borderColor=pref[n.lv].c;lv.textContent=pref[n.lv].t;D.appendChild(lv);
+var h=document.createElement('h3');h.textContent=n.n;D.appendChild(h);
+var su=document.createElement('div');su.className='d-sub';su.textContent=m.name+' · '+m.sub+'  /  '+n.s;D.appendChild(su);
+function row(k,v){var r=document.createElement('div');r.className='d-row';var b=document.createElement('b');b.textContent=k;r.appendChild(b);var s=document.createElement('span');s.textContent=v;r.appendChild(s);D.appendChild(r)}
+row('描述',n.d);
+row('下一步',n.nxt);
+var src=document.createElement('div');src.className='d-src';src.innerHTML='<b>来源：</b>'+n.src;D.appendChild(src);
+D.classList.add('on');
+}
+function build(){
+var cx=3600,cy=2220;
+for(var t=0;t<TREES.length;t++){
+var tr=TREES[t],c=tr.color,th=tr.theta,sp=tr.span;
+var root=xy(cx,cy,576,th);
+var rl=link(cx+Math.cos(th*Math.PI/180)*576,cy+Math.sin(th*Math.PI/180)*576,root.x,root.y,c);
+var rc=T('circle');rc.setAttribute('cx',root.x);rc.setAttribute('cy',root.y);rc.setAttribute('r','28');rc.setAttribute('fill','#0E1114');rc.setAttribute('stroke',c);rc.setAttribute('stroke-width','3.5');
+nds.appendChild(rc);
+var rt=T('text');rt.setAttribute('x',root.x);rt.setAttribute('y',root.y+8);rt.setAttribute('text-anchor','middle');rt.setAttribute('font-size','16');rt.setAttribute('font-weight','700');rt.setAttribute('fill',c);rt.textContent=tr.name.slice(0,3);nds.appendChild(rt);
+var layers=[['pre',900],['got',1320],['nxt',1728]];
+var prev=[{x:root.x,y:root.y}];
+for(var L=0;L<layers.length;L++){
+var lv=layers[L][0],R=layers[L][1],arr=tr[lv];
+var n0=arr.length,deg=(sp*2)/(n0-1||1),start=th-sp;
+for(var i=0;i<n0;i++){
+var ang=start+deg*i;
+if(lv==='pre'&&n0===2)ang=th+(i===0?-1:1)*sp*.55;
+var p=xy(cx,cy,R,ang);
+link(prev[0].x,prev[0].y,p.x,p.y,c);
+var nd=node(arr[i],p,c,lv,tr);
+prev.push({x:p.x,y:p.y});
+}
+}
+}
+}
+var cc=document.querySelector('.core');
+cc.addEventListener('click',function(){
+var cs=nds.querySelectorAll('.nd');for(var i=0;i<cs.length;i++)cs[i].classList.remove('sel');
+D.innerHTML='';
+var lv=document.createElement('span');lv.className='d-lv';lv.style.color='#3FE0C8';lv.style.borderColor='#3FE0C8';lv.textContent='总览';D.appendChild(lv);
+var h=document.createElement('h3');h.textContent='wtz 的技能树';D.appendChild(h);
+var su=document.createElement('div');su.className='d-sub';su.textContent='三大兴趣领域 · 已学会 / 前置 / 可继续学习';D.appendChild(su);
+function row(k,v){var r=document.createElement('div');r.className='d-row';var b=document.createElement('b');b.textContent=k;r.appendChild(b);var s=document.createElement('span');s.textContent=v;r.appendChild(s);D.appendChild(r)}
+row('① 游戏模组开发','Minecraft 模组（Forge · wtz_mod）、自研玩法（矿石战争）与音效整合');
+row('② 3D 建模动画','Blender 建模 + MMD 动画、配布模型整备、布料与物理优化');
+row('③ 程序与数字创作','PRTS 前端、Python 脚本、AI Agent（Cyrene-Agent）、剪映与音效');
+var src=document.createElement('div');src.className='d-src';src.innerHTML='<b>来源：</b>D:\\WTZ 项目目录实测';D.appendChild(src);
+D.classList.add('on');
+});
+cc.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();cc.click()}});
+document.addEventListener('click',function(e){if(!D.contains(e.target)&&!e.target.closest('.nd')&&!e.target.closest('.core'))D.classList.remove('on')});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')D.classList.remove('on')});
+build();
+setTimeout(function(){var ln=lns.querySelectorAll('.ln');for(var i=0;i<ln.length;i++)ln[i].style.strokeDashoffset=0},60);
+</script>
+</body>
+</html>
