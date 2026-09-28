@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PRTS · 终端</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%233FE0C8' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%233FE0C8'/%3E%3C/svg%3E">
+<style>
+/* ===== PRTS · 泰拉大典终端 ===== */
+:root{
+  --bg:#0A0C0E;--bg2:#07090A;--panel:#11151A;--panel2:#181D23;--panel3:#1E242B;
+  --line:rgba(63,224,200,.14);--line2:rgba(63,224,200,.3);
+  --ink:#E6EDEF;--ink2:#9BA9AD;--ink3:#5C6B6F;
+  --accent:#3FE0C8;--accent2:#8FF0E2;--accent-soft:rgba(63,224,200,.11);
+  --ok:#2EE6A8;--warn:#FFC24B;--bad:#FF5C7A;
+  --card:#F4F8F6;--card2:#FFFFFF;--cardink:#16231F;--cardink2:#4A5B55;--cardline:#D8E4E0;
+  --shadow:0 18px 60px rgba(0,0,0,.45);
+  --mono:"Cascadia Mono",Consolas,"Courier New",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:hidden;background:var(--bg);font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;color:var(--ink)}
+#app{height:100vh;display:flex;flex-direction:column;overflow:hidden;position:relative}
+#app{height:100dvh}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,textarea{font-family:inherit}
+::selection{background:var(--accent);color:#fff}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line2);border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+:focus-visible{outline:1.5px solid var(--accent);outline-offset:1px}
+button:active{transform:scale(.97)}
+.hidden{display:none!important}
+
+/* ===== 开机 · CRT 复古终端 ===== */
+#boot{position:fixed;inset:0;z-index:100;background:#050608;display:flex;align-items:center;justify-content:center;overflow:hidden;perspective:1300px}
+#boot::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 52%,rgba(0,0,0,.55));pointer-events:none}
+.b-crt{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.28) 3px 4px);mix-blend-mode:multiply;opacity:.5}
+.b-scan{position:absolute;left:0;right:0;height:120px;pointer-events:none;background:linear-gradient(transparent,rgba(63,224,200,.045),transparent);animation:scanmove 7s linear infinite}
+@keyframes scanmove{0%{top:-15%}100%{top:115%}}
+.b-hud{position:absolute;left:36px;top:28px;z-index:2;font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--ink3)}
+.b-hud b{color:var(--accent);font-weight:700}
+.b-grid2{position:absolute;inset:0;background:radial-gradient(rgba(63,224,200,.08) 1px,transparent 1px);background-size:26px 26px;opacity:.5;pointer-events:none}
+.b-term{position:relative;z-index:2;width:600px;max-width:88vw;max-height:92vh;display:flex;flex-direction:column;border:1px solid var(--line2);background:rgba(5,8,9,.92);box-shadow:0 0 60px rgba(63,224,200,.07),inset 0 0 60px rgba(63,224,200,.03);animation:bTermIn 1s cubic-bezier(.16,.8,.28,1) both;transform-origin:center bottom}
+@keyframes bTermIn{0%{opacity:0;transform:perspective(1100px) rotateX(14deg) translateY(44px) scale(.93)}55%{opacity:1}100%{opacity:1;transform:perspective(1100px) rotateX(0) translateY(0) scale(1)}}
+.b-term .bt-body{overflow-y:auto}
+.b-term .bt-bar{display:flex;align-items:center;gap:10px;height:30px;padding:0 14px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--ink3);background:#0A0D0F}
+.b-term .bt-bar b{color:var(--accent);font-weight:700}
+.b-term .bt-bar .bt-x{margin-left:auto;color:var(--ink3)}
+.b-term .bt-body{position:relative;padding:20px 22px 16px;min-height:230px}
+.b-lines{position:relative;z-index:2;font-family:var(--mono);font-size:12px;line-height:2.05;color:var(--accent);letter-spacing:.02em;min-height:160px}
+.b-lines .ok{color:var(--ok);transition:color .5s ease}
+.b-lines .acc{color:var(--ink)}
+.b-lines .dim{color:var(--ink3)}
+.b-lines .okmark{color:var(--ok)}
+.b-cursor{position:absolute;right:18px;bottom:14px;z-index:3;font-family:var(--mono);font-size:12px;color:var(--accent);animation:blink .9s step-end infinite}
+.b-progress{position:relative;z-index:2;height:2px;background:var(--line);overflow:hidden;margin-top:8px}
+.b-progress i{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .32s ease;box-shadow:0 0 12px var(--accent)}
+.b-progress b{position:absolute;right:0;top:-15px;font-family:var(--mono);font-size:9px;color:var(--accent2);letter-spacing:.1em}
+.b-press{display:none;position:relative;z-index:2;margin-top:26px;font-family:var(--mono);font-size:10.5px;letter-spacing:.4em;color:var(--accent2);animation:blink 1.1s step-end infinite;text-indent:.4em}
+@keyframes blink{50%{opacity:0}}
+.b-fn{position:absolute;right:36px;bottom:30px;z-index:2;font-family:var(--mono);font-size:40px;color:var(--accent);opacity:.85;letter-spacing:.06em;animation:bup .8s .5s ease backwards}
+.b-fn.flash{animation:fnflash .7s ease}
+@keyframes fnflash{0%{color:var(--accent);transform:scale(1)}35%{color:#fff;text-shadow:0 0 30px var(--accent);transform:scale(1.06)}100%{color:var(--accent);transform:scale(1)}}
+.b-ver{position:absolute;left:36px;bottom:30px;z-index:2;font-size:9.5px;letter-spacing:.2em;color:var(--ink3);font-family:var(--mono)}
+.b-strip{position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(90deg,var(--accent) 0 22px,transparent 22px 34px);opacity:.5;animation:bstrip 3s linear infinite}
+@keyframes bstrip{to{transform:translateX(34px)}}
+/* ===== 主壳 ===== */
+#shell{flex:1;display:flex;flex-direction:column;min-height:0;opacity:0;transition:opacity .4s ease}
+#particles{position:fixed;inset:0;z-index:1;pointer-events:none}
+#reel,#browser{position:relative;z-index:2}
+#pvTop{position:relative;z-index:2}
+#shell.on{opacity:1}
+
+/* ===== PV 顶栏 ===== */
+#pvTop{position:relative;z-index:15;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:24px 34px 0;min-height:100px;height:auto;flex:none}
+.pv-brand{display:flex;flex-direction:column;gap:5px;line-height:1.55;transform:perspective(760px) rotateX(var(--bx,0)) rotateY(var(--by,0));transition:transform .28s ease;transform-style:preserve-3d}
+.pv-brand .l1{font-size:13.5px;font-weight:700;letter-spacing:.34em;color:var(--ink);animation:breath 3.6s ease-in-out infinite}
+@keyframes breath{50%{text-shadow:0 0 22px rgba(63,224,200,.55)}}
+.pv-brand .l2{font-size:9.5px;letter-spacing:.3em;color:var(--ink3)}
+.pv-brand .l3{font-size:9.5px;letter-spacing:.44em;color:var(--accent)}
+.pv-menu{display:flex;gap:26px;padding-top:8px;font-size:10.5px;letter-spacing:.2em;color:var(--ink2);white-space:nowrap}
+.pv-menu span{cursor:pointer;position:relative;padding-bottom:5px;transition:color .15s}
+.pv-menu span::after{content:"";position:absolute;left:0;bottom:0;height:1.5px;width:0;background:var(--accent);transition:width .22s ease}
+.pv-menu span:hover{color:var(--accent2)}
+.pv-menu span:hover::after{width:100%}
+.pv-menu b{color:var(--accent);font-weight:700}
+.pv-stat{display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding-top:6px;font-size:9.5px;letter-spacing:.16em;color:var(--ink3)}
+.pv-stat .live{display:flex;align-items:center;gap:6px;color:var(--ok);letter-spacing:.24em}
+.pv-stat .live i{width:6px;height:6px;background:var(--ok);border-radius:50%;animation:pulse 2s ease infinite;font-style:normal}
+@keyframes pulse{50%{opacity:.3}}
+
+/* ===== PV 轮播（泰拉大典） ===== */
+#reel{position:relative;flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;perspective:1300px}
+.pv-bg{position:absolute;left:-80px;right:-80px;top:-80px;bottom:-80px;z-index:0;overflow:hidden}
+.pv-bg .strip{position:absolute;top:0;bottom:0;width:clamp(14px,4vw,54px);border:1px solid var(--line);transform:skewX(-8deg);opacity:.5}
+.pv-bg .strip.off{display:none}
+.pv-bg .glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,rgba(63,224,200,.1),transparent 65%)}
+.pv-bg .beam{position:absolute;left:-30%;top:-40%;width:70%;height:180%;background:linear-gradient(100deg,transparent,rgba(63,224,200,.07),transparent);transform:rotate(18deg);animation:beam 8s ease-in-out infinite}
+@keyframes beam{50%{left:60%}}
+.reel-page{position:absolute;left:34px;bottom:30px;z-index:5;font-family:var(--mono);font-size:clamp(38px,6vw,72px);font-weight:700;color:var(--ink);letter-spacing:.02em;display:flex;align-items:baseline;gap:10px;line-height:1}
+.reel-page small{font-size:clamp(14px,2vw,22px);color:var(--ink3);font-weight:400}
+.reel-powered{position:absolute;right:36px;bottom:32px;z-index:5;text-align:right;font-size:9px;letter-spacing:.34em;color:var(--ink3);line-height:2;white-space:nowrap}
+.reel-powered b{color:var(--accent);font-weight:700}
+.r-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:52px;height:52px;border:1px solid var(--line2);color:var(--ink2);font-size:19px;display:flex;align-items:center;justify-content:center;transition:all .18s;background:rgba(10,21,38,.55);backdrop-filter:blur(3px)}
+.r-arrow:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.r-prev{left:22px}
+.r-next{right:22px}
+.reel-center{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;text-align:center;width:min(100%,74vw);max-width:940px;transition:opacity .2s ease,transform .28s cubic-bezier(.16,.8,.28,1);transform-style:preserve-3d}
+.reel-center .rc-cat{font-size:10px;letter-spacing:.5em;color:var(--accent2);text-indent:.5em;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.reel-center .rc-cat::before,.reel-center .rc-cat::after{content:"";width:34px;height:1px;background:var(--line2)}
+.reel-center .rc-name{font-size:clamp(38px,7.2vw,86px);font-weight:700;color:var(--ink);letter-spacing:.04em;line-height:1.12;text-wrap:balance;transition:filter .42s ease;text-shadow:0 1px 0 rgba(63,224,200,.3),0 2px 0 rgba(0,0,0,.22),0 3px 0 rgba(0,0,0,.2),0 5px 0 rgba(0,0,0,.16),0 14px 30px rgba(0,0,0,.45)}
+.reel-center .rc-name.fz{filter:blur(12px)}
+.reel-center .rc-alias{font-family:var(--mono);font-size:clamp(11px,1.6vw,15px);color:var(--ink3);letter-spacing:.34em;margin-top:14px;text-indent:.34em}
+.reel-center .rc-num{font-family:var(--mono);font-size:clamp(14px,2vw,20px);color:var(--accent);margin-top:22px;letter-spacing:.2em;height:1.5em;line-height:1.5em;overflow:hidden;display:flex}
+.reel-center .rc-num .digit{display:inline-block;transition:transform .5s cubic-bezier(.2,.9,.25,1)}
+.reel-center .rc-desc{font-size:12px;color:var(--ink2);letter-spacing:.08em;max-width:560px;margin-top:16px;line-height:1.9}
+.reel-actions{margin-top:30px;display:flex;gap:14px}
+.ra-btn{height:38px;padding:0 26px;font-size:11px;letter-spacing:.26em;color:var(--ink2);border:1px solid var(--line2);transition:all .2s;text-indent:.26em;position:relative;overflow:hidden}
+.ra-btn::after,.nav-btn::after{content:"";position:absolute;top:0;bottom:0;left:-80%;width:50%;background:linear-gradient(100deg,transparent,rgba(124,192,255,.28),transparent);transform:skewX(-20deg);transition:left .5s ease}
+.ra-btn:hover::after,.nav-btn:hover::after{left:130%}
+.ra-btn b{color:var(--accent);font-weight:700}
+.ra-btn:hover{border-color:var(--accent);color:var(--ink);background:var(--accent-soft);box-shadow:0 0 26px rgba(63,224,200,.18)}
+.reel-center .rc-cat,.reel-center .rc-name,.reel-center .rc-alias,.reel-center .rc-num,.reel-center .rc-desc,.reel-center .reel-actions{opacity:0;transform:translateY(16px);transition:opacity .5s cubic-bezier(.16,.8,.28,1),transform .5s cubic-bezier(.16,.8,.28,1)}
+.reel-center.anim .rc-cat{opacity:1;transform:none}
+.reel-center.anim .rc-name{opacity:1;transform:none;transition-delay:.07s}
+.reel-center.anim .rc-alias{opacity:1;transform:none;transition-delay:.13s}
+.reel-center.anim .rc-num{opacity:1;transform:none;transition-delay:.19s}
+.reel-center.anim .rc-desc{opacity:1;transform:none;transition-delay:.25s}
+.reel-center.anim .reel-actions{opacity:1;transform:none;transition-delay:.31s}
+.reel-idx{position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:5px}
+.reel-idx i{width:20px;height:2px;background:var(--line2);transition:all .25s;font-style:normal}
+.reel-idx i.sel{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+
+/* ===== 浏览器模式 ===== */
+#browser{position:fixed;inset:0;z-index:30;background:var(--bg);display:none;flex-direction:column;animation:fadein .25s ease;perspective:1400px}
+#browser.on{display:flex}
+@keyframes fadein{from{opacity:0}}
+#topbar{display:flex;align-items:center;gap:12px;padding:0 14px;height:46px;flex:none;background:var(--panel);border-bottom:1px solid var(--line)}
+#topbar .brand{display:flex;align-items:center;gap:9px;flex:none;cursor:pointer;user-select:none}
+#topbar .b-ico{width:26px;height:26px;flex:none}
+#topbar .t1{font-size:12.5px;font-weight:700;letter-spacing:.18em;color:var(--ink);white-space:nowrap}
+#topbar .t2{font-size:9px;letter-spacing:.3em;color:var(--ink3);white-space:nowrap}
+#topbar .sep{width:1px;height:20px;background:var(--line);flex:none}
+#topbar .crumb{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink2);min-width:0;overflow:hidden;white-space:nowrap;flex:1}
+#topbar .crumb b{color:var(--ink);font-weight:600}
+#topbar .crumb .seg{cursor:pointer;padding:2px 6px;border-radius:2px;transition:background .15s}
+#topbar .crumb .seg:hover{background:var(--accent-soft);color:var(--accent)}
+#topbar .right{display:flex;align-items:center;gap:8px;flex:none}
+#search{width:200px;height:28px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:0 8px 0 26px;font-size:12px;outline:none;border-radius:0;transition:border-color .15s,box-shadow .15s;background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="%235E7498" stroke-width="1.6"%3E%3Ccircle cx="7" cy="7" r="4.4"/%3E%3Cpath d="M10.6 10.6 L14 14"/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:7px center;background-size:13px}
+#search:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.nav-btn{height:28px;padding:0 10px;font-size:10px;letter-spacing:.06em;color:var(--ink2);border:1px solid var(--line);display:inline-flex;align-items:center;gap:5px;transition:all .12s;white-space:nowrap;border-radius:0;background:none}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.nav-btn b{color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}
+.nav-btn .ng{font-size:13px;line-height:1}
+.nav-btn .key{font-size:9px;color:var(--ink3);border:1px solid var(--line);padding:0 4px;line-height:14px}
+.icon-btn{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);color:var(--ink2);transition:all .15s;flex:none;border-radius:0;background:none}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+#clock{font-size:11px;color:var(--ink3);letter-spacing:.1em;white-space:nowrap}
+#netstat{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ok);letter-spacing:.15em;white-space:nowrap}
+#netstat .dot{width:6px;height:6px;background:var(--ok);border-radius:50%;animation:pulse 2s ease infinite}
+
+/* ===== 主体三栏 ===== */
+#main{flex:1;display:flex;min-height:0}
+#sidebar{width:228px;flex:none;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+#sidebar .s-head{padding:10px 14px 8px;font-size:10px;letter-spacing:.3em;color:var(--ink3);display:flex;justify-content:space-between;align-items:center;flex:none}
+#sidebar .s-head .cnt{color:var(--accent);letter-spacing:0;font-weight:700}
+#tree{flex:1;overflow-y:auto;padding:4px 6px 12px}
+.tree-item{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:12px;color:var(--ink2);cursor:pointer;border-left:2px solid transparent;transition:all .13s;user-select:none}
+.tree-item:hover{background:var(--panel2);color:var(--ink)}
+.tree-item.sel{border-left-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.tree-item .tg{width:14px;text-align:center;color:var(--ink3);font-size:10px;flex:none;transition:transform .15s}
+.tree-item.open>.tg{transform:rotate(90deg)}
+.tree-item .cnt{font-size:10px;color:var(--ink3);margin-left:auto}
+.tree-item.dim{opacity:.45}
+#content{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+#toolbar{flex:none;display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line)}
+#toolbar .loc{font-family:var(--mono);font-size:11px;color:var(--ink3);letter-spacing:.06em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+#toolbar .loc b{color:var(--accent2)}
+#infoLine{font-size:11px;color:var(--ink3);white-space:nowrap}
+#fileArea{flex:1;overflow-y:auto;padding:14px;min-height:0}
+#fileArea .empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:70px 20px;color:var(--ink3);font-size:12px;text-align:center}
+.file-row{display:grid;grid-template-columns:34px 1fr 110px 100px 140px;align-items:center;gap:10px;padding:7px 10px;font-size:12.5px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s}
+.file-row:hover{background:var(--panel)}
+.file-row.selected{background:var(--accent-soft)}
+.file-row .ic{display:flex;align-items:center;font-size:14px}
+.file-row .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.file-row.selected .nm{color:var(--accent2);font-weight:600}
+.file-row .meta{min-width:0;font-size:11px;color:var(--ink3);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+mark{background:var(--accent-soft);color:var(--accent2);font-weight:700;padding:0 1px}
+.file-card{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid var(--line);background:var(--panel);cursor:pointer;transition:all .14s;min-width:0}
+.file-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.file-card.selected{border-color:var(--accent);background:var(--accent-soft)}
+.file-card .fic{font-size:22px}
+.file-card .fname{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.file-card .fmeta{font-size:10px;color:var(--ink3);display:flex;justify-content:space-between}
+#viewGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.file-row,.file-card{animation:rise .3s ease backwards}
+/* 泰拉年表时间轴 */
+.tl-wrap{display:flex;flex-direction:column;padding:4px 0}
+.tl-item{display:grid;grid-template-columns:130px 40px minmax(0,1fr);padding:13px 8px;cursor:pointer;transition:background .13s;border-left:2px solid transparent}
+.tl-item:hover{background:var(--panel)}
+.tl-item.selected{border-left-color:var(--accent);background:var(--accent-soft)}
+.tl-item .t{font-family:var(--mono);font-size:11px;color:var(--accent2);padding-top:2px;text-align:right;padding-right:14px;white-space:nowrap}
+.tl-item .ax{display:flex;flex-direction:column;align-items:center;position:relative}
+.tl-item .ax::before{content:"";position:absolute;top:-14px;bottom:-14px;left:50%;width:1px;background:var(--line2);transform:translateX(-50%)}
+.tl-item:first-child .ax::before{top:50%}
+.tl-item:last-child .ax::before{bottom:50%}
+.tl-item .dot{width:9px;height:9px;border:1.5px solid var(--accent);background:var(--bg);transform:rotate(45deg);z-index:1;transition:all .2s;flex:none}
+.tl-item:hover .dot{background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.tl-item .c{padding-left:16px;min-width:0}
+.tl-item .c .n{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.04em}
+.tl-item .c .a{font-family:var(--mono);font-size:9px;color:var(--ink3);letter-spacing:.2em;margin-top:3px}
+.tl-item .c .d{font-size:11px;color:var(--ink2);margin-top:5px;line-height:1.7}
+/* 六维检测条 */
+.pbar{display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:6px}
+.pbar .pk{flex:none;width:88px;color:var(--ink3);letter-spacing:.05em}
+.pbar .pt{flex:1;height:4px;background:var(--panel2);position:relative;min-width:0}
+.pbar .pt i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s cubic-bezier(.2,.9,.3,1)}
+.pbar .pv{flex:none;width:34px;text-align:right;color:var(--ink2);font-size:10px}
+/* 关联档案 */
+.rel{display:flex;flex-wrap:wrap;gap:8px}
+.rel-btn{border:1px solid var(--line2);padding:4px 12px;font-size:11px;color:var(--ink2);transition:all .15s;border-radius:0;background:none}
+.rel-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+
+/* ===== 详情面板 ===== */
+#detail{position:absolute;top:46px;right:0;bottom:0;width:340px;z-index:25;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;transition:margin-right .25s ease;transform-origin:right center}
+#detail:not(.hidden){animation:det3d .3s cubic-bezier(.16,.8,.28,1)}
+@keyframes det3d{from{opacity:.25}to{opacity:1}}
+#detail.hidden{margin-right:-340px}
+#detail .d-head{flex:none;padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+#detail .d-head .ttl{font-size:12px;font-weight:700;letter-spacing:.1em;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#detail .d-head .file{font-family:var(--mono);font-size:9.5px;color:var(--accent);letter-spacing:.1em}
+#detail .d-body{flex:1;overflow-y:auto;padding:14px;line-height:1.85}
+#detail .d-body p{margin:0 0 10px}
+#detail .d-body .hint{color:var(--ink3);font-size:12px;text-align:center;padding:60px 10px;line-height:2}
+.dossier>*{animation:none}
+.dossier>*:nth-child(1){animation-delay:.02s}
+.dossier>*:nth-child(2){animation-delay:.07s}
+.dossier>*:nth-child(3){animation-delay:.12s}
+.dossier>*:nth-child(4){animation-delay:.17s}
+.dossier>*:nth-child(5){animation-delay:.22s}
+.dossier>*:nth-child(6){animation-delay:.27s}
+.dossier>*:nth-child(7){animation-delay:.32s}
+.dossier>*:nth-child(8){animation-delay:.37s}
+.dossier .portrait{width:100%;height:220px;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;cursor:zoom-in}
+.dossier .portrait img{width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .3s}
+@media (hover:hover){.dossier .portrait:hover img{transform:scale(1.05)}}
+.dossier .kvs{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.dossier .kv{display:flex;gap:8px;font-size:11.5px;line-height:1.7}
+.dossier .kv k{flex:none;width:76px;color:var(--ink3);letter-spacing:.1em}
+.dossier .kv v{color:var(--ink);flex:1;min-width:0}
+.dossier .sec{font-size:10px;letter-spacing:.3em;color:var(--accent);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.dossier .sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.dossier .quote{border-left:2px solid var(--accent);padding:8px 12px;background:var(--panel2);font-size:11.5px;color:var(--ink2);font-style:italic;line-height:1.9}
+.d-tabs{flex:none;display:flex;border-top:1px solid var(--line);height:34px}
+.d-tabs button{flex:1;font-size:10px;letter-spacing:.16em;color:var(--ink3);border-right:1px solid var(--line);transition:all .15s}
+.d-tabs button:last-child{border-right:none}
+@media (hover:hover){.d-tabs button:hover{color:var(--ink2)}}
+.d-tabs button.sel{color:var(--accent2);background:var(--accent-soft)}
+.d-back{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--ink2);border:1px solid var(--line);padding:3px 8px;transition:all .12s;flex:none;border-radius:0}
+.d-back:hover{border-color:var(--accent);color:var(--accent)}
+.d-back small{font-size:8.5px;color:var(--ink3);margin-left:2px}
+
+/* ===== PV 详情覆盖层 ===== */
+#pvDetail{position:fixed;inset:0;z-index:60;background:var(--bg);display:none;grid-template-rows:auto 1fr;grid-template-columns:minmax(230px,320px) minmax(0,1fr);gap:22px 40px;padding:24px 40px 32px;animation:pdIn .3s ease}
+@keyframes pdIn{from{opacity:0;transform:translateY(26px)}}
+#pvDetail.on{display:grid}
+#pvDetail .pd-top{grid-column:1/-1;display:flex;align-items:center;gap:14px}
+#pvDetail .pd-top .pd-brand{font-size:10px;letter-spacing:.34em;color:var(--ink3)}
+#pvDetail .pd-top .pd-brand b{color:var(--accent)}
+#pvDetail .pd-close{margin-left:auto;width:34px;height:34px;border:1px solid var(--line2);color:var(--ink2);font-size:16px;transition:all .15s}
+#pvDetail .pd-close:hover{border-color:var(--accent);color:var(--accent)}
+.pd-card{grid-row:2;background:var(--card);color:var(--cardink);display:flex;flex-direction:column;align-items:center;padding:18px 14px;border:1px solid var(--cardline);box-shadow:var(--shadow);overflow:hidden;position:relative;transform:perspective(900px) rotateX(var(--px,0)) rotateY(var(--py,0));transition:transform .2s ease,box-shadow .2s ease}
+.pd-card::before{content:"";position:absolute;inset:-45%;background:conic-gradient(from 0deg,transparent 0deg,rgba(63,224,200,.13) 60deg,transparent 120deg,transparent 180deg,rgba(63,224,200,.08) 240deg,transparent 300deg);animation:spin 10s linear infinite;pointer-events:none}
+.pd-card>*{position:relative;z-index:1}
+.pd-card .pc-img{width:100%;flex:1;min-height:0;background:var(--card2);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in}
+.pd-card .pc-img img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.pd-card .pc-cap{flex:none;width:100%;padding:12px 4px 2px;text-align:center}
+.pd-card .pc-cap .n{font-size:17px;font-weight:700;letter-spacing:.08em}
+.pd-card .pc-cap .a{font-family:var(--mono);font-size:9px;color:var(--cardink2);letter-spacing:.26em;margin-top:3px}
+.pd-doc{grid-row:2;background:var(--panel);border:1px solid var(--line);overflow-y:auto;padding:22px 24px;line-height:1.9}
+.pd-doc>*{opacity:0;transform:translateY(14px)}
+.pd-doc.anim>*{opacity:1;transform:none;transition:opacity .5s cubic-bezier(.16,.8,.28,1),transform .5s cubic-bezier(.16,.8,.28,1)}
+.pd-doc.anim>*:nth-child(1){transition-delay:.02s}
+.pd-doc.anim>*:nth-child(2){transition-delay:.08s}
+.pd-doc.anim>*:nth-child(3){transition-delay:.14s}
+.pd-doc.anim>*:nth-child(4){transition-delay:.2s}
+.pd-doc.anim>*:nth-child(5){transition-delay:.26s}
+.pd-doc.anim>*:nth-child(6){transition-delay:.32s}
+.pd-doc.anim>*:nth-child(7){transition-delay:.38s}
+.pd-doc.anim>*:nth-child(8){transition-delay:.44s}
+.pd-doc h2{font-size:15px;letter-spacing:.14em;color:var(--ink);margin-bottom:4px}
+.pd-doc .code{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:16px}
+.pd-doc p{font-size:12px;color:var(--ink2);margin-bottom:12px}
+.pd-doc .tbl{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:11.5px}
+.pd-doc .tbl td{border:1px solid var(--line);padding:6px 10px;color:var(--ink2)}
+.pd-doc .tbl td:first-child{color:var(--ink3);width:120px;letter-spacing:.1em;white-space:nowrap}
+.pd-doc .tbl td:last-child{color:var(--ink)}
+
+/* ===== 图库 ===== */
+#gallery{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;flex-direction:column;animation:fadein .25s ease}
+#gallery.on{display:flex}
+.g-head{flex:none;display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--line)}
+.g-head .gt{font-size:12px;letter-spacing:.34em;color:var(--ink);display:flex;align-items:center;gap:10px}
+.g-head .gt b{color:var(--accent)}
+.g-head .g-count{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.g-head .g-back{margin-left:auto}
+#gGrid{flex:1;overflow-y:auto;padding:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;align-content:start}
+img{-webkit-user-drag:none;user-select:none}
+.g-item{position:relative;aspect-ratio:3/4;border:1px solid var(--line);background:var(--panel);overflow:hidden;cursor:pointer;transition:all .18s;animation:rise .4s ease backwards;transform:perspective(720px) rotateX(var(--rx,0)) rotateY(var(--ry,0))}
+.g-item .glare{position:absolute;inset:0;background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),rgba(63,224,200,.16),transparent 62%);opacity:0;transition:opacity .2s;pointer-events:none;z-index:3}
+.g-item:hover{border-color:var(--accent);box-shadow:0 14px 34px rgba(0,0,0,.38),0 0 0 1px rgba(63,224,200,.18)}
+.g-item:hover .glare{opacity:1}
+.g-item img{width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .3s}
+.g-item:hover img{transform:scale(1.06)}
+.g-item .g-tag{position:absolute;left:0;bottom:0;right:0;background:linear-gradient(transparent,rgba(6,14,26,.85));color:#fff;font-size:9.5px;letter-spacing:.12em;padding:22px 10px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#gView{position:absolute;inset:0;background:rgba(4,10,20,.96);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:30px}
+#gView.on{display:flex;animation:fadein .2s ease}
+#gView img{max-width:92vw;max-height:76vh;object-fit:contain;border:1px solid var(--line2);animation:zoomIn .25s ease}
+@keyframes zoomIn{from{transform:scale(.92);opacity:0}}
+#gView .gv-cap{font-size:12px;letter-spacing:.2em;color:var(--ink2)}
+#gView .gv-cap b{color:var(--accent)}
+#gView .gv-nav{display:flex;gap:12px;align-items:center}
+.gv-btn{width:40px;height:40px;border:1px solid var(--line2);color:var(--ink2);font-size:16px;transition:all .15s}
+.gv-btn:hover{border-color:var(--accent);color:var(--accent)}
+.gv-count{font-family:var(--mono);font-size:12px;color:var(--ink3);min-width:70px;text-align:center}
+
+/* ===== 音乐条 ===== */
+.music-bar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:55;display:none;align-items:center;gap:12px;height:44px;padding:0 16px;background:rgba(14,29,51,.9);border:1px solid var(--line2);backdrop-filter:blur(8px);box-shadow:0 10px 34px rgba(0,0,0,.4);white-space:nowrap}
+.music-bar.on{display:flex;animation:mup .3s ease}
+.music-bar:hover{border-color:var(--accent);box-shadow:0 0 30px rgba(63,224,200,.18)}
+input[type=range].mb-slider:hover{background:var(--accent)}
+@keyframes mup{from{opacity:0;transform:translate(-50%,14px)}}
+.music-bar .mb-track{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--ink2);letter-spacing:.08em}
+.music-bar .mb-track b{color:var(--accent2)}
+.music-bar .eq{display:flex;align-items:flex-end;gap:2px;height:14px}
+.music-bar .eq i{width:2.5px;background:var(--accent);animation:eq 1s ease infinite;font-style:normal}
+.music-bar .eq i:nth-child(2){animation-delay:.15s}
+.music-bar .eq i:nth-child(3){animation-delay:.3s}
+.music-bar .eq i:nth-child(4){animation-delay:.1s}
+.music-bar .eq i:nth-child(5){animation-delay:.4s}
+@keyframes eq{50%{transform:scaleY(.35)}}
+.mb-btn{width:30px;height:30px;border:1px solid var(--line);color:var(--ink2);font-size:12px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;flex:none}
+.mb-btn:hover{border-color:var(--accent);color:var(--accent)}
+.mb-btn.live{border-color:var(--ok);color:var(--ok);animation:pulse 2s ease infinite}
+.mb-time{font-family:var(--mono);font-size:10px;color:var(--ink3);min-width:74px;text-align:center}
+input[type=range].mb-slider{width:110px;height:3px;-webkit-appearance:none;appearance:none;background:var(--line2);outline:none;border-radius:0}
+input[type=range].mb-slider::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;background:var(--accent);border:none;border-radius:0;transition:all .15s}
+input[type=range].mb-slider:hover::-webkit-slider-thumb{box-shadow:0 0 12px var(--accent)}
+.mb-mute,.mb-snd{border:1px solid var(--line);color:var(--ink2);transition:all .15s}
+.mb-mute:hover,.mb-snd:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ===== CMD 控制台 ===== */
+#cmd{position:fixed;right:18px;bottom:66px;z-index:80;width:430px;max-width:92vw;height:300px;display:none;flex-direction:column;background:rgba(6,13,26,.96);border:1px solid var(--line2);box-shadow:var(--shadow);font-family:var(--mono);backdrop-filter:blur(6px);transform-origin:bottom right}
+#cmd.on{animation:cmd3d .3s cubic-bezier(.16,.8,.28,1)}
+@keyframes cmd3d{from{opacity:0;transform:perspective(900px) rotateX(9deg) translateY(12px)}to{opacity:1;transform:perspective(900px) rotateX(0) translateY(0)}}
+#cmd.on{display:flex;animation:cmdin .2s ease}
+@keyframes cmdin{from{opacity:0;transform:translateY(14px) scale(.98)}}
+#cmd .cmd-bar{flex:none;display:flex;align-items:center;gap:8px;padding:0 12px;height:30px;border-bottom:1px solid var(--line);cursor:move;user-select:none;background:var(--panel)}
+#cmd .cmd-bar .dot{width:7px;height:7px;border:1px solid var(--line2);border-radius:50%}
+#cmd .cmd-bar .dot.x:hover{background:var(--bad);border-color:var(--bad)}
+#cmd .cmd-bar .t{font-size:9.5px;letter-spacing:.22em;color:var(--ink3)}
+#cmd .cmd-bar .clear{margin-left:auto;font-size:9.5px;color:var(--ink3);padding:2px 6px;border:1px solid var(--line);transition:all .15s}
+#cmd .cmd-bar .clear:hover{color:var(--accent);border-color:var(--accent)}
+#cmd #conOut{flex:1;overflow-y:auto;padding:10px 12px;font-size:11px;line-height:1.7;color:var(--ink2);white-space:pre-wrap;word-break:break-all}
+#cmd #conOut .c-ok{color:var(--ok)}
+#cmd #conOut .c-err{color:var(--bad)}
+#cmd #conOut .c-acc{color:var(--accent2)}
+#cmd #conOut .c-dim{color:var(--ink3)}
+#cmd .cmd-in{flex:none;display:flex;align-items:center;gap:6px;padding:0 12px 10px}
+#cmd .cmd-in .prompt{font-size:11px;color:var(--accent2);white-space:nowrap}
+#cmd #conIn{flex:1;background:transparent;border:none;outline:none;color:var(--ink);font-family:var(--mono);font-size:11.5px;min-width:0}
+
+/* ===== 检索面板 / 模态 / 灯箱 / 右键 / 提示 ===== */
+#t-modal{position:fixed;inset:0;z-index:85;background:rgba(4,10,20,.7);display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+#t-modal.on{animation:maskIn .25s ease}
+@keyframes maskIn{from{opacity:0}}
+#t-modal.on{display:flex}
+.t-modal{width:640px;max-width:94vw;max-height:80vh;background:var(--panel);border:1px solid var(--line2);box-shadow:var(--shadow);display:flex;flex-direction:column;animation:modIn .3s cubic-bezier(.16,.8,.28,1) backwards}
+@keyframes modIn{from{opacity:0;transform:scale(.94) translateY(12px)}}
+.t-modal .tm-head{flex:none;display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--line)}
+.t-modal .tm-head .tt{font-size:11.5px;letter-spacing:.28em;color:var(--ink)}
+.t-modal .tm-head .tt b{color:var(--accent)}
+.t-modal .tm-head input{flex:1;height:30px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:0 10px;font-size:12px;outline:none}
+.t-modal .tm-head input:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.t-modal .tm-close{width:30px;height:30px;border:1px solid var(--line);color:var(--ink2);font-size:14px;transition:all .15s}
+.t-modal .tm-close:hover{border-color:var(--accent);color:var(--accent)}
+.t-modal .tm-body{flex:1;overflow-y:auto;padding:8px 0}
+.t-modal .tm-count{flex:none;padding:9px 18px;font-family:var(--mono);font-size:10px;color:var(--ink3);border-top:1px solid var(--line);letter-spacing:.16em}
+.tm-item{display:flex;align-items:center;gap:12px;padding:9px 18px;cursor:pointer;transition:background .12s;border-left:2px solid transparent;animation:rise .35s ease backwards}
+.tm-item:hover{background:var(--panel2)}
+.tm-item .ic{width:30px;height:30px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;background:var(--panel2)}
+.tm-item .nm{font-size:12.5px;color:var(--ink);font-weight:600;flex:none}
+.tm-item .ds{font-size:10.5px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.tm-item .file{font-family:var(--mono);font-size:9px;color:var(--accent);flex:none}
+#lightbox{position:fixed;inset:0;z-index:95;background:rgba(3,8,16,.96);display:none;align-items:center;justify-content:center;padding:26px}
+#lightbox.on{display:flex;animation:fadein .18s ease}
+#lightbox img{max-width:94vw;max-height:88vh;object-fit:contain;border:1px solid var(--line2)}
+#lightbox .lb-close{position:absolute;top:20px;right:24px;width:38px;height:38px;border:1px solid var(--line2);color:var(--ink2);font-size:18px;transition:all .15s}
+#lightbox .lb-close:hover{border-color:var(--accent);color:var(--accent)}
+#ctx{position:fixed;z-index:98;min-width:170px;background:var(--panel);border:1px solid var(--line2);box-shadow:var(--shadow);padding:5px;display:none}
+.ripple{position:fixed;width:36px;height:36px;border:1px solid var(--accent);opacity:.75;transform:translate(-50%,-50%) scale(.4);pointer-events:none;z-index:120;animation:rip .55s ease-out forwards}
+@keyframes rip{from{transform:translate(-50%,-50%) scale(.4);opacity:.75}to{transform:translate(-50%,-50%) scale(2.3);opacity:0}}
+#ctx.on{display:block;animation:fadein .12s ease}
+#ctx div{padding:7px 12px;font-size:11.5px;color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s}
+#ctx div:hover{background:var(--accent-soft);color:var(--accent)}
+#ctx div.sep{border-top:1px solid var(--line);margin-top:4px;padding-top:5px}
+#crt-scan{position:fixed;inset:0;z-index:96;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.014) 3px 4px);mix-blend-mode:overlay}
+#toast{position:fixed;left:50%;bottom:78px;transform:translate(-50%,16px);z-index:99;background:var(--panel);border:1px solid var(--line2);color:var(--ink);font-size:11.5px;letter-spacing:.08em;padding:9px 20px;opacity:0;pointer-events:none;transition:all .25s;box-shadow:var(--shadow)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#statusbar{flex:none;display:flex;align-items:center;gap:16px;height:26px;padding:0 14px;background:var(--panel);border-top:1px solid var(--line);font-size:9.5px;letter-spacing:.14em;color:var(--ink3);overflow:hidden;white-space:nowrap}
+#statusbar b{color:var(--accent2);font-weight:700}
+#statusbar .st-right{margin-left:auto;display:flex;gap:14px}
+#statusbar .st-reinit{font-size:9.5px;letter-spacing:.12em;color:var(--ink3);border:1px solid var(--line);padding:1px 8px;transition:all .15s;border-radius:0;background:none}
+#statusbar .st-reinit:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ===== 断点 ===== */
+@media (max-width:1120px){#detail{width:300px}}
+@media (max-width:1120px){#detail.hidden{margin-right:-300px}}
+@media (max-width:1100px){#pvDetail{gap:16px 26px;padding:18px 24px 26px;grid-template-columns:minmax(210px,280px) minmax(0,1fr)}}
+@media (max-width:980px){
+  #topbar{gap:8px;padding:0 8px}
+  #topbar .t2{display:none}
+  #search{width:150px}
+  #netstat{display:none}
+  .pv-menu{gap:16px;font-size:10px}
+  #pvTop{padding:18px 22px 0}
+  .r-arrow{width:44px;height:44px}
+  .file-row{grid-template-columns:30px 1fr 90px 80px 110px;gap:8px}
+}
+@media (max-width:820px){
+  #topbar{overflow-x:auto;scrollbar-width:none}
+  #topbar::-webkit-scrollbar{display:none}
+  #topbar .crumb{display:none}
+  #topbar .right{flex:none}
+  #clock{display:none}
+  .nav-btn{height:30px;padding:0 8px;font-size:9.5px}
+  .nav-btn .key{display:none}
+}
+@media (max-width:680px){
+  #sidebar{display:none}
+  #detail{position:absolute;top:0;left:0;right:0;bottom:0;width:auto;border-left:none;z-index:40;transform:none;animation:none}
+  #detail.hidden{margin-right:-100vw;margin-left:100vw}
+  #pvTop{padding:14px 16px 0;min-height:74px}
+  .pv-brand .l1{font-size:11px;letter-spacing:.22em}
+  .pv-brand .l2{display:none}
+  .pv-brand .l3{font-size:8px;letter-spacing:.3em}
+  .pv-menu{display:flex;gap:3px}
+  .pv-menu span{width:32px;height:32px}
+  .pv-menu span b{font-size:10px}
+  .pv-stat{font-size:8px}
+  .reel-page{left:16px;bottom:84px;font-size:34px}
+  .reel-powered{bottom:86px;right:16px;font-size:8px;letter-spacing:.22em}
+  .r-arrow{width:40px;height:40px;font-size:15px}
+  .r-prev{left:8px}
+  .r-next{right:8px}
+  .reel-center .rc-cat{font-size:8.5px;letter-spacing:.34em;gap:8px}
+  .reel-center .rc-name{font-size:30px}
+  .reel-center .rc-desc{font-size:11px;max-width:88vw;line-height:1.8}
+  .reel-actions{gap:8px}
+  .ra-btn{height:34px;padding:0 16px;font-size:10px}
+  #pvDetail{grid-template-rows:auto 1fr 1fr;grid-template-columns:1fr;padding:14px 14px 20px;overflow-y:auto}
+  #pvDetail .pd-top{grid-column:1}
+  .pd-card{grid-row:auto;max-height:44vh}
+  .pd-doc{grid-row:auto;min-height:38vh}
+  .music-bar{left:10px;right:10px;transform:none;bottom:8px;justify-content:space-between}
+  .music-bar.on{animation:mup2 .3s ease}
+  @keyframes mup2{from{opacity:0;transform:translateY(14px)}}
+  input[type=range].mb-slider{width:64px}
+  .mb-time{min-width:0}
+  .music-bar .mb-track .mb-album{display:none}
+  #cmd{left:10px;right:10px;bottom:64px;width:auto}
+  .file-row{grid-template-columns:26px 1fr 64px;gap:8px}
+  .file-row .meta:nth-child(4),.file-row .meta:last-child{display:none}
+  .file-row .nm{font-size:12px}
+  .file-card .fname{font-size:12.5px}
+  #gGrid{padding:14px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+  .tm-item .ds{display:none}
+}
+@media (max-width:680px){
+  *{-webkit-tap-highlight-color:transparent}
+  button,.ra-btn,.nav-btn,.r-arrow,.icon-btn,.seg,.file-row,.file-card,.g-item,.tl-item,.tree-item,.tm-item{touch-action:manipulation}
+  .ra-btn:active,.nav-btn:active,.r-arrow:active,.icon-btn:active,.seg:active,.g-item:active,.file-row:active,.tl-item:active,.tm-item:active,.tree-item:active{transform:scale(.96)}
+  #reel,#content,#gGrid,#pdDoc,.bt-body,.d-body,#list{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  #pvTop{padding-top:max(14px, env(safe-area-inset-top))}
+  #pvDetail{padding-top:max(14px, env(safe-area-inset-top))}
+  .music-bar{bottom:max(8px, env(safe-area-inset-bottom))}
+  #cmd{bottom:max(64px, calc(env(safe-area-inset-bottom) + 64px))}
+  #detail .d-head{padding-top:max(12px, env(safe-area-inset-top))}
+  #conIn,#tmIn{font-size:16px}
+  #toast{left:16px;right:16px;transform:translateY(16px);text-align:center;padding:10px 14px}
+  #toast.on{transform:translateY(0)}
+  #t-modal{padding:12px}
+  .tm-item{padding:10px 12px}
+  .bt-bar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+@media (max-width:420px){
+  .reel-center .rc-name{font-size:26px}
+  .reel-center .rc-desc{font-size:10.5px;line-height:1.75}
+  .r-arrow{width:38px;height:38px;font-size:14px}
+  #gGrid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:9px;padding:12px}
+  .b-fn{font-size:30px;right:18px;bottom:22px}
+  .b-ver{left:18px;bottom:22px;font-size:8px;letter-spacing:.14em}
+  .b-hud{left:18px;top:18px;font-size:8.5px;letter-spacing:.2em}
+  .b-term .bt-body{padding:14px 16px 12px}
+  .b-lines{font-size:11px;line-height:1.95}
+  .pd-card{max-height:40vh}
+  .pd-doc{min-height:34vh}
+  .music-bar .mb-eq{display:none}
+  .music-bar .mb-album{display:none}
+  .reel-page{font-size:30px}
+}
+/* 中屏细化 900px */
+@media (max-width:900px){
+  #sidebar{width:200px}
+  .pv-menu{display:flex;gap:4px}
+  .pv-menu span{width:34px;height:34px;padding:0;font-size:0;border:1px solid var(--line2);color:var(--ink2);display:inline-flex;align-items:center;justify-content:center;background:none;transition:all .15s;touch-action:manipulation}
+  .pv-menu span b{font-size:11px;color:var(--accent2);font-weight:700}
+  .pv-menu span:active{transform:scale(.93);border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .pv-stat{display:none}
+  #infoLine{display:none}
+  .file-row{grid-template-columns:30px 1fr 80px 90px;gap:8px}
+  .file-row .meta:last-child{display:none}
+  #search{width:130px}
+}
+/* 平板竖屏 760px */
+@media (max-width:760px){
+  #sidebar{width:172px}
+  .tl-item{grid-template-columns:92px 28px minmax(0,1fr);padding:12px 6px}
+  .tl-item .t{padding-right:10px;font-size:10px}
+  #viewGrid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .file-row{grid-template-columns:26px 1fr 64px;gap:8px}
+  .file-row .meta:nth-child(4){display:none}
+  #search{width:110px}
+  .nav-btn .key{display:none}
+  #topbar .sep{display:none}
+}
+/* 矮视口（横屏手机 / 小窗口） */
+@media (max-height:600px){
+  #pvTop{min-height:64px;padding-top:10px}
+  .b-lines{font-size:10.5px;line-height:1.75;min-height:0}
+  .b-term .bt-body{padding:12px 16px 10px}
+  .b-fn{font-size:26px}
+  .b-press{margin-top:14px}
+  .reel-center .rc-desc{display:none}
+  .reel-center .rc-name{font-size:clamp(28px,6vw,52px)}
+  .reel-center .rc-alias{font-size:10px}
+  .r-arrow{width:38px;height:38px}
+  .music-bar{height:44px}
+  .pd-card{max-height:36vh}
+  .pd-doc{min-height:30vh}
+}
+/* 竖屏手机 480px */
+@media (max-width:480px){
+  #pvTop{padding:12px 14px 0;min-height:62px;gap:10px}
+  .pv-menu span{width:30px;height:30px}
+  .pv-menu span b{font-size:9.5px}
+  .pv-brand .l1{font-size:10px;letter-spacing:.2em}
+  .pv-brand .l3{font-size:7px;letter-spacing:.26em}
+  .pv-stat{font-size:7.5px;letter-spacing:.12em}
+  .reel-idx{top:12px;gap:4px}
+  .reel-idx i{width:16px;height:2px}
+  .reel-center .rc-cat{font-size:8px;letter-spacing:.3em;gap:6px}
+  .reel-center .rc-name{font-size:24px;letter-spacing:.02em}
+  .reel-center .rc-alias{font-size:8px}
+  .reel-center .rc-desc{font-size:10.5px;max-width:90vw;line-height:1.75;margin-top:2px}
+  .reel-actions{margin-top:20px;gap:7px;flex-wrap:wrap;justify-content:center}
+  .ra-btn{height:32px;padding:0 13px;font-size:9px;letter-spacing:.2em}
+  .reel-page{left:14px;bottom:78px;font-size:30px}
+  .reel-powered{bottom:80px;right:14px;font-size:7.5px;letter-spacing:.2em}
+  .music-bar{height:42px;padding:0 12px;gap:9px}
+  .music-bar .mb-name{font-size:9.5px;max-width:84px}
+  .music-bar .mb-track{max-width:88px}
+  .mb-time{font-size:9px}
+  #cmd{height:258px;bottom:58px}
+  #cmd #conOut{font-size:10.5px}
+  .pd-top .pd-tit{font-size:12px}
+  .pd-doc{padding:10px 4px}
+  .d-tabs button{font-size:9.5px;padding:7px 8px}
+  .file-row{padding:6px 8px;font-size:11.5px}
+  .file-row .nm{font-size:11.5px}
+  .file-card .fname{font-size:11.5px}
+  #toolbar{padding:7px 10px}
+  #fileArea{padding:10px}
+  .tl-item{padding:11px 4px}
+  .tl-item .c{padding-left:10px}
+  #gGrid{padding:10px;gap:8px}
+  .gv-count{font-size:10px;min-width:60px}
+}
+/* 小屏竖屏 380px（iPhone SE 等） */
+@media (max-width:380px){
+  .pv-brand .l2{display:none}
+  #topbar .t1{font-size:11px;letter-spacing:.12em}
+  #search{width:86px;padding:0 6px 0 24px;font-size:11px}
+  .nav-btn{padding:0 8px;font-size:9px;gap:3px}
+  .nav-btn .ng{font-size:11px}
+  .reel-center .rc-name{font-size:22px}
+  .reel-center .rc-desc{font-size:10px;line-height:1.7}
+  .reel-center .rc-alias{letter-spacing:.18em}
+  .reel-page{font-size:26px}
+  .r-arrow{width:34px;height:34px;font-size:13px}
+  .r-prev{left:6px}
+  .r-next{right:6px}
+  #gGrid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:7px;padding:9px}
+  .music-bar .mb-track{display:none}
+  .music-bar .mb-time{min-width:0}
+  .reel-powered{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="particles"></canvas>
+  <!-- ===== 视图：开机 ===== -->
+  <div id="boot">
+    <div class="b-crt"></div>
+    <div class="b-scan"></div>
+    <div class="b-grid2"></div>
+    <div class="b-hud">PRTS · <b>RHODES ISLAND ://</b></div>
+    <div class="b-term">
+      <div class="bt-bar"><span>PRTS TERMINAL <b>v4.0</b></span><span class="bt-x">— □ ×</span></div>
+      <div class="bt-body">
+        <div class="b-lines" id="bootLines"></div>
+        <div class="b-progress"><i id="bProgBar"></i><b id="bProgNum">0%</b></div>
+        <span class="b-cursor" id="bootCursor">█</span>
+      </div>
+    </div>
+    <div class="b-press" id="bootPress">按任意键进入 · PRESS ANY KEY</div>
+    <div class="b-fn" id="bootFn">FN-0000</div>
+    <div class="b-ver">泰拉大典数据库 v4.0 · 罗德岛本舰 中层甲板 PRTS 核心机房</div>
+    <div class="b-strip"></div>
+  </div>
+
+<!-- ===== 主壳 ===== -->
+  <div id="shell">
+    <!-- PV 顶栏 -->
+    <div id="pvTop">
+      <div class="pv-brand">
+        <div class="l1">PRTS · 泰拉大典</div>
+        <div class="l2">RHODES ISLAND TERMINAL SERVICE</div>
+        <div class="l3">TERRA LEXICON DATABASE</div>
+      </div>
+      <div class="pv-menu">
+        <span data-act="gallery"><b>G</b>ALLERY</span>
+        <span data-act="browser"><b>B</b>ROWSER</span>
+        <span data-act="search">ARCHIVE <b>INDEX</b></span>
+        <span data-act="saved">SAVED</span>
+        <span data-act="cmd">CONSOLE</span>
+      </div>
+      <div class="pv-stat">
+        <div class="live"><i></i>SYSTEM ONLINE</div>
+        <div>PRTS CORE · 中层甲板</div>
+        <div>博士 · 权限 LEVEL-8</div>
+        <div id="pvClock" style="font-family:var(--mono);letter-spacing:.14em"></div>
+      </div>
+    </div>
+
+    <!-- 泰拉大典轮播 -->
+    <div id="reel">
+      <div class="pv-bg" id="pvBg"></div>
+      <div class="reel-idx" id="reelIdx"></div>
+      <button class="r-arrow r-prev" id="rPrev">◀</button>
+      <button class="r-arrow r-next" id="rNext">▶</button>
+      <div class="reel-center" id="reelCenter">
+        <div class="rc-cat"><span id="rcCat"></span></div>
+        <div class="rc-name" id="rcName"></div>
+        <div class="rc-alias" id="rcAlias"></div>
+        <div class="rc-num" id="rcNum"></div>
+        <div class="rc-desc" id="rcDesc"></div>
+        <div class="reel-actions">
+          <button class="ra-btn" id="rcOpen"><b>访问档案</b> · ACCESS FILE</button>
+          <button class="ra-btn" id="rcFav">收藏档案 · <b>SAVE</b></button>
+          <button class="ra-btn" id="rcRand"><b>随机</b> · RANDOM</button>
+        </div>
+      </div>
+      <div class="reel-page"><span id="rpCur">01</span><small>/</small><span id="rpTot">00</span></div>
+      <div class="reel-powered">TERRA LEXICON · <b>PRTS</b><br>RHODES ISLAND TERMINAL SERVICE</div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div id="statusbar">
+      <span>PRTS <b>CORE</b></span>
+      <span id="sbMode">MODE: TERRA LEXICON</span>
+      <span id="sbSel"></span>
+      <span class="st-right">
+        <span id="sbTime"></span>
+        <button class="st-reinit" id="sbReinit">REINITIALIZE</button>
+      </span>
+    </div>
+  </div>
+
+  <!-- ===== 浏览器模式 ===== -->
+  <div id="browser">
+    <div id="topbar">
+      <div class="brand" data-act="reel">
+        <svg class="b-ico" viewBox="0 0 32 32"><path d="M16 4 L26 10 V22 L16 28 L6 22 V10 Z" fill="none" stroke="#3FE0C8" stroke-width="1.6"/><path d="M16 10 L21 13 V19 L16 22 L11 19 V13 Z" fill="#3FE0C8"/></svg>
+        <div>
+          <div class="t1">PRTS · 泰拉大典</div>
+          <div class="t2">TERRA LEXICON</div>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <div class="crumb" id="crumb"></div>
+      <div class="right">
+        <input id="search" placeholder="检索泰拉大典…" autocomplete="off">
+        <button class="nav-btn keep" data-act="reel"><span class="ng">▣</span>REEL</button>
+        <button class="nav-btn keep" data-act="gallery"><span class="ng">▤</span>GALLERY</button>
+        <button class="nav-btn" data-act="index"><b>I</b>NDEX</button>
+        <button class="nav-btn" data-act="saved"><b>S</b>AVED</button>
+        <button class="icon-btn" id="btnGrid" title="视图">▦</button>
+        <span id="netstat"><span class="dot"></span>LINK</span>
+        <span id="clock"></span>
+      </div>
+    </div>
+    <div id="main">
+      <div id="sidebar">
+        <div class="s-head">泰拉大典 <span class="cnt" id="treeCnt"></span></div>
+        <div id="tree"></div>
+      </div>
+      <div id="content">
+        <div id="toolbar">
+          <span class="loc" id="loc"></span>
+          <span id="infoLine"></span>
+        </div>
+        <div id="fileArea"></div>
+      </div>
+      <div id="detail" class="hidden">
+        <div class="d-head">
+          <button class="d-back" id="dBack"><span>‹</span> 返回 <small>ESC</small></button>
+          <span class="ttl" id="dTtl"></span>
+          <span class="file" id="dFile"></span>
+        </div>
+        <div class="d-body" id="dBody"></div>
+        <div class="d-tabs" id="dTabs"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PV 详情覆盖层 ===== -->
+  <div id="pvDetail">
+    <div class="pd-top">
+      <div class="pd-brand">PRTS · <b>档案访问</b> · TERRA LEXICON</div>
+      <span id="pdFile" style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.14em"></span>
+      <button class="pd-close" id="pdClose">✕</button>
+    </div>
+    <div class="pd-card">
+      <div class="pc-img" id="pcImg"></div>
+      <div class="pc-cap"><div class="n" id="pcName"></div><div class="a" id="pcAlias"></div></div>
+    </div>
+    <div class="pd-doc" id="pdDoc"></div>
+  </div>
+
+  <!-- ===== 图库 ===== -->
+  <div id="gallery">
+    <div class="g-head">
+      <div class="gt"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3FE0C8" stroke-width="1.6"><rect x="3" y="3" width="18" height="18"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5-9 9"/></svg>干员影像 · <b>GALLERY</b></div>
+      <span class="g-count" id="gCount">00 / 00</span>
+      <button class="nav-btn g-back" id="gBack">返回 REEL</button>
+    </div>
+    <div id="gGrid"></div>
+    <div id="gView">
+      <img id="gvImg" alt="">
+      <div class="gv-cap" id="gvCap"></div>
+      <div class="gv-nav">
+        <button class="gv-btn" id="gvPrev">◀</button>
+        <span class="gv-count" id="gvCount"></span>
+        <button class="gv-btn" id="gvNext">▶</button>
+        <button class="gv-btn" id="gvClose" style="border-color:var(--bad);color:var(--bad)">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 音乐条 ===== -->
+  <div class="music-bar" id="musicBar">
+    <button class="mb-btn" id="mbPlay" title="播放/暂停 (M)">▶</button>
+    <button class="mb-btn" id="mbPrev" title="上一首">⏮</button>
+    <div class="mb-track"><span class="eq"><i></i><i></i><i></i><i></i><i></i></span><b id="mbName">PRTS 环境音</b></div>
+    <span class="mb-time" id="mbTime">0:00 / 0:00</span>
+    <input type="range" class="mb-slider" id="mbSeek" min="0" max="100" value="0">
+    <button class="mb-btn" id="mbNext" title="下一首">⏭</button>
+    <button class="mb-btn mb-mute" id="mbMute" title="静音">♪</button>
+    <button class="mb-btn mb-snd" id="mbSnd" title="音效开关">SND</button>
+  </div>
+
+  <!-- ===== CMD 控制台 ===== -->
+  <div id="cmd">
+    <div class="cmd-bar" id="cmdBar">
+      <span class="dot"></span><span class="dot"></span><span class="dot x"></span>
+      <span class="t">C:\PRTS\CORE — 泰拉大典控制台</span>
+      <button class="clear" id="cmdClear">清屏</button>
+    </div>
+    <div id="conOut"></div>
+    <div class="cmd-in">
+      <span class="prompt">C:\PRTS&gt;</span>
+      <input id="conIn" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+
+  <!-- ===== 检索面板 / 模态 / 灯箱 / 右键 ===== -->
+  <div id="t-modal">
+    <div class="t-modal">
+      <div class="tm-head">
+        <span class="tt">泰拉大典 <b>检索</b> · ARCHIVE INDEX</span>
+        <input id="tmIn" placeholder="输入关键词检索全部档案…" autocomplete="off">
+        <button class="tm-close" id="tmClose">✕</button>
+      </div>
+      <div class="tm-body" id="tmBody"></div>
+      <div class="tm-count" id="tmCount"></div>
+    </div>
+  </div>
+  <div id="lightbox"><img id="lbImg" alt=""><button class="lb-close" id="lbClose">✕</button></div>
+  <div id="ctx"></div>
+  <div id="crt-scan"></div>
+  <div id="toast"></div>
+</div>
+<script>
+"use strict";
+/* ===== 泰拉大典数据库 ===== */
+const DB = {
+ops:[
+ {id:"OP-001",name:"阿米娅",alias:"AMIYA",cn:"卡特斯 / 奇美拉",job:"术师 · 升变：近卫 / 医疗",race:"卡特斯 / 奇美拉",birth:"雷姆必拓",bd:"12月23日",h:"142cm（现150cm）",role:"罗德岛公开领袖 · 指挥官",exp:"小提琴、源石技艺",line:"“我们的道路，还很长。”",quote:"“我们背负着过去，也背负着未来。”",phys:"标准 标准 优良 卓越 优良 卓越",intro:"罗德岛公开的领导人兼指挥官。尽管资历尚浅，却以出色的战术素养与共情力，凝聚起本舰全体干员。在整合运动危机、维多利亚事变等一系列事件中，始终走在罗德岛行动的最前沿。",img:"assets/amiya.jpg"},
+ {id:"OP-002",name:"德克萨斯",alias:"TEXAS",job:"先锋 · 尖兵",race:"鲁珀",birth:"哥伦比亚",bd:"6月1日",h:"161cm",role:"企鹅物流驻罗德岛联络员",exp:"驾驶、剑术、格斗",line:"“我不是什么好人。”",quote:"“麻烦，不过是另一种形式的奖赏。”",phys:"标准 标准 标准 优良 优良 标准",intro:"本名切利尼娜·德克萨斯。企鹅物流资深员工，现驻罗德岛执行联络任务。沉默寡言的押运员，以双剑与格斗术闻名，是叙拉古旧家族切利尼娜的末裔。",img:"assets/texas.jpg"},
+ {id:"OP-003",name:"能天使",alias:"EXUSIAI",job:"狙击 · 速射手",race:"萨科塔",birth:"拉特兰",bd:"12月24日",h:"160cm",role:"企鹅物流信使",exp:"枪械、射击、驾驶",line:"“老板，今天的运气也站在你这边！”",quote:"“把麻烦都射成筛子，就清净了。”",phys:"标准 标准 标准 标准 卓越 标准",intro:"企鹅物流的狂热信使，萨科塔人。天生与枪支契合，作战风格凌厉奔放，是德克萨斯最默契的搭档。拉特兰的铳械许可、企鹅物流的委托与罗德岛的支援，构成了她忙碌而快活的日常。",img:"assets/exusiai.jpg"},
+ {id:"OP-004",name:"拉普兰德",alias:"LAPPLAND",job:"近卫 · 剑士",race:"鲁珀",birth:"叙拉古",bd:"11月11日",h:"167cm",role:"罗德岛近卫干员（独立行动）",exp:"剑术、街头格斗",line:"“可不要把我的礼貌当做软弱。”",quote:"“疯狗也有疯狗的用处，对吧？”",phys:"优良 优良 标准 标准 优良 标准",intro:"出身叙拉古家族的鲁珀剑士，因家族的覆灭而漂泊于泰拉各地。性格狂放不羁、我行我素，源石技艺与剑术同样危险，是罗德岛档案中标注为“需重点观察”的干员。",img:"assets/lappland.jpg"},
+ {id:"OP-005",name:"艾雅法拉",alias:"EYJAFJALLA",job:"术师 · 扩散术师",race:"卡普里尼",birth:"莱塔尼亚",bd:"10月16日",h:"147cm",role:"罗德岛术师干员 · 前天灾信使",exp:"源石技艺、天灾研究",line:"“我仍然相信，火焰可以净化一切。”",quote:"“火山，就是大地的心跳。”",phys:"标准 标准 标准 标准 标准 卓越",intro:"莱塔尼亚的年轻学者，前天灾信使。受矿石病影响，双眼失明却以源石技艺感知世界。继承了父亲对火山研究的遗志，其强大的源石技艺被列为罗德岛术师部门的重点观测对象。",img:"assets/eyjafjalla.jpg"},
+ {id:"OP-006",name:"银灰",alias:"SILVERASH",job:"近卫 · 领主",race:"菲林",birth:"谢拉格",bd:"3月13日",h:"192cm",role:"喀兰贸易公司总裁 · 谢拉格军阀",exp:"剑术、战略指挥、商业经营",line:"“谢拉格的雪，只为敢于攀登者融化。”",quote:"“贸易与刀剑，是同一种语言。”",phys:"优良 标准 优良 卓越 卓越 标准",intro:"谢拉格军阀希瓦艾什家族当代家主，喀兰贸易公司总裁。以商业手段弥合三族裂痕，将封闭的谢拉格引向世界。为人高傲而深谋远虑，与罗德岛保持着复杂而稳固的合作关系。",img:"assets/silverash.jpg"},
+ {id:"OP-007",name:"陈",alias:"CHEN",job:"近卫 · 剑豪",race:"龙",birth:"龙门",bd:"7月7日",h:"168cm",role:"龙门近卫局高级警司 · 特别督察组组长",exp:"剑术、刑事侦查、驾驶、擒拿术",line:"“在龙门，正义由我们来执行。”",quote:"“赤霄所向，心之所安。”",phys:"优良 优良 标准 优良 优良 标准",intro:"龙门高级警司陈晖洁，龙门近卫局特别督察组组长。毕业于维多利亚皇家近卫学校，以赤霄剑术与雷厉风行的手段闻名。在龙门与罗德岛的合作框架下，作为特别人员提供战术指挥支援。",img:"assets/chen.jpg"},
+ {id:"OP-008",name:"凯尔希",alias:"KAL'TSIT",job:"医疗 · 医师",race:"未知",birth:"未知",bd:"未公开",h:"未公开",role:"罗德岛医疗部门负责人 · 资深干员",exp:"医疗、源石技艺、战术指挥",line:"“罗德岛需要的不是英雄，而是秩序。”",quote:"“Mon3tr，让它闭嘴。”",phys:"标准 标准 优良 卓越 卓越 标准",intro:"罗德岛医疗部门负责人，与博士并肩治理本舰的资深干员。知晓泰拉诸多秘辛，与阿米娅一同守护着罗德岛的方向。其身边的召唤物“Mon3tr”拥有极强的战斗力。",img:"assets/kaltsit.jpg"},
+ {id:"OP-009",name:"W",alias:"W",job:"狙击 · 炮手",race:"萨卡兹",birth:"卡兹戴尔",bd:"本人表示遗忘",h:"165cm",role:"罗德岛战略合作干员",exp:"爆破、枪械、战术伏击",line:"“萨卡兹雇佣兵W，战场上最危险的信号。”",quote:"“她笑起来的时候总没好事。她一直在笑。”",phys:"标准 标准 优良 卓越 优良 标准",intro:"出身卡兹戴尔的萨卡兹雇佣兵。继承亡故战友的代号“W”，辗转巴别塔、整合运动，最终与罗德岛缔结战略合作。城府极深、喜怒无常，是档案中标记为“极度危险”的合作者。",img:"assets/w.jpg"},
+ {id:"OP-010",name:"塞雷娅",alias:"SARIA",job:"重装 · 守护者",race:"瓦伊凡",birth:"哥伦比亚",bd:"4月23日",h:"174cm",role:"前莱茵生命防卫科主任 · 罗德岛重装干员",exp:"重装防护、源石技艺、战术防护",line:"“我将履行诺言，直到最后。”",quote:"“在莱茵生命的阴影下，我选择站在正义一侧。”",phys:"卓越 标准 卓越 优良 优良 优良",intro:"前莱茵生命防卫科主任，著名的“铁卫”。因莱茵生命内部的实验黑幕而决裂出走，加入罗德岛。以坚固的盾与绝对可靠的防线，守护着同伴与自己的信念。",img:"assets/saria.jpg"},
+ {id:"OP-011",name:"星熊",alias:"HOSHIGUMA",job:"重装 · 守护者",race:"鬼",birth:"东国",bd:"8月20日",h:"183cm",role:"龙门近卫局重装警员 · 陈的搭档",exp:"重装防护、格斗",line:"“赌上性命，也要守住这条街。”",quote:"“盾牌背后，是我要保护的一切。”",phys:"卓越 标准 卓越 优良 标准 标准",intro:"龙门近卫局重装警员，东国出身的“鬼”。性格沉稳刚直，是陈警司最信任的搭档。那面厚重的盾，守护着龙门街巷的秩序与安宁。",img:"assets/xingxiong.jpg"},
+ {id:"OP-012",name:"赫默",alias:"SILENCE",job:"医疗 · 医师",race:"黎博利",birth:"哥伦比亚",bd:"6月2日",h:"163cm",role:"罗德岛医疗干员 · 前莱茵生物工程科研究员",exp:"医疗、源石技艺、无人机技术",line:"“我会用我的方式，守护孩子们。”",quote:"“莱茵生命欠我的，我自己来讨。”",phys:"标准 标准 标准 标准 标准 优良",intro:"前莱茵生命生物工程科研究员，因炎魔实验的伦理争议带着伊芙利特出逃，加入罗德岛。以医疗无人机与源石技艺构筑防线，是伊芙利特最依赖的家人。",img:"assets/silence.jpg"},
+ {id:"OP-013",name:"白面鸮",alias:"PITHOPSIS",job:"医疗 · 医师",race:"黎博利",birth:"哥伦比亚",bd:"11月11日",h:"165cm",role:"罗德岛医疗干员 · 前莱茵生物工程科",exp:"医疗、数据处理",line:"“数据不会说谎。”",quote:"“正在同步作战数据……完成。”",phys:"标准 标准 标准 标准 标准 优良",intro:"前莱茵生命生物工程科研发人员，经赫默介绍加入罗德岛。言谈中常夹杂冰冷的数据术语，看似无机质的表象之下，藏着对生命的珍视。",img:"assets/ptilopsis.jpg"},
+ {id:"OP-014",name:"伊芙利特",alias:"IFRIT",job:"术师 · 扩散术师",race:"萨卡兹",birth:"莱茵生命实验体",bd:"3月25日",h:"141cm",role:"罗德岛术师干员 · 前莱茵炎魔实验项目",exp:"源石技艺（火焰）",line:"“把坏人都烧光！——赫默说这样不行……好吧。”",quote:"“火焰，是朋友！才不是坏东西！”",phys:"标准 标准 标准 标准 标准 卓越",intro:"莱茵生命“炎魔”实验项目的受试体，被赫默从实验设施中救出。体内寄宿着恐怖的火焰源石技艺，本人却只是个渴望认同的孩子。罗德岛正努力教会她：力量并非只有毁灭一种用法。",img:"assets/ifrit.jpg"},
+ {id:"OP-015",name:"梅尔",alias:"MAYER",job:"辅助 · 召唤师",race:"阿达克利斯",birth:"哥伦比亚",bd:"12月22日",h:"154cm",role:"罗德岛辅助干员 · 机械工程师",exp:"机械工程、水下作业",line:"“Mechanic迈尔，随时待命！”",quote:"“咪波们，开工啦！”",phys:"标准 标准 标准 标准 标准 优良",intro:"罗德岛机械工程师，擅长制造小型机械兽“咪波”。看似随性的发明家，实则在机械工程领域拥有惊人造诣，是罗德岛技术设施的常客。",img:"assets/mayer.jpg"},
+ {id:"OP-016",name:"麦哲伦",alias:"MAGELLAN",job:"辅助 · 召唤师",race:"黎博利",birth:"哥伦比亚",bd:"10月2日",h:"156cm",role:"罗德岛辅助干员 · 前莱茵源石技艺应用科",exp:"机械工程、源石技艺、冰原探险",line:"“博士，今天也一起探索新世界吧！”",quote:"“极地的星光，是我最想分享的风景。”",phys:"标准 标准 标准 优良 标准 优良",intro:"前莱茵生命源石技艺应用科研究员，随麦哲伦计划登上方舟。热衷探索与分享，以机械无人机“龙腾”系列协助作战，是罗德岛探索队的重要支援。",img:"assets/magallan.jpg"},
+ {id:"OP-017",name:"多萝西",alias:"DOROTHY",job:"辅助 · 凝滞师",race:"菲林",birth:"哥伦比亚",bd:"5月17日",h:"172cm",role:"罗德岛辅助干员 · 前莱茵源石技艺应用科主任",exp:"源石技艺、科研管理",line:"“科学的每一次前进，都不该以牺牲为代价。”",quote:"“我在莱茵的十年，换来今天这个答案。”",phys:"标准 标准 标准 优良 优良 优良",intro:"前莱茵生命源石技艺应用科主任，曾主导极具争议的“实验项目”。在与塞雷娅、缪尔赛思的旧事清算后加入罗德岛，决心以公开透明的方式继续研究。",img:"assets/dorothy.jpg"},
+ {id:"OP-018",name:"缪尔赛思",alias:"MUELSYS",job:"先锋 · 情报官",race:"精灵",birth:"未公开",bd:"5月1日",h:"162cm",role:"罗德岛干员 · 前莱茵生命生态科主任",exp:"源石技艺、情报收集",line:"“博士～又见面啦！这次可不能再赖账哦。”",quote:"“生态科出品，必属精品！”",phys:"标准 标准 标准 优良 优良 优良",intro:"前莱茵生命生态科主任，精灵族的“流形”使用者，能通过水流重塑形态。性格灵动跳脱，与塞雷娅、多萝西一同从莱茵的阴影中走出，现活跃于罗德岛的情报战线。",img:"assets/muelsyse.jpg"},
+ {id:"OP-019",name:"史尔特尔",alias:"SURTR",job:"近卫 · 强攻手",race:"萨卡兹",birth:"出生地不明",bd:"1月22日",h:"163cm",role:"罗德岛近卫干员",exp:"剑术、源石技艺",line:"“我的剑，会回答你。”",quote:"“莱万汀——烧尽一切吧。”",phys:"卓越 标准 标准 优良 标准 卓越",intro:"身世成谜的萨卡兹剑士，手持神剑“莱万汀”。记忆支离破碎，唯有战斗的本能完整如初。罗德岛档案中关于其起源的记载，与莱万汀的传说一同深埋于历史。",img:"assets/surtr.jpg"},
+ {id:"OP-020",name:"泥岩",alias:"MUDROCK",job:"重装 · 要塞",race:"萨卡兹",birth:"卡兹戴尔",bd:"11月1日",h:"166cm",role:"罗德岛重装干员 · 泥岩小队队长",exp:"重装防护、源石技艺、阵地构筑",line:"“大地不会说谎。”",quote:"“我们的旗帜，插在泥泞里也照样飘扬。”",phys:"优良 优良 卓越 标准 优良 标准",intro:"卡兹戴尔出身的萨卡兹战士，泥岩小队队长。历经乌萨斯战场的残酷，仍坚守着“保护自己人”的信条。沉重的巨锤与岩盾之下，是比谁都珍视同伴的心。",img:"assets/mudrock.jpg"},
+ {id:"OP-021",name:"耀骑士临光",alias:"BRIGHT KNIGHT NEARL",job:"近卫 · 无畏者",race:"库兰塔",birth:"卡西米尔",bd:"4月7日",h:"171cm",role:"罗德岛近卫干员 · 卡西米尔耀骑士",exp:"剑术、骑术、马术",line:"“骑士的荣耀，不在赛场，在守护。”",quote:"“枪与剑所指之处，就是我的道路。”",phys:"优良 优良 标准 优良 优良 标准",intro:"卡西米尔骑士世家临光家的次女，因长姐玛嘉烈失踪而披甲上阵。在骑士锦标赛中力压无胄盟阴谋夺得“耀骑士”之衔，随后加入罗德岛，追寻骑士精神的本义。",img:"assets/nearl.jpg"},
+ {id:"OP-022",name:"玛恩纳",alias:"MANNENNA",job:"近卫 · 解放者",race:"库兰塔",birth:"卡西米尔",bd:"12月19日",h:"187cm",role:"罗德岛近卫干员 · 临光家次子",exp:"剑术、情报、战术",line:"“加班费，记得结清。”",quote:"“临光家的剑，从未锈蚀。”",phys:"优良 标准 优良 优良 卓越 标准",intro:"临光家的次子，玛嘉烈与玛莉娅的叔叔。曾为无胄盟效力的“光中之影”，归乡后以“无能上班族”的形象掩饰锋芒，直至玛莉娅夺冠才重新拔剑。加入罗德岛后，成为最可靠的战术顾问之一。",img:"assets/mannenna.jpg"},
+ {id:"OP-023",name:"幽灵鲨",alias:"SPECTER",job:"近卫 · 强攻手",race:"阿戈尔",birth:"阿戈尔",bd:"8月24日",h:"166cm",role:"罗德岛近卫干员 · 深海猎人",exp:"剑术、潜行",line:"“啊……大海在呼唤我。”",quote:"“这把电锯，会替你唱完安魂曲。”",phys:"卓越 标准 优良 优良 优良 标准",intro:"深海猎人组织的成员，因深海影响而记忆错乱、性情多变。冷静与狂乱在她体内交织，那把永不停歇的电锯，是罗德岛档案中最危险的武器之一。",img:"assets/specter.jpg"},
+ {id:"OP-024",name:"斯卡蒂",alias:"SKADI",job:"近卫 · 强攻手",race:"阿戈尔",birth:"阿戈尔",bd:"1月14日",h:"167cm",role:"罗德岛近卫干员 · 深海猎人",exp:"剑术、潜行、深海作战",line:"“有些东西，只能靠剑来回答。”",quote:"“我不会再让任何人，从我身边消失。”",phys:"卓越 标准 优良 优良 优良 标准",intro:"深海猎人，背负着猎杀“海嗣”的宿命。寡言少语，却会在同伴陷入险境时第一个拔剑。那把巨大的剑劈开过深海的黑暗，也劈开了罗德岛与阿戈尔之间的迷雾。",img:"assets/skadi.jpg"},
+ {id:"OP-025",name:"闪灵",alias:"SHINING",job:"医疗 · 医师",race:"萨卡兹",birth:"卡兹戴尔",bd:"8月6日",h:"171cm",role:"罗德岛医疗干员 · 使徒成员",exp:"医疗、剑术、源石技艺",line:"“我不愿再看到有人倒下。”",quote:"“剑与法术，我都用得出神入化——但我更想治愈。”",phys:"标准 标准 标准 卓越 卓越 标准",intro:"萨卡兹剑术师出身的医疗干员，使徒组织成员。曾见证太多战争的残酷，因而将医术作为自己的道路。其源石技艺能护佑同伴，剑术亦足以在绝境中开辟生路。",img:"assets/shining.jpg"},
+ {id:"OP-026",name:"夜莺",alias:"NIGHTINGALE",job:"医疗 · 医师",race:"萨卡兹",birth:"卡兹戴尔",bd:"5月4日",h:"164cm",role:"罗德岛医疗干员 · 使徒成员",exp:"医疗、源石技艺",line:"“光照进来的地方，就是方向。”",quote:"“我的笼中鸟们，都飞走了。”",phys:"标准 标准 标准 卓越 卓越 标准",intro:"由闪灵从卡兹戴尔战乱中救出的萨卡兹少女，使徒成员。曾沦为战争兵器，如今以医疗法术守护他人。其源石技艺“白鸟”能够展开庇护之翼。",img:"assets/nightingale.jpg"},
+ {id:"OP-027",name:"临光",alias:"NEARL",job:"重装 · 守护者",race:"库兰塔",birth:"卡西米尔",bd:"9月4日",h:"178cm",role:"罗德岛重装干员 · 使徒成员",exp:"重装防护、剑术、源石技艺",line:"“黑夜终将过去，黎明会如约而至。”",quote:"“卡西米尔欠我一场公正的竞技——但我已不再需要。”",phys:"优良 标准 优良 优良 优良 标准",intro:"卡西米尔耀骑士玛嘉烈·临光，因对抗商业联合会的黑暗而流亡，加入使徒行走泰拉。她身上的光辉不是头衔，而是不曾动摇的信念本身。",img:"assets/nearl2.jpg"},
+ {id:"OP-028",name:"杰西卡",alias:"JESSICA",job:"狙击 · 速射手",race:"菲林",birth:"维多利亚",bd:"1月25日",h:"152cm",role:"罗德岛狙击干员 · 黑钢国际派驻",exp:"射击、战术",line:"“我会努力，不拖大家的后腿……”",quote:"“这支枪，是我自己选的。”",phys:"标准 标准 标准 标准 标准 标准",intro:"黑钢国际派驻罗德岛的狙击干员，性格怯懦却认真刻苦。从“会哭的杰西卡”成长为值得信赖的支援手，她的成长本身就是罗德岛的故事。",img:"assets/jessica.jpg"},
+ {id:"OP-029",name:"雷蛇",alias:"RAZER",job:"重装 · 哨戒铁卫",race:"瓦伊凡",birth:"哥伦比亚",bd:"4月28日",h:"168cm",role:"罗德岛重装干员 · 黑钢国际派驻",exp:"重装防护、电磁技术",line:"“防线由我守护。”",quote:"“盾牌之外是危险，盾牌之内是安全。”",phys:"优良 标准 优良 标准 优良 标准",intro:"黑钢国际派驻罗德岛的重装干员，装备有电磁盾牌，既能防御也能反击。行事严谨、责任心强，是芙兰卡最可靠的搭档。",img:"assets/razer.jpg"},
+ {id:"OP-030",name:"芙兰卡",alias:"FRANKA",job:"近卫 · 强攻手",race:"沃尔珀",birth:"哥伦比亚",bd:"6月6日",h:"164cm",role:"罗德岛近卫干员 · 黑钢国际派驻",exp:"剑术、源石技艺",line:"“剑已出鞘，就没打算收回去。”",quote:"“敌人的防备，只是我突破前的摆设。”",phys:"优良 优良 标准 标准 优良 标准",intro:"黑钢国际派驻罗德岛的近卫干员，性格张扬爽利。以细剑与源石技艺著称，与雷蛇组成了黑钢最默契的行动搭档。",img:"assets/franka.jpg"},
+ {id:"OP-031",name:"可颂",alias:"CROISSANT",job:"重装 · 铁卫",race:"埃拉菲亚",birth:"企鹅物流驻地",bd:"7月7日",h:"160cm",role:"企鹅物流干员",exp:"重装防护、驾驶",line:"“本店营业中，谢绝赊账！”",quote:"“盾牌能挡子弹，也能挡讨价还价。”",phys:"优良 标准 优良 标准 标准 标准",intro:"企鹅物流的重装干员，兼任自家面包店老板。开朗健谈的她对金钱格外敏感，却总在关键时刻挡在同伴身前。",img:"assets/croissant.jpg"},
+ {id:"OP-032",name:"空",alias:"SORA",job:"辅助 · 吟游者",race:"鲁珀",birth:"企鹅物流驻地",bd:"6月13日",h:"152cm",role:"企鹅物流偶像干员",exp:"歌唱、鼓舞",line:"“用歌声，为所有人加油！”",quote:"“今天也要元气满满地开演唱会哦！”",phys:"标准 标准 标准 标准 标准 优良",intro:"企鹅物流的偶像歌手，在战场上以歌声鼓舞士气。歌声拥有独特的源石技艺增幅效果，是罗德岛行动中不可或缺的“气氛担当”。",img:"assets/sora.jpg"},
+ {id:"OP-033",name:"诗怀雅",alias:"SWIRE",job:"近卫 · 强攻手",race:"菲林",birth:"龙门",bd:"10月22日",h:"166cm",role:"龙门近卫局高级警司",exp:"格斗、战术指挥",line:"“在龙门，我自有我的规矩。”",quote:"“别把我和那些大小姐混为一谈——我警司做很久了。”",phys:"标准 优良 标准 优良 优良 标准",intro:"龙门近卫局高级警司，诗怀雅家族的大小姐。看似骄纵，实则办案雷厉风行，与陈警司组成龙门近卫局的“双花”。",img:"assets/swire.jpg"},
+ {id:"OP-034",name:"凛冬",alias:"ZIMA",job:"先锋 · 尖兵",race:"乌萨斯",birth:"乌萨斯",bd:"11月20日",h:"164cm",role:"罗德岛先锋干员 · 乌萨斯学生自治团团长",exp:"格斗、战术",line:"“乌萨斯的寒冬，没有吓倒过我。”",quote:"“凛冬将至——然后，春天也会来。”",phys:"优良 优良 标准 标准 标准 标准",intro:"乌萨斯学生自治团团长，切尔诺伯格事变后随罗德岛行动。以雪原般的坚毅凝聚起乌萨斯的学生们，是值得托付后背的领袖。",img:"assets/zima.jpg"},
+ {id:"OP-035",name:"真理",alias:"ISTINA",job:"术师 · 秘术师",race:"乌萨斯",birth:"乌萨斯",bd:"12月28日",h:"157cm",role:"罗德岛术师干员 · 乌萨斯学生自治团",exp:"源石技艺、文学",line:"“书籍是另一个世界。”",quote:"“真理往往冰冷，但诚实。”",phys:"标准 标准 标准 标准 标准 优良",intro:"乌萨斯学生自治团的智囊，酷爱读书与思考。冷静理性的外表下，藏着对同伴深切的关怀。其源石技艺以“书页”为媒介。",img:"assets/istina.jpg"},
+ {id:"OP-036",name:"早露",alias:"ROSA",job:"狙击 · 重射手",race:"乌萨斯",birth:"乌萨斯",bd:"5月30日",h:"171cm",role:"罗德岛狙击干员 · 乌萨斯学生自治团",exp:"射击、园艺",line:"“温室里的花，也会开出荆棘。”",quote:"“我曾是笼中的夜莺——现在，我自己选择天空。”",phys:"标准 标准 标准 标准 标准 优良",intro:"乌萨斯贵族之女，曾困于家族的“温室”。加入乌萨斯学生自治团后走出阴影，以重弩守护新的伙伴。",img:"assets/rosa.jpg"},
+ {id:"OP-037",name:"古米",alias:"GUMMY",job:"重装 · 守护者",race:"乌萨斯",birth:"乌萨斯",bd:"10月10日",h:"156cm",role:"罗德岛重装干员 · 乌萨斯学生自治团",exp:"重装防护、烹饪",line:"“古米的厨房，永远开门！”",quote:"“吃饱了才有力气战斗嘛！”",phys:"优良 标准 优良 标准 标准 标准",intro:"乌萨斯学生自治团的“厨娘”，用美食治愈着伙伴们。扛起盾牌时同样可靠，是自治团中温暖的存在。",img:"assets/gummy.jpg"},
+ {id:"OP-038",name:"苇草",alias:"REED",job:"近卫 · 法卫",race:"德拉克",birth:"维多利亚",bd:"1月8日",h:"172cm",role:"罗德岛近卫干员 · 塔拉贵族",exp:"剑术、源石技艺",line:"“火焰并非我的怒火，而是我的姓氏。”",quote:"“王冠太烫——我选择把它放下。”",phys:"标准 标准 优良 优良 优良 优良",intro:"维多利亚塔拉族德拉克血脉的继承者，深池曾经的旗帜。厌倦了血脉带来的战争与野心，投奔罗德岛，以火焰守护而非焚烧。",img:"assets/reed.jpg"},
+ {id:"OP-039",name:"澄闪",alias:"GOLDENGLOW",job:"术师 · 驭械术师",race:"菲林",birth:"维多利亚",bd:"7月14日",h:"160cm",role:"罗德岛术师干员",exp:"源石技艺、维修",line:"“小肥皂们，帮忙打扫一下吧！”",quote:"“每一个信号，都有它的回响。”",phys:"标准 标准 标准 标准 标准 优良",intro:"维多利亚的电波系术师，能操控浮游单元“小肥皂”作战。性格温和内向，却对无线电与机械有着惊人的直觉。",img:"assets/goldenglow.jpg"},
+ {id:"OP-040",name:"令",alias:"LING",job:"辅助 · 召唤师",race:"岁",birth:"炎国",bd:"3月3日",h:"176cm",role:"罗德岛辅助干员 · 岁兽",exp:"源石技艺、书法、诗酒",line:"“举杯邀明月，对影成三人。”",quote:"“岁兽的梦，比人间的酒更烈。”",phys:"标准 标准 标准 优良 卓越 优良",intro:"岁兽的碎片之一，以诗酒自娱的“先生”。能唤出巨兽“夕照”作战，看似逍遥不羁，实则冷眼旁观着岁兽一族的千年恩怨。",img:"assets/ling.jpg"},
+ {id:"OP-041",name:"夕",alias:"DUSK",job:"术师 · 扩散术师",race:"岁",birth:"炎国",bd:"4月13日",h:"166cm",role:"罗德岛术师干员 · 岁兽",exp:"源石技艺（绘画）",line:"“画中人，亦有归处。”",quote:"“再美的画，也留不住时间。”",phys:"标准 标准 标准 标准 标准 卓越",intro:"岁兽碎片之一，以画入道的术师。她的画作自成天地，甚至能困住来敌。性格别扭孤僻，却在罗德岛渐渐学会了“人间烟火”。",img:"assets/dusk.jpg"},
+ {id:"OP-042",name:"年",alias:"NIAN",job:"重装 · 铁卫",race:"岁",birth:"炎国",bd:"8月9日",h:"171cm",role:"罗德岛重装干员 · 岁兽",exp:"重装防护、锻造",line:"“这把剑，够硬！——我自己打的！”",quote:"“岁兽妹妹我啊，可是很能打的。”",phys:"优良 标准 优良 标准 优良 标准",intro:"岁兽碎片之一，热衷锻造的“铁匠”。性格火爆直率，与夕的“文斗”是罗德岛茶余饭后的固定节目。她锻造的武器，几乎成了罗德岛的招牌之一。",img:"assets/nian.jpg"},
+ {id:"OP-043",name:"水月",alias:"MIZUKI",job:"特种 · 伏击客",race:"未公开",birth:"未公开",bd:"5月21日",h:"160cm",role:"罗德岛特种干员",exp:"源石技艺、潜行",line:"“水月镜花，皆是我。”",quote:"“海的声音……你听到了吗？”",phys:"标准 标准 标准 标准 优良 标准",intro:"来历成谜的特种干员，与深海存在千丝万缕的联系。温柔的外表下藏着深渊般的秘密，其源石技艺能在水面之上展开梦幻般的领域。",img:"assets/mizuki.jpg"},
+ {id:"OP-044",name:"歌蕾蒂娅",alias:"GLADIIA",job:"近卫 · 收割者",race:"阿戈尔",birth:"阿戈尔",bd:"9月19日",h:"172cm",role:"罗德岛近卫干员 · 深海猎人队长",exp:"剑术、深海作战、战术指挥",line:"“深海猎人的职责，由我背负。”",quote:"“潮声之下，我们守望陆地。”",phys:"卓越 标准 优良 优良 优良 标准",intro:"深海猎人队长，曾担任阿戈尔执政议会的要职。冷静到近乎冷酷的战略家，以“不被理解”为代价守护着深海与陆地的边界。",img:"assets/gladiaa.jpg"},
+ {id:"OP-045",name:"推进之王",alias:"SIEGE",job:"先锋 · 尖兵",race:"阿斯兰",birth:"维多利亚",bd:"6月3日",h:"164cm",role:"罗德岛先锋干员 · 维多利亚王党",exp:"格斗、战术指挥",line:"“王座不是终点，而是责任。”",quote:"“格拉斯哥帮的招牌，就是我的拳头。”",phys:"优良 优良 标准 优良 优良 标准",intro:"维多利亚的王位继承者之一，以“推进之王”之名行走伦蒂尼姆地下。格拉斯哥帮的“大姐头”，也是王党复兴的希望。",img:"assets/siege.jpg"},
+ {id:"OP-046",name:"号角",alias:"HORN",job:"重装 · 要塞",race:"菲林",birth:"维多利亚",bd:"10月11日",h:"172cm",role:"罗德岛重装干员 · 维多利亚军官",exp:"重装防护、火炮、战术",line:"“目标锁定，开火！”",quote:"“维多利亚的士兵，服从命令，也服从良心。”",phys:"优良 标准 优良 优良 优良 标准",intro:"前维多利亚正规军军官，伦蒂尼姆事变后加入罗德岛。以重炮与坚固阵地著称，是维多利亚战线最可靠的支点。",img:"assets/horn.jpg"},
+ {id:"OP-047",name:"风笛",alias:"BAGPIPE",job:"先锋 · 尖兵",race:"瓦伊凡",birth:"维多利亚",bd:"6月21日",h:"168cm",role:"罗德岛先锋干员 · 维多利亚军官",exp:"格斗、枪械",line:"“吹响风笛，冲锋！”",quote:"“战场不需要犹豫，只需要向前。”",phys:"优良 优良 标准 标准 标准 标准",intro:"前维多利亚皇家近卫学校毕业生，号角的老战友。性格爽朗如风，作战风格同样迅捷凌厉，是罗德岛先锋部队的核心战力。",img:"assets/bagpipe.jpg"},
+ {id:"OP-048",name:"赫拉格",alias:"HELLAGUR",job:"近卫 · 武者",race:"乌萨斯",birth:"乌萨斯",bd:"12月4日",h:"190cm",role:"罗德岛近卫干员 · 乌萨斯老将",exp:"刀术、战术指挥",line:"“岁月磨钝的只是刀刃，不是意志。”",quote:"“我见过太多离别——所以更珍惜并肩。”",phys:"优良 标准 优良 卓越 优良 标准",intro:"乌萨斯传奇老将，曾为救国而战，最终看清帝国真面目后离开。加入罗德岛后以武者的身份守护年轻干员，是“将军”与“长者”的集合体。",img:"assets/hellagur.jpg"}
+
+],
+orgs:[
+ {id:"ORG-001",name:"罗德岛",alias:"RHODES ISLAND",cat:"制药公司 · 陆行舰",role:"以治愈感染者为核心的制药企业",intro:"罗德岛，一艘游走于泰拉大地的巨型陆行舰，也是以“治愈感染者、研究矿石病”为使命的制药公司。舰上容纳了来自各地的干员与患者，在凯尔希、阿米娅与博士的统辖下，成为泰拉最具行动力的组织之一。",quote:"“我们不问出身，只问来意。”",subs:"本舰结构：上层甲板（指挥/航行）· 中层甲板（PRTS核心机房/医疗）· 下层甲板（能源动力）"},
+ {id:"ORG-002",name:"整合运动",alias:"REUNION",cat:"感染者武装组织",role:"以反抗压迫为旗号的感染者集团",intro:"曾以切尔诺伯格为风暴中心的感染者武装组织。在“以暴制暴”的旗号下聚拢了大量受压迫的感染者，其激进路线最终以悲剧收场，组织也逐步瓦解。作为贯穿泰拉剧变的注脚，它的轨迹深刻改变了罗德岛的航向。",quote:"“这片大地，欠感染者一个公道。”",subs:"核心人物：塔露拉 · 爱国者 · 霜星 · 梅菲斯特（均已离场）"},
+ {id:"ORG-003",name:"龙门近卫局",alias:"LUNG MEN LGD",cat:"龙门武装警察部队",role:"维持龙门治安的武装执法机构",intro:"龙门特别行政区的武装警察部队，负责城市治安与对抗感染者非法活动。在魏彦吾的治理下，龙门以“中立商业城邦”的姿态在乌萨斯与炎国的夹缝中生存。近卫局与罗德岛保持着长期战术合作。",quote:"“在龙门，法律就是最高的秩序。”",subs:"代表干员：陈 · 星熊 · 诗怀雅 · 九"},
+ {id:"ORG-004",name:"企鹅物流",alias:"PENGUIN LOGISTICS",cat:"地下物流公司",role:"承接各类“不便公开”的委托",intro:"活跃于泰拉地下世界的物流公司，承接从文件递送到武装押运的一切委托。老板“大帝”的身份成谜，麾下干员风格各异、行事随性。与罗德岛、龙门均有稳定的业务往来。",quote:"“企鹅物流，使命必达。”",subs:"代表干员：德克萨斯 · 能天使 · 可颂 · 空"},
+ {id:"ORG-005",name:"莱茵生命",alias:"RHINE LAB",cat:"哥伦比亚科研公司",role:"能量技术与源石技艺研究",intro:"总部位于哥伦比亚特里蒙的科研公司，以“Solve Intelligence. Think Different.”为口号，下设十个科研科室，在源石技艺、能量技术等领域走在泰拉前沿。其内部实验的伦理争议，催生了塞雷娅出走等一系列事件。",quote:"“科学没有对错，只有代价。”",subs:"相关事件：炎魔实验 · 359号基地 · 特里蒙弧光"},
+ {id:"ORG-006",name:"巴别塔",alias:"BABEL",cat:"萨卡兹政治组织",role:"由特蕾西娅建立的理想之国构想",intro:"由萨卡兹王女特蕾西娅建立的理想主义组织，试图为流离失所的萨卡兹寻找一条不流血的道路。其理想与悲剧，牵动了博士、凯尔希与W的命运，也埋下了卡兹戴尔内战的伏笔。",quote:"“如果王冠太重，就由我们来分担。”",subs:"核心人物：特蕾西娅 · 博士（预言家） · 凯尔希"},
+ {id:"ORG-007",name:"喀兰贸易",alias:"KARLAND TRADE",cat:"谢拉格贸易公司",role:"贯通谢拉格与外界的商路",intro:"由银灰创立的贸易公司，掌握谢拉格的对外经济命脉。以资本与情报为刃，银灰在雪山之国的三族博弈中步步为营，将封闭的谢拉格引入了泰拉世界的洪流。",quote:"“贸易，是比战争更锋利的雪。”",subs:"业务：矿业 · 军备 · 情报 · 源石贸易"},
+ {id:"ORG-008",name:"黑钢国际",alias:"BLACKSTEEL WORLDWIDE",cat:"雇佣兵公司",role:"面向泰拉全域的武装安保服务",intro:"总部位于哥伦比亚的雇佣兵公司，承接武装押运、要人保护与区域安保委托。麾下汇聚了来自泰拉各地的职业佣兵，其行动风格高效而冷酷。",quote:"“黑钢不关心立场，只关心合同。”",subs:"代表干员：杰西卡 · 芙兰卡 · 雷蛇 · 香草"},
+ {id:"ORG-009",name:"使徒",alias:"THE APOSTLES",cat:"感染者医疗组织",role:"行走于泰拉大地的救援组织",intro:"由闪灵、夜莺与临光组成的三人组织，行走于战乱与天灾之间，向感染者施以援手。她们的身影出现在最危险的地方，却从不留下姓名。",quote:"“我们治愈的不是伤口，是绝望。”",subs:"成员：闪灵 · 夜莺 · 临光（已离队）"},
+ {id:"ORG-010",name:"深海猎人",alias:"ABYSSAL HUNTERS",cat:"阿戈尔猎杀组织",role:"对抗海嗣的深海武装",intro:"阿戈尔文明的武装组织，以猎杀深海“海嗣”为使命。成员经由特殊改造获得惊人的水下作战能力，却在猎杀中逐渐被深海侵蚀心智。",quote:"“深海之下，没有无辜者。”",subs:"成员：斯卡蒂 · 幽灵鲨 · 歌蕾蒂娅 · 劳伦缇娜"},
+ {id:"ORG-011",name:"乌萨斯学生自治团",alias:"USSG",cat:"乌萨斯学生组织",role:"雪原孤儿们的互助团体",intro:"由乌萨斯切尔诺伯格的学生们组成的自治团体，在乌萨斯动乱后随罗德岛行动。这些曾在雪原与废墟中挣扎求生的孩子，如今正在学习如何真正地活下去。",quote:"“我们自己选择，要成为什么样的人。”",subs:"成员：凛冬 · 真理 · 早露 · 古米 · 苦艾"},
+ {id:"ORG-012",name:"卡西米尔商业联合会",alias:"KAZIMIERZ COMMERCIAL UNION",cat:"卡西米尔竞技财团",role:"垄断骑士竞技与商业的联合体",intro:"卡西米尔大骑士领的幕后财团，将骑士竞技打造成全民狂欢的产业。无胄盟为其清理障碍，骑士精神沦为商品的包装。直到玛莉娅·临光的夺冠，才让这场资本盛宴出现裂痕。",quote:"“竞技场里，只有收视率是真实的。”",subs:"关联组织：无胄盟 · 红松骑士团"},
+ {id:"ORG-013",name:"维多利亚王党",alias:"VICTORIA ROYALISTS",cat:"维多利亚政治势力",role:"拥护王室的维多利亚派系",intro:"维多利亚王国的王室支持者，在摄政王篡权后转入地下。他们与罗德岛达成秘密合作，试图夺回被萨卡兹控制的伦蒂尼姆，恢复维多利亚的王统。",quote:"“王冠可以易主，王国的脊梁不会。”",subs:"关键人物：推王（维娜） · 高文 · 号角"},
+ {id:"ORG-014",name:"萨卡兹王庭军",alias:"SARKAZ COURT MILITARY",cat:"卡兹戴尔军事势力",role:"摄政王麾下的萨卡兹武装",intro:"由摄政王特雷西斯统帅的萨卡兹武装，占领维多利亚首都伦蒂尼姆，企图以军事力量重塑卡兹戴尔。王庭军的铁蹄之下，是萨卡兹千年的仇恨与野心。",quote:"“萨卡兹的怒火，将由剑来言说。”",subs:"核心人物：特雷西斯 · 曼弗雷德 · 血魔大君"},
+ {id:"ORG-015",name:"红松骑士团",alias:"RED PINE KNIGHTS",cat:"卡西米尔骑士团",role:"为无胄盟阴影下的骑士而战",intro:"由灰毫、焰尾、野鬃等低阶骑士组成的骑士团，对抗商业联合会与无胄盟的压迫。骑士精神或许式微，但红松的旗帜仍在荒野飘扬。",quote:"“骑士的荣耀，不由资本定价。”",subs:"成员：灰毫 · 焰尾 · 野鬃 · 正义骑士号"},
+ {id:"ORG-016",name:"无胄盟",alias:"ARMORLESS UNION",cat:"卡西米尔刺客组织",role:"商业联合会的地下利刃",intro:"卡西米尔商业联合会豢养的刺客组织，负责清除一切妨碍资本运转的存在。其三巨头“青金”“白金”“玄铁”的名号，是骑士之都最深的阴影。",quote:"“无需铠甲，因为不需要正面。”",subs:"三巨头：青金 · 白金 · 玄铁"},
+ {id:"ORG-017",name:"拉特兰教宗廷",alias:"LATERRAN PAPAL COURT",cat:"拉特兰宗教机构",role:"统御萨科塔与拉特兰的宗教中枢",intro:"拉特兰的宗教与行政中枢，教宗与六大使徒共同维系着“圣城”的秩序。其“律法”体系与铳械权柄，深刻影响着萨科塔的信仰与武器。",quote:"“律法之下，皆有秩序。”",subs:"圣城：拉特兰 · 万国信使体系"},
+ {id:"ORG-018",name:"谢拉格三族议会",alias:"KARLAN TRIBES",cat:"谢拉格政治体系",role:"雪山之国三族的共治架构",intro:"谢拉格三大氏族——希瓦艾什、佩尔罗契、布朗陶的共治体系。三族既竞争又依存，银灰以喀兰贸易撬动了千年的雪山平衡。",quote:"“雪山之巅，诸族共议。”",subs:"三族：希瓦艾什 · 佩尔罗契 · 布朗陶"},
+ {id:"ORG-019",name:"深池",alias:"DUSKPOOL",cat:"塔拉独立武装",role:"维多利亚塔拉族的独立之火",intro:"由塔拉族组成的维多利亚独立武装，以“深池”为号点燃反抗之火。苇草曾是其旗帜，当火焰烧过头顶，她便选择了另一条路。",quote:"“塔拉的血，不应再为他人而流。”",subs:"关联：苇草 · 蔓德拉 · 塔拉独立运动"},
+ {id:"ORG-020",name:"格拉斯哥帮",alias:"GLASGOW GANG",cat:"伦蒂尼姆地下帮派",role:"维多利亚首都的地下秩序",intro:"伦蒂尼姆地下的青年帮派，由推进之王执掌。在萨卡兹占领首都的乱局中，格拉斯哥帮成了王党最锋利的匕首。",quote:"“地下的人，也要活出人样。”",subs:"核心：推进之王 · 因陀罗 · 摩根"},
+ {id:"ORG-021",name:"乌萨斯内卫",alias:"URUS INTERNAL GUARDS",cat:"乌萨斯特务机构",role:"帝国阴影中的监察者",intro:"乌萨斯帝国直属的特务机构，负责镇压叛乱与“邪魔”威胁。其“审批官”之名令人闻风丧胆，也是整合运动悲剧的推手之一。",quote:"“帝国不需要怜悯。”",subs:"职责：平叛 · 北境防务 · 政治审查"},
+ {id:"ORG-022",name:"哥伦比亚联邦",alias:"COLUMBIA FEDERATION",cat:"泰拉联邦国家",role:"以自由与资本立国的联邦",intro:"泰拉大陆的新兴联邦，以自由贸易、科研与雇佣兵产业立国。特里蒙的实验室与黑钢的雇佣兵，共同构成了哥伦比亚的底色。",quote:"“在哥伦比亚，一切都可以交易。”",subs:"首都：特里蒙 · 著名企业：莱茵生命 · 黑钢国际"},
+ {id:"ORG-023",name:"银枪天马",alias:"SILVER LANCE KNIGHTS",cat:"卡西米尔精锐骑士团",role:"守护卡西米尔边境的传奇骑士",intro:"卡西米尔最负盛名的骑士团，守护北境防线。传闻中的“银枪天马”早已成为传说，但边境线上仍有骑士在践行其誓言。",quote:"“天马所过，邪祟退散。”",subs:"传说：银枪 · 天马 · 北境防线"},
+ {id:"ORG-024",name:"莱塔尼亚宫廷",alias:"LATERANO ROYAL COURT",cat:"莱塔尼亚王庭",role:"音律之国的权力中枢",intro:"莱塔尼亚双子女皇治下的宫廷，以音律与源石技艺立国。巫王的旧响仍未散尽，金律的回声在崔林特尔梅上空盘旋。",quote:"“音律，是莱塔尼亚的语言。”",subs:"首都：崔林特尔梅 · 双子女皇"},
+ {id:"ORG-025",name:"罗德岛工程部",alias:"RHODES ENGINEERING",cat:"罗德岛部门",role:"本舰设施与装备的维护中枢",intro:"罗德岛的工程技术部门，负责陆行舰维护、干员装备研发与基建系统运转。梅尔等工程师常驻于此，与PRTS协同保障本舰运转。",subs:"职责：舰船维护 · 装备研发 · 基建优化"},
+ {id:"ORG-026",name:"罗德岛医疗部",alias:"RHODES MEDICAL",cat:"罗德岛部门",role:"感染者救治与医学研究核心",intro:"罗德岛医疗部门，由凯尔希主持，赫默、闪灵、夜莺等干员隶属其中。以“治愈感染者”为第一使命，也是本舰存在的意义。",subs:"分支：临床医学 · 源石病研究 · 心理关怀"},
+ {id:"ORG-027",name:"阿戈尔执政议会",alias:"AEGIR COUNCIL",cat:"阿戈尔政权",role:"深海文明的管理中枢",intro:"阿戈尔文明的管理机构，统辖深海城市的运转与对外政策。大静谧之后，议会在“封闭自守”与“重返陆地”之间摇摆。",quote:"“深海的智慧，不在沉眠，而在守望。”",subs:"关联：深海猎人 · 愚人号"},
+ {id:"ORG-028",name:"巴别塔残部",alias:"BABEL REMAINS",cat:"卡兹戴尔残余势力",role:"理想熄灭后仍在行走的人",intro:"特蕾西娅陨落后，巴别塔的理想并未完全熄灭。其残部散布泰拉各地，或隐姓埋名，或加入罗德岛，以各自的方式延续着“不流血的道路”。",quote:"“王女不在了，路还在。”",subs:"关联：博士 · 凯尔希 · W"},
+ {id:"ORG-029",name:"雷姆必拓矿业",alias:"RIYMOBIL MINING",cat:"雷姆必拓产业",role:"源石矿脉的开采与贸易",intro:"雷姆必拓的矿业公司，掌握泰拉重要的源石矿脉。阿米娅等雷姆必拓出身的干员，都记得那片灰蒙蒙的矿城天空。",quote:"“矿石之下，是生计，也是诅咒。”",subs:"产地：源石矿 · 工业原料"},
+ {id:"ORG-030",name:"汐斯塔市政府",alias:"SIESTA CITY GOVERNMENT",cat:"汐斯塔行政机构",role:"海滨城市的天灾防线",intro:"汐斯塔的行政机构，管理着这座度假城市的天灾观测站与火山预警系统。火山喷发之夜，市政府的决断曾拯救整座城市。",quote:"“海浪之上，晴空常在。”",subs:"设施：天灾观测站 · 火山预警系统"}
+
+],
+geo:[
+ {id:"GEO-001",name:"罗德岛本舰",alias:"RHODES ISLAND SHIP",cat:"移动城市 · 制药陆行舰",intro:"罗德岛的核心资产，一艘经过改造的大型陆行舰。中层甲板安置有PRTS核心机房与医疗中心；上层甲板为指挥与航行中枢；下层为能源动力区。它既是医院、堡垒，也是数千名干员与患者的家。",quote:"“陆地海洋，皆为航路。”",subs:"部署：源石技艺驱动 · 移动路线受天灾气象影响"},
+ {id:"GEO-002",name:"切尔诺伯格",alias:"CHERNOBOG",cat:"乌萨斯移动城市",intro:"乌萨斯帝国的移动城市，曾因天灾与整合运动的暴动而陷入末日般的混乱。作为罗德岛救出博士的起点，切尔诺伯格事变直接点燃了泰拉大陆的剧变。",quote:"“城市被连根拔起，人心也是。”",subs:"现状：沦为废墟 · 源石结晶化"},
+ {id:"GEO-003",name:"龙门",alias:"LUNGMEN",cat:"炎国特别行政区 · 移动城邦",intro:"炎国治下的特别行政区，以商业与中立著称的国际都会。由魏彦吾实际治理，在多方势力间维持着微妙的平衡。是罗德岛最重要的合作伙伴之一。",quote:"“龙门不接受混乱。”",subs:"结构：核心城 · 外环城 · 港口区"},
+ {id:"GEO-004",name:"伦蒂尼姆",alias:"LONDINIUM",cat:"维多利亚首都 · 移动城市",intro:"维多利亚王国的首都，泰拉大陆最大的移动城市之一。在摄政王篡权与萨卡兹势力渗透后陷入内乱，成为维多利亚事变的主舞台。",quote:"“王座之下，暗流涌动。”",subs:"势力：王党 · 萨卡兹 · 罗德岛远征队"},
+ {id:"GEO-005",name:"多索雷斯",alias:"DOSSOLES",cat:"玻利瓦尔自治城市",intro:"玻利瓦尔大地的自治城市，以“合法”赌场与灰色产业闻名。市长坎黛拉在各方势力之间长袖善舞，使这座海滨城市成为信息与金钱的漩涡中心。",quote:"“在赌场，一切都可以谈。”",subs:"特征：双塔 · 独立司法 · 全城合法赌博"},
+ {id:"GEO-006",name:"汐斯塔",alias:"SIESTA",cat:"维多利亚海滨城市",intro:"维多利亚南部的海滨度假城市，以阳光、沙滩与天灾观测站闻名。曾是天灾信使与游客交织的度假胜地，也承载过火山爆发的危机记忆。",quote:"“海浪会抚平一切伤痕。”",subs:"景点：天灾观测站 · 火山 · 黑曜石节"},
+ {id:"GEO-007",name:"特里蒙",alias:"TRIMONTS",cat:"哥伦比亚首都",intro:"哥伦比亚联邦的首都，泰拉大陆的科研与工业之都。莱茵生命总部坐落于此，环绕着围绕其展开的学术圈、实验室与资本网络。",quote:"“在特里蒙，知识与野心等价。”",subs:"地标：莱茵生命总部 · 哥伦比亚科学院"},
+ {id:"GEO-008",name:"大骑士领",alias:"KAZIMIERZ",cat:"卡西米尔竞技之都",intro:"卡西米尔的大骑士领，骑士竞技的圣地。竞技场、商业联合会与无胄盟的阴影在此交织，骑士锦标赛的灯光彻夜不熄。",quote:"“骑士的荣耀，标价出售。”",subs:"设施：卡西米尔竞技场 · 商业区 · 无胄盟据点"},
+ {id:"GEO-009",name:"喀兰圣山",alias:"KARLAN MOUNTAIN",cat:"谢拉格圣地",intro:"谢拉格神山，雪原三族的信仰与权力中心。银灰的希瓦艾什家族以此为根基，在雪山之巅俯瞰着封闭千年的谢拉格。",quote:"“雪山不语，却见证一切。”",subs:"地点：三族领地 · 喀兰贸易总部"},
+ {id:"GEO-010",name:"乌萨斯雪原",alias:"URUS SNOWFIELD",cat:"乌萨斯北境",intro:"乌萨斯帝国北境的广袤雪原，天灾频发、人迹罕至。整合运动的残部曾在此盘踞，爱国者的战旗最终倒在了无垠的白雪之中。",quote:"“雪会掩埋一切，除了记忆。”",subs:"事件：乌萨斯动乱 · 爱国者之死"},
+ {id:"GEO-011",name:"盐风城",alias:"SALTWIND CITY",cat:"伊比利亚海岸城镇",intro:"伊比利亚海岸的渔镇，大静谧之后逐渐被遗忘。覆潮之下，深海与海嗣的阴影重新笼罩了这座小镇。",quote:"“盐风里，混杂着大海的低语。”",subs:"事件：覆潮之下 · 大静谧遗迹"},
+ {id:"GEO-012",name:"阿戈尔",alias:"AEGIR",cat:"深海文明",intro:"沉没于深海之中的古老文明，掌握了远超泰拉陆地的科技。大静谧之后与陆地隔绝，深海猎人正是从这片深海中走出。",quote:"“陆地之上，是另一个世界。”",subs:"相关：深海猎人 · 海嗣 · 大静谧"},
+ {id:"GEO-013",name:"玉门",alias:"YUMEN",cat:"炎国西境城市",intro:"炎国西境的边境城市，扼守丝绸之路的要冲。岁兽的传说在此流传，炎国“岁”的碎片散落于玉门的烟火与风沙之间。",quote:"“岁岁年年，玉门关的风没有变过。”",subs:"关联：岁 · 炎国十二城"},
+ {id:"GEO-014",name:"卡兹戴尔",alias:"KAZDEL",cat:"萨卡兹故土",intro:"萨卡兹一族的故土，历经无数次战争与重建。巴别塔的理想、摄政王的野心，都在这片焦土上留下痕迹。",quote:"“故土之上，亡魂比活人更多。”",subs:"势力：王庭军 · 巴别塔残部"},
+ {id:"GEO-015",name:"沃伦姆德",alias:"WOLUMONDE",cat:"乌萨斯小镇",intro:"乌萨斯边缘的小镇，天灾之后陷入困境。薄暮中的谣言与恐惧，最终将这座小镇推向悲剧——罗德岛曾试图挽回，却只留下记录。",quote:"“薄暮降临，人心易碎。”",subs:"事件：沃伦姆德的薄暮"},
+ {id:"GEO-016",name:"圣骏堡",alias:"SAINT JUNBURG",cat:"乌萨斯首都",intro:"乌萨斯帝国的首都，泰拉大陆最庞大的移动城市之一。帝国权力中枢与北境防线的指挥所，也埋藏着无数政治暗流。",quote:"“帝国的影子，比雪原更冷。”",subs:"地标：皇宫 · 内卫总部"},
+ {id:"GEO-017",name:"拉特兰圣城",alias:"LATTERAN HOLY CITY",cat:"拉特兰首都",intro:"萨科塔的圣城，铳械与律法之城。白墙尖顶之间，教宗廷与万国信使构筑起拉特兰的秩序与骄傲。",quote:"“圣城的钟声，为秩序而鸣。”",subs:"地标：教宗廷 · 大教堂 · 万国信使总部"},
+ {id:"GEO-018",name:"崔林特尔梅",alias:"TRIMONTSHOLM",cat:"莱塔尼亚首都",intro:"莱塔尼亚的首都，音律与魔法之城。双子女皇的王庭高悬于塔楼之上，巫王的旧响仍在金律的回声中盘旋。",quote:"“音律之声，既是艺术，也是权力。”",subs:"地标：女皇王庭 · 音律塔"},
+ {id:"GEO-019",name:"尚蜀",alias:"SHANGSHU",cat:"炎国城市",intro:"炎国西南的山水之城，岁兽传说与人间烟火交织。夕的画中人、年的炉火，都曾在尚蜀的街巷间留下痕迹。",quote:"“山城多雾，故事也多。”",subs:"事件：画中人 · 岁兽新年"},
+ {id:"GEO-020",name:"大炎",alias:"YAN EMPIRE",cat:"炎国腹地",intro:"炎国的政治中心，以玉门为西陲、以龙门为南界的庞大帝国。岁兽的传说、十二城的传说，构成了炎国千年的底色。",quote:"“大炎之土，岁岁长安。”",subs:"结构：十二城邦 · 皇城"},
+ {id:"GEO-021",name:"萨尔贡",alias:"SARGON",cat:"沙海诸国",intro:"泰拉大陆南部的沙海与雨林地带，诸国林立、部落众多。萨尔贡的雨林深处，藏着连帝国都未曾踏足的秘辛。",quote:"“沙海之下，埋着诸神的废墟。”",subs:"地形：沙漠 · 雨林 · 高原"},
+ {id:"GEO-022",name:"叙拉古",alias:"SIRACUSA",cat:"狼之都",intro:"鲁珀一族的故乡，以黑帮与家族政治闻名。切利尼娜家族、拉普兰德家族的恩怨，正是叙拉古权力游戏的缩影。",quote:"“在叙拉古，家族就是法律。”",subs:"特征：家族议会 · 狼之血统"},
+ {id:"GEO-023",name:"雷姆必拓",alias:"RIM BILLITON",cat:"矿脉之地",intro:"泰拉大陆著名的矿产地，源石矿脉与工业城镇密布。矿工的汗水与源石的光尘，构成了这片大地的日常。",quote:"“矿灯之下，没有浪漫。”",subs:"物产：源石 · 金属矿产"},
+ {id:"GEO-024",name:"玻利瓦尔丛林",alias:"BOLIVAR JUNGLE",cat:"玻利瓦尔雨林",intro:"玻利瓦尔大地的雨林地带，独立战争与部族纷争交织。密林悍将的传说，随着罗德岛的航迹传入文明世界。",quote:"“雨林的王，是那些从未低头的人。”",subs:"事件：密林悍将归来"},
+ {id:"GEO-025",name:"萨米",alias:"SAMI",cat:"北境雪原",intro:"泰拉北端的雪原之国，直面“邪魔”与坍缩的第一道防线。萨米的猎人们以血肉之躯，守望着文明世界的边界。",quote:"“北境的风，裹着非人的低语。”",subs:"威胁：邪魔 · 坍缩现象"},
+ {id:"GEO-026",name:"临光家族庄园",alias:"NEARL ESTATE",cat:"卡西米尔庄园",intro:"卡西米尔临光家族的领地，曾见证骑士世家的荣光与没落。玛嘉烈、玛莉娅与玛恩纳的故事，都从这里开始。",quote:"“骑士的家训，刻在每一块砖上。”",subs:"关联：临光 · 玛恩纳 · 玛莉娅"},
+ {id:"GEO-027",name:"乌萨斯冻土",alias:"URUS FROZEN LAND",cat:"乌萨斯北境",intro:"乌萨斯帝国北境的冻土带，内卫与“邪魔”的战场。风雪的尽头，是连帝国都不愿承认的禁忌。",quote:"“冻土之下，没有春天。”",subs:"威胁：邪魔 · 北境防线"},
+ {id:"GEO-028",name:"哥伦比亚荒野",alias:"COLUMBIA WILDERNESS",cat:"哥伦比亚边地",intro:"哥伦比亚联邦的荒野地带，雇佣兵与拓荒者的乐园。黑钢的训练场、废弃的实验室，散落在干涸的风沙之中。",quote:"“荒野不问来路。”",subs:"特征：雇佣兵营地 · 废弃实验设施"},
+ {id:"GEO-029",name:"大静谧海岸",alias:"THE SILENT COAST",cat:"伊比利亚海岸",intro:"伊比利亚漫长海岸线上被大静谧侵蚀的区域。海浪之下潜伏着海嗣的影子，盐风城的灯塔已熄灭多年。",quote:"“大海沉默，是因为它在聆听。”",subs:"威胁：海嗣 · 大静谧遗响"},
+ {id:"GEO-030",name:"泰拉航线",alias:"TERRA ROUTES",cat:"移动城市航线",intro:"移动城市与商队在地表迁徙的固定航线网。天灾信使预报、商队护卫、罗德岛本舰的航行，都沿着这些看不见的路标展开。",quote:"“陆地也是海洋，城市是远航的船。”",subs:"结构：主干航线 · 信使驿站 · 天灾监测点"}
+
+],
+tl:[
+ {id:"TL-001",y:"泰拉纪元前",name:"源石的发现",intro:"远古先民在移动城市出现之前便已掌握源石的力量。源石能源驱动了文明的跃迁，也埋下了矿石病与天灾的种子。"},
+ {id:"TL-002",y:"泰拉历·近代",name:"乌萨斯崛起",intro:"乌萨斯帝国依托源石工业与军事扩张成为泰拉大国，在数次对外战争中将感染者推向深渊，为整合运动的爆发埋下伏笔。"},
+ {id:"TL-003",y:"泰拉历1096",name:"切尔诺伯格事变",intro:"整合运动在切尔诺伯格发动暴动，天灾降临，城市陷落。罗德岛远征小队潜入危城救出沉睡于石棺中的博士，泰拉的命运自此改变。"},
+ {id:"TL-004",y:"泰拉历1097",name:"龙门风波",intro:"整合运动残部转向龙门，塔露拉的真实身份与赤霄的秘密浮出水面。罗德岛与龙门近卫局在裂痕中结成同盟。"},
+ {id:"TL-005",y:"泰拉历1098",name:"乌萨斯动乱",intro:"爱国者战死于北境雪原，霜星陨落于龙门城下。整合运动的理想与疯狂，随着雪原的风一同消逝。"},
+ {id:"TL-006",y:"泰拉历1099",name:"维多利亚事变",intro:"伦蒂尼姆的叛乱将罗德岛卷入维多利亚的权力漩涡。特蕾西娅的遗愿、萨卡兹的复国之路，在旧都的阴影下交汇。"},
+ {id:"TL-007",y:"泰拉历1100",name:"深海纪元",intro:"阿戈尔与深海猎人的秘密逐渐浮出水面，大静谧的阴影笼罩泰拉。罗德岛的航迹，延伸向深海的更深处。"},
+ {id:"TL-008",y:"泰拉历·进行中",name:"博士的真相",intro:"预言家、普瑞赛斯与文明的存亡之谜逐步揭开。PRTS系统的权限与代码，指向一段比泰拉更古老的记忆。"},
+ {id:"TL-009",y:"泰拉历1093",name:"生于黑夜",intro:"萨卡兹内战白热化，巴别塔与王庭军决裂。特蕾西娅陨落于伦蒂尼姆，博士失忆，巴别塔的悲剧落下帷幕。"},
+ {id:"TL-010",y:"泰拉历1097",name:"沃伦姆德的薄暮",intro:"天灾过后的乌萨斯小镇沃伦姆德，感染者与镇民的矛盾在薄暮中爆发。罗德岛介入调查，却未能阻止悲剧的蔓延。"},
+ {id:"TL-011",y:"泰拉历1097",name:"覆潮之下",intro:"伊比利亚盐风城的海岸被深海侵蚀，幽灵鲨的过去与深海猎人的宿命重新浮出水面。"},
+ {id:"TL-012",y:"泰拉历1098",name:"密林悍将归来",intro:"玻利瓦尔丛林的独立战争再起，罗德岛深入雨林，见证了这片大地上被遗忘的族群与怒火。"},
+ {id:"TL-013",y:"泰拉历1099",name:"长夜临光",intro:"卡西米尔骑士锦标赛开幕，玛莉娅·临光力压无胄盟的阴谋夺冠，“耀骑士”之名重临大骑士领。"},
+ {id:"TL-014",y:"泰拉历1099",name:"愚人号",intro:"伊比利亚海岸惊现前文明遗物“愚人号”，罗德岛与深海猎人的联合探索，揭开大静谧的冰山一角。"},
+ {id:"TL-015",y:"泰拉历1099",name:"吾导先路",intro:"拉特兰圣徒与信使的权柄之争，教宗与使徒的博弈。罗德岛的介入，让“圣徒”的传说多了一个注脚。"},
+ {id:"TL-016",y:"泰拉历1100",name:"孤星",intro:"特里蒙的科研盛典“星舰启航”背后，莱茵生命的旧案被重新翻开。博士的过去、赫默的愤怒与塞雷娅的抉择，在弧光中交汇。"},
+ {id:"TL-017",y:"泰拉历1100",name:"崔林特尔梅之金",intro:"莱塔尼亚首都的“巫王”遗响再起，双子女皇与巫王的权杖之争。金律的回响中，泰拉的音律魔法显露出真容。"},
+ {id:"TL-018",y:"泰拉历·进行中",name:"如我所见",intro:"在PRTS的深层日志中，博士与普瑞赛斯的对话若隐若现。关于文明存续的最后问题，答案仍悬而未决。"},
+ {id:"TL-019",y:"泰拉历·古代",name:"卡兹戴尔第一王庭",intro:"萨卡兹一族于卡兹戴尔建立最初的王庭。魔王的血脉与萨卡兹的命运自此纠缠千年。"},
+ {id:"TL-020",y:"泰拉历·古代",name:"大静谧沉没",intro:"深海灾变爆发，阿戈尔文明沉入深海。陆地与深海自此隔绝，海嗣的阴影在大静谧中滋生。"},
+ {id:"TL-021",y:"泰拉历·前纪",name:"前文明陨落",intro:"前文明因未知灾变而消亡，仅余石棺、PRTS与愚人号等遗物。普瑞赛斯与博士的对话，是文明最后的记录。"},
+ {id:"TL-022",y:"泰拉历1092",name:"巴别塔建立",intro:"特蕾西娅在卡兹戴尔建立巴别塔，试图为萨卡兹寻找不流血的道路。博士以“预言家”的身份加入其中。"},
+ {id:"TL-023",y:"泰拉历1093",name:"萨卡兹内战爆发",intro:"卡兹戴尔内战白热化，摄政王特雷西斯与王庭军掌权。特蕾西娅陨落于伦蒂尼姆，巴别塔的梦想随之破碎。"},
+ {id:"TL-024",y:"泰拉历1094",name:"博士沉睡",intro:"失忆前的博士在切尔诺伯格石棺中沉睡。罗德岛多次尝试唤醒未果，直至三年后的切城事变。"},
+ {id:"TL-025",y:"泰拉历1096",name:"龙门危机·初见",intro:"整合运动残部南下龙门，霜星与罗德岛在雪原初次交锋。炉火与寒冰的对峙，写下了感染者的挽歌。"},
+ {id:"TL-026",y:"泰拉历1097",name:"火蓝之心",intro:"汐斯塔火山异动，罗德岛受邀参与黑曜石节安保。音乐、烟花与暗涌的危险，交织成夏日的记忆。"},
+ {id:"TL-027",y:"泰拉历1097",name:"骑兵与猎人",intro:"罗德岛协助格拉尼调查格兰法洛的失踪案。褪色的骑士传说与旧日的阴谋，在乡野间重新亮出獠牙。"},
+ {id:"TL-028",y:"泰拉历1098",name:"喧闹法则",intro:"叙拉古的地下交易暗流涌动，企鹅物流与格拉斯哥帮在伦蒂尼姆的午夜交汇。金钱、枪声与音乐，奏响喧闹的夜曲。"},
+ {id:"TL-029",y:"泰拉历1098",name:"洪炉示岁",intro:"岁兽“年”在龙门现世，罗德岛卷入炎国岁兽的千年恩怨。春节的烟火之下，藏着神兽的棋局。"},
+ {id:"TL-030",y:"泰拉历1098",name:"玛莉娅临光赛",intro:"玛莉娅·临光披甲出征骑士锦标赛，在无胄盟的阴谋中一步步登上竞技场。骑士精神在资本的重压下，发出微光。"},
+ {id:"TL-031",y:"泰拉历1099",name:"多索雷斯假日",intro:"玻利瓦尔的赌城多索雷斯迎来“假日”。坎黛拉市长的棋盘上，罗德岛成为最意外的一枚棋子。"},
+ {id:"TL-032",y:"泰拉历1099",name:"画中人",intro:"尚蜀的画中天地异变，夕的画笔泄露了岁兽的秘密。罗德岛踏入画境，见证一场千年的自我困缚。"},
+ {id:"TL-033",y:"泰拉历1099",name:"绿野幻梦",intro:"特里蒙的“星舰”计划背后，莱茵生命的旧案被重新翻开。多萝西的实验、塞雷娅的抉择，在弧光下交汇。"},
+ {id:"TL-034",y:"泰拉历1099",name:"尘影余音",intro:"莱塔尼亚的旧城音乐节，白垩与车尔尼的琴声相和。音律的魔力背后，是巫王残响的余音未散。"},
+ {id:"TL-035",y:"泰拉历1100",name:"空想花庭",intro:"拉特兰圣城的“空想花庭”异变，律法与人心的边界被重新丈量。圣徒、使徒与教宗的棋局，在白色之城展开。"},
+ {id:"TL-036",y:"泰拉历1100",name:"眠于树影之中",intro:"萨米北境的树影异动，罗德岛深入坍缩之地。面对“邪魔”的低语，人类以信念为火种。"},
+ {id:"TL-037",y:"泰拉历1100",name:"照我以火",intro:"深池的火焰在维多利亚燃烧，苇草以“德拉克”的身份直面自己的血脉。塔拉的解放之火，最终照向了何方？"},
+ {id:"TL-038",y:"泰拉历·进行中",name:"岁兽之年",intro:"炎国的新年，岁兽的碎片们各自迎来人间的年关。人间烟火与神兽棋局，在爆竹声中又一次交替。"}
+
+],
+lex:[
+ {id:"LX-001",name:"源石",alias:"ORIGINIUM",cat:"基础概念",intro:"泰拉大陆最核心的矿物，既是能源与工业的基石，也是源石技艺的媒介。接触源石会导致感染，形成矿石病。",subs:"用途：能源 · 施术单元 · 工业原料"},
+ {id:"LX-002",name:"矿石病",alias:"ORIPATHY",cat:"基础概念",intro:"由源石感染引发的绝症。患者体内会生长源石结晶，逐渐侵蚀身体与生命，同时对感染者存在巨大的社会歧视。",subs:"罗德岛核心课题：抑制结晶生长 · 寻找治愈方法"},
+ {id:"LX-003",name:"感染者",alias:"INFECTED",cat:"基础概念",intro:"被源石感染的人群。在泰拉各地遭受系统性歧视与压迫，是整合运动等组织反抗的根源之一。罗德岛以治疗与收容感染者为首要使命。",subs:"现状：社会地位低下 · 治疗手段有限"},
+ {id:"LX-004",name:"源石技艺",alias:"ARTS",cat:"基础概念",intro:"通过源石施放的特殊能力，形式千变万化——从火焰到重力，从精神影响到空间操控。使用过度会导致施术者疲劳甚至恶化感染。",subs:"施术媒介：施术单元 · 体内源石"},
+ {id:"LX-005",name:"移动城市",alias:"MOVING CITY",cat:"泰拉地理",intro:"泰拉文明对抗天灾的产物。整座城市建于巨大的履带平台之上，可依照天灾预报调整航向，在陆地上缓慢迁徙。",subs:"代表：龙门 · 切尔诺伯格 · 伦蒂尼姆"},
+ {id:"LX-006",name:"天灾",alias:"CATASTROPHE",cat:"泰拉地理",intro:"泰拉大陆周期性发生的自然灾难，形式包括陨石、源石风暴、大地震等。天灾过境之地往往伴随大量源石沉积，是移动城市与天灾信使体系存在的根本原因。"},
+ {id:"LX-007",name:"PRTS",alias:"PRIMITIVE RHODES ISLAND TERMINAL SERVICE",cat:"罗德岛系统",intro:"原生罗德岛终端服务，罗德岛舰载人工智能与战斗辅助系统。负责远程战场指挥、战前模拟、基建规划与人员监测。在第十五章事件中曾被普瑞赛斯控制。",subs:"机房：罗德岛中层甲板 · 管理员：博士 / 普瑞赛斯"},
+ {id:"LX-008",name:"罗德岛",alias:"RHODES ISLAND",cat:"罗德岛组织",intro:"见「组织名册 · 罗德岛」。以治愈感染者为使命的制药公司兼移动堡垒，本终端即为其舰载系统之一。"},
+ {id:"LX-009",name:"石棺",alias:"SARC",cat:"前文明遗物",intro:"沉睡于切尔诺伯格地下的前文明医疗舱。博士曾在其中沉睡三年，其内部结构与泰拉现有科技截然不同，是理解前文明的关键线索。",subs:"现状：随切尔诺伯格沦陷 · 已被回收"},
+ {id:"LX-010",name:"博士",alias:"THE DOCTOR",cat:"罗德岛人物",intro:"罗德岛高层领导，三大创始人之一，权限等级8。曾为前文明顶尖科学家，失忆后在罗德岛苏醒，以战术头脑与人格魅力引领本舰。本终端的最终使用者。",subs:"身份：预言家 / 博士 / 罗德岛指挥官"},
+ {id:"LX-011",name:"前文明",alias:"PRECURSOR",cat:"泰拉史前",intro:"泰拉纪元之前的高等文明。其科技与源石体系远胜今日泰拉，因未知灾变而消亡，仅余石棺、PRTS等遗物。普瑞赛斯与前文明的存亡之问，仍是最大谜团。",subs:"遗物：石棺 · PRTS · 愚人号"},
+ {id:"LX-012",name:"萨卡兹",alias:"SARKAZ",cat:"泰拉古族",intro:"泰拉大陆最古老的种族之一，因“魔王”血脉与千年仇恨而命运多舛。卡兹戴尔的内战、王庭的野心，皆是其悲剧的延续。",subs:"分支：血魔 · 温迪戈 · 石翼魔等"},
+ {id:"LX-013",name:"邪魔",alias:"DEMON",cat:"泰拉之外",intro:"游荡于泰拉之外的异形存在，对认知与存在本身构成威胁。其“坍缩”之力甚至能侵蚀源石技艺的规则，是乌萨斯北境最深的恐惧。",subs:"相关：坍缩 · 北境防线"},
+ {id:"LX-014",name:"岁",alias:"SUI",cat:"炎国传说",intro:"炎国的神兽“岁”，其碎片散落为十二位“岁兽”，于玉门、尚蜀等地以人类之姿行走。岁兽与炎国朝廷的博弈，延续千年。",subs:"相关：炎国十二城 · 玉门"},
+ {id:"LX-015",name:"海嗣",alias:"SEA TERRORS",cat:"深海生态",intro:"栖息于阿戈尔深海的异形生物，是大静谧的源头。海嗣拥有恐怖的繁殖力与同化力，深海猎人正是为猎杀海嗣而存在。",subs:"威胁等级：逼近天灾级"},
+ {id:"LX-016",name:"大静谧",alias:"THE SILENT",cat:"前纪元灾变",intro:"远古时期发生于深海的灾变，阿戈尔文明由此沉入深海、与陆地隔绝。大静谧的真相，与海嗣的起源纠缠不清。",subs:"时间：前文明纪元"},
+ {id:"LX-017",name:"黑冠",alias:"BLACK CROWN",cat:"萨卡兹王权",intro:"萨卡兹魔王之冠的碎片，蕴含“众魂”之力。特蕾西娅曾佩戴其残片，试图解读萨卡兹的命运，最终在伦蒂尼姆陨落。",subs:"相关：特蕾西娅 · 众魂"},
+ {id:"LX-018",name:"泰拉",alias:"TERRA",cat:"世界观",intro:"“这片大地”的统称。诸国林立、天灾横行，源石既是文明的阶梯，也是悬于众生头顶的达摩克利斯之剑。",subs:"诸国：乌萨斯 · 龙门 · 维多利亚 · 卡西米尔 · 哥伦比亚等"},
+ {id:"LX-019",name:"乌萨斯",alias:"URUS",cat:"泰拉诸国",intro:"泰拉大陆的庞大帝国，以军事与工业立国。源石工业的扩张与感染者政策的严苛，使其成为时代矛盾的缩影。",subs:"首都：圣骏堡 · 特征：帝国 · 雪原"},
+ {id:"LX-020",name:"维多利亚",alias:"VICTORIA",cat:"泰拉诸国",intro:"泰拉大陆的传统强国，以王权与工业闻名。伦蒂尼姆事变后陷入萨卡兹占领的动荡，王党的复兴之路荆棘遍布。",subs:"首都：伦蒂尼姆 · 特征：王权 · 工业"},
+ {id:"LX-021",name:"卡西米尔",alias:"KAZIMIERZ",cat:"泰拉诸国",intro:"以骑士文化立国的国家，骑士竞技与商业资本并存。银枪天马的传说与无胄盟的阴影，构成卡西米尔的双面。",subs:"首都：大骑士领 · 特征：骑士竞技"},
+ {id:"LX-022",name:"哥伦比亚",alias:"COLUMBIA",cat:"泰拉诸国",intro:"新兴联邦国家，以自由市场与科研立国。雇佣兵产业、实验室与资本的狂欢，让哥伦比亚成为泰拉的“新世界”。",subs:"首都：特里蒙 · 特征：联邦 · 资本"},
+ {id:"LX-023",name:"莱塔尼亚",alias:"LEITHANIA",cat:"泰拉诸国",intro:"以音律与源石技艺闻名的国家，双子女皇治下的王庭与巫王旧响交织。音律既是艺术，也是权力的语言。",subs:"首都：崔林特尔梅 · 特征：音律 · 魔法"},
+ {id:"LX-024",name:"叙拉古",alias:"SIRACUSA",cat:"泰拉诸国",intro:"鲁珀一族的故土，以家族政治与黑帮文化著称。叙拉古的“狼性”，在家族议会与街头枪声之间延续。",subs:"特征：家族议会 · 狼族文化"},
+ {id:"LX-025",name:"拉特兰",alias:"LATTERANO",cat:"泰拉诸国",intro:"萨科塔的圣城之国，以铳械与律法著称。教宗廷、万国信使与“律法”体系，维系着萨科塔的信仰与秩序。",subs:"首都：拉特兰圣城 · 特征：律法 · 铳械"},
+ {id:"LX-026",name:"魔王",alias:"DEMON KING",cat:"萨卡兹概念",intro:"萨卡兹“魔王”的称号与黑冠的象征。魔王的血脉、众魂的诅咒，让这一称号承载着萨卡兹千年的命运。",subs:"关联：特蕾西娅 · 黑冠 · 众魂"},
+ {id:"LX-027",name:"感染者歧视",alias:"DISCRIMINATION",cat:"社会现象",intro:"泰拉大陆对感染者的系统性歧视：就业限制、居住隔离、暴力驱逐。感染者抗议与反抗，成为时代最尖锐的伤口。",subs:"相关：整合运动 · 罗德岛使命"},
+ {id:"LX-028",name:"罗德岛精英干员",alias:"ELITE OPERATORS",cat:"罗德岛编制",intro:"罗德岛战斗序列中的精锐单位，直属凯尔希与博士指挥。迷迭香、煌、浊心斯卡蒂等精英干员，是本舰战力的支柱。",subs:"关联：行动组 · 特别任务"},
+ {id:"LX-029",name:"天灾信使",alias:"CATASTROPHE MESSENGER",cat:"泰拉职业",intro:"预报天灾、引导移动城市避难的职业群体。天灾信使以生命为赌注穿行于风暴边缘，是移动文明存续的关键。",subs:"关联：艾雅法拉 · 艾丝黛尔"},
+ {id:"LX-030",name:"雪怪小队",alias:"YETI SQUAD",cat:"整合运动单位",intro:"整合运动中的精锐小队，由霜星率领。雪怪们在雪原与龙门之间战至最后一人，其悲歌是感染者反抗史的注脚。",subs:"队长：霜星 · 成员多已殉难"},
+ {id:"LX-031",name:"爱国者",alias:"PATRIOT",cat:"泰拉人物",intro:"温迪戈老兵赫拉格·爱国者，乌萨斯军队的传说。整合运动的“盾”，最终以背叛与悲壮落幕于北境雪原。",subs:"身份：温迪戈 · 整合运动领袖之一"},
+ {id:"LX-032",name:"霜星",alias:"FROSTNOVA",cat:"泰拉人物",intro:"整合运动的术师领袖，雪怪小队队长。源石技艺“寒霜”与悲剧命运交织，她与罗德岛的对峙，是切城事变最冷的篇章。",subs:"身份：卡特斯 · 整合运动干部"},
+ {id:"LX-033",name:"塔露拉",alias:"TALULAH",cat:"泰拉人物",intro:"整合运动的精神领袖，德拉克血脉的继承者。理想与疯狂在她体内角力，最终将整合运动引向毁灭。",subs:"身份：德拉克 · 整合运动首领"},
+ {id:"LX-034",name:"特蕾西娅",alias:"THERESA",cat:"泰拉人物",intro:"萨卡兹王女，巴别塔的建立者。佩戴黑冠、聆听众魂，试图为萨卡兹找到不流血的道路，最终陨落于伦蒂尼姆。",subs:"身份：萨卡兹王女 · 巴别塔领袖"},
+ {id:"LX-035",name:"普瑞赛斯",alias:"PRISE",cat:"泰拉人物",intro:"前文明的最后幸存者之一，PRTS系统的“另一把钥匙”。博士沉睡前的同行者，其留言贯穿泰拉与前文明的鸿沟。",subs:"关联：博士 · 前文明 · PRTS"},
+ {id:"LX-036",name:"迷迭香",alias:"ROSEMARY",cat:"罗德岛人物",intro:"罗德岛精英干员，源石技艺“强化”的持有者。沉默寡言的少女，其档案与莱茵生命的实验旧案相关。",subs:"身份：罗德岛精英干员"},
+ {id:"LX-037",name:"煌",alias:"BLAZE",cat:"罗德岛人物",intro:"罗德岛精英干员，以烈焰大剑著称的行动组组长。乐观爽朗的战斗狂，是博士最得力的左膀右臂之一。",subs:"身份：罗德岛精英干员"},
+ {id:"LX-038",name:"临光家族",alias:"NEARL FAMILY",cat:"卡西米尔家族",intro:"卡西米尔传奇骑士世家：玛嘉烈、玛莉娅、玛恩纳。家族的荣光与阴影，是卡西米尔骑士精神变迁的缩影。",subs:"成员：玛嘉烈 · 玛莉娅 · 玛恩纳"}
+
+],
+reps:[
+ {id:"RP-001",name:"作战记录",alias:"COMBAT RECORD",cat:"作战档案",intro:"记录罗德岛历次行动的作战资料，包含部署方案、干员编成与战果评估，供战术复盘与新人训练使用。",subs:"分类：训练记录 · 行动记录 · 危机合约"},
+ {id:"RP-002",name:"基建排班",alias:"BASE SCHEDULE",cat:"运营档案",intro:"罗德岛基建系统的日常运转记录：制造站、贸易站、发电站与宿舍的排班轮换，由PRTS统筹优化，保障本舰自给自足。",subs:"设施：制造站 · 贸易站 · 发电站 · 宿舍 · 会客室"},
+ {id:"RP-003",name:"龙门币",alias:"LMD",cat:"经济档案",intro:"泰拉大陆通行的通用货币，源于龙门的铸币与信用体系。罗德岛的物资采购、干员薪酬与基建运转，均以龙门币结算。",subs:"汇率：由龙门中央银行与商会共同维护"},
+ {id:"RP-004",name:"理智",alias:"SANITY",cat:"作战档案",intro:"PRTS为干员行动负荷设立的量化指标。高强度源石技艺与连续作战会消耗理智，PRTS据此建议作战强度并安排休整。",subs:"恢复：时间 · 休整设施"},
+ {id:"RP-005",name:"公开招募",alias:"RECRUITMENT",cat:"人事档案",intro:"罗德岛面向泰拉全域的干员招募程序。申请人经测试定级后编入相应部门，特殊人才由凯尔希与博士直接审核。",subs:"标签：近战位 / 远程位 · 输出 / 防护 / 支援 / 费用回复"},
+ {id:"RP-006",name:"战术演习",alias:"TACTICAL DRILL",cat:"作战档案",intro:"罗德岛日常的战术演练记录，涵盖干员配合、地形适应与源石技艺协同，是维持本舰战斗力的基础保障。",subs:"频率：每日例行 · 大型演习按月开展"},
+ {id:"RP-007",name:"剿灭作战",alias:"ANNIHILATION",cat:"作战档案",intro:"针对感染者聚集区或天灾区域的清剿行动，由PRTS划定作战区域并监控战果。行动目标为清除威胁、回收源石结晶。",subs:"记录：完成度 · 精英化奖励"},
+ {id:"RP-008",name:"危机合约",alias:"CONTINGENCY CONTRACT",cat:"特训档案",intro:"PRTS定期发布的极限特训方案，通过施加严苛限制模拟极端战场。干员在此类合约中的表现，将影响后续部署评估。",subs:"形式：赛季制 · 每日轮换行动"},
+ {id:"RP-009",name:"集成战略",alias:"INTEGRATED STRATEGIES",cat:"探索档案",intro:"PRTS为干员生成的高风险探索任务，深入未知地域调查异常现象。任务充满随机性，考验临时编队与临场决策。",subs:"主题：傀影与猩红孤钻 · 水月与深蓝之树 · 萨米"},
+ {id:"RP-010",name:"保全派驻",alias:"STATIONARY SECURITY",cat:"驻防档案",intro:"派驻干员至泰拉各地的长期安保任务记录，涵盖驻地环境、交接流程与风险评估，是罗德岛对外影响力的延伸。",subs:"区域：哥伦比亚 · 谢拉格 · 维多利亚等"},
+ {id:"RP-011",name:"悖论模拟",alias:"PARADOX SIMULATION",cat:"个人档案",intro:"PRTS为每位干员量身定制的战术推演，模拟其在理想条件下的作战场景。旨在发掘干员能力的边界与新的可能。",subs:"目标：干员个人能力评估"},
+ {id:"RP-012",name:"基建信赖",alias:"TRUST",cat:"人事档案",intro:"记录干员与罗德岛、博士之间信赖关系的成长档案。信赖等级提升，将开放更多语音与个人故事。",subs:"等级：0—200 · 信赖加成同步作战"},
+ {id:"RP-013",name:"主线章节记录",alias:"STORY ARCHIVES",cat:"剧情档案",intro:"PRTS收录的主线剧情行动记录：从序章「黑暗时代·上」到第15章「尘埃落定」，罗德岛的航迹在此完整留存。",subs:"章节：序章—第15章 · 含剧情回顾"},
+ {id:"RP-014",name:"危机合约·赛季记录",alias:"CC SEASONS",cat:"特训档案",intro:"历届危机合约赛季的作战评估：黄铁、利刃、燃灰、铅封、光谱、蛮鳞、松烟、赝波、渊默、尘环……每一季都是极限的试炼。",subs:"赛季：黄铁—尘环 · 合约难度：18+"},
+ {id:"RP-015",name:"干员密录",alias:"OPERATOR RECORDS",cat:"个人档案",intro:"干员个人故事档案，记录他们加入罗德岛之前的经历、心中的执念与不为人知的夜晚。",subs:"收录：干员个人剧情 · 信赖解锁"},
+ {id:"RP-016",name:"干员语音档案",alias:"VOICE ARCHIVES",cat:"个人档案",intro:"PRTS收录的干员语音记录：任命、信赖、作战、晋升……每一段语音都是干员与罗德岛羁绊的切片。",subs:"分类：任命 · 信赖 · 晋升 · 作战"}
+
+]
+};
+/* 干员图库顺序 */
+const GALLERY = DB.ops;
+/* 轮播精选 */
+const REEL = [
+ {t:"干员",name:"阿米娅",alias:"AMIYA · R001",desc:"罗德岛公开领袖。背负着过去与未来的术师。",ref:"OP-001"},
+ {t:"组织",name:"罗德岛",alias:"RHODES ISLAND",desc:"以治愈感染者为使命的移动堡垒，你的家。",ref:"ORG-001"},
+ {t:"干员",name:"凯尔希",alias:"KAL'TSIT · R002",desc:"罗德岛医疗部门负责人，秩序的守护者。",ref:"OP-008"},
+ {t:"地理",name:"切尔诺伯格",alias:"CHERNOBOG",desc:"一切开始的地方。天灾与暴动的废墟。",ref:"GEO-002"},
+ {t:"词库",name:"源石",alias:"ORIGINIUM",desc:"泰拉的能源与诅咒，文明的基石。",ref:"LX-001"},
+ {t:"干员",name:"德克萨斯",alias:"TEXAS · PL02",desc:"企鹅物流的沉默押运员。",ref:"OP-002"},
+ {t:"年表",name:"切尔诺伯格事变",alias:"泰拉历 1096",desc:"整合运动暴动，博士于石棺中苏醒。",ref:"TL-003"},
+ {t:"干员",name:"银灰",alias:"SILVERASH · SI01",desc:"喀兰贸易总裁，谢拉格的雪之王。",ref:"OP-006"},
+ {t:"组织",name:"整合运动",alias:"REUNION",desc:"以反抗为名的感染者风暴，终成悲剧。",ref:"ORG-002"},
+ {t:"地理",name:"龙门",alias:"LUNGMEN",desc:"炎国特别行政区，商业与权力的漩涡。",ref:"GEO-003"},
+ {t:"词库",name:"矿石病",alias:"ORIPATHY",desc:"源石带来的绝症，罗德岛毕生之敌。",ref:"LX-002"},
+ {t:"干员",name:"陈",alias:"CHEN · LM04",desc:"龙门近卫局高级警司，赤霄的主人。",ref:"OP-007"},
+ {t:"组织",name:"莱茵生命",alias:"RHINE LAB",desc:"特里蒙的科研巨头，理想与代价并行。",ref:"ORG-005"},
+ {t:"干员",name:"W",alias:"W · 萨卡兹雇佣兵",desc:"战场上最危险的信号。",ref:"OP-009"},
+ {t:"地理",name:"伦蒂尼姆",alias:"LONDINIUM",desc:"维多利亚的首都，王座下的暗流。",ref:"GEO-004"},
+ {t:"词库",name:"PRTS",alias:"PRIMITIVE RHODES ISLAND TERMINAL SERVICE",desc:"原生罗德岛终端服务——也就是我。",ref:"LX-007"},
+ {t:"干员",name:"能天使",alias:"EXUSIAI · PL03",desc:"企鹅物流的狂热信使，枪与好运。",ref:"OP-003"},
+ {t:"年表",name:"维多利亚事变",alias:"泰拉历 1099",desc:"伦蒂尼姆的叛乱，萨卡兹的复国之路。",ref:"TL-006"},
+ {t:"干员",name:"塞雷娅",alias:"SARIA · 铁卫",desc:"前莱茵生命防卫科主任。",ref:"OP-010"},
+ {t:"组织",name:"巴别塔",alias:"BABEL",desc:"特蕾西娅的理想之国，与一场未竟的悲剧。",ref:"ORG-006"},
+ {t:"词库",name:"博士",alias:"THE DOCTOR",desc:"权限等级8。罗德岛三大创始人之一，本终端的使用者。",ref:"LX-010"},
+ {t:"干员",name:"星熊",alias:"HOSHIGUMA · LGD",desc:"龙门近卫局的重装之盾。",ref:"OP-011"},
+ {t:"年表",name:"孤星",alias:"泰拉历 1100",desc:"特里蒙的科研盛典，莱茵生命的旧案重燃。",ref:"TL-016"},
+ {t:"干员",name:"史尔特尔",alias:"SURTR · 莱万汀",desc:"神剑莱万汀的主人，身世成谜的剑士。",ref:"OP-019"},
+ {t:"干员",name:"泥岩",alias:"MUDROCK · 泥岩小队",desc:"卡兹戴尔的萨卡兹战士，大地不会说谎。",ref:"OP-020"},
+ {t:"组织",name:"喀兰贸易",alias:"KARLAND TRADE",desc:"银灰的商路，贯穿雪山与世界的贸易线。",ref:"ORG-007"},
+ {t:"地理",name:"汐斯塔",alias:"SIESTA",desc:"维多利亚的海滨度假城，火山与海浪。",ref:"GEO-006"},
+ {t:"词库",name:"石棺",alias:"SARC",desc:"前文明医疗舱，博士沉睡三年之处。",ref:"LX-009"},
+ {t:"年表",name:"生于黑夜",alias:"泰拉历 1093",desc:"萨卡兹内战，特蕾西娅陨落之夜。",ref:"TL-009"},
+ {t:"干员",name:"推进之王",alias:"SIEGE · 格拉斯哥帮",desc:"维多利亚的王位继承者，伦蒂尼姆的地下女王。",ref:"OP-045"},
+ {t:"组织",name:"深海猎人",alias:"ABYSSAL HUNTERS",desc:"阿戈尔的猎杀者，直面大静谧的阴影。",ref:"ORG-010"},
+ {t:"词库",name:"岁",alias:"SUI",desc:"炎国的神兽，碎片散落人间千年。",ref:"LX-014"}
+];
+/* 档案关联（干员 ↔ 组织） */
+const LINKS = {
+ "OP-001":["ORG-001"], "OP-002":["ORG-004"], "OP-003":["ORG-004"], "OP-004":["ORG-001"],
+ "OP-005":["ORG-001"], "OP-006":["ORG-007"], "OP-007":["ORG-003"], "OP-008":["ORG-001"],
+ "OP-009":["ORG-001","ORG-006"], "OP-010":["ORG-005","ORG-001"],
+ "OP-011":["ORG-003"], "OP-012":["ORG-005","ORG-001"], "OP-013":["ORG-005","ORG-001"],
+ "OP-014":["ORG-005","ORG-001"], "OP-015":["ORG-001"], "OP-016":["ORG-005","ORG-001"],
+ "OP-017":["ORG-005","ORG-001"], "OP-018":["ORG-005","ORG-001"], "OP-019":["ORG-001"],
+ "OP-020":["ORG-001"], "OP-021":["ORG-012","ORG-001"], "OP-022":["ORG-012","ORG-001"],
+ "OP-025":["ORG-001","ORG-009"], "OP-026":["ORG-001","ORG-009"], "OP-027":["ORG-001","ORG-009","ORG-012"],
+ "OP-028":["ORG-008","ORG-001"], "OP-029":["ORG-008","ORG-001"], "OP-030":["ORG-008","ORG-001"],
+ "OP-031":["ORG-004"], "OP-032":["ORG-004"], "OP-033":["ORG-003"],
+ "OP-034":["ORG-011","ORG-001"], "OP-035":["ORG-011","ORG-001"], "OP-036":["ORG-011","ORG-001"], "OP-037":["ORG-011","ORG-001"],
+ "OP-038":["ORG-019","ORG-001"], "OP-039":["ORG-001"], "OP-040":["ORG-014","ORG-001"],
+ "OP-041":["ORG-014","ORG-001"], "OP-042":["ORG-014","ORG-001"], "OP-043":["ORG-010","ORG-001"],
+ "OP-044":["ORG-010","ORG-027","ORG-001"], "OP-045":["ORG-013","ORG-020","ORG-001"],
+ "OP-046":["ORG-013","ORG-001"], "OP-047":["ORG-013","ORG-001"], "OP-048":["ORG-021","ORG-001"],
+ "ORG-007":["OP-006"], "ORG-008":["OP-028","OP-029","OP-030"], "ORG-009":["OP-025","OP-026","OP-027"],
+ "ORG-010":["OP-023","OP-024","OP-043","OP-044"], "ORG-011":["OP-034","OP-035","OP-036","OP-037"],
+ "ORG-012":["OP-021","OP-022","OP-027"], "ORG-013":["OP-045","OP-046","OP-047"],
+ "ORG-014":["OP-040","OP-041","OP-042"], "ORG-019":["OP-038"], "ORG-020":["OP-045"],
+ "ORG-021":["OP-048"], "ORG-027":["OP-044"],
+ "ORG-001":["OP-001","OP-008","OP-005","OP-004","OP-010","OP-009","OP-006","OP-012","OP-014","OP-015","OP-020","OP-023","OP-024","OP-025","OP-026","OP-027","OP-028","OP-029","OP-030","OP-034","OP-035","OP-036","OP-037","OP-038","OP-039","OP-040","OP-041","OP-042","OP-043","OP-044","OP-045","OP-046","OP-047","OP-048"]
+};
+const savedKey = "prts_saved";
+let saved = [];
+try{saved = JSON.parse(localStorage.getItem(savedKey) || "[]")}catch(e){}
+/* ===== 工具 ===== */
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function findRef(id){
+  for(const k of ["ops","orgs","geo","tl","lex","reps"]){
+    const f = DB[k].find(x => x.id === id);
+    if(f) return {cat:k, item:f};
+  }
+  return null;
+}
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove("on"), 1800);
+}
+/* ===== 音效引擎（Web Audio 合成） ===== */
+let _LS=null; try{_LS=window.localStorage}catch(e){}
+const SFX = {ctx:null,master:null,on:(_LS?_LS.getItem("prts_snd"):null)!=="0"};
+function ac(){
+  if(!SFX.ctx){ SFX.ctx = new (window.AudioContext || window.webkitAudioContext)(); SFX.master = SFX.ctx.createGain(); SFX.master.gain.value = .5; SFX.master.connect(SFX.ctx.destination); }
+  if(SFX.ctx.state === "suspended") SFX.ctx.resume();
+  return SFX.ctx;
+}
+function tone(f0,f1,dur,type,vol,delay){
+  if(!SFX.on) return;
+  try{
+    const c = ac(), t0 = c.currentTime + (delay || 0);
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type || "square";
+    o.frequency.setValueAtTime(f0, t0);
+    o.frequency.exponentialRampToValueAtTime(Math.max(f1,1), t0 + dur);
+    g.gain.setValueAtTime(vol || .12, t0);
+    g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+    o.connect(g); g.connect(SFX.master);
+    o.start(t0); o.stop(t0 + dur + .02);
+  }catch(e){}
+}
+const sfx = {
+  boot(){ tone(220,880,.5,"sine",.1); tone(330,1320,.7,"sine",.08,.12); },
+  switch(){ tone(180,240,.09,"square",.06); tone(320,420,.07,"square",.04,.05); },
+  open(){ tone(520,880,.16,"sine",.09); tone(880,1320,.2,"sine",.05,.07); },
+  close(){ tone(880,440,.14,"sine",.07); },
+  fav(){ tone(660,990,.09,"sine",.09); tone(990,1320,.12,"sine",.07,.08); },
+  deny(){ tone(180,90,.22,"sawtooth",.08); },
+  click(){ tone(420,520,.05,"square",.035); },
+  key(){ tone(300,320,.04,"sine",.02); }
+};
+/* ===== 音乐引擎（合成 3 曲） ===== */
+const MUSIC = [
+ {name:"PRTS 环境音", len:0, kind:"amb"},
+ {name:"罗德岛节拍", len:0, kind:"beat"},
+ {name:"泰拉脉冲", len:0, kind:"pulse"}
+];
+const MUS = {ctx:null,out:null,cur:0,playing:false,timer:null,t0:0,pos:0};
+function mctx(){ if(!MUS.ctx){ MUS.ctx = new (window.AudioContext || window.webkitAudioContext)(); MUS.out = MUS.ctx.createGain(); MUS.out.gain.value = .34; MUS.out.connect(MUS.ctx.destination); } if(MUS.ctx.state==="suspended") MUS.ctx.resume(); return MUS.ctx; }
+function stopSeq(){ if(MUS.timer) clearInterval(MUS.timer); MUS.timer=null; }
+function playAmb(){
+  const c = mctx();
+  const lfo = c.createOscillator(), lg = c.createGain();
+  lfo.frequency.value = .09; lg.gain.value = 55;
+  lfo.connect(lg);
+  const f = c.createOscillator(), g = c.createGain();
+  f.type = "sine"; f.frequency.value = 82; g.gain.value = .12;
+  lg.connect(f.frequency);
+  f.connect(g); g.connect(MUS.out);
+  const f2 = c.createOscillator(), g2 = c.createGain();
+  f2.type = "sine"; f2.frequency.value = 165; g2.gain.value = .05;
+  f2.connect(g2); g2.connect(MUS.out);
+  const f3 = c.createOscillator(), g3 = c.createGain();
+  f3.type = "triangle"; f3.frequency.value = 246; g3.gain.value = .03;
+  f3.connect(g3); g3.connect(MUS.out);
+  f.start(); f2.start(); f3.start(); lfo.start();
+  MUS.stop = () => { try{ f.stop(); f2.stop(); f3.stop(); lfo.stop(); }catch(e){} };
+}
+function playBeat(bpm, pattern){
+  const c = mctx();
+  const spb = 60 / bpm;
+  let step = 0;
+  const tick = () => {
+    const t0 = c.currentTime;
+    for(let i=0;i<pattern.steps;i++){
+      const p = pattern.seq[i];
+      if(p){
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = p.t || "square";
+        o.frequency.value = p.f || 220;
+        g.gain.setValueAtTime(p.v || .06, t0 + i*spb);
+        g.gain.exponentialRampToValueAtTime(.0001, t0 + i*spb + spb*.8);
+        o.connect(g); g.connect(MUS.out);
+        o.start(t0 + i*spb); o.stop(t0 + i*spb + spb);
+      }
+    }
+    step++;
+  };
+  tick();
+  MUS.timer = setInterval(tick, spb * pattern.steps * 1000);
+  MUS.stop = () => stopSeq();
+}
+const BEAT1 = {steps:8, seq:[{f:110,v:.05},{f:0},{f:220,t:"sine",v:.04},{f:0},{f:110,v:.05},{f:165,t:"triangle",v:.04},{f:220,t:"sine",v:.05},{f:0}]};
+const BEAT2 = {steps:16, seq:[{f:98,v:.055},{f:0},{f:0},{f:147,t:"triangle",v:.04},{f:98,v:.05},{f:0},{f:0},{f:196,t:"sine",v:.05},{f:98,v:.055},{f:0},{f:147,t:"triangle",v:.03},{f:0},{f:98,v:.05},{f:0},{f:247,t:"sine",v:.06},{f:0}]};
+function startMusic(i){
+  stopSeq(); if(MUS.stop){ try{MUS.stop()}catch(e){} MUS.stop = null; }
+  MUS.cur = i;
+  const m = MUSIC[i];
+  if(m.kind === "amb"){ playAmb(); MUS.len = 999; }
+  else if(m.kind === "beat"){ playBeat(96, BEAT1); MUS.len = 999; }
+  else { playBeat(120, BEAT2); MUS.len = 999; }
+  MUS.playing = true;
+  $("#mbPlay").textContent = "■";
+  $("#mbName").textContent = m.name;
+  $("#mbPlay").classList.add("live");
+}
+function pauseMusic(){
+  if(MUS.timer) clearInterval(MUS.timer);
+  MUS.timer = null;
+  if(MUS.stop){ try{MUS.stop()}catch(e){} MUS.stop = null; }
+  MUS.playing = false;
+  $("#mbPlay").textContent = "▶";
+  $("#mbPlay").classList.remove("live");
+}
+function toggleMusic(){
+  if(!MUS.playing){ startMusic(MUS.cur); toast("音乐 · " + MUSIC[MUS.cur].name); }
+  else pauseMusic();
+}
+/* ===== 状态 ===== */
+const S = {boot:true, mode:"reel", reel:0, curDir:"ops", curId:null, view:"list", gIndex:0, gViewOn:false};
+const bootLines = [
+ ["PRTS TERMINAL v4.0 · 原生罗德岛终端服务", "acc"],
+ ["PRIMITIVE RHODES ISLAND TERMINAL SERVICE", "dim"],
+ ["> 初始化核心系统 CORE.SYS", "ok"],
+ ["> 装载泰拉大典数据库（1,024 条记录）", "ok"],
+ ["> 连接罗德岛本舰 · 中层甲板核心机房", "ok"],
+ ["> 同步移动城市主干网络", "ok"],
+ ["> 执行权限扫描 LEVEL-8", "ok"],
+ ["> 身份确认 → 博士", "acc"],
+ ["> 欢迎回来，博士。", "acc"]
+];
+/* ===== 开机 ===== */
+function bootRun(){
+  const el = $("#bootLines");
+  el.innerHTML = "";
+  sfx.boot();
+  let i = 0;
+  const fnEl = $("#bootFn");
+  const fnInt = setInterval(() => {
+    fnEl.textContent = "FN-" + String(Math.floor(Math.random()*10000)).padStart(4,"0");
+  }, 45);
+  const iv = setInterval(() => {
+    if(i < bootLines.length){
+      const [t, cls] = bootLines[i];
+      const div = document.createElement("div");
+      div.textContent = t;
+      el.appendChild(div);
+      const pct = Math.round((i+1)/bootLines.length*100);
+      $("#bProgBar").style.width = pct + "%";
+      $("#bProgNum").textContent = pct + "%";
+      if(cls === "ok"){
+        const ok = document.createElement("span");
+        ok.className = "okmark"; ok.textContent = "  OK";
+        div.appendChild(ok);
+      }else if(cls === "acc"){
+        div.className = "acc";
+        setTimeout(() => div.classList.add("ok"), 500);
+      }else if(cls === "dim"){
+        div.className = "dim";
+      }
+      i++;
+    }else{
+      clearInterval(iv);
+      clearInterval(fnInt);
+      $("#bProgBar").style.width = "100%";
+      $("#bProgNum").textContent = "100%";
+      fnEl.textContent = "FN-2049";
+      fnEl.classList.add("flash");
+      setTimeout(() => fnEl.classList.remove("flash"), 800);
+      setTimeout(() => { $("#bootPress").style.display = "block"; }, 180);
+    }
+  }, 320);
+  const enter = () => {
+    window.removeEventListener("keydown", enter);
+    $("#boot").style.transition = "opacity .45s ease";
+    $("#boot").style.opacity = "0";
+    setTimeout(() => {
+      $("#boot").classList.add("hidden");
+      $("#shell").classList.add("on");
+      S.boot = false;
+      renderReel();
+    }, 450);
+  };
+  window.addEventListener("keydown", enter);
+  $("#boot").addEventListener("click", enter, {once:true});
+  if("ontouchstart" in window) $("#boot").addEventListener("touchstart", enter, {once:true, passive:true});
+}
+/* ===== 轮播 ===== */
+function reelBg(){
+  const bg = $("#pvBg");
+  let h = "";
+  for(let i=0;i<22;i++) h += `<div class="strip ${i%5===0?"off":""}"></div>`;
+  bg.innerHTML = h + `<div class="glow"></div><div class="beam"></div>`;
+}
+function rollNum(el, val){
+  const digits = String(val).padStart(2,"0");
+  el.style.transform = `translateY(-${val*1.5}em)`; 
+  el.innerHTML = "";
+  for(let i=0;i<10;i++){
+    const d = document.createElement("span");
+    d.className = "digit";
+    d.textContent = String(i).padStart(2,"0");
+    el.appendChild(d);
+  }
+  el.style.transform = `translateY(-${val*1.5}em)`;
+}
+function renderReel(anim){
+  const r = REEL[S.reel];
+  const ref = findRef(r.ref);
+  const idxEl = $("#reelIdx");
+  idxEl.innerHTML = "";
+  REEL.forEach((_, i) => {
+    const d = document.createElement("i");
+    if(i === S.reel) d.className = "sel";
+    idxEl.appendChild(d);
+  });
+  $("#rcCat").textContent = r.t;
+  $("#rcName").textContent = r.name;
+  const rn = $("#rcName");
+  rn.classList.add("fz");
+  requestAnimationFrame(() => requestAnimationFrame(() => rn.classList.remove("fz")));
+  $("#rcAlias").textContent = r.alias;
+  $("#rcDesc").textContent = r.desc;
+  $("#rpCur").textContent = String(S.reel+1).padStart(2,"0");
+  $("#rpTot").textContent = String(REEL.length).padStart(2,"0");
+  const numEl = $("#rcNum");
+  numEl.innerHTML = "";
+  for(let i=0;i<20;i++){
+    const d = document.createElement("span");
+    d.className = "digit";
+    d.textContent = String(i).padStart(2,"0");
+    numEl.appendChild(d);
+  }
+  numEl.style.transform = `translateY(-${S.reel*1.5}em)`;
+  $("#sbSel").textContent = "REC: " + r.name;
+  const rcEl = $("#reelCenter");
+  rcEl.classList.remove("anim");
+  requestAnimationFrame(() => requestAnimationFrame(() => rcEl.classList.add("anim")));
+  if(ref){
+    const isFav = saved.includes(ref.item.id);
+    $("#rcFav").innerHTML = isFav ? "已收藏 · <b>★</b>" : "收藏档案 · <b>SAVE</b>";
+  }
+}
+let _fxBusy = false;
+function goReel(d){
+  sfx.switch();
+  S.reel = (S.reel + d + REEL.length) % REEL.length;
+  _fxBusy = true;
+  const c = $("#reelCenter");
+  c.style.transition = "none";
+  c.style.transform = `translateX(${-d*64}px) translateZ(${-d*90}px) rotateY(${-d*36}deg)`;
+  c.style.opacity = "0";
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    renderReel(true);
+    c.style.transition = "transform .55s cubic-bezier(.16,.8,.28,1),opacity .32s ease";
+    c.style.transform = "translateX(0) translateZ(0) rotateY(0)";
+    c.style.opacity = "1";
+    setTimeout(() => { _fxBusy = false; }, 620);
+  }));
+}
+/* ===== PV 详情 ===== */
+function openPvDetail(id){
+  const ref = findRef(id);
+  if(!ref) return;
+  sfx.open();
+  S.curId = id;
+  const it = ref.item;
+  $("#pdFile").textContent = it.id;
+  $("#pcName").textContent = it.name;
+  $("#pcAlias").textContent = it.alias || "";
+  const isOp = ref.cat === "ops";
+  const img = isOp && it.img ? `<img src="${it.img}" alt="${esc(it.name)}">` : "";
+  $("#pcImg").innerHTML = img;
+  const kvs = isOp ? [
+    ["代号", it.name], ["种族", it.race], ["职业", it.job], ["出身地", it.birth],
+    ["生日", it.bd], ["身高", it.h], ["职能", it.role], ["专精", it.exp]
+  ] : [
+    ["编号", it.id], ["类别", it.cat || it.y || ""], ["职能", it.role || ""], ["隶属", ref.cat === "tl" ? "泰拉年表" : ref.cat === "geo" ? "泰拉地理" : ref.cat === "orgs" ? "泰拉机构" : "泰拉词库"]
+  ];
+  let tbl = kvs.map(([k,v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join("");
+  let doc = `<h2>${esc(it.name)}</h2><div class="code">${esc(it.id)} · ${esc(it.alias || "")}</div>`;
+  doc += `<table class="tbl">${tbl}</table>`;
+  doc += `<p>${esc(it.intro)}</p>`;
+  if(it.quote) doc += `<p>${esc(it.quote)}</p>`;
+  if(it.line) doc += `<p style="color:var(--accent2)">${esc(it.line)}</p>`;
+  if(it.subs) doc += `<p style="color:var(--ink3);font-size:11px">${esc(it.subs)}</p>`;
+  if(isOp && it.phys){
+    const arr = it.phys.split(" ");
+    doc += `<table class="tbl"><tr><td>物理强度</td><td>${arr[0]}</td></tr><tr><td>战场机动</td><td>${arr[1]}</td></tr><tr><td>生理耐受</td><td>${arr[2]}</td></tr><tr><td>战术规划</td><td>${arr[3]}</td></tr><tr><td>战斗技巧</td><td>${arr[4]}</td></tr><tr><td>源石技艺适应性</td><td>${arr[5]}</td></tr></table>`;
+  }
+  doc += relLinks(id);
+  $("#pdDoc").innerHTML = doc;
+  const pdEl = $("#pdDoc");
+  pdEl.classList.remove("anim");
+  requestAnimationFrame(() => requestAnimationFrame(() => pdEl.classList.add("anim")));
+  $("#pvDetail").classList.add("on");
+}
+function closePvDetail(){ sfx.close(); $("#pvDetail").classList.remove("on"); }
+/* ===== 图库 ===== */
+function renderGallery(){
+  const g = $("#gGrid");
+  g.innerHTML = GALLERY.map((op, i) => `
+    <div class="g-item" data-i="${i}" style="animation-delay:${Math.min(i*26,320)}ms">
+      <img src="${op.img}" alt="${esc(op.name)}" loading="lazy">
+      <div class="g-tag">${String(i+1).padStart(2,"0")} · ${esc(op.name)} — ${esc(op.alias)}</div>
+    </div>`).join("");
+  $("#gCount").textContent = "00 / " + String(GALLERY.length).padStart(2,"0");
+}
+function openGView(i){
+  S.gIndex = (i + GALLERY.length) % GALLERY.length;
+  const op = GALLERY[S.gIndex];
+  $("#gvImg").src = op.img;
+  $("#gvImg").alt = op.name;
+  $("#gvCap").innerHTML = `<b>${String(S.gIndex+1).padStart(2,"0")}</b> · ${esc(op.name)} — ${esc(op.alias)}`;
+  $("#gvCount").textContent = String(S.gIndex+1).padStart(2,"0") + " / " + String(GALLERY.length).padStart(2,"0");
+  $("#gView").classList.add("on");
+  S.gViewOn = true;
+}
+function closeGView(){ $("#gView").classList.remove("on"); S.gViewOn = false; }
+function toggleGallery(on){
+  const g = $("#gallery");
+  if(on){ renderGallery(); g.classList.add("on"); S.mode = "gallery"; sfx.open(); }
+  else { g.classList.remove("on"); $("#gView").classList.remove("on"); S.gViewOn=false; S.mode = "reel"; }
+}
+/* ===== 灯箱 ===== */
+function openLightbox(src){
+  $("#lbImg").src = src;
+  $("#lightbox").classList.add("on");
+}
+function closeLightbox(){ $("#lightbox").classList.remove("on"); }
+/* ===== 浏览器模式 ===== */
+const DIRS = [
+ {k:"ops", n:"干员档案", ic:"▣"},
+ {k:"orgs", n:"组织名册", ic:"▤"},
+ {k:"geo", n:"地理指南", ic:"◈"},
+ {k:"tl", n:"泰拉年表", ic:"◷"},
+ {k:"lex", n:"泰拉词库", ic:"◇"},
+ {k:"reps", n:"作战汇报", ic:"▸"}
+];
+const CATNAME = {ops:"干员档案", orgs:"组织名册", geo:"地理指南", tl:"泰拉年表", lex:"泰拉词库", reps:"作战汇报"};
+function renderTree(){
+  const t = $("#tree");
+  t.innerHTML = DIRS.map((d,i) => `
+    <div class="tree-item ${S.curDir===d.k?"sel":""}" data-dir="${d.k}">
+      <span class="tg">▶</span><span>${d.ic} ${d.n}</span><span class="cnt">${DB[d.k].length}</span>
+    </div>`).join("");
+  $("#treeCnt").textContent = DB[S.curDir].length;
+}
+function openBrowser(){
+  S.mode = "browser";
+  $("#browser").classList.add("on");
+  $("#reel").style.display = "none";
+  $("#statusbar").style.display = "none";
+  renderTree();
+  renderFiles();
+  $("#sbMode").textContent = "MODE: FILE BROWSER";
+  sfx.open();
+}
+function closeBrowser(){
+  S.mode = "reel";
+  $("#browser").classList.remove("on");
+  $("#reel").style.display = "flex";
+  $("#statusbar").style.display = "flex";
+  $("#sbMode").textContent = "MODE: TERRA LEXICON";
+  $("#detail").classList.add("hidden");
+  S.curId = null;
+}
+function renderFiles(anim){
+  if(anim === undefined) anim = true;
+  const dir = S.curDir;
+  const items = DB[dir].slice();
+  const q = ($("#search").value || "").trim().toLowerCase();
+  const fa = $("#fileArea");
+  const filtered = q ? items.filter(x => (x.name + " " + (x.alias||"") + " " + (x.intro||"")).toLowerCase().includes(q)) : items;
+  const loc = $("#loc");
+  loc.innerHTML = `<b>C:\\PRTS\\TERRA</b> \\ ${CATNAME[dir]} (${filtered.length}/${items.length})`;
+  $("#infoLine").textContent = `${filtered.length} 条记录 · FILE NUMBER 检索`;
+  if(!filtered.length){ fa.innerHTML = `<div class="empty">◇ 未找到匹配档案<br>尝试其他关键词</div>`; return; }
+  if(S.curDir === "tl" && S.view === "list"){
+    fa.innerHTML = `<div class="tl-wrap">` + filtered.map((x,i) => `
+      <div class="tl-item ${x.id===S.curId?"selected":""}" data-id="${x.id}" style="${anim?"animation:rise .35s ease backwards;animation-delay:"+Math.min(i*30,240)+"ms":"animation:none"}">
+        <div class="t">${esc(x.y)}</div>
+        <div class="ax"><div class="dot"></div></div>
+        <div class="c"><div class="n">${hl(x.name, q)}</div><div class="a">${esc(x.id)} · ${esc(x.alias||"")}</div><div class="d">${esc(x.intro.length>60 ? x.intro.slice(0,60)+"…" : x.intro)}</div></div>
+      </div>`).join("") + `</div>`;
+  }else if(S.view === "grid"){
+    fa.innerHTML = `<div id="viewGrid">` + filtered.map((x,i) => `
+      <div class="file-card" data-id="${x.id}">
+        <div class="fic">${dir==="ops"?"▣":dir==="orgs"?"▤":dir==="geo"?"◈":dir==="tl"?"◷":dir==="lex"?"◇":"▸"}</div>
+        <div class="fname">${hl(x.name, q)}</div>
+        <div class="fmeta"><span>${esc(x.id)}</span><span>${esc(x.alias || "")}</span></div>
+      </div>`).join("") + `</div>`;
+  }else{
+    fa.innerHTML = filtered.map((x,i) => `
+      <div class="file-row ${x.id===S.curId?"selected":""}" data-id="${x.id}" style="${anim?"animation-delay:"+Math.min(i*22,300)+"ms":"animation:none"}">
+        <div class="ic">${dir==="ops"?"▣":dir==="orgs"?"▤":dir==="geo"?"◈":dir==="tl"?"◷":dir==="lex"?"◇":"▸"}</div>
+        <div class="nm">${hl(x.name, q)}</div>
+        <div class="meta">${esc(x.id)}</div>
+        <div class="meta">${esc(x.alias||"—")}</div>
+        <div class="meta">${dir==="ops"?(x.job||""):dir==="tl"?(x.y||""):dir==="orgs"?(x.cat||""):dir==="geo"?(x.cat||""):dir==="lex"?(x.cat||""):(x.cat||"")}</div>
+      </div>`).join("");
+  }
+  if(q) sfx.click();
+}
+function hl(t, q){
+  if(!q) return esc(t);
+  const i = t.toLowerCase().indexOf(q);
+  if(i < 0) return esc(t);
+  return esc(t.slice(0,i)) + "<mark>" + esc(t.slice(i,i+q.length)) + "</mark>" + esc(t.slice(i+q.length));
+}
+function physBars(it){
+  const names = ["物理强度","战场机动","生理耐受","战术规划","战斗技巧","源石技艺适应性"];
+  const sc = {"标准":3,"普通":2,"良好":3,"优良":4,"卓越":5,"缺陷":1};
+  const arr = it.phys.split(" ");
+  return `<div class="sec">综合体检测试</div>` + arr.map((v,i)=>{
+    const w = (sc[v]||3)/5*100;
+    return `<div class="pbar"><span class="pk">${names[i]||""}</span><span class="pt"><i style="width:${w}%"></i></span><span class="pv">${esc(v)}</span></div>`;
+  }).join("");
+}
+function relLinks(id){
+  const ls = LINKS[id];
+  if(!ls || !ls.length) return "";
+  return `<div class="sec">关联档案</div><div class="rel">` + ls.map(r => {
+    const ref = findRef(r);
+    return ref ? `<button class="rel-btn" data-rel="${r}">${ref.cat==="orgs"?"▤ ":""}${esc(ref.item.name)}</button>` : "";
+  }).join("") + `</div>`;
+}
+function renderCrumb(){
+  const c = $("#crumb");
+  c.innerHTML = `<span class="seg" data-go="root">PRTS</span><b>›</b><span class="seg" data-go="root">泰拉大典</span><b>›</b><span>${CATNAME[S.curDir]}</span>`;
+}
+function openDetail(id){
+  const ref = findRef(id);
+  if(!ref) return;
+  S.curId = id;
+  S.curDir = ref.cat;
+  const it = ref.item;
+  const isOp = ref.cat === "ops";
+  $("#dTtl").textContent = it.name;
+  $("#dFile").textContent = it.id;
+  let b = "";
+  if(isOp){
+    b += `<div class="dossier">`;
+    if(it.img) b += `<div class="portrait" data-zoom="${it.img}"><img src="${it.img}" alt="${esc(it.name)}"></div>`;
+    b += `<div class="kvs">` + [["代号",it.name],["种族",it.race],["职业",it.job],["出身地",it.birth],["生日",it.bd],["身高",it.h],["职能",it.role],["专精",it.exp]].map(([k,v])=>`<div class="kv"><k>${k}</k><v>${esc(v)}</v></div>`).join("") + `</div>`;
+    b += physBars(it);
+    b += `<div class="sec">档案摘要</div><p>${esc(it.intro)}</p>`;
+    b += `<div class="quote">${esc(it.line||it.quote)}</div>`;
+    b += relLinks(it.id);
+    b += `</div>`;
+  }else{
+    b += `<div class="dossier">`;
+    b += `<div class="kvs">` + [["编号",it.id],["类别",it.cat||it.y||""],["职能",it.role||""]].map(([k,v])=>`<div class="kv"><k>${k}</k><v>${esc(v)}</v></div>`).join("") + `</div>`;
+    b += `<div class="sec">条目摘要</div><p>${esc(it.intro)}</p>`;
+    if(it.quote) b += `<div class="quote">${esc(it.quote)}</div>`;
+    if(it.subs) b += `<div class="sec">附注</div><p style="font-size:11.5px;color:var(--ink3)">${esc(it.subs)}</p>`;
+    b += `</div>`;
+  }
+  $("#dBody").innerHTML = b;
+  $("#dTabs").innerHTML = `
+    <button class="sel" data-tab="0">ABSTRACT</button>
+    <button data-tab="1">RESEARCH NOTES</button>
+    <button data-tab="2">ACCESS LOG</button>`;
+  $("#detail").classList.remove("hidden");
+  renderFiles(false);
+}
+function closeDetail(){ sfx.close(); $("#detail").classList.add("hidden"); S.curId = null; renderFiles(false); }
+function switchTab(n){
+  const btns = [...$("#dTabs").children];
+  btns.forEach((b,i) => b.classList.toggle("sel", i===n));
+  const ref = findRef(S.curId);
+  if(!ref) return;
+  const it = ref.item;
+  if(n===0){
+    const isOp = ref.cat === "ops";
+    let b = isOp ? `<div class="dossier"><div class="kvs">` + [["代号",it.name],["种族",it.race],["职业",it.job],["出身地",it.birth],["生日",it.bd],["身高",it.h],["职能",it.role],["专精",it.exp]].map(([k,v])=>`<div class="kv"><k>${k}</k><v>${esc(v)}</v></div>`).join("") + `</div>` + physBars(it) + `<p>${esc(it.intro)}</p>` + relLinks(it.id) + `</div>` : `<p>${esc(it.intro)}</p>` + relLinks(it.id);
+    $("#dBody").innerHTML = b;
+  }else if(n===1){
+    $("#dBody").innerHTML = `<div class="dossier"><div class="sec">研究笔记 · RESEARCH NOTES</div><p>${esc(it.intro)}</p>${it.subs?`<p>${esc(it.subs)}</p>`:""}${it.quote?`<div class="quote">${esc(it.quote)}</div>`:""}<p style="color:var(--ink3);font-size:11px">注：本条目资料由 PRTS 依《泰拉大典》收录整理，供博士查阅。</p></div>`;
+  }else{
+    const now = new Date();
+    const ts = now.toLocaleString("zh-CN",{hour12:false});
+    $("#dBody").innerHTML = `<div class="dossier"><div class="sec">访问日志 · ACCESS LOG</div><div class="kv"><k>档案</k><v>${esc(it.id)} · ${esc(it.name)}</v></div><div class="kv"><k>访问者</k><v>博士 (LEVEL-8)</v></div><div class="kv"><k>时间</k><v>${ts}</v></div><div class="kv"><k>终端</k><v>PRTS CORE · 中层甲板</v></div><div class="kv"><k>记录</k><v>正常 · 无异常</v></div></div>`;
+  }
+}
+/* ===== 检索面板 ===== */
+function allEntries(){
+  const out = [];
+  for(const k of ["ops","orgs","geo","tl","lex","reps"])
+    DB[k].forEach(x => out.push({cat:k, ...x}));
+  return out;
+}
+function openSearch(){
+  S.mode = "search";
+  $("#t-modal").classList.add("on");
+  $("#tmIn").value = "";
+  $("#tmIn").focus();
+  sfx.open();
+}
+function closeSearch(){ $("#t-modal").classList.remove("on"); S.mode = "reel"; }
+function doSearch(q){
+  const body = $("#tmBody");
+  const all = allEntries();
+  const ql = q.trim().toLowerCase();
+  const hit = ql ? all.filter(x => (x.name + " " + (x.alias||"") + " " + (x.intro||"") + " " + x.id).toLowerCase().includes(ql)) : [];
+  $("#tmCount").textContent = ql ? `ARCHIVE INDEX · ${hit.length} RECORDS FOUND` : `ARCHIVE INDEX · ${all.length} RECORDS TOTAL`;
+  body.innerHTML = hit.slice(0, 60).map((x,i) => `
+    <div class="tm-item" data-id="${x.id}" style="animation-delay:${Math.min(i*22,300)}ms">
+      <span class="ic">${x.cat==="ops"?"▣":x.cat==="orgs"?"▤":x.cat==="geo"?"◈":x.cat==="tl"?"◷":x.cat==="lex"?"◇":"▸"}</span>
+      <span class="nm">${hl(x.name, ql)}</span>
+      <span class="ds">${esc(x.alias||"")} · ${hl((x.intro||"").slice(0,40), ql)}</span>
+      <span class="file">${esc(x.id)}</span>
+    </div>`).join("") || `<div class="empty" style="padding:40px 20px;text-align:center;color:var(--ink3);font-size:12px">◇ 未找到匹配记录</div>`;
+}
+/* ===== SAVED ===== */
+function openSaved(){
+  const items = saved.map(id => findRef(id)).filter(Boolean);
+  const body = $("#tmBody");
+  $("#tmIn").value = "";
+  $("#tmCount").textContent = `SAVED ARCHIVE · ${items.length} RECORDS`;
+  body.innerHTML = items.map(x => `
+    <div class="tm-item" data-id="${x.item.id}">
+      <span class="ic">${x.cat==="ops"?"▣":x.cat==="orgs"?"▤":x.cat==="geo"?"◈":x.cat==="tl"?"◷":x.cat==="lex"?"◇":"▸"}</span>
+      <span class="nm">${esc(x.item.name)}</span>
+      <span class="ds">${esc(x.item.alias||"")}</span>
+      <span class="file">${esc(x.item.id)}</span>
+    </div>`).join("") || `<div class="empty" style="padding:40px 20px;text-align:center;color:var(--ink3);font-size:12px">◇ 暂无收藏档案<br>在档案上点击「收藏」即可加入</div>`;
+  $("#t-modal").classList.add("on");
+  S.mode = "saved";
+  sfx.open();
+}
+function toggleFav(id){
+  if(saved.includes(id)){ saved = saved.filter(x => x !== id); toast("已取消收藏 · " + id); }
+  else { saved.push(id); sfx.fav(); toast("已收藏 · " + id); }
+  try{ localStorage.setItem(savedKey, JSON.stringify(saved)); }catch(e){}
+  renderReel();
+}
+/* ===== CMD 控制台 ===== */
+const CMDS = [
+ ["help", "显示全部命令"], ["ls / dir", "列出当前目录档案"], ["cd <目录>", "切换目录 (ops/orgs/geo/tl/lex/reps)"],
+ ["cat <编号>", "查看档案内容"], ["open <编号>", "打开档案详情"], ["search <词>", "检索泰拉大典"],
+ ["fav <编号>", "收藏档案"], ["gallery", "打开影像图库"], ["music", "切换音乐 / 暂停"],
+ ["snd", "开关音效"], ["mode", "切换至文件浏览器"], ["reel", "返回泰拉大典轮播"],
+ ["theme", "切换界面主题"], ["export", "导出当前档案 TXT"], ["clear", "清屏"], ["reinit", "重启终端"], ["rand", "随机档案"], ["tl", "年表时间轴视图"]
+];
+function cmdOut(h, cls){ 
+  const o = $("#conOut");
+  const d = document.createElement("div");
+  d.innerHTML = h;
+  if(cls) d.className = cls;
+  o.appendChild(d);
+  o.scrollTop = o.scrollHeight;
+}
+function runCmd(raw){
+  const line = raw.trim();
+  const o = $("#conOut");
+  cmdOut(`<span class="c-dim">C:\\PRTS&gt;</span> ${esc(line)}`);
+  if(!line) return;
+  const [cmd, ...rest] = line.split(/\s+/);
+  const arg = rest.join(" ");
+  const c = cmd.toLowerCase();
+  if(c === "help"){
+    CMDS.forEach(([n, d]) => cmdOut(`<span class="c-acc">${n}</span><span class="c-dim">　— ${d}</span>`));
+  }else if(c === "ls" || c === "dir"){
+    DB[S.curDir].forEach(x => cmdOut(`${esc(x.id)}　${esc(x.name)}${x.alias?"  ·  "+esc(x.alias):""}`));
+  }else if(c === "cd"){
+    const t = arg.toLowerCase();
+    if(DIRS.some(d => d.k === t || d.n === t)){ S.curDir = DIRS.find(d => d.k === t || d.n === t).k; renderTree(); renderFiles(); cmdOut(`<span class="c-ok">已切换至 ${CATNAME[S.curDir]}</span>`); }
+    else cmdOut(`<span class="c-err">未知目录：${esc(arg)}（可用 ops/orgs/geo/tl/lex/reps）</span>`);
+  }else if(c === "cat" || c === "open"){
+    const ref = findRef(arg.toUpperCase());
+    if(!ref) cmdOut(`<span class="c-err">未找到档案：${esc(arg)}</span>`);
+    else{ cmdOut(`<span class="c-acc">${esc(ref.item.id)} · ${esc(ref.item.name)}</span><span class="c-dim">${esc(ref.item.intro)}</span>`); openDetail(ref.item.id); }
+  }else if(c === "search"){
+    if(!arg) cmdOut(`<span class="c-err">用法：search &lt;关键词&gt;</span>`);
+    else{ const hits = allEntries().filter(x => (x.name+" "+x.intro+" "+x.alias).toLowerCase().includes(arg.toLowerCase())); cmdOut(`<span class="c-acc">${hits.length} 条结果：</span>`); hits.slice(0,8).forEach(x => cmdOut(`${esc(x.id)} ${esc(x.name)}`)); }
+  }else if(c === "fav"){
+    if(!arg) cmdOut(`<span class="c-err">用法：fav &lt;编号&gt;</span>`);
+    else{ const ref = findRef(arg.toUpperCase()); if(!ref) cmdOut(`<span class="c-err">未找到档案</span>`); else { toggleFav(ref.item.id); cmdOut(`<span class="c-ok">已收藏 ${esc(ref.item.id)}</span>`); } }
+  }else if(c === "gallery"){ toggleGallery(true); cmdOut(`<span class="c-ok">影像图库已开启</span>`); }
+  else if(c === "music"){ toggleMusic(); }
+  else if(c === "snd"){ SFX.on = !SFX.on; try{localStorage.setItem("prts_snd", SFX.on?"1":"0")}catch(e){} cmdOut(`<span class="c-ok">音效 ${SFX.on?"开启":"关闭"}</span>`); $("#mbSnd").textContent = SFX.on ? "SND" : "OFF"; }
+  else if(c === "mode"){ openBrowser(); }
+  else if(c === "reel"){ closeBrowser(); }
+  else if(c === "theme"){
+    const b = document.body;
+    const cur = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+    if(cur === "#0A0C0E"){
+      document.documentElement.style.setProperty("--bg","#F4F7F6"); document.documentElement.style.setProperty("--bg2","#EAF0EE");
+      document.documentElement.style.setProperty("--panel","#FFFFFF"); document.documentElement.style.setProperty("--panel2","#F0F6F4");
+      document.documentElement.style.setProperty("--ink","#16231F"); document.documentElement.style.setProperty("--ink2","#46554F");
+      document.documentElement.style.setProperty("--ink3","#8AA09A"); document.documentElement.style.setProperty("--line","rgba(20,120,100,.14)");
+      document.documentElement.style.setProperty("--line2","rgba(20,120,100,.3)");
+      cmdOut(`<span class="c-ok">已切换：明亮主题（泰拉大典白）</span>`);
+    }else{
+      document.documentElement.style.removeProperty("--bg"); document.documentElement.style.removeProperty("--bg2");
+      document.documentElement.style.removeProperty("--panel"); document.documentElement.style.removeProperty("--panel2");
+      document.documentElement.style.removeProperty("--ink"); document.documentElement.style.removeProperty("--ink2");
+      document.documentElement.style.removeProperty("--ink3"); document.documentElement.style.removeProperty("--line"); document.documentElement.style.removeProperty("--line2");
+      cmdOut(`<span class="c-ok">已切换：暗夜主题（PRTS 核心）</span>`);
+    }
+  }else if(c === "export"){
+    const ref = S.curId ? findRef(S.curId) : null;
+    if(!ref) cmdOut(`<span class="c-err">请先打开一个档案（cat &lt;编号&gt;）</span>`);
+    else{
+      const it = ref.item;
+      const txt = `PRTS · 泰拉大典终端\n====================\n编号：${it.id}\n名称：${it.name} (${it.alias||""})\n类别：${CATNAME[ref.cat]||ref.cat}\n\n${it.intro}\n${it.subs?"\n"+it.subs:""}\n\n— 由 PRTS 依《泰拉大典》收录整理\n访问者：博士 (LEVEL-8)`;
+      const blob = new Blob([txt], {type:"text/plain;charset=utf-8"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "PRTS_" + it.id + ".txt";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      cmdOut(`<span class="c-ok">已导出 ${esc(it.id)}.txt</span>`);
+    }
+  }else if(c === "clear"){ o.innerHTML = ""; }
+  else if(c === "reinit"){ reinit(); }
+  else if(c === "tl"){ if(S.curDir !== "tl"){ S.curDir = "tl"; renderTree(); } S.view = "list"; renderFiles(); cmdOut(`<span class="c-ok">已切换至泰拉年表 · 时间轴视图</span>`); }
+  else if(c === "exit"){ $("#cmd").classList.remove("on"); }
+  else if(c === "whoami"){ cmdOut(`<span class="c-acc">博士 · 权限 LEVEL-8 · 罗德岛指挥中枢</span>`); }
+  else if(c === "date"){ cmdOut(new Date().toLocaleString("zh-CN",{hour12:false})); }
+  else if(c === "rand"){ S.reel = Math.floor(Math.random()*REEL.length); renderReel(); cmdOut(`<span class="c-acc">随机档案：${esc(REEL[S.reel].name)}</span>`); }
+  else cmdOut(`<span class="c-err">未知命令：${esc(c)}（输入 help 查看全部）</span>`);
+  sfx.key();
+}
+/* ===== 右键菜单 ===== */
+function ctxMenu(x, y, id){
+  const ref = findRef(id);
+  if(!ref) return;
+  const m = $("#ctx");
+  m.innerHTML = `
+    <div data-ctx="open">▣ 打开档案</div>
+    <div data-ctx="fav">${saved.includes(id)?"★ 取消收藏":"☆ 收藏档案"}</div>
+    <div data-ctx="zoom">▤ 查看影像</div>
+    <div class="sep"></div>
+    <div data-ctx="copy">▣ 复制编号</div>`;
+  m.classList.add("on");
+  m.style.left = Math.min(x, innerWidth - 180) + "px";
+  m.style.top = Math.min(y, innerHeight - 160) + "px";
+  m._id = id;
+}
+/* ===== 初始化 / 事件 ===== */
+function reinit(){
+  location.reload();
+}
+function tick(){
+  const n = new Date();
+  $("#clock").textContent = n.toLocaleTimeString("zh-CN",{hour12:false});
+  $("#sbTime").textContent = n.toLocaleDateString("zh-CN") + " " + n.toLocaleTimeString("zh-CN",{hour12:false});
+  if($("#pvClock")) $("#pvClock").textContent = n.toLocaleDateString("zh-CN",{month:"2-digit",day:"2-digit"}) + " · " + n.toLocaleTimeString("zh-CN",{hour12:false});
+}
+document.addEventListener("click", e => {
+  const ctx = $("#ctx");
+  if(!ctx.classList.contains("on") || !ctx.contains(e.target)) ctx.classList.remove("on");
+});
+document.addEventListener("contextmenu", e => {
+  const row = e.target.closest("[data-id]");
+  if(row){ e.preventDefault(); ctxMenu(e.clientX, e.clientY, row.dataset.id); }
+});
+/* 事件委托 */
+document.addEventListener("click", e => {
+  const el = e.target;
+  const hit = el.closest("button,.ra-btn,.nav-btn,.file-row,.file-card,.tl-item,.tree-item,.tm-item,.g-item,.rel-btn,.gv-btn,.mb-btn,.icon-btn,.d-tabs button");
+  if(hit){
+    const rp = document.createElement("div");
+    rp.className = "ripple";
+    rp.style.left = e.clientX + "px";
+    rp.style.top = e.clientY + "px";
+    document.body.appendChild(rp);
+    setTimeout(() => rp.remove(), 600);
+  }
+  if(el.closest("#rPrev")) goReel(-1);
+  else if(el.closest("#rNext")) goReel(1);
+  else if(el.closest("#rcOpen")){ const r = REEL[S.reel]; openPvDetail(r.ref); }
+  else if(el.closest("#rcFav")){ const r = REEL[S.reel]; toggleFav(findRef(r.ref).item.id); }
+  else if(el.closest("#rcRand")){ S.reel = Math.floor(Math.random()*REEL.length); sfx.fav(); renderReel(); toast("随机档案 · " + REEL[S.reel].name); }
+  else if(el.closest("#pdClose")) closePvDetail();
+  else if(el.closest("#gBack")) toggleGallery(false);
+  else if(el.closest("#gvPrev")) openGView(S.gIndex-1);
+  else if(el.closest("#gvNext")) openGView(S.gIndex+1);
+  else if(el.closest("#gvClose")) closeGView();
+  else if(el.closest(".g-item")){ openGView(+el.closest(".g-item").dataset.i); }
+  else if(el.closest("#mbPlay")) toggleMusic();
+  else if(el.closest("#mbPrev")){ startMusic((MUS.cur+2)%3); toast("音乐 · " + MUSIC[MUS.cur].name); }
+  else if(el.closest("#mbNext")){ startMusic((MUS.cur+1)%3); toast("音乐 · " + MUSIC[MUS.cur].name); }
+  else if(el.closest("#mbMute")){ MUS.muted = !MUS.muted; if(MUS.out) MUS.out.gain.value = MUS.muted?0:.34; $("#mbMute").style.color = MUS.muted?"var(--bad)":""; }
+  else if(el.closest("#mbSnd")){ SFX.on = !SFX.on; try{localStorage.setItem("prts_snd", SFX.on?"1":"0")}catch(e){} $("#mbSnd").textContent = SFX.on?"SND":"OFF"; toast("音效 " + (SFX.on?"开启":"关闭")); }
+  else if(el.closest("#cmdClear")){ $("#conOut").innerHTML = ""; }
+  else if(el.closest("#tmClose")){ $("#t-modal").classList.remove("on"); if(S.mode!=="browser") S.mode="reel"; }
+  else if(e.target.id === "lightbox") closeLightbox();
+  else if(el.closest("#dBack")) closeDetail();
+  else if(el.closest("#btnGrid")){ S.view = S.view==="list"?"grid":"list"; $("#btnGrid").style.color = S.view==="grid"?"var(--accent)":""; renderFiles(); }
+  else if(el.closest("[data-act]")){
+    const act = el.closest("[data-act]").dataset.act;
+    if(act === "reel") closeBrowser();
+    else if(act === "browser") openBrowser();
+    else if(act === "index") openBrowser();
+    else if(act === "gallery") toggleGallery(true);
+    else if(act === "search") openSearch();
+    else if(act === "saved") openSaved();
+    else if(act === "cmd"){ $("#cmd").classList.toggle("on"); if($("#cmd").classList.contains("on")) $("#conIn").focus(); }
+  }
+  else if(el.closest(".tree-item")){ S.curDir = el.closest(".tree-item").dataset.dir; renderTree(); renderFiles(); renderCrumb(); sfx.click(); }
+  else if(el.closest(".file-row") || el.closest(".file-card") || el.closest(".tl-item")){ openDetail(el.closest("[data-id]").dataset.id); }
+  else if(el.closest(".tm-item")){ const id = el.closest(".tm-item").dataset.id; $("#t-modal").classList.remove("on"); openBrowser(); S.curDir = findRef(id).cat; renderTree(); openDetail(id); renderCrumb(); }
+  else if(el.closest("[data-ctx]")){
+    const act = el.closest("[data-ctx]").dataset.ctx;
+    const id = $("#ctx")._id;
+    $("#ctx").classList.remove("on");
+    if(act === "open") openDetail(id);
+    else if(act === "fav") toggleFav(id);
+    else if(act === "zoom"){ const ref = findRef(id); if(ref.item.img) openLightbox(ref.item.img); }
+    else if(act === "copy"){ const ref = findRef(id); if(navigator.clipboard) navigator.clipboard.writeText(ref.item.id); toast("已复制 " + ref.item.id); }
+  }
+  else if(el.closest(".portrait")){ const z = el.closest(".portrait"); if(z.dataset.zoom) openLightbox(z.dataset.zoom); }
+  else if(el.closest(".pc-img img")){ openLightbox(el.closest(".pc-img img").src); }
+  else if(el.closest("#pdDoc .rel-btn")){ const rid = el.closest(".rel-btn").dataset.rel; closePvDetail(); openBrowser(); openDetail(rid); renderTree(); renderCrumb(); }
+  else if(el.closest(".rel-btn")){ openDetail(el.closest(".rel-btn").dataset.rel); }
+  else if(el.closest(".d-tabs button")){ switchTab(+el.closest(".d-tabs button").dataset.tab); }
+  else if(el.closest("#sbReinit")){ reinit(); }
+});
+/* 搜索 */
+$("#search").addEventListener("input", e => { renderFiles(); });
+$("#tmIn").addEventListener("input", e => doSearch(e.target.value));
+/* 音乐 */
+$("#mbSeek").addEventListener("input", e => {
+  const v = +e.target.value / 100;
+  if(MUS.out) MUS.out.gain.value = v * .34;
+});
+$("#mbSeek").title = "音量";
+/* CMD */
+$("#conIn").addEventListener("keydown", e => {
+  if(e.key === "Enter"){ runCmd(e.target.value); e.target.value = ""; }
+});
+/* 拖拽 */
+(() => {
+  const bar = $("#cmdBar"), box = $("#cmd");
+  let sx=0, sy=0, ox=0, oy=0, drag=false;
+  bar.addEventListener("mousedown", e => {
+    if(e.target.closest(".clear")) return;
+    drag = true; sx = e.clientX; sy = e.clientY;
+    const r = box.getBoundingClientRect();
+    ox = r.left; oy = r.top;
+    e.preventDefault();
+  });
+  window.addEventListener("mousemove", e => {
+    if(!drag) return;
+    box.style.left = Math.max(0, Math.min(innerWidth - 90, ox + e.clientX - sx)) + "px";
+    box.style.top = Math.max(0, Math.min(innerHeight - 60, oy + e.clientY - sy)) + "px";
+    box.style.right = "auto"; box.style.bottom = "auto";
+  });
+  window.addEventListener("mouseup", () => drag = false);
+})();
+/* 键盘 */
+window.addEventListener("keydown", e => {
+  const target = e.target;
+  const typing = target.tagName === "INPUT" || target.tagName === "TEXTAREA";
+  if(e.key === "Escape"){
+    if(typing) target.blur();
+    else if($("#lightbox").classList.contains("on")) closeLightbox();
+    else if($("#gView").classList.contains("on")) closeGView();
+    else if($("#pvDetail").classList.contains("on")) closePvDetail();
+    else if($("#t-modal").classList.contains("on")){ $("#t-modal").classList.remove("on"); }
+    else if($("#cmd").classList.contains("on")){ $("#cmd").classList.remove("on"); }
+    else if($("#gallery").classList.contains("on")) toggleGallery(false);
+    else if(S.mode === "browser") closeBrowser();
+    return;
+  }
+  if(e.key === "`"){ if(!typing){ e.preventDefault(); $("#cmd").classList.toggle("on"); if($("#cmd").classList.contains("on")) $("#conIn").focus(); } return; }
+  if(e.key === "m" || e.key === "M"){ if(!typing){ toggleMusic(); } return; }
+  if(typing) return;
+  if(e.key === "ArrowLeft"){ if($("#gView").classList.contains("on")) openGView(S.gIndex-1); else if(S.mode === "reel") goReel(-1); return; }
+  if(e.key === "ArrowRight"){ if($("#gView").classList.contains("on")) openGView(S.gIndex+1); else if(S.mode === "reel") goReel(1); return; }
+  if(e.key === "g" || e.key === "G"){ toggleGallery(!$("#gallery").classList.contains("on")); return; }
+  if(e.key === "b" || e.key === "B"){ S.mode === "browser" ? closeBrowser() : openBrowser(); return; }
+  if(e.key === "/"){ if(S.mode !== "browser") openBrowser(); $("#search").focus(); return; }
+  if(e.key === "r" || e.key === "R"){ if(S.mode === "reel"){ S.reel = Math.floor(Math.random()*REEL.length); renderReel(); sfx.fav(); toast("随机档案 · " + REEL[S.reel].name); } return; }
+  if(e.key === "Enter"){ if(!S.boot){ const r = REEL[S.reel]; openPvDetail(r.ref); } return; }
+});
+/* 触控滑动（图库大图） */
+let tx = 0;
+document.addEventListener("touchstart", e => { tx = e.touches[0].clientX; }, {passive:true});
+document.addEventListener("touchend", e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if(Math.abs(dx) < 60) return;
+  if($("#gView").classList.contains("on")){ openGView(dx < 0 ? S.gIndex+1 : S.gIndex-1); }
+}, {passive:true});
+/* ===== 数据流粒子 ===== */
+(() => {
+  const cv = document.getElementById("particles");
+  if(!cv || !cv.getContext) return;
+  const ctx = cv.getContext("2d");
+  if(!ctx) return;
+  const mm = (window.matchMedia || (() => ({matches:false})));
+  const rm = mm("(prefers-reduced-motion: reduce)").matches;
+  const mobile = window.innerWidth < 680;
+  const N = mobile ? 22 : 56;
+  const ps = Array.from({length:N}, () => ({
+    x: Math.random(), y: Math.random(),
+    v: .0015 + Math.random()*.005,
+    l: .12 + Math.random()*.3,
+    w: Math.random() < .6 ? 1 : 2
+  }));
+  let run = true;
+  function size(){
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+    cv.style.width = innerWidth + "px"; cv.style.height = innerHeight + "px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  size();
+  addEventListener("resize", size);
+  let raf;
+  function frame(){
+    if(!run) return;
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    for(const p of ps){
+      p.y -= p.v; if(p.y < -0.06){ p.y = 1.06; p.x = Math.random(); }
+      const x = p.x * innerWidth, y = p.y * innerHeight;
+      const g = ctx.createLinearGradient(x, y, x, y + 46);
+      g.addColorStop(0, "rgba(63,224,200,0)");
+      g.addColorStop(1, `rgba(63,224,200,${p.l})`);
+      ctx.strokeStyle = g; ctx.lineWidth = p.w;
+      ctx.beginPath(); ctx.moveTo(x, y + 46); ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  if(!rm) frame();
+  document.addEventListener("visibilitychange", () => {
+    run = !document.hidden && !rm;
+    if(run) frame(); else if(raf) cancelAnimationFrame(raf);
+  });
+})();
+/* ===== 档案卡视差倾斜（桌面） ===== */
+(() => {
+  const mm2 = (window.matchMedia || (() => ({matches:false})));
+  if(mm2("(pointer:coarse)").matches || mm2("(prefers-reduced-motion: reduce)").matches) return;
+  const reel = document.getElementById("reel");
+  const c = document.getElementById("reelCenter");
+  if(!reel || !c) return;
+  let raf = null;
+  reel.addEventListener("mousemove", e => {
+    if(_fxBusy) return;
+    if(raf) return;
+    raf = requestAnimationFrame(() => {
+      const r = reel.getBoundingClientRect();
+      const nx = (e.clientX - r.left) / r.width - .5;
+      const ny = (e.clientY - r.top) / r.height - .5;
+      c.style.transform = `perspective(1100px) rotateY(${nx*7}deg) rotateX(${-ny*5}deg)`;
+      raf = null;
+    });
+  });
+  reel.addEventListener("mouseleave", () => {
+    if(_fxBusy) return;
+    c.style.transform = "perspective(1100px) rotateY(0) rotateX(0)";
+  });
+})();
+/* ===== 3D 视差交互（仅鼠标设备） ===== */
+(() => {
+  try{
+    if(!window.matchMedia || !matchMedia("(pointer:fine)").matches) return;
+    // 图库卡片 tilt + 光斑
+    const gg = document.getElementById("gGrid");
+    if(gg){
+      gg.addEventListener("mousemove", e => {
+        const it = e.target.closest(".g-item"); if(!it) return;
+        const r = it.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        it.style.setProperty("--ry", ((px - .5) * 16).toFixed(2) + "deg");
+        it.style.setProperty("--rx", ((.5 - py) * 12).toFixed(2) + "deg");
+        it.style.setProperty("--mx", (px * 100).toFixed(1) + "%");
+        it.style.setProperty("--my", (py * 100).toFixed(1) + "%");
+      });
+      gg.addEventListener("mouseleave", () => {
+        document.querySelectorAll(".g-item").forEach(i => { i.style.setProperty("--rx", "0deg"); i.style.setProperty("--ry", "0deg"); });
+      });
+    }
+    // pvDetail 档案卡 tilt
+    const pc = document.querySelector(".pd-card");
+    if(pc){
+      pc.addEventListener("mousemove", e => {
+        const r = pc.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        pc.style.setProperty("--py", ((px - .5) * 8).toFixed(2) + "deg");
+        pc.style.setProperty("--px", ((.5 - py) * 6).toFixed(2) + "deg");
+      });
+      pc.addEventListener("mouseleave", () => { pc.style.setProperty("--px", "0deg"); pc.style.setProperty("--py", "0deg"); });
+    }
+    // pvTop 品牌微摆
+    const pt = document.getElementById("pvTop");
+    const pb = document.querySelector(".pv-brand");
+    if(pt && pb){
+      pt.addEventListener("mousemove", e => {
+        const r = pt.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        pb.style.setProperty("--by", ((px - .5) * 4).toFixed(2) + "deg");
+        pb.style.setProperty("--bx", ((.5 - py) * 3).toFixed(2) + "deg");
+      });
+      pt.addEventListener("mouseleave", () => { pb.style.setProperty("--bx", "0deg"); pb.style.setProperty("--by", "0deg"); });
+    }
+  }catch(e){}
+})();
+/* ===== 触控滑动（手机） ===== */
+(() => {
+  const reel = document.getElementById("reel");
+  if(!reel || !("ontouchstart" in window)) return;
+  let tx = 0, ty = 0, t0 = 0;
+  reel.addEventListener("touchstart", e => {
+    const t = e.touches[0]; tx = t.clientX; ty = t.clientY; t0 = Date.now();
+  }, {passive:true});
+  reel.addEventListener("touchend", e => {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - tx, dy = t.clientY - ty;
+    if(Date.now() - t0 < 650 && Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.3){
+      if(dx > 0){ goReel(-1); } else { goReel(1); }
+      sfx.switch();
+    }
+  }, {passive:true});
+})();
+/* 启动 */
+cmdOut('<span class="c-acc">PRTS TERMINAL v4.0 · 泰拉大典控制台</span>');
+cmdOut('<span class="c-dim">输入 help 查看全部命令</span>');
+tick(); setInterval(tick, 1000);
+reelBg();
+renderReel();
+bootRun();
+renderFiles(); renderCrumb(); renderGallery();
+$("#musicBar").classList.add("on");
+</script>
+</body>
+</html>

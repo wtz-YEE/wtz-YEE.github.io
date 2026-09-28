@@ -1,0 +1,2689 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>RHINE·LAB OS — 莱茵生命终端</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230C0F13'/%3E%3Cpath d='M14 32 C14 16 30 16 32 32 C34 16 50 16 50 32 C50 48 34 48 32 32 C30 48 14 48 14 32 Z' fill='none' stroke='%23E8ECF1' stroke-width='6'/%3E%3Ctext x='20' y='37' font-size='16' fill='%23E8ECF1' text-anchor='middle'%3E%2B%3C/text%3E%3Ctext x='44' y='37' font-size='20' fill='%23E8ECF1' text-anchor='middle'%3E%E2%88%92%3C/text%3E%3C/svg%3E">
+<style>
+/* ===== 主题变量 ===== */
+:root{
+  --bg:#F2F3F0;
+  --panel:#FFFFFF;
+  --panel2:#F7F8F5;
+  --ink:#17191D;
+  --ink2:#5A5F66;
+  --ink3:#8A8F96;
+  --line:#D9DBD6;
+  --line2:#C6C9C3;
+  --accent:#0F1113;
+  --accent-soft:rgba(15,17,19,.06);
+  --teal:#3C4147;
+  --teal-soft:rgba(60,65,71,.07);
+  --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 24px rgba(0,0,0,.05);
+  --ok:#3E9A5A;
+  --warn:#C98E2C;
+  --err:#C9504B;
+}
+[data-theme="dark"]{
+  --bg:#0B0E12;
+  --panel:#12161C;
+  --panel2:#0E1217;
+  --ink:#D7DCE2;
+  --ink2:#9AA2AB;
+  --ink3:#67707B;
+  --line:#262C34;
+  --line2:#3A424D;
+  --accent:#F2F4F7;
+  --accent-soft:rgba(242,244,247,.1);
+  --teal:#AEB6C0;
+  --teal-soft:rgba(174,182,192,.1);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.35);
+  --ok:#57B56F;
+  --warn:#C9A24A;
+  --err:#D97A74;
+}
+
+/* ===== 基础 ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow-x:hidden}
+#app{height:100dvh}
+button,input,select,textarea{touch-action:manipulation}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:"Cascadia Code","JetBrains Mono","Sarasa Mono SC","Consolas","Microsoft YaHei",monospace,sans-serif;
+  background:var(--bg);color:var(--ink);
+  font-size:14px;line-height:1.6;
+  overflow:hidden;
+  transition:background .25s ease,color .25s ease;
+}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input{font-family:inherit;color:inherit}
+svg{display:block}
+::selection{background:rgba(0,0,0,.85);color:#fff}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible,select:focus-visible{outline:1px solid var(--accent);outline-offset:2px}
+button:active{transform:scale(.97)}
+.file-row:active{background:var(--accent-soft)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:0}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ===== 开机画面 ===== */
+#boot{
+  position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:26px;
+  background:#0B0E12;color:#D7DCE2;
+  transition:opacity .6s ease, visibility .6s ease;
+  overflow:hidden;
+}
+#boot.done{opacity:0;visibility:hidden}
+#boot::before{content:'';position:absolute;top:50%;left:50%;width:min(62vw,420px);height:min(62vw,420px);transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(from 0deg,transparent,rgba(215,220,226,.12) 16%,transparent 32%);animation:bootSpin 3.4s linear infinite;pointer-events:none;filter:blur(3px)}
+#boot::after{content:'';position:absolute;top:50%;left:50%;width:min(62vw,420px);height:min(62vw,420px);transform:translate(-50%,-50%);border:1px solid rgba(215,220,226,.12);border-radius:50%;pointer-events:none;box-shadow:0 0 0 22px rgba(215,220,226,.03),0 0 0 46px rgba(215,220,226,.02)}
+@keyframes bootSpin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+#boot .logo-title{animation:bootPop .55s cubic-bezier(.2,.9,.3,1.3) backwards}
+#boot .draw{animation:bootPop .5s cubic-bezier(.2,.9,.3,1.3) .18s backwards}
+@keyframes bootPop{from{opacity:0;transform:scale(.88) translateY(8px)}}
+#boot .logo-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+#boot .logo-title{font-size:13px;letter-spacing:.5em;color:#9AA2AB;text-indent:.5em}
+#boot .fileno{font-size:10px;letter-spacing:.34em;color:#67707B;text-indent:.34em;font-variant-numeric:tabular-nums}
+#boot .fileno b{color:#D7DCE2;font-weight:600}
+#boot .checklist{width:420px;max-width:86vw;font-size:12px;color:#9AA2AB;display:flex;flex-direction:column;gap:5px;min-height:120px}
+#boot .checklist .row{display:flex;justify-content:space-between;opacity:.45;transition:opacity .2s}
+#boot .checklist .row.on{opacity:1;color:#D7DCE2}
+#boot .checklist .row .st{color:#D7DCE2;opacity:0;transition:opacity .3s ease}
+#boot .checklist .row.on .st{opacity:1}
+#boot .checklist .row.typing::after{content:'▌';margin-left:4px;animation:blink 1s steps(2) infinite;color:#D7DCE2}
+#boot .checklist .row.scan.on{background:linear-gradient(90deg,transparent 0%,rgba(215,220,226,.18) 50%,transparent 100%);background-size:200% 100%;animation:scanline 1.1s linear infinite}
+@keyframes scanline{to{background-position:-200% 0}}
+#boot .draw path{stroke-dasharray:640;stroke-dashoffset:640;animation:drawPath 1.7s ease-out forwards}
+#boot .draw path:nth-child(2){animation-delay:.3s}
+#boot .draw text{opacity:0;animation:fadeIn .5s ease 1.1s forwards}
+@keyframes drawPath{to{stroke-dashoffset:0}}
+@keyframes fadeIn{to{opacity:1}}
+#boot .bar{width:420px;max-width:86vw;height:3px;background:#22272F;position:relative;overflow:hidden}
+#boot .bar::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(11,14,18,.55) 9px 12px);pointer-events:none}
+#boot .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:#D7DCE2;transition:width .3s ease}
+#boot .fileno b{display:inline-block;transition:transform .3s ease}
+#boot .hint{font-size:11px;color:#67707B;letter-spacing:.25em;animation:blink 1.1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ===== 主界面框架 ===== */
+#app{height:100vh;display:none;flex-direction:column;position:relative}
+#app.on{display:flex}
+.pv-grid{position:fixed;inset:0;z-index:1;pointer-events:none;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:clamp(40px,5vw,72px) clamp(40px,5vw,72px);opacity:.13;-webkit-mask-image:radial-gradient(ellipse at center,black 20%,transparent 72%);mask-image:radial-gradient(ellipse at center,black 20%,transparent 72%)}
+.pv-stream{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden;opacity:.5}
+.pv-stream i{position:absolute;top:-25%;width:1px;background:linear-gradient(transparent,rgba(0,0,0,.55),transparent);animation:streamDrop linear infinite}
+@keyframes streamDrop{from{transform:translateY(0)}to{transform:translateY(145vh)}}
+.crt-scan{position:fixed;left:0;right:0;height:110px;top:-130px;z-index:85;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(0,0,0,.04) 44%,rgba(0,0,0,.055) 50%,rgba(0,0,0,.04) 56%,transparent);animation:crtScan 5s linear infinite}
+@keyframes crtScan{from{transform:translateY(0)}to{transform:translateY(135vh)}}
+
+/* ===== PV 背景：白色档案条阵 ===== */
+.pv-bg{position:fixed;inset:-80px 0 0;z-index:0;display:flex;justify-content:center;gap:clamp(10px,2vw,30px);overflow:hidden;pointer-events:none}
+.pv-bg i{flex:none;width:clamp(18px,3.2vw,58px);height:100%;background:linear-gradient(90deg,var(--panel2),var(--panel) 55%,var(--panel2));box-shadow:inset 0 0 0 1px var(--line),-clamp(4px,0.8vw,14px) 0 clamp(8px,1.6vw,28px) rgba(0,0,0,.05);animation:pvDrift 70s ease-in-out infinite alternate,pvGlint 6s ease-in-out infinite}
+.pv-bg i:nth-child(3n){animation-delay:-14s,-1.8s;opacity:.82}
+.pv-bg i:nth-child(3n+1){animation-delay:-30s,-3.6s;opacity:.92}
+@keyframes pvDrift{from{transform:translateY(0)}to{transform:translateY(-26px)}}
+@keyframes pvGlint{0%,90%,100%{filter:brightness(1)}94%{filter:brightness(1.55)}}
+.pv-bg{transition:transform .6s ease-out}
+.pv-bg::before{content:'';position:absolute;top:-10%;bottom:-10%;left:-30%;width:24%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.42),transparent);filter:blur(5px);animation:bgSweep 9s linear infinite;pointer-events:none}
+@keyframes bgSweep{from{left:-30%}to{left:115%}}
+.pv-bg::after{content:'';position:absolute;top:-10%;bottom:-10%;right:-30%;width:18%;background:linear-gradient(270deg,transparent,rgba(255,255,255,.15),transparent);filter:blur(6px);animation:bgSweep2 14s linear infinite;pointer-events:none}
+@keyframes bgSweep2{from{right:-30%}to{right:115%}}
+
+/* ===== 模式切换淡入 ===== */
+@keyframes modeIn{from{opacity:0;transform:translateY(8px)}}
+.mode-in{animation:modeIn .32s cubic-bezier(.2,.75,.25,1) backwards}
+
+/* ===== PV 顶栏 ===== */
+#pvTop{position:relative;z-index:15;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:26px 36px 0;min-height:104px;height:auto;flex:none}
+.pv-brand{font-size:11px;line-height:1.75;letter-spacing:.32em;color:var(--ink);white-space:nowrap}
+.pv-menu{display:flex;gap:26px;font-size:11px;letter-spacing:.14em;color:var(--ink2)}
+.pv-link{cursor:pointer;color:var(--ink2);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px;transition:color .12s,border-color .12s}
+.pv-link:hover{color:var(--ink);border-color:var(--ink)}
+.pv-link b{color:var(--ink);font-weight:700}
+.pv-link.m-switch{color:var(--ink3)}
+
+/* ===== PV 档案轮播 ===== */
+#reel{position:relative;z-index:10;flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:0 20px 40px;perspective:1200px}
+.r-arrow{position:absolute;top:50%;transform:translateY(-50%);width:60px;height:60px;border:1px solid var(--line);color:var(--ink2);font-size:24px;background:rgba(255,255,255,.35);transition:all .15s;z-index:5;border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.r-arrow:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.r-prev{left:34px}
+.r-next{right:34px}
+.reel-center{display:flex;flex-direction:column;align-items:center;gap:0;text-align:center;width:min(100%,72vw);max-width:920px}
+.reel-no{font-size:clamp(20px,3vw,34px);letter-spacing:.22em;color:var(--ink);font-weight:700;margin-bottom:14px}
+.reel-name{font-size:clamp(26px,4.2vw,46px);font-weight:800;color:var(--ink);letter-spacing:.05em;line-height:1.25;text-wrap:balance}
+.reel-sub{font-size:clamp(12px,1.4vw,15px);letter-spacing:.3em;color:var(--ink3);margin-top:10px;text-transform:uppercase}
+.reel-meta{font-size:11px;letter-spacing:.24em;color:var(--ink2);margin-top:14px}
+.reel-acc{margin-top:12px;font-size:10px;letter-spacing:.3em;padding:4px 12px;border:1px solid var(--line)}
+.reel-acc.ok{color:var(--ok);border-color:var(--ok)}
+.reel-acc.no{color:var(--err);border-color:var(--err)}
+.reel-actions{display:flex;gap:12px;margin-top:28px}
+.r-btn{font-size:11.5px;letter-spacing:.18em;padding:11px 26px;border:1px solid var(--ink);color:var(--ink);background:none;transition:all .15s;border-radius:0;cursor:pointer}
+.r-btn:hover{background:var(--ink);color:var(--panel)}
+.r-btn.primary{background:var(--ink);color:var(--panel);position:relative;overflow:hidden}
+.r-btn.primary:hover{background:none;color:var(--ink)}
+.r-btn.primary::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.28) 50%,transparent 60%);transform:translateX(-130%);animation:btnShine 2.8s ease-in-out infinite;pointer-events:none}
+@keyframes btnShine{0%,55%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+.reel-center{transition:opacity .22s ease,transform .26s cubic-bezier(.16,.8,.28,1);transform-style:preserve-3d}
+.reel-center.out-left{opacity:0;transform:translateX(-28%) rotateY(22deg) scale(.93)}
+.reel-center.out-right{opacity:0;transform:translateX(28%) rotateY(-22deg) scale(.93)}
+.reel-center.in{animation:reel3DIn .5s cubic-bezier(.16,.8,.28,1) backwards}
+.reel-center.in .reel-no{animation:reelUp .4s ease .05s backwards}
+.reel-center.in .reel-name{animation:reelUp .4s ease .11s backwards}
+.reel-center.in .reel-sub{animation:reelUp .4s ease .16s backwards}
+.reel-center.in .reel-meta{animation:reelUp .4s ease .21s backwards}
+.reel-center.in .reel-acc{animation:reelUp .4s ease .26s backwards}
+.reel-center.in .reel-actions{animation:reelUp .4s ease .34s backwards}
+@keyframes reel3DIn{0%{opacity:0;transform:translateX(30%) rotateY(-18deg) scale(.94)}60%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes reelUp{from{opacity:0;transform:translateY(10px)}}
+.r-btn:active{transform:scale(.97)}
+.reel-ticks{display:flex;gap:4px;margin-top:26px;max-width:60vw;flex-wrap:wrap;justify-content:center}
+.reel-ticks button{width:6px;height:14px;background:var(--line);border:none;padding:0;cursor:pointer;transition:all .18s;border-radius:0}
+.reel-ticks button:hover{background:var(--ink2);transform:scaleY(1.25)}
+.reel-ticks button.sel{background:var(--ink);height:20px;box-shadow:0 0 8px rgba(0,0,0,.25)}
+.reel-page{position:absolute;left:34px;bottom:26px;display:flex;align-items:baseline;gap:6px}
+.reel-page b{font-size:clamp(48px,6vw,86px);font-weight:800;color:var(--ink);line-height:1;letter-spacing:.02em}
+.reel-page span{font-size:clamp(14px,1.6vw,20px);color:var(--ink3);letter-spacing:.14em}
+.reel-hint{position:absolute;bottom:64px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.3em;color:var(--ink3);white-space:nowrap}
+.reel-powered{position:absolute;right:34px;bottom:30px;font-size:10px;letter-spacing:.24em;color:var(--ink3)}
+
+/* ===== 数字卷帘 ===== */
+.rollTmp{display:inline-block;overflow:hidden;vertical-align:baseline;height:1em;line-height:1em;position:relative}
+.rollTmp i{display:block;height:1em;line-height:1em;font-style:normal;will-change:transform;transform-origin:center top}
+
+/* ===== PV 详情覆盖层 ===== */
+#pvDetail{position:fixed;inset:0;z-index:60;background:var(--bg);display:none;grid-template-rows:auto 1fr;grid-template-columns:minmax(240px,340px) minmax(0,1fr);gap:24px 44px;padding:26px 44px 34px}
+#pvDetail.on{display:grid}
+#pvDetail.on .pvd-card{animation:pvdCardIn .42s cubic-bezier(.2,.75,.25,1) backwards}
+#pvDetail.on .pvd-panel{animation:pvdPanelIn .44s ease .05s backwards}
+@keyframes pvdCardIn{from{opacity:0;transform:translateX(-36px)}}
+@keyframes pvdPanelIn{from{opacity:0;transform:translateY(18px)}}
+.pvd-head{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}
+.pvd-back{font-size:11px;letter-spacing:.16em;color:var(--ink2);border:1px solid var(--line);padding:7px 14px;background:none;cursor:pointer;transition:all .12s;border-radius:0}
+.pvd-back:hover{color:var(--accent);border-color:var(--accent)}
+.pvd-back small{font-size:9px;color:var(--ink3);margin-left:6px}
+.pvd-menu{display:flex;gap:22px;font-size:11px;letter-spacing:.14em}
+.pvd-card{display:flex;flex-direction:column;align-items:center;padding:30px 18px;border:1px solid var(--line);background:var(--panel);position:relative;min-height:0;max-height:calc(100vh - 140px)}
+.pvd-llc{font-size:10px;letter-spacing:.3em;color:var(--ink3);margin-bottom:18px}
+.pvd-no{font-size:clamp(26px,3vw,40px);font-weight:800;color:var(--ink);letter-spacing:.06em}
+.pvd-rot{position:absolute;right:12px;top:12px;font-size:9px;color:var(--ink3);border:1px solid var(--line);padding:2px 6px;letter-spacing:.1em;animation:spinSlow 8s linear infinite}
+@keyframes spinSlow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.pvd-img{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;margin-top:16px}
+.pvd-img img{max-width:100%;max-height:100%;object-fit:contain}
+.pvd-img svg{width:110px;height:110px}
+.pvd-panel{display:flex;flex-direction:column;min-height:0}
+.pvd-title-en{font-size:clamp(18px,2vw,26px);font-weight:800;letter-spacing:.12em;color:var(--ink)}
+.pvd-title-cn{font-size:13px;letter-spacing:.3em;color:var(--ink3);margin-top:8px}
+.pvd-meta{display:flex;gap:26px;margin-top:16px;font-size:10.5px;letter-spacing:.14em;color:var(--ink2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;flex-wrap:wrap}
+.pvd-meta span{white-space:nowrap}
+.pvd-body{flex:1;overflow-y:auto;margin-top:16px;padding-right:8px}
+#pvDetail .pvd-body .portrait{display:none}
+
+/* 移动端 PV */
+@media (max-width:900px){
+  .r-prev{left:12px}.r-next{right:12px}
+  .r-arrow{width:44px;height:44px;font-size:18px}
+  .reel-page{left:12px;bottom:20px}
+  .reel-powered{right:12px;bottom:20px}
+  .reel-hint{display:none}
+  #pvDetail{grid-template-columns:1fr;padding:18px 20px 26px}
+  .pvd-card{max-height:34vh}
+}
+@media (max-width:480px){
+  #pvTop{padding:18px 20px 0;height:92px}
+  .pv-brand{font-size:10px}
+  .pv-menu{gap:14px;font-size:10px}
+  .r-arrow{display:none}
+}
+
+/* ===== 音乐播放器 ===== */
+#musicBar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:55;display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line2);box-shadow:var(--shadow);padding:6px 12px;height:34px;animation:rise .3s ease backwards}
+#mPlay{width:26px;height:24px;border:1px solid var(--line2);color:var(--ink);font-size:9px;background:none;cursor:pointer;transition:all .12s;flex:none}
+#musicBar .m-nav{width:24px;height:24px;border:1px solid var(--line);color:var(--ink3);font-size:9px;background:none;cursor:pointer;transition:all .12s;flex:none;letter-spacing:0;padding:0}
+#musicBar .m-nav:hover{border-color:var(--accent);color:var(--accent)}
+#mSnd{font-size:8px;letter-spacing:.06em}
+#mSnd.off{opacity:.4;border-color:var(--line);color:var(--ink3)}
+#mSnd.off:hover{color:var(--err);border-color:var(--err)}
+.m-eq{display:flex;gap:2px;align-items:flex-end;height:14px;flex:none;width:18px}
+.m-eq i{width:2.5px;height:4px;background:var(--ink2)}
+#musicBar.playing .m-eq i{animation:eq .85s ease-in-out infinite}
+#musicBar.playing .m-eq i:nth-child(2){animation-delay:.18s}
+#musicBar.playing .m-eq i:nth-child(3){animation-delay:.34s}
+#musicBar.playing .m-eq i:nth-child(4){animation-delay:.1s}
+@keyframes eq{0%,100%{height:4px}50%{height:13px}}
+#mPlay:hover{border-color:var(--accent);color:var(--accent)}
+#musicBar .m-meta{display:flex;flex-direction:column;line-height:1.25;flex:none}
+#musicBar .m-meta b{font-size:9.5px;letter-spacing:.12em;color:var(--ink);white-space:nowrap}
+#musicBar .m-meta span{font-size:8.5px;color:var(--ink3);letter-spacing:.08em;font-variant-numeric:tabular-nums}
+#musicBar input[type=range]{-webkit-appearance:none;appearance:none;height:3px;background:var(--line);cursor:pointer;transition:height .15s}
+#musicBar input[type=range]:hover{height:6px}
+#mSeek{width:150px;flex:1;min-width:60px}
+#mVol{width:56px;flex:none}
+#musicBar input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:9px;height:9px;background:var(--ink);border-radius:0}
+#musicBar input[type=range]::-moz-range-thumb{width:9px;height:9px;background:var(--ink);border:none;border-radius:0}
+#mVolBtn{background:none;border:none;color:var(--ink2);font-size:12px;cursor:pointer;flex:none;padding:0 2px}
+#mVolBtn:hover{color:var(--accent)}
+.m-inline{display:flex;align-items:center;gap:6px}
+.m-inline button{background:none;border:1px solid var(--line);color:var(--ink2);font-size:8px;width:20px;height:20px;cursor:pointer;line-height:1}
+.m-inline button:hover{color:var(--accent);border-color:var(--accent)}
+.m-inline b{font-size:9px;color:var(--ink3);font-variant-numeric:tabular-nums;font-weight:600}
+@media (max-width:680px){
+  #musicBar{left:8px;right:8px;transform:none;justify-content:center}
+  #mSeek{flex:1}
+  #musicBar .m-meta b{max-width:140px;overflow:hidden;text-overflow:ellipsis}
+}
+
+/* ===== CMD 控制台 ===== */
+#console{position:fixed;right:18px;bottom:18px;z-index:72;width:min(460px,94vw);height:min(320px,58vh);background:#0A0C0F;border:1px solid #2A3038;box-shadow:0 14px 50px rgba(0,0,0,.45);display:flex;flex-direction:column;font-family:Consolas,'Cascadia Mono','Courier New',monospace;animation:conIn .22s cubic-bezier(.2,.8,.3,1)}
+#console[hidden]{display:none}
+@keyframes conIn{from{opacity:0;transform:translateY(12px) scale(.98)}}
+.con-bar{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:#14181D;border-bottom:1px solid #23282F;color:#9AA2AB;font-size:10.5px;letter-spacing:.14em;flex:none;cursor:move;user-select:none;touch-action:none}
+.con-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.con-btn{background:none;border:1px solid #2A3038;color:#9AA2AB;width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1;flex:none;padding:0}
+.con-btn:hover{color:#fff;border-color:#fff}
+.con-out{flex:1;overflow-y:auto;padding:8px 12px;font-size:12px;line-height:1.55;color:#C8CDD4;white-space:pre-wrap;word-break:break-word}
+.con-out::-webkit-scrollbar{width:6px}
+.con-out::-webkit-scrollbar-thumb{background:#2A3038}
+.con-out::-webkit-scrollbar-track{background:transparent}
+.con-in{display:flex;align-items:center;gap:8px;padding:7px 12px;border-top:1px solid #23282F;flex:none}
+.con-prompt{color:#8FC7A8;font-size:12px;flex:none;white-space:nowrap}
+.con-in input{flex:1;background:none;border:none;outline:none;color:#E6EAF0;font-size:12px;font-family:inherit;caret-color:#8FC7A8}
+.con-in input::placeholder{color:#4A515A}
+.con-key{color:#4A515A;font-size:10px;letter-spacing:.1em;flex:none;white-space:nowrap}
+#console .t-ok{color:#8FC7A8}
+#console .t-wr{color:#C9A24A}
+#console .t-er{color:#E08A82}
+#console .t-cy{color:#8A939E}
+#console .t-or{color:#fff;font-weight:700}
+.st-console{background:none;border:1px solid var(--line);color:var(--ink2);font-size:9px;letter-spacing:.12em;padding:4px 8px;cursor:pointer;transition:all .12s;margin-right:6px;transform:none!important}
+.st-console:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ===== 影像图库 ===== */
+#gallery{position:fixed;inset:0;z-index:80;background:rgba(8,10,13,.94);display:none;flex-direction:column}
+#gallery.on{display:flex}
+.g-head{display:flex;justify-content:space-between;align-items:center;padding:16px 26px;border-bottom:1px solid rgba(255,255,255,.12);color:#E8ECF1;font-size:11px;letter-spacing:.22em;flex:none}
+.g-head b{color:#8a939e;font-weight:600}
+.g-close{background:none;border:1px solid rgba(255,255,255,.25);color:#B8C0CA;font-size:10px;padding:5px 12px;cursor:pointer;letter-spacing:.14em}
+.g-close:hover{color:#fff;border-color:#fff}
+.g-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;padding:22px 26px;align-content:start}
+.g-item{position:relative;cursor:pointer;border:1px solid rgba(255,255,255,.12);overflow:hidden;transition:all .15s;background:#12151a;animation:rise .3s ease backwards}
+.g-item:hover{border-color:#E8ECF1;transform:translateY(-3px)}
+.g-item img{width:100%;height:230px;object-fit:cover;object-position:top;display:block;opacity:.92;transition:opacity .2s,transform .35s ease}
+.g-item:hover img{transform:scale(1.06)}
+.g-item:hover img{opacity:1}
+.g-item .g-tag{position:absolute;left:0;bottom:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.78));color:#fff;font-size:9.5px;letter-spacing:.12em;padding:20px 10px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-item .g-tag b{display:block;font-size:11px;letter-spacing:.14em}
+.g-view{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:56px 92px 40px}
+.g-view img{max-width:min(80vw,840px);max-height:calc(100vh - 160px);object-fit:contain;border:1px solid rgba(255,255,255,.16);box-shadow:0 18px 60px rgba(0,0,0,.55)}
+.g-view img.gZoom{animation:gZoom .34s cubic-bezier(.2,.8,.3,1) backwards}
+@keyframes gZoom{from{opacity:0;transform:scale(.92)}}
+.g-arr{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.25);color:#E8ECF1;font-size:24px;cursor:pointer;transition:all .15s;border-radius:0}
+.g-arr:hover{background:rgba(255,255,255,.18)}
+.g-prev{left:22px}.g-next{right:22px}
+.g-back{position:absolute;top:14px;left:22px;background:none;border:1px solid rgba(255,255,255,.25);color:#B8C0CA;font-size:10px;padding:6px 14px;cursor:pointer;letter-spacing:.14em}
+.g-back:hover{color:#fff}
+.g-cap{position:absolute;left:0;right:0;bottom:18px;text-align:center;color:#fff;pointer-events:none}
+.g-cap b{display:block;font-size:13px;letter-spacing:.2em}
+.g-cap span{font-size:10.5px;color:#8a939e;letter-spacing:.14em}
+.g-count{position:absolute;right:26px;bottom:18px;color:#8a939e;font-size:11px;letter-spacing:.18em;font-variant-numeric:tabular-nums}
+@media (max-width:680px){
+  .g-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:16px}
+  .g-item img{height:150px}
+  .g-view{padding:50px 12px 40px}
+  .g-arr{width:38px;height:38px;font-size:17px}
+  .g-prev{left:6px}.g-next{right:6px}
+}
+#topbar{
+  display:flex;align-items:center;gap:14px;padding:0 14px;height:46px;flex:none;
+  background:var(--panel);border-bottom:1px solid var(--line);
+}
+#topbar .brand{display:flex;align-items:center;gap:10px;flex:none;cursor:pointer;user-select:none}
+#topbar .brand .t1{font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--ink);white-space:nowrap}
+#topbar .brand .t2{font-size:10px;letter-spacing:.3em;color:var(--ink3);white-space:nowrap}
+#topbar .sep{width:1px;height:20px;background:var(--line);flex:none}
+#topbar .crumb{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink2);min-width:0;overflow:hidden;white-space:nowrap;flex:1}
+#topbar .crumb b{color:var(--ink);font-weight:600}
+#topbar .crumb .seg{cursor:pointer;padding:2px 6px;border-radius:2px;transition:background .15s}
+#topbar .crumb .seg:hover{background:var(--accent-soft);color:var(--accent)}
+#topbar .right{display:flex;align-items:center;gap:10px;flex:none}
+#search{width:210px;height:28px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);
+  padding:0 8px 0 26px;font-size:12px;outline:none;border-radius:0;transition:border-color .15s, box-shadow .15s;
+  background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="%238A8F96" stroke-width="1.6"%3E%3Ccircle cx="7" cy="7" r="4.4"/%3E%3Cpath d="M10.6 10.6 L14 14"/%3E%3C/svg%3E');
+  background-repeat:no-repeat;background-position:7px center;background-size:13px;
+}
+#search:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.icon-btn{
+  width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);color:var(--ink2);transition:all .15s;flex:none;border-radius:0;
+}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.icon-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+#clock{font-size:11px;color:var(--ink3);letter-spacing:.1em;white-space:nowrap}
+#netstat{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ok);letter-spacing:.15em;white-space:nowrap}
+#netstat .dot{width:6px;height:6px;background:var(--ok);border-radius:50%;animation:pulse 2s ease infinite}
+@keyframes pulse{50%{opacity:.35}}
+
+/* ===== 主体三栏 ===== */
+#main{flex:1;display:flex;min-height:0}
+#sidebar{
+  width:236px;flex:none;background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;min-height:0;
+}
+#sidebar .s-head{padding:10px 14px 8px;font-size:10px;letter-spacing:.3em;color:var(--ink3);display:flex;justify-content:space-between;align-items:center;flex:none}
+#sidebar .s-head .cnt{color:var(--accent);letter-spacing:0;font-weight:700}
+#tree{flex:1;overflow-y:auto;padding:4px 6px 12px}
+.tree-item{
+  display:flex;align-items:center;gap:7px;padding:4px 8px;font-size:12.5px;color:var(--ink2);
+  cursor:pointer;border-radius:0;white-space:nowrap;border-left:2px solid transparent;transition:all .12s;
+}
+.tree-item:hover{background:var(--panel2);color:var(--ink)}
+.tree-item.active{background:var(--accent-soft);color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.tree-item .tw{padding-left:14px}
+.tree-item .nm{overflow:hidden;text-overflow:ellipsis}
+.tree-item .ct{margin-left:auto;font-size:10px;color:var(--ink3)}
+
+#content{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+#tabs{
+  flex:none;display:flex;align-items:center;gap:0;background:var(--panel);
+  border-bottom:1px solid var(--line);overflow-x:auto;min-height:32px;
+}
+#tabs::-webkit-scrollbar{display:none}
+.tab{
+  display:flex;align-items:center;gap:7px;padding:0 12px;height:32px;font-size:11.5px;color:var(--ink2);
+  border-right:1px solid var(--line);background:var(--panel2);cursor:pointer;flex:none;white-space:nowrap;transition:all .12s;
+}
+.tab:hover{color:var(--ink)}
+.tab.active{background:var(--panel);color:var(--accent);box-shadow:inset 0 2px 0 var(--accent);font-weight:600}
+.tab .x{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink3);border-radius:2px}
+.tab .x:hover{background:var(--err);color:#fff}
+.tab .plus{margin-left:4px;color:var(--ink3);font-size:14px;padding:0 6px}
+
+#toolbar{
+  flex:none;display:flex;align-items:center;gap:8px;padding:8px 14px;
+  border-bottom:1px solid var(--line);background:var(--panel);
+}
+.tb-btn{height:26px;padding:0 10px;font-size:11px;color:var(--ink2);border:1px solid var(--line);display:inline-flex;align-items:center;gap:5px;transition:all .12s}
+.tb-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tb-btn.slant{clip-path:polygon(7px 0,100% 0,calc(100% - 7px) 100%,0 100%)}
+.tb-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.tb-btn.primary:hover{filter:brightness(1.08);color:#fff}
+.tb-btn.primary.slant{clip-path:polygon(7px 0,100% 0,calc(100% - 7px) 100%,0 100%)}
+#toolbar .spacer{flex:1}
+#sortSel{height:26px;font-size:11px;color:var(--ink2);border:1px solid var(--line);background:var(--panel2);padding:0 4px;outline:none}
+#infoLine{font-size:11px;color:var(--ink3);white-space:nowrap}
+
+/* 文件区 */
+#fileArea{flex:1;overflow-y:auto;padding:14px;min-height:0}
+#fileArea .empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:70px 20px;color:var(--ink3);font-size:12px;text-align:center}
+/* 列表视图 */
+.file-row{
+  display:grid;grid-template-columns:34px 1fr 120px 110px 150px;align-items:center;gap:10px;
+  padding:7px 10px;font-size:12.5px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s;
+}
+.file-row:hover{background:var(--panel)}
+.file-row.selected{background:var(--accent-soft)}
+.file-row .ic{display:flex;align-items:center}
+.file-row .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.file-row.selected .nm{color:var(--accent);font-weight:600}
+mark{background:var(--accent-soft);color:var(--accent);font-weight:700;padding:0 1px}
+
+/* ===== 系统导航按钮 ===== */
+.nav-btn{height:28px;padding:0 10px;font-size:10.5px;letter-spacing:.06em;color:var(--ink2);border:1px solid var(--line);display:inline-flex;align-items:center;gap:5px;transition:all .12s;white-space:nowrap;border-radius:0;background:none}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.nav-btn b{color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}
+.nav-btn .ng{font-size:13px;line-height:1}
+.nav-btn .key{font-size:9px;color:var(--ink3);border:1px solid var(--line);padding:0 4px;line-height:14px}
+
+/* ===== 档案刻度 ===== */
+#fileTicks{display:flex;align-items:center;gap:3px;padding:0 4px;flex:none;max-width:150px;overflow:hidden}
+#fileTicks button{width:5px;height:12px;background:var(--line);transition:all .12s;padding:0;border:none;cursor:pointer;flex:none}
+#fileTicks button:hover{background:var(--ink2)}
+#fileTicks button.sel{background:var(--accent);height:16px}
+
+/* ===== 详情返回 / 状态栏重播 ===== */
+.d-back{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--ink2);border:1px solid var(--line);padding:3px 8px;transition:all .12s;flex:none;border-radius:0}
+.d-back:hover{border-color:var(--accent);color:var(--accent)}
+.d-back small{font-size:8.5px;color:var(--ink3);margin-left:2px}
+.st-reinit{font-size:9.5px;letter-spacing:.12em;color:var(--ink3);border:1px solid var(--line);padding:2px 8px;transition:all .12s;margin-left:12px;border-radius:0;background:none}
+.st-reinit:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ===== 检索 / 收藏面板 ===== */
+#modalRoot{position:fixed;inset:0;z-index:110}
+.m-backdrop{position:absolute;inset:0;background:rgba(10,12,15,.5);display:flex;align-items:flex-start;justify-content:center;padding:8vh 5vw 4vh;animation:mFade .22s ease backwards}
+@keyframes mFade{from{opacity:0;transform:translateY(8px) scale(.985)}}
+.t-modal{width:640px;max-width:94vw;max-height:78vh;background:var(--panel);border:1px solid var(--line2);box-shadow:var(--shadow);display:flex;flex-direction:column;animation:rise .25s ease backwards}
+.m-top{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);font-size:10px;letter-spacing:.18em;color:var(--ink3)}
+.m-top b{color:var(--ink2)}
+.m-close{font-size:9.5px;color:var(--ink2);letter-spacing:.12em;background:none;border:none;cursor:pointer}
+.m-close:hover{color:var(--err)}
+.t-modal h2{font-size:15px;letter-spacing:.16em;color:var(--ink);padding:16px 18px 4px;font-weight:700}
+.t-modal h2 small{font-size:10px;color:var(--ink3);margin-left:8px;letter-spacing:.1em}
+.m-search{display:flex;align-items:center;gap:8px;margin:10px 18px;border:1px solid var(--line);background:var(--panel2);padding:0 10px;height:34px;transition:border-color .15s}
+.m-search:focus-within{border-color:var(--accent)}
+.m-search span{color:var(--ink3);font-size:14px}
+.m-search input{flex:1;border:none;background:none;color:var(--ink);font-size:12px;outline:none;font-family:inherit}
+.m-search .key{font-size:9px;color:var(--ink3);border:1px solid var(--line);padding:1px 5px}
+.m-filters{display:flex;gap:6px;padding:0 18px 8px;flex-wrap:wrap}
+.m-filters button{font-size:10px;color:var(--ink2);border:1px solid var(--line);padding:3px 10px;transition:all .12s;border-radius:0;background:none;cursor:pointer}
+.m-filters button:hover{border-color:var(--accent);color:var(--accent)}
+.m-filters button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.m-res-head{display:grid;grid-template-columns:1fr 150px 90px;gap:10px;padding:6px 18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:9px;letter-spacing:.2em;color:var(--ink3)}
+.m-results{flex:1;overflow-y:auto;min-height:120px}
+.m-row{display:grid;grid-template-columns:1fr 150px 90px;gap:10px;align-items:center;padding:9px 18px;font-size:11.5px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--line)}
+.m-row:hover{background:var(--accent-soft)}
+.m-row .r-name{display:flex;align-items:center;gap:8px;min-width:0}
+.m-row .r-name b{color:var(--accent);flex:none;font-weight:700}
+.m-row .r-name .r-cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.m-row .r-name small{display:block;color:var(--ink3);font-size:9px}
+.m-row .r-dept{color:var(--ink2);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m-row .r-acc{font-size:9px;letter-spacing:.1em}
+.m-row .r-acc.ok{color:var(--ok)}
+.m-row .r-acc.no{color:var(--err)}
+.m-row .r-saved{color:var(--accent);font-size:11px}
+.m-empty{padding:34px 18px;text-align:center;color:var(--ink3);font-size:11px;line-height:2}
+.m-bottom{display:flex;justify-content:space-between;padding:8px 18px;border-top:1px solid var(--line);font-size:9px;letter-spacing:.16em;color:var(--ink3)}
+.m-bottom i{font-style:normal;color:var(--ok);font-size:7px;vertical-align:2px}
+
+/* ===== 详情页签 ===== */
+.dt-tabs{display:flex;border-bottom:1px solid var(--line);position:relative;margin:12px 0;flex:none}
+.dt-tab{font-size:10px;letter-spacing:.12em;color:var(--ink3);padding:6px 10px;cursor:pointer;position:relative;transition:color .12s;border-radius:0;background:none}
+.dt-tab b{font-weight:600}
+.dt-tab.active{color:var(--accent)}
+.dt-panel.swap{animation:rise .24s ease backwards}
+.tab-ind{position:absolute;bottom:-1px;left:0;height:2px;background:var(--accent);transition:transform .22s ease}
+.file-row .meta{min-width:0;font-size:11px;color:var(--ink3);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-row .kind-tag{font-size:9.5px;letter-spacing:.15em;color:var(--ink3);text-align:right}
+/* 网格视图 */
+#fileArea.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;align-content:start}
+.file-card{
+  background:var(--panel);border:1px solid var(--line);padding:12px;cursor:pointer;
+  display:flex;flex-direction:column;gap:8px;transition:all .14s;border-radius:0;
+}
+.file-card:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-1px)}
+.file-card.selected{border-color:var(--accent);background:var(--accent-soft)}
+.file-card .thumb{height:118px;background:var(--panel2);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line)}
+.file-card .thumb img{width:100%;height:100%;object-fit:cover}
+.file-card .thumb .glyph{width:44px;height:44px}
+.file-card .fname{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-card .fmeta{font-size:10px;color:var(--ink3);display:flex;justify-content:space-between}
+.file-card.selected .fname{color:var(--accent)}
+
+/* 详情面板 */
+#browserWrap{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
+#detail{
+  position:absolute;top:46px;right:0;bottom:0;width:352px;z-index:25;
+  background:var(--panel);border-left:1px solid var(--line);
+  display:flex;flex-direction:column;min-height:0;transition:margin-right .25s ease;
+}
+#detail.hidden{margin-right:-352px}
+@media (max-width:1100px){#detail{width:300px}}
+@media (max-width:1100px){#detail.hidden{margin-right:-300px}}
+#detail .d-head{flex:none;padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+#detail .d-head .ttl{font-size:12px;font-weight:700;letter-spacing:.1em;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#detail .d-body{flex:1;overflow-y:auto;padding:14px;line-height:1.9}
+#detail .d-body p{margin:0 0 10px}
+#detail .d-body .hint{color:var(--ink3);font-size:12px;text-align:center;padding:60px 10px;line-height:2}
+
+/* 档案卡 */
+.dossier .portrait{
+  width:100%;height:230px;background:var(--panel2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;
+}
+.dossier .portrait img{width:100%;height:100%;object-fit:cover;object-position:top}
+.dossier .portrait .glyph{width:80px;height:80px;opacity:.8}
+.dossier .codename{font-size:17px;font-weight:700;letter-spacing:.12em;margin-bottom:2px}
+.dossier .codename .en{color:var(--ink3);font-size:11px;font-weight:400;margin-left:8px;letter-spacing:.06em}
+.dossier .role-line{font-size:11.5px;color:var(--accent);letter-spacing:.14em;margin-bottom:12px;font-weight:600}
+.kv{display:grid;grid-template-columns:76px 1fr;gap:5px 10px;font-size:11.5px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:12px}
+.kv dt{color:var(--ink3)}
+.kv dd{color:var(--ink);font-weight:600}
+.dossier .kv dd .u{color:var(--ink3);font-weight:400;font-size:10.5px}
+.dossier h5{font-size:10px;letter-spacing:.3em;color:var(--ink3);margin:12px 0 6px}
+.dossier p{font-size:12px;color:var(--ink2);line-height:1.9;text-align:justify}
+.dossier .quote{
+  margin-top:14px;padding:10px 12px;background:var(--teal-soft);border-left:3px solid var(--teal);
+  font-size:11.5px;color:var(--ink);line-height:1.8;font-style:italic;
+}
+.dossier .restricted{padding:26px 12px;text-align:center;border:1px dashed var(--line2);color:var(--ink3);font-size:11px;letter-spacing:.2em;margin-top:10px}
+
+/* 文档/日志 */
+.doc-body{font-size:12px;color:var(--ink2);line-height:1.9}
+.doc-body .title{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.1em;margin-bottom:4px}
+.doc-body .sub{font-size:10.5px;color:var(--ink3);letter-spacing:.2em;margin-bottom:14px}
+.doc-body .rule{height:1px;background:var(--line);margin:12px 0}
+.doc-body .field{display:flex;gap:10px;font-size:11.5px;margin-bottom:5px}
+.doc-body .field b{color:var(--accent);flex:none;width:76px;font-weight:600}
+.doc-body .field span{color:var(--ink2)}
+.doc-body h6{font-size:11px;color:var(--ink);letter-spacing:.2em;margin:12px 0 6px;font-weight:700}
+.doc-body .log-line{font-size:11px;line-height:1.75;color:var(--ink2)}
+.doc-body .log-line .t{color:var(--ink3)}
+.doc-body .log-line .ok{color:var(--ok)}
+.doc-body .log-line .wr{color:var(--warn)}
+.doc-body .log-line .er{color:var(--err)}
+
+/* 命令条 */
+#cmdbar{
+  flex:none;display:flex;align-items:center;gap:8px;padding:7px 14px;
+  background:var(--panel);border-top:1px solid var(--line);height:38px;
+}
+#cmdbar .prompt{font-size:12px;color:var(--teal);font-weight:700;flex:none}
+#cmdbar .prompt b{color:var(--accent)}
+#cmd{flex:1;border:none;background:transparent;color:var(--ink);font-size:12.5px;outline:none;font-family:Consolas,'Cascadia Mono','Courier New',monospace}
+#cmd::placeholder{color:var(--ink3)}
+#statusbar{
+  flex:none;display:flex;align-items:center;gap:18px;padding:0 14px;height:24px;
+  background:var(--panel2);border-top:1px solid var(--line);font-size:10px;color:var(--ink3);letter-spacing:.08em;
+}
+#statusbar .st-item{display:flex;align-items:center;gap:5px;white-space:nowrap}
+#statusbar .st-item b{color:var(--ink2);font-weight:600}
+
+/* 命令输出浮层 */
+#termOut{
+  position:fixed;left:0;right:0;bottom:38px;z-index:60;max-height:45vh;overflow-y:auto;
+  background:rgba(11,14,18,.97);color:#C8CDD3;font-size:12px;padding:12px 16px;line-height:1.85;
+  display:none;border-top:1px solid var(--accent);font-family:Consolas,'Cascadia Mono','Courier New',monospace;white-space:pre-wrap;
+}
+#termOut.on{display:block}
+#termOut .t-ok{color:#57B56F}
+#termOut .t-wr{color:#C9A24A}
+#termOut .t-er{color:#D97A74}
+#termOut .t-cy{color:#AEB6C0}
+#termOut .t-or{color:#FFFFFF;font-weight:600}
+
+/* ===== 收藏区 ===== */
+#favList{max-height:168px;overflow-y:auto;padding:2px 6px 10px;border-bottom:1px solid var(--line)}
+.fav-item{display:flex;align-items:center;gap:7px;padding:4px 8px;font-size:11.5px;color:var(--ink2);cursor:pointer;border-radius:0;white-space:nowrap;transition:all .12s}
+.fav-item:hover{background:var(--panel2);color:var(--accent)}
+.fav-item .x{margin-left:auto;color:var(--ink3);font-size:12px;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center}
+.fav-item .x:hover{color:var(--err)}
+.fav-empty{font-size:10px;color:var(--ink3);padding:2px 8px 8px;letter-spacing:.1em}
+
+/* ===== 详情头部 / 徽章 ===== */
+.file-no{font-size:9px;letter-spacing:.16em;color:var(--ink3);border:1px solid var(--line);padding:2px 6px;flex:none;white-space:nowrap}
+#btnFav.active{color:var(--accent);border-color:var(--accent)}
+.lock-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;letter-spacing:.15em;color:var(--err);border:1px solid var(--err);padding:1px 5px;flex:none;white-space:nowrap}
+
+/* ===== 受限档案卡 ===== */
+.restricted-card{padding:40px 16px;text-align:center;border:1px dashed var(--line2);color:var(--ink3)}
+.restricted-card .rc-title{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.2em;margin-bottom:8px}
+.restricted-card .rc-sub{font-size:10px;letter-spacing:.28em;color:var(--err);margin-bottom:20px}
+.restricted-card .rc-desc{font-size:11px;line-height:2;margin-bottom:20px}
+.restricted-card button{border:1px solid var(--line);padding:6px 16px;font-size:11px;color:var(--ink);letter-spacing:.15em;transition:all .12s}
+.restricted-card button:hover{border-color:var(--err);color:var(--err)}
+
+/* ===== 详情操作行 ===== */
+.d-actions{display:flex;gap:8px;margin-top:14px}
+.d-actions button{flex:1;height:28px;border:1px solid var(--line);font-size:11px;color:var(--ink2);display:inline-flex;align-items:center;justify-content:center;gap:5px;transition:all .12s;border-radius:0}
+.d-actions button:hover{border-color:var(--accent);color:var(--accent)}
+.d-actions button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.d-actions button.primary:hover{filter:brightness(1.12);color:#fff}
+.audit{font-size:10.5px;color:var(--ink3);line-height:1.9}
+.audit .au{display:flex;gap:10px}
+.audit .au b{color:var(--ink2);font-weight:600;flex:none}
+
+/* ===== 右键菜单 ===== */
+#ctxMenu{position:fixed;z-index:90;min-width:188px;background:var(--panel);border:1px solid var(--line2);box-shadow:var(--shadow);padding:4px;display:none;border-radius:0}
+#ctxMenu.on{display:block}
+#ctxMenu .ci{display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:11.5px;color:var(--ink2);cursor:pointer;transition:all .1s}
+#ctxMenu .ci:hover{background:var(--accent-soft);color:var(--accent)}
+#ctxMenu .ci .k{margin-left:auto;font-size:9px;color:var(--ink3)}
+#ctxMenu .sep{height:1px;background:var(--line);margin:4px 0}
+
+/* ===== 图片预览 ===== */
+#lightbox{position:fixed;inset:0;z-index:95;background:rgba(8,10,13,.92);display:none;align-items:center;justify-content:center;cursor:zoom-out;padding:4vh 4vw}
+#lightbox.on{display:flex}
+#lightbox img{max-width:100%;max-height:92vh;object-fit:contain;border:1px solid rgba(255,255,255,.14)}
+
+/* ===== 列表/卡片展开动画 ===== */
+.file-row,.file-card{animation:rise .3s ease backwards}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* 移动端 */
+@media (max-width:1100px){
+  #detail{width:300px}
+  #detail.hidden{margin-right:-300px}
+}
+@media (max-width:900px){
+  #sidebar{display:none}
+  #search{width:150px}
+}
+@media (max-width:680px){
+  #detail{position:fixed;inset:0;width:100%;z-index:70;margin-right:0;border-left:none;transition:transform .25s ease}
+  #detail.hidden{transform:translateX(100%);margin-right:0}
+  #clock{display:none}
+  #netstat{display:none}
+  .file-row{grid-template-columns:30px 1fr 90px 100px}
+  .file-row .kind-tag{display:none}
+}
+@media (max-width:480px){
+  #topbar .brand .t2{display:none}
+  #search{width:120px}
+}
+/* ===== 平板窄窗断点 ===== */
+@media (max-width:980px){
+  #topbar{gap:8px;padding:0 8px}
+  #topbar .brand .t2{display:none}
+  #search{width:150px}
+  #netstat{display:none}
+  #topbar .right{gap:6px}
+  #topbar .nav-btn{padding:0 8px}
+  .pv-menu{gap:18px;font-size:10.5px}
+  #pvTop{padding:20px 24px 0}
+  .r-arrow{width:46px;height:46px}
+}
+@media (max-width:820px){
+  #topbar .crumb{display:none}
+  #topbar .nav-btn:not(.keep){display:none}
+  #clock{display:none}
+}
+
+/* ===== 手机端优化 ===== */
+@media (max-width:680px){
+  .crt-scan{display:none}
+  .pv-stream{opacity:.32}
+  #boot::before,#boot::after{width:74vw;height:74vw}
+  #pvTop{padding:16px 16px 0;height:auto;min-height:92px;align-items:flex-start}
+  .pv-brand{font-size:9.5px;line-height:1.8}
+  .pv-menu{gap:10px 14px;font-size:10px;padding-top:2px;flex-wrap:wrap;max-width:70vw}
+  .pv-link{padding:6px 0}
+  .pv-link:active{opacity:.55}
+  #reel{padding-bottom:78px}
+  .r-arrow{display:flex;width:48px;height:48px;font-size:22px;top:auto;bottom:30px;transform:none;opacity:.92;background:rgba(255,255,255,.5)}
+  .r-prev{left:16px}.r-next{right:16px}
+  .reel-center{max-width:86vw}
+  .reel-no{font-size:19px;margin-bottom:10px}
+  .reel-name{font-size:clamp(24px,7.5vw,34px)}
+  .reel-sub{font-size:12px;margin-top:8px}
+  .reel-meta{font-size:10px;margin-top:10px}
+  .reel-acc{padding:5px 12px}
+  .reel-actions{margin-top:20px;width:100%;max-width:320px;flex-direction:column;gap:10px}
+  .r-btn{width:100%;padding:14px 20px;font-size:12.5px;min-height:46px}
+  .reel-ticks{margin-top:20px}
+  .reel-ticks button{width:9px;height:16px}
+  .reel-ticks button.sel{height:24px}
+  .reel-page{left:16px;bottom:88px}
+  .reel-page b{font-size:56px}
+  .reel-hint{bottom:130px;font-size:9px;letter-spacing:.22em}
+  .reel-powered{right:16px;bottom:88px;font-size:9px}
+  /* 音乐条：全宽贴底 + safe-area */
+  #musicBar{left:0;right:0;bottom:0;transform:none;width:100%;height:auto;min-height:48px;padding:6px 12px calc(6px + env(safe-area-inset-bottom));border-left:none;border-right:none;border-bottom:none;gap:8px;justify-content:center}
+  #mPlay{width:38px;height:36px;font-size:12px}
+  #mSeek{height:9px;min-width:50px}
+  #mVol,#mVolBtn{display:none}
+  #console{left:8px;right:8px;bottom:calc(60px + env(safe-area-inset-bottom));width:auto;height:44vh}
+  .st-console{display:none}
+  #musicBar .m-meta b{font-size:10px;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+  #musicBar .m-meta span{font-size:9px}
+  /* PV 详情：横排卡 + 触控 */
+  #pvDetail{padding:12px 14px calc(12px + env(safe-area-inset-bottom));gap:14px;grid-template-rows:auto auto 1fr}
+  .pvd-head{flex-wrap:wrap;gap:8px}
+  .pvd-back{padding:10px 13px;font-size:11px}
+  .pvd-menu{font-size:10px;gap:12px}
+  .pvd-card{flex-direction:row;align-items:center;gap:14px;padding:12px 14px;max-height:none}
+  .pvd-llc{display:none}
+  .pvd-rot{right:8px;top:8px}
+  .pvd-no{font-size:26px}
+  .pvd-img{flex:none;width:84px;height:104px;margin-top:0}
+  .pvd-img img{max-height:104px}
+  .pvd-title-en{font-size:19px}
+  .pvd-title-cn{font-size:12px;margin-top:5px}
+  .pvd-meta{gap:12px;font-size:10px;padding:9px 0}
+  .pvd-body{margin-top:12px}
+  .d-actions button{min-height:44px;font-size:12px}
+  /* 图库 */
+  .g-head{padding:14px 16px;font-size:10.5px}
+  .g-close{padding:8px 12px}
+  .g-grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;padding:14px 14px 90px}
+  .g-item img{height:170px}
+  .g-item .g-tag b{font-size:10.5px}
+  .g-view{padding:52px 6px 46px}
+  .g-view img{max-width:96vw;max-height:calc(100dvh - 190px)}
+  .g-arr{width:44px;height:44px;font-size:19px}
+  .g-prev{left:4px}.g-next{right:4px}
+  .g-back{padding:9px 13px}
+  .g-cap{bottom:10px}
+  .g-cap b{font-size:12px}
+  .g-count{right:12px;bottom:10px}
+  /* 浏览器模式：顶栏压缩 + 触控行 */
+  #topbar{padding:0 8px;gap:7px;height:48px}
+  #topbar .nav-btn{display:none}
+  #topbar .nav-btn.keep{display:inline-flex;padding:0 8px;height:32px;font-size:9.5px}
+  #search{width:118px;height:34px;font-size:13px}
+  #topbar .icon-btn{width:30px;height:30px}
+  #clock{font-size:11px}
+  #toolbar{padding:4px 6px;gap:4px}
+  #toolbar .tb-btn{padding:9px 9px;min-height:40px;font-size:11px}
+  #fileTicks{display:none}
+  #infoLine{font-size:10px}
+  .file-row{grid-template-columns:26px 1fr 70px;padding:13px 10px;min-height:56px;font-size:13px}
+  .file-row .meta:last-child{display:none}
+  .file-row .ic svg{width:24px;height:24px}
+  .file-card .fname{font-size:12.5px}
+  .d-head{padding:12px 12px}
+  .d-back span{display:none}
+  .d-back{padding:9px 11px}
+  .dt-tab{padding:10px 9px;font-size:10px}
+  #cmdbar{height:50px;padding:0 12px}
+  #cmdbar input{font-size:16px}
+  #statusbar{flex-wrap:wrap;min-height:38px;padding:5px 8px;gap:4px 14px}
+  .st-item{font-size:9.5px}
+  .st-reinit{display:none}
+  .m-inline{display:none}
+}
+@media (max-width:380px){
+  .pv-brand{font-size:8.5px}
+  .pv-menu{gap:10px;font-size:9px}
+  .reel-name{font-size:24px}
+  #search{width:96px}
+  .g-grid{grid-template-columns:repeat(2,1fr)}
+  .g-item img{height:150px}
+}
+
+@keyframes sdSideIn{from{transform:translateX(-100%)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 开机画面 ===== -->
+<div id="boot">
+  <div class="logo-wrap">
+    <svg viewBox="0 0 240 110" width="150" height="69" fill="none" class="draw">
+      <path d="M28 55 C28 15 84 15 120 55 C156 15 212 15 212 55 C212 95 156 95 120 55 C84 95 28 95 28 55 Z"
+        stroke="#D7DCE2" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M28 55 C28 15 84 15 120 55 M120 55 C156 15 212 15 212 55 M28 55 C28 95 84 95 120 55 M120 55 C156 95 212 95 212 55"
+        stroke="#D7DCE2" stroke-width="9" stroke-linecap="round"/>
+      <text x="74" y="63" font-size="24" fill="#D7DCE2" text-anchor="middle" font-family="Consolas,monospace">+</text>
+      <text x="166" y="63" font-size="30" fill="#D7DCE2" text-anchor="middle" font-family="Consolas,monospace">−</text>
+    </svg>
+    <div class="logo-title" id="bootTitle">RHINE·LAB OS</div>
+    <div class="fileno" id="bootFileNo">FILE NUMBER: 003</div>
+  </div>
+  <div class="checklist" id="bootList"></div>
+  <div class="bar"><i id="bootBar"></i></div>
+  <div class="hint" id="bootHint">身份确认完成，按任意键开始处理</div>
+</div>
+
+<!-- ===== 背景：3D 白色档案条阵 ===== -->
+<div class="pv-bg" id="pvBg" aria-hidden="true"></div>
+
+<!-- ===== 主界面 ===== -->
+<div id="app">
+  <div class="pv-grid" aria-hidden="true"></div>
+  <div class="pv-stream" id="pvStream" aria-hidden="true"></div>
+  <div class="crt-scan" aria-hidden="true"></div>
+  <!-- ===== PV 滚动页：顶栏 ===== -->
+  <div id="pvTop">
+    <div class="pv-brand">RHINE LAB<br>SYNTHESIZE INFORMATION<br>ANALYSIS OS</div>
+    <div class="pv-menu">
+      <a class="pv-link" onclick="openArchiveModal('search')">ARCHIVE INDEX</a>
+      <a class="pv-link" onclick="openArchiveModal('saved')">SAVED <b id="pvSaved">00</b></a>
+      <a class="pv-link" onclick="showGallery()" title="影像图库">GALLERY</a>
+      <a class="pv-link" onclick="toggleConsole()" title="命令控制台（快捷键 `）">CONSOLE</a>
+      <a class="pv-link m-switch" onclick="switchMode('browser')" title="切换到文件浏览器模式">BROWSER ▦</a>
+    </div>
+  </div>
+
+  <!-- ===== PV 滚动页：档案轮播 ===== -->
+  <div id="reel">
+    <button class="r-arrow r-prev" onclick="reelStep(-1)" title="上一档案 (←)">‹</button>
+    <button class="r-arrow r-next" onclick="reelStep(1)" title="下一档案 (→)">›</button>
+    <div class="reel-center">
+      <div class="reel-no" id="reelNo">FILE NUMBER: X-001</div>
+      <div class="reel-name" id="reelName"></div>
+      <div class="reel-sub" id="reelSub"></div>
+      <div class="reel-meta" id="reelMeta"></div>
+      <div class="reel-acc" id="reelAcc">ACCESS FULL</div>
+      <div class="reel-actions">
+        <button class="r-btn primary" onclick="reelOpen()">ACCESS FILE</button>
+        <button class="r-btn" id="reelFav" onclick="reelFavToggle()">☆ SAVE ARCHIVE</button>
+      </div>
+      <div class="reel-ticks" id="reelTicks"></div>
+    </div>
+    <div class="reel-page"><b id="reelCur">01</b><span id="reelTotal">/ 33</span></div>
+    <div class="reel-powered">POWERED BY RHINE LAB</div>
+  </div>
+
+  <!-- ===== PV 详情覆盖层 ===== -->
+  <div id="pvDetail">
+    <div class="pvd-head">
+      <button class="pvd-back" onclick="closePvDetail()">← ARCHIVE OVERVIEW <small>ESC</small></button>
+      <div class="pvd-menu"><a class="pv-link" onclick="openArchiveModal('search')">ARCHIVE INDEX</a><a class="pv-link" onclick="openArchiveModal('saved')">SAVED <b>00</b></a></div>
+    </div>
+    <div class="pvd-card">
+      <div class="pvd-llc">RHINE LAB LLC</div>
+      <div class="pvd-no" id="pvDetailNo">NO.031</div>
+      <div class="pvd-rot">360°</div>
+      <div class="pvd-img" id="pvDetailImg"></div>
+    </div>
+    <div class="pvd-panel">
+      <div class="pvd-title-en" id="pvDetailTitleEn"></div>
+      <div class="pvd-title-cn" id="pvDetailTitleCn"></div>
+      <div class="pvd-meta" id="pvDetailMeta"></div>
+      <div class="pvd-body" id="pvDetailBody"></div>
+    </div>
+  </div>
+
+  <div id="browserWrap">
+  <div id="topbar">
+    <div class="brand" onclick="goHome()">
+      <svg viewBox="0 0 240 110" width="46" height="21" fill="none">
+        <path d="M28 55 C28 15 84 15 120 55 C156 15 212 15 212 55 C212 95 156 95 120 55 C84 95 28 95 28 55 Z"
+          stroke="var(--accent)" stroke-width="14" stroke-linejoin="round"/>
+        <path d="M28 55 C28 15 84 15 120 55 M120 55 C156 15 212 15 212 55 M28 55 C28 95 84 95 120 55 M120 55 C156 95 212 95 212 55"
+          stroke="var(--accent)" stroke-width="14" stroke-linecap="round"/>
+        <text x="74" y="63" font-size="34" fill="var(--accent)" text-anchor="middle" font-family="Consolas,monospace">+</text>
+        <text x="166" y="63" font-size="42" fill="var(--accent)" text-anchor="middle" font-family="Consolas,monospace">−</text>
+      </svg>
+      <div>
+        <div class="t1">RHINE·LAB OS</div>
+        <div class="t2">SYNTHESIZE INFORMATION</div>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div class="crumb" id="crumb"></div>
+    <div class="right">
+      <button class="nav-btn" onclick="openArchiveModal('search')" title="打开档案检索（ARCHIVE INDEX）"><span class="ng">⌕</span>ARCHIVE INDEX <span class="key">/</span></button>
+      <button class="nav-btn" onclick="openArchiveModal('saved')" title="查看收藏档案">＋ SAVED <b id="savedCount">00</b></button>
+      <button class="nav-btn keep" onclick="switchMode('reel')" title="切换到 PV 滚动页">◈ REEL</button>
+      <button class="nav-btn" onclick="showGallery()" title="打开影像图库">◫ GALLERY</button>
+      <input id="search" type="text" placeholder="搜索档案内容…" title="全局搜索">
+      <button class="icon-btn" id="btnViewList" title="列表视图" onclick="setView('list')"></button>
+      <button class="icon-btn" id="btnViewGrid" title="网格视图" onclick="setView('grid')"></button>
+      <button class="icon-btn" id="btnTheme" title="切换主题" onclick="toggleTheme()"></button>
+      <span id="netstat"><i class="dot"></i>ONLINE</span>
+      <span id="clock">--:--:--</span>
+    </div>
+  </div>
+
+  <div id="main">
+    <aside id="sidebar">
+      <div class="s-head">收藏 · SAVED <span class="cnt" id="favCount">0</span></div>
+      <div id="favList"></div>
+      <div class="s-head" style="border-top:1px solid var(--line);padding-top:10px">ARCHIVE INDEX <span class="cnt" id="treeCount"></span></div>
+      <div id="tree"></div>
+    </aside>
+
+    <section id="content">
+      <div id="tabs"></div>
+      <div id="toolbar">
+        <button class="tb-btn" onclick="goUp()" id="btnUp" title="上级目录"></button>
+        <button class="tb-btn" onclick="refreshList()" title="刷新"></button>
+        <button class="tb-btn" onclick="sortBy('name')" title="按名称排序">名称</button>
+        <button class="tb-btn" onclick="sortBy('size')" title="按大小排序">大小</button>
+        <button class="tb-btn" onclick="sortBy('date')" title="按日期排序">日期</button>
+        <span class="spacer"></span>
+        <span id="fileTicks" title="当前档案刻度"></span>
+        <span id="infoLine"></span>
+      </div>
+      <div id="fileArea"></div>
+    </section>
+  </div>
+  <!-- browserWrap 结束 -->
+
+    <aside id="detail" class="hidden">
+      <div class="d-head">
+        <button class="d-back" onclick="goBackDetail()" title="返回档案阵列">← <span>ARCHIVE</span><small>ESC</small></button>
+        <span class="file-no" id="detailNo">FILE —</span>
+        <span class="ttl" id="detailTitle">DETAILS</span>
+        <button class="icon-btn" id="btnFav" title="收藏" onclick="toggleFavCurrent()"></button>
+        <button class="icon-btn" onclick="closeDetail()" title="关闭">×</button>
+      </div>
+      <div class="d-body" id="detailBody"><div class="hint">选择一个档案查看内容<br>▸ 单击打开 · 右键更多操作</div></div>
+    </aside>
+  </div>
+
+  <div id="cmdbar">
+    <span class="prompt">rhine&nbsp;<b>❯</b></span>
+    <input id="cmd" type="text" placeholder="输入命令 help / ls / open / cat / search / theme / clear" autocomplete="off" spellcheck="false">
+  </div>
+  <div id="statusbar">
+    <span class="st-item">NODE <b>TRM-01</b></span>
+    <span class="st-item">USER <b>VISITOR</b></span>
+    <span class="st-item">ACCESS <b id="stAccess">LEVEL-3</b></span>
+    <span class="st-item">ENCRYPTION <b>AES-256</b></span>
+    <span class="st-item" id="stFiles"></span>
+    <span class="st-item m-inline"><button id="mPlay2" onclick="toggleMusic()" title="播放/暂停 (M)">▶</button><b id="mTime2">0:00</b></span>
+    <span class="st-item" style="margin-left:auto">POWERED BY RHINE LAB</span>
+    <button class="st-console" onclick="toggleConsole()" title="命令控制台（快捷键 `）">CMD &gt;_</button>
+    <button class="st-reinit" onclick="replayBoot()" title="重播启动流程">REINITIALIZE ↻</button>
+  </div>
+  <div id="termOut"></div>
+</div>
+
+<!-- ===== CMD 控制台（简洁版） ===== -->
+<div id="console" hidden>
+  <div class="con-bar"><span class="con-title">RHINE·LAB CONSOLE — C:\RHINE\SYSTEM32</span><button class="con-btn" onclick="toggleConsole()" title="关闭 (Esc)">×</button></div>
+  <div class="con-out" id="conOut"></div>
+  <div class="con-in"><span class="con-prompt">C:\RHINE&gt;</span><input id="conCmd" type="text" autocomplete="off" spellcheck="false" placeholder="help / ls / open / cat / search / theme / clear"><span class="con-key">` 呼出 · Esc 关闭</span></div>
+</div>
+
+<!-- ===== 检索 / 收藏面板 ===== -->
+<div id="modalRoot" hidden>
+  <div class="m-backdrop" onclick="if(event.target===this)closeArchiveModal()">
+    <section class="t-modal" role="dialog" aria-modal="true">
+      <div class="m-top"><span>RHINE LAB / <b id="mMode">ARCHIVE DIRECTORY</b></span><button class="m-close" onclick="closeArchiveModal()">CLOSE <span>×</span></button></div>
+      <h2 id="mTitle">ARCHIVE INDEX<small>内部档案检索</small></h2>
+      <div class="m-search"><span>⌕</span><input id="mQuery" type="search" autocomplete="off" placeholder="输入档案编号、名称或科室" aria-label="检索档案"><span class="key">ESC</span></div>
+      <div class="m-filters" id="mFilters"></div>
+      <div class="m-res-head"><span>FILE / 档案</span><span>DEPARTMENT / 科室</span><span>ACCESS</span></div>
+      <div class="m-results" id="mResults"></div>
+      <div class="m-bottom"><span id="mCount"></span><span>INTERNAL DATABASE <i>●</i> CONNECTED</span></div>
+    </section>
+  </div>
+</div>
+
+<!-- ===== 音乐播放器 ===== -->
+<audio id="mAudio" src="assets/rhine_theme.m4a" loop preload="metadata"></audio>
+<div id="musicBar" title="背景音乐 · M 播放/暂停 · ◀▶ 切曲 · SND 音效开关">
+  <button id="mPrev" class="m-nav" onclick="trackStep(-1)" title="上一曲">◀</button>
+  <button id="mPlay" onclick="toggleMusic()">▶</button>
+  <button id="mNext" class="m-nav" onclick="trackStep(1)" title="下一曲">▶</button>
+  <div class="m-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="m-meta"><b id="mName">RHINE LAB — ORIGINAL SOUND</b><span id="mTime">0:00 / 0:00</span></div>
+  <input type="range" id="mSeek" min="0" max="1000" value="0" step="1" title="进度">
+  <button id="mVolBtn" onclick="toggleMute()">♪</button>
+  <input type="range" id="mVol" min="0" max="100" value="70" title="音量">
+  <button id="mSnd" class="m-nav" onclick="toggleSoundFx()" title="UI 音效开关">SND</button>
+</div>
+
+<!-- ===== 影像图库 ===== -->
+<div id="gallery">
+  <div class="g-head"><span>GALLERY / 影像档案 <b id="gTotal">00</b></span><button class="g-close" onclick="closeGallery()">CLOSE ×</button></div>
+  <div class="g-grid" id="gGrid"></div>
+  <div class="g-view" id="gView" hidden>
+    <button class="g-back" onclick="gBackGrid()">← BACK</button>
+    <button class="g-arr g-prev" onclick="gStep(-1)">‹</button>
+    <img id="gImg" alt="">
+    <button class="g-arr g-next" onclick="gStep(1)">›</button>
+    <div class="g-cap"><b id="gCapEn"></b><span id="gCapCn"></span></div>
+    <div class="g-count" id="gCount"></div>
+  </div>
+</div>
+
+<!-- ===== 右键菜单 / 图片预览 ===== -->
+<div id="ctxMenu"></div>
+<div id="lightbox" onclick="this.classList.remove('on')"><img id="lightboxImg" alt=""></div>
+
+<!-- ===== APP LOGIC ===== -->
+<script>
+/* ================= 图标 ================= */
+const ICO = {
+  dir: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--accent)" stroke-width="1.6"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h5L11 7h8.5A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-11Z"/></svg>',
+  doc: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h6M9 16h6"/></svg>',
+  log: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="4.5" width="17" height="15"/><path d="M7 9h4M7 13h4M7 17h4M13.5 9h3.5M13.5 13h3.5"/></svg>',
+  op:  '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20c.8-3.6 3.2-5.4 6.5-5.4s5.7 1.8 6.5 5.4"/></svg>',
+  up:  '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg>',
+  ref: '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10.5 2.5h3v3M13.5 2.5 7 9M3.5 6.5v6h6"/></svg>',
+  grid:'<svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/></svg>',
+  list:'<svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><rect x="2" y="3" width="3" height="2"/><rect x="7" y="3" width="7" height="2"/><rect x="2" y="7" width="3" height="2"/><rect x="7" y="7" width="7" height="2"/><rect x="2" y="11" width="3" height="2"/><rect x="7" y="11" width="7" height="2"/></svg>',
+  sun: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4"/></svg>',
+  moon:'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13 9.5A5.5 5.5 0 0 1 6.5 3 5.5 5.5 0 1 0 13 9.5Z"/></svg>',
+  home:'<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 7 8 2.5 13.5 7"/><path d="M4 6v7.5h8V6"/></svg>',
+  star:'<svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 2.2l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L2.2 6.5l4-.6z"/></svg>',
+  starO:'<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 2.2l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L2.2 6.5l4-.6z"/></svg>',
+  lock:'<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="7" width="9" height="6"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>',
+  exp:'<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 2.5h5M3.5 13.5h5M8.5 2.5 6 4M8.5 13.5 6 12M13.5 8H3M3 8l2-2M3 8l2 2"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3.5 22 20H2Z"/><path d="M12 9.5v4.5M12 17.2v.6"/></svg>'
+};
+
+/* ================= 干员档案 ================= */
+const OPERATORS = [
+  {id:'KIRSTEN', code:'克丽斯腾·莱特', en:'KIRSTEN WRIGHT', img:'assets/kirsten.jpg',
+   race:'—', gender:'女', height:'—', birth:'—', origin:'哥伦比亚 · 莱特家族', combat:'—', infection:'—',
+   dept:'总辖构件科', role:'总辖构件科主任 · 联合创始人', no:'OP-001', access:'open',
+   bio:'特里蒙理工大学高能物理博士，出身于著名的莱特家族。与塞雷娅是大学同学，也是彼此最理解的人，两人一同创立莱茵生命。炎魔事件后，与塞雷娅因理念决裂。1097年“地平弧光”计划启动后，逐渐从公众视野中“消失”。1099年11月21日，利用“弧光一号”击穿星荚后，独自乘坐“万星园”升入太空，此后下落不明。',
+   quote:'Per aspera ad astra —— 寻此苦旅，以达星辰。'},
+  {id:'SARIA', code:'塞雷娅', en:'SARIA', img:'assets/saria.jpg',
+   race:'瓦伊凡', gender:'女', height:'174cm', birth:'4月23日', origin:'哥伦比亚', combat:'5年', infection:'非感染者',
+   dept:'防卫科', role:'前防卫科主任 · 联合创始人', no:'RL02', access:'open',
+   bio:'莱茵生命联合创始人之一，前防卫科主任。于生命科学、微生物学、源石技艺等领域皆有建树，同时于歼灭战、要员保全、异常事态处理等任务中表现出强大实力。能操纵钙元素组成极其坚硬的珐琅质，并通过调整晶体结构改变其性质，以适应不同作战环境。炎魔事件后与总辖克丽斯腾决裂，离开莱茵生命并随后与罗德岛合作；特里蒙弧光事件后正式辞任防卫科主任。',
+   quote:'请你帮我转告伊芙利特，“无论今后发生什么，我都会保护你”……见面？不，我还没准备好去见她。'},
+  {id:'SILENCE', code:'赫默', en:'SILENCE · OLIVIA', img:'assets/silence.jpg',
+   race:'黎博利', gender:'女', height:'154cm', birth:'5月18日', origin:'哥伦比亚', combat:'无', infection:'感染者',
+   dept:'结构科', role:'结构科前研究员 · 罗德岛医疗干员', no:'OP-003', access:'open',
+   bio:'专精生命科学、药理学、心理学。感染矿石病后经老师阿伦茨·帕尔维斯举荐进入莱茵生命结构科，帕尔维斯积极支持了她的实验。与塞雷娅共同进行以伊芙利特为对象的实验，实验失败引发炎魔事件后，携伊芙利特前往罗德岛，担任伊芙利特的主治医师与担保人。现任莱茵生命构件科执行顾问，兼任莱茵生命在科学伦理道德共识委员会的代表。',
+   quote:'离开莱茵生命的理由？因为发生过很多事，我也不知道该从什么时候说起……'},
+  {id:'IFRIT', code:'伊芙利特', en:'IFRIT', img:'assets/ifrit.jpg',
+   race:'—', gender:'女', height:'—', birth:'—', origin:'—', combat:'—', infection:'重度感染者',
+   dept:'编外', role:'前医疗对象', no:'OP-004', access:'restricted',
+   bio:'拥有极高的源石适应性，伴随多发性点火现象。在国防部与莱茵生命的协议下，海顿制药对其进行了非法人体嵌合实验，实验失败，一号实验室被实验体焚毁。转移至莱茵生命后，以“嵌合疗法”名义进行炎魔碎片嵌合实验，期间意识失控引发炎魔事件，被塞雷娅持“坚城”装备镇压。现于罗德岛接受治疗，由赫默担任监护与担保人。',
+   quote:'我最讨厌穿白大褂的家伙盯着我看……就是在说你啊！在说你！别看了，脸转过去！'},
+  {id:'PTILOPSIS', code:'白面鸮', en:'PTILOPSIS · JOYCE', img:'assets/ptilopsis.jpg',
+   race:'黎博利', gender:'女', height:'164cm', birth:'10月6日', origin:'哥伦比亚', combat:'无', infection:'感染者（实验事故）',
+   dept:'构件科', role:'前数据维护专员', no:'OP-005', access:'open',
+   bio:'被确定为源石信息解码实验的最终人选——实验以人为计算载体解码并翻译源石内信息。实验失败，大脑受到严重损伤，也因此成为感染者。莱茵生命随后决定采用可植入人体的芯片代替大脑的部分功能，实验成功，白面鸮成为整个哥伦比亚第一个植入芯片并存活的人。为减轻“另一种声音”带来的精神负担，以机械语言与人交流。',
+   quote:'前莱茵生命数据维护员白面鸮，如果方便的话，请使用命令行完成您需要的操作。'},
+  {id:'MUELSYSE', code:'缪尔赛思', en:'MUELSYSE · RL09', img:'assets/muelsyse.jpg',
+   race:'精灵', gender:'女', height:'169cm', birth:'11月3日', origin:'未公开', combat:'无', infection:'非感染者',
+   dept:'生态科', role:'生态科主任', no:'RL09', access:'open',
+   bio:'哥伦比亚学界近年来备受关注的天才科学家，在不到三十岁的年纪便已跻身莱茵生命“十杰”之列，担任生态科主任，以及特里蒙多所大学的客座讲师。近十年，她及其团队在生态学、遗传学、植物生物化学、植物生理学等领域取得的研究成果，极大推动了哥伦比亚生命科学与环境科学的发展。',
+   quote:'莱茵生命，生态科主任，缪尔赛思。不过我们之间应该不需要这么正式的问候吧，博士。'},
+  {id:'MAYER', code:'梅尔', en:'MAYER', img:'assets/mayer.jpg',
+   race:'阿纳缇', gender:'女', height:'—', birth:'—', origin:'哥伦比亚', combat:'无', infection:'—',
+   dept:'工程科', role:'工程师', no:'OP-007', access:'open',
+   bio:'在研发上有着出众的才能，自主研发了系列线控机器水獭“MIBO”，并制作了便携式机器臂以契合及时修复充能的需要。但最终，由于工艺太过复杂，设计未能量产。她很重视自己的机器水獭们——每只都叫MIBO-X、拥有专属序号，只是迫于数量没法一一记清楚。',
+   quote:'刚刚走过去的……是赫默吧。如果那时候……喔，抱歉，保密协议还没过期，我不该多嘴的。'},
+  {id:'MAGELLAN', code:'麦哲伦', en:'MAGELLAN', img:'assets/magallan.jpg',
+   race:'黎博利', gender:'女', height:'160cm', birth:'10月17日', origin:'哥伦比亚', combat:'无', infection:'非感染者',
+   dept:'科学考察科', role:'外勤专员', no:'OP-008', access:'open',
+   bio:'热爱探险的外勤专员，为人开朗活跃，主要负责北方冰原地区的各类勘查项目，往往一次考察就要在冰原驻留半年之久。擅长操控高度模块化无人机，因地制宜进行攻击或支援友军。',
+   quote:'伊芙芙最近好点了吗，在我上一次离开莱茵生命的时候，她的状态有点糟糕，真的好担心……'},
+  {id:'DOROTHY', code:'多萝西', en:'DOROTHY · FRANKS', img:'assets/dorothy.jpg',
+   race:'—', gender:'女', height:'—', birth:'—', origin:'—', combat:'—', infection:'—',
+   dept:'源石技艺应用科', role:'主任', no:'OP-009', access:'open',
+   bio:'对源石技艺本身的理解毋庸置疑，而在源石技艺的应用上更是炉火纯青。359号基地事件中，为阻止斐尔迪南的阴谋，选择接入“中枢”以操控实验品“唤醒”，最终使“唤醒”与“中枢”的联系中断，实验室被摧毁，“唤醒”消失。事件后，她带着于双方都有益的合作项目，促成了莱茵生命与罗德岛目前为止最高等级的合作。',
+   quote:null},
+  {id:'FERDINAND', code:'斐尔迪南·克鲁尼', en:'FERDINAND · CLUNY', img:null,
+   race:'—', gender:'男', height:'—', birth:'—', origin:'—', combat:'—', infection:'—',
+   dept:'能量科', role:'主任', no:'OP-010', access:'restricted',
+   bio:'能量科主任，星源的老师。十分自信且富有进取心，多年来为莱茵生命争取了丰富的资源支持。行事激进，曾企图架空总辖的权力，与军方达成合作以扩张莱茵生命。359号基地事件中利用“递质”研发超级武器的阴谋败露，被军方所救后遭到通缉；特里蒙弧光事件后重回莱茵生命，再任能量科主任。',
+   quote:null},
+  {id:'ELENA', code:'星源', en:'ELENA', img:null,
+   race:'—', gender:'女', height:'—', birth:'—', origin:'—', combat:'—', infection:'—',
+   dept:'能量科', role:'研究员', no:'OP-011', access:'open',
+   bio:'能量科研究员，斐尔迪南的学生。曾任莱茵生命谢拉格观测站能量组组长。谢拉格天灾事件后，作为调查者之一，在谢拉格首次发现了巨兽存在的生命痕迹。',
+   quote:null},
+  {id:'HOOLHEYAK', code:'霍尔海雅', en:'HO’OLHEYAK', img:null,
+   race:'—', gender:'女', height:'—', birth:'—', origin:'—', combat:'—', infection:'—',
+   dept:'构件科', role:'文献学顾问', no:'OP-012', access:'open',
+   bio:'莱茵生命文献学顾问。档案主体内容需更高权限查阅。',
+   quote:null},
+  {id:'NASTI', code:'娜斯提·鲁诺瑞伊', en:'NASTI', img:'assets/nasti.jpg',
+   race:'—', gender:'女', height:'—', birth:'—', origin:'—', combat:'—', infection:'—',
+   dept:'工程科', role:'主任', no:'OP-013', access:'open',
+   bio:'莱茵生命工程科主任。负责提供设备，或在建造设备时提出专业性的意见，很少主动去了解实验本身，在事务上与能量科关系相当紧密。',
+   quote:null}
+];
+
+/* ================= 科室档案 ================= */
+const SECTIONS = [
+  {id:'COMPONENTS', name:'总辖构件科', en:'COMPONENTS CONTROL SECTION', logo:'COM',
+   head:'克丽斯腾·莱特（前）→ 塞雷娅（代管）', advisor:'赫默（执行顾问）',
+   focus:'中枢机构 · 科研统筹',
+   desc:'莱茵生命的中枢机构，也是莱茵生命的雏形，领导者其他科研类科室。该科有权指定总体科研目标，抽调分配各科室科研资源，架定项目实验结构。克丽斯腾放任各科自由发展、自由研究，内部也因此产生了不少黑幕与斗争。特里蒙弧光事件后，克丽斯腾卸任总辖，由塞雷娅代管，赫默担任执行顾问。'},
+  {id:'ENERGY', name:'能量科', en:'ENERGY SECTION', logo:'NRG',
+   head:'斐尔迪南·克鲁尼', advisor:'研究员 · 星源',
+   focus:'热源利用 · 能量储存',
+   desc:'主要研究方向涵盖源石、日光、地热、生物等种种已知热源的利用，以及能量的各种储存、应用方式。在事务上与工程科关系相当紧密，是堡垒山城建造业巨头海德兄弟背后的力量。'},
+  {id:'STRUCTURAL', name:'结构科', en:'STRUCTURAL SECTION', logo:'STRU',
+   head:'阿伦茨·帕尔维斯（已故）', advisor:'前研究员 · 赫默',
+   focus:'结构生物化学 · 源石影响',
+   desc:'主要研究方向为结构生物化学——研究泰拉生物体的生物基础粒子的构架与形态，并探知如何获得当前结构、结构改变对生物粒子基本功能的影响。围绕源石对生物体影响的研究处于行业领先地位，对矿石病的治疗方案及相关理论也有一定研究。帕尔维斯任期内参与并引发了炎魔事件。'},
+  {id:'ARTS', name:'源石技艺应用科', en:'ORIGINIUM ARTS SECTION', logo:'ART',
+   head:'多萝西·弗兰克斯', advisor:'—',
+   focus:'源石技艺 · 理性溯源',
+   desc:'主要研究方向是源石性质与源石技艺的应用，倾向于使用更理性且追溯源头的视角看待大地上被使用的源石技艺。359号基地事件中，名为“递质”的实验品首次出现，主任多萝西参与其中。'},
+  {id:'ECOLOGICAL', name:'生态科', en:'ECOLOGICAL SECTION', logo:'ECO',
+   head:'缪尔赛思', advisor:'—',
+   focus:'生态学 · 进化与环境',
+   desc:'主要研究方向为生态学——研究泰拉生物进化与泰拉环境之间的关系。该科对泰拉大地、大海与大气均有一定研究，目前对泰拉生物的进化及其相关原理有着远超同时代其余科研机构的认识。'},
+  {id:'INVESTIGATION', name:'科学考察科', en:'SCIENTIFIC INVESTIGATION SECTION', logo:'INV',
+   head:'安德涅特·马里亚姆', advisor:'外勤专员 · 麦哲伦',
+   focus:'科学勘测 · 野外作业',
+   desc:'主要研究方向是科学勘测，主要工作地点在野外，在萨米北方的冰原、萨尔贡南方的焚风热土附近等地都设有或计划设固定科考站，并已在萨米南方的察帕特设有莱茵办事处。主任马里亚姆曾随队深入无尽冰原，借同行者带回的“无根花”在哥伦比亚科学界引发轰动。'},
+  {id:'ENGINEERING', name:'工程科', en:'ENGINEERING SECTION', logo:'ENG',
+   head:'娜斯提·鲁诺瑞伊', advisor:'工程师 · 梅尔',
+   focus:'设备研发 · 工程建设',
+   desc:'负责提供设备或在建造设备时提出专业性的意见，很少主动去了解实验本身，在事务上与能量科关系相当紧密。'},
+  {id:'DEFENSE', name:'防卫科', en:'DEFENSE SECTION', logo:'DEF',
+   head:'塞雷娅（前）', advisor:'—',
+   focus:'设施安保 · 异常事态处理',
+   desc:'主要负责研发设施安保、科研人员保全、内部保密工作以及异常事态处理等工作。警卫人员配备莱茵生命提供的防暴装置，经过特级防暴作战训练，护卫能力大大增强。炎魔事件后主任塞雷娅离开莱茵生命，特里蒙弧光事件后正式辞任，职位由其指定成员接任。'},
+  {id:'BUSINESS', name:'商务科', en:'BUSINESS SECTION', logo:'BIZ',
+   head:'贾斯汀·菲茨罗伊', advisor:'—',
+   focus:'对接 · 公关事务',
+   desc:'负责对外对接与公关事务。'},
+  {id:'HR', name:'人力资源考察科', en:'HUMAN RESOURCES SECTION', logo:'HR',
+   head:'雅拉·布克·威尔森（前）', advisor:'—',
+   focus:'人力资源管理',
+   desc:'负责人力资源管理事务。特里蒙弧光事件后，主任雅拉卸任，职位由其指定的成员接任。'}
+];
+
+/* ================= 事件档案 ================= */
+const INCIDENTS = [
+  {id:'C023', name:'炎魔事件', en:'DIABOLIC CRISIS · C-023', date:'1095年', level:'高度机密', access:'restricted',
+   desc:'编号C-023，处于高度机密状态。海顿制药曾对实验体伊芙利特进行非法的人体嵌合实验，但实验失败，实验体内部力量爆发，海顿制药受莱茵生命投资的一号实验室被焚毁。事故真相被莱茵生命高层隐藏。此后实验由塞雷娅在赫默、帕尔维斯等人支持下重新进行，对实验体的大剂量注射最终导致其再次失控，引发炎魔事件。失控的实验品由塞雷娅独自镇压，赫默则携伊芙利特前往罗德岛。塞雷娅与总辖彻底决裂后离开莱茵生命。'},
+  {id:'BASE359', name:'359号基地事件', en:'BASE 359 INCIDENT', date:'1099年10月', level:'机密',
+   desc:'斐尔迪南命令莱茵防卫科成员给359号基地的拓荒者注射“递质”，并利用分发给拓荒者的医疗环中植入的感受器操控最终实验品“唤醒”的出现。多萝西选择接入“中枢”以操控“唤醒”，最终使“唤醒”与“中枢”的联系中断，实验室被摧毁，“唤醒”消失。事件结束后，斐尔迪南被撤职并遭到通缉。'},
+  {id:'LONETRAIL', name:'特里蒙弧光事件', en:'TRIMOUNTS LONE TRAIL', date:'1099年11月21日', level:'解封',
+   desc:'1097年，“地平弧光”计划启动，最初旨在建造能威胁泰拉其他国家的超级武器“弧光一号”，此后计划的产物被莱茵生命劫持，作为实现总辖克丽斯腾终生目标的一部分。1099年11月21日，莱茵生命利用“弧光一号”击穿了泰拉的阻隔层“星荚”——泰拉距地6152.31米的“虚假的天空”，克丽斯腾乘坐“万星园”独自穿过空洞升入太空。击穿星荚时的独特现象被地面上的人们称作“特里蒙弧光”。这是泰拉首次飞越阻隔层进入真正深空，标志着当今时代泰拉探险太空的开始。'},
+  {id:'DECODE', name:'源石信息解码实验', en:'ORIGINIUM DECODE PROJECT', date:'年份保密', level:'机密',
+   desc:'莱茵生命某位已去世的主管针对源石的存储信息进行了实验，认为一旦成功，整个哥伦比亚的科技将迎来实质性飞跃。但现有计算机难以读取源石信息，于是选定拥有超高思维清晰度与反应灵敏度的白面鸮为实验人员。实验很快失败，白面鸮的大脑受到严重损伤，也因此成为感染者。此后，莱茵生命为其植入可替代大脑部分功能的芯片，实验成功，白面鸮成为整个哥伦比亚第一个植入芯片并存活的人。'}
+];
+
+/* ================= 研究档案 ================= */
+const RESEARCH = [
+  {id:'ORIGINIUM_ENERGY', name:'源石能源研究', en:'ORIGINIUM ENERGY UTILIZATION', date:'持续项目', dept:'能量科',
+   desc:'源石蕴含的能量投入工业后使泰拉文明顺利迈入现代。能量科的研究涵盖源石、日光、地热、生物等种种已知热源的利用，以及能量的储存、应用方式，并与工程科深度协作，支撑堡垒山城等大型建造工程。'},
+  {id:'CHIMERA_THERAPY', name:'嵌合疗法研究', en:'CHIMERA THERAPY · STRUCTURAL', date:'1090s', dept:'结构科',
+   desc:'以“嵌合疗法”为名义的炎魔碎片嵌合实验，由结构科主持。该项目源于军方对“炎魔碎片”力量的研究需求，莱茵生命通过股权结构操作控制了海顿制药，开展大量外围工作。实验最终因实验体伊芙利特失控而失败，引发炎魔事件。'},
+  {id:'STAR_CALYX', name:'星荚观测计划', en:'STAR CALYX OBSERVATION · SAMI', date:'1101年—', dept:'科学考察科',
+   desc:'莱茵生命与谢拉格的喀兰贸易、蔓珠院达成合作，在谢拉格建设观测站，主要用以观测研究“星荚”。谢拉格天灾事件后，观测站能量组组长埃琳娜（星源）在调查中首次发现了巨兽存在的生命痕迹。此后，观测站还发现穿过星荚空洞从天而降的未知物质——其中包含70%未知物质与30%与精灵体细胞相同的物质。'}
+];
+
+/* ================= 系统日志 ================= */
+const LOGS = [
+  {id:'BOOT', name:'系统启动日志', en:'SYSTEM BOOT LOG', date:'1099-11-21 22:14',
+   lines:[
+     ['[22:14:01]','RHINE·LAB OS v4.2.0 启动','ok'],
+     ['[22:14:01]','内核加载 ... 完成 (142 MB)','ok'],
+     ['[22:14:02]','特里蒙总部节点 TRM-01 握手成功','ok'],
+     ['[22:14:02]','连接移动城市主干网络 ... 带宽 8.6 Gb/s','ok'],
+     ['[22:14:03]','源石能源井输出 稳定 92%','ok'],
+     ['[22:14:03]','防卫科安保协议 已启用','ok'],
+     ['[22:14:04]','监测到异常天象：特里蒙上空出现弧光','wr'],
+     ['[22:14:05]','总辖构件科访问请求 超时','er'],
+     ['[22:14:05]','启动序列完成。欢迎使用莱茵生命终端。','ok']]},
+  {id:'ACCESS', name:'访问记录', en:'ACCESS LOG', date:'1099-11-21', access:'restricted',
+   lines:[
+     ['[1099-11-20 09:12]','VISITOR 尝试读取 IFRIT.txt —— 权限不足，已记录','wr'],
+     ['[1099-11-20 14:03]','用户 HERMER 访问结构科档案','ok'],
+     ['[1099-11-20 18:47]','未知来源请求连接能量井控制端 —— 已拦截','er'],
+     ['[1099-11-21 00:02]','用户 KIRSTEN 最后一次登录（节点 TRM-01）','ok'],
+     ['[1099-11-21 22:14]','VISITOR 完成身份认证，进入系统','ok']]},
+  {id:'MAINT', name:'维护日志', en:'MAINTENANCE LOG', date:'1099-11-19',
+   lines:[
+     ['[1099-11-19 08:00]','例行维护开始','ok'],
+     ['[1099-11-19 08:32]','档案库 SECTIONS 索引重建完成','ok'],
+     ['[1099-11-19 09:15]','加密模块升级至 AES-256','ok'],
+     ['[1099-11-19 10:40]','359号基地档案补充归档','ok'],
+     ['[1099-11-19 11:05]','检测到 2 处冗余数据 —— 已清理','ok'],
+     ['[1099-11-19 12:00]','例行维护结束','ok']]}
+];
+
+/* ================= 文件系统 ================= */
+const FS = {
+  '': [
+    {name:'README.txt', kind:'doc', id:'README', size:'2.6 KB', date:'1099-11-21'},
+    {name:'OPERATORS', kind:'dir', size:'—', date:'1099-11-21'},
+    {name:'SECTIONS', kind:'dir', size:'—', date:'1099-11-21'},
+    {name:'INCIDENTS', kind:'dir', size:'—', date:'1099-11-21'},
+    {name:'RESEARCH', kind:'dir', size:'—', date:'1099-11-21'},
+    {name:'LOGS', kind:'dir', size:'—', date:'1099-11-21'}
+  ],
+  'OPERATORS': OPERATORS.map(o=>({name:o.id+'.txt', kind:'op', id:o.id, size:(1.2+o.id.length*0.03).toFixed(1)+' KB', date:o.id==='KIRSTEN'?'1099-11-21':'1090s-1099'})),
+  'SECTIONS': SECTIONS.map(s=>({name:s.id+'.txt', kind:'sec', id:s.id, size:(1.8+s.name.length*0.02).toFixed(1)+' KB', date:'1090-1099'})),
+  'INCIDENTS': INCIDENTS.map(inc=>({name:inc.id+'_'+inc.en.replace(/[^A-Z0-9]/g,'').slice(0,8)+'.txt', kind:'inc', id:inc.id, size:(3+inc.desc.length*0.004).toFixed(1)+' KB', date:inc.date})),
+  'RESEARCH': RESEARCH.map(r=>({name:r.id+'.txt', kind:'res', id:r.id, size:(2+r.desc.length*0.004).toFixed(1)+' KB', date:r.date})),
+  'LOGS': LOGS.map(l=>({name:l.id+'.log', kind:'log', id:l.id, size:(1.5+l.lines.length*0.35).toFixed(1)+' KB', date:'1099-11'})),
+  'SEARCH': []
+};
+
+const README = {
+  title:'欢迎访问莱茵生命终端档案系统',
+  sub:'RHINE LAB, LLC. — INTERNAL ARCHIVE TERMINAL',
+  fields:[['系统','RHINE·LAB OS v4.2.0'],['节点','TRM-01 · 特里蒙总部'],['权限','LEVEL-3（访客）'],['加密','AES-256']],
+  body:'本终端为莱茵生命内部档案系统的访客界面，可用于浏览干员档案、科室资料、事件记录、研究报告与系统日志。\n\n· 单击文件夹进入目录，单击档案打开详情；右侧面板含「档案 / 记录 / 访问日志」页签\n· 行尾星标或右键菜单可将档案加入收藏（SAVED 栏）\n· 顶栏 ARCHIVE INDEX 可打开检索面板：按编号、名称、科室与分类过滤\n· 立绘可点击放大预览，详情面板支持导出 TXT\n· 键盘：← 返回上级 · R 刷新 · T 主题 · / 聚焦搜索 · Ctrl+K 搜索 · ESC 返回\n· 底部命令行支持 help / ls / cd / open / cat / search / stats 等指令\n\n祝您访问愉快。',
+  note:'本终端由「明日方舟」同人爱好者制作，仅供学习与交流使用。'
+};
+
+/* ================= 全局状态 ================= */
+let curPath = '';
+let view = 'list';
+let sortMode = 'name';
+let tabs = [];
+let activeTab = 0;
+let selectedFile = null;
+let termHistory = [];
+let termHistIdx = -1;
+let searchTerm = '';
+let favs = [];
+let currentItem = null;      // 详情面板当前展示的条目
+let recentList = [];        // 最近访问（最多 8 条）
+let fileSeq = 0;            // 行内展开动画序号
+let accessLog = [];         // 本次会话访问记录
+let mModal = null;          // 检索/收藏面板：'search' | 'saved'
+let mQuery = '', mFilter = '全部档案';
+const CATS = ['全部档案','干员档案','科室档案','事件记录','研究报告','系统日志'];
+const accessLevel = 'LEVEL-3'; // 访客权限档
+
+const $ = s=>document.querySelector(s);
+
+/* ================= 收藏 / 最近访问 ================= */
+function loadFavs(){
+  try{favs=JSON.parse(localStorage.getItem('rl_favs')||'[]')}catch(e){favs=[]}
+}
+function favKey(it){return (it.path||curPath)+'/'+it.name}
+function isFav(it){return favs.includes(favKey(it))}
+function toggleFav(it){
+  const k=favKey(it);
+  if(favs.includes(k)){favs=favs.filter(x=>x!==k);toast('已从收藏移除：'+it.name)}
+  else{favs.push(k);toast('已收藏：'+it.name)}
+  try{localStorage.setItem('rl_favs',JSON.stringify(favs))}catch(e){}
+  renderFav();
+  if(currentItem&&favKey(currentItem)===k)$('#btnFav').classList.toggle('active',isFav(currentItem));
+}
+function toggleFavCurrent(){if(currentItem){toggleFav(currentItem);renderDetail(currentItem)}}
+function renderFav(){
+  const box=$('#favList');box.innerHTML='';
+  $('#favCount').textContent=favs.length;
+  updateSavedCounts();
+  if(!favs.length){box.innerHTML='<div class="fav-empty">— 尚未收藏 —</div>';return}
+  favs.forEach(k=>{
+    const found=findByKey(k);
+    const el=document.createElement('div');
+    el.className='fav-item';
+    el.innerHTML='<span style="color:var(--accent);flex:none">'+ICO.star+'</span><span class="nm" style="flex:1;overflow:hidden;text-overflow:ellipsis">'+esc(found?found.name:k.split('/').pop())+'</span><span class="x" title="移除">×</span>';
+    el.querySelector('.x').onclick=e=>{e.stopPropagation();favs=favs.filter(x=>x!==k);try{localStorage.setItem('rl_favs',JSON.stringify(favs))}catch(_){}renderFav()};
+    el.onclick=()=>{const f=findByKey(k);if(f)openItem(f)};
+    box.appendChild(el);
+  });
+}
+function findByKey(k){
+  const parts=k.split('/');
+  const name=parts.pop();
+  const path=parts.join('/');
+  const arr=FS[path];
+  if(arr){const f=arr.find(x=>x.name===name);if(f){f.path=path;return f}}
+  return null;
+}
+function pushRecent(it){
+  const k=favKey(it);
+  recentList=recentList.filter(x=>x!==k);
+  recentList.unshift(k);
+  if(recentList.length>8)recentList.pop();
+}
+
+/* ================= 档案分类树 ================= */
+function renderArchive(){
+  const tree=$('#tree');tree.innerHTML='';
+  const NO={'OPERATORS':'01','SECTIONS':'02','INCIDENTS':'03','RESEARCH':'04','LOGS':'05'};
+  const KICON={'OPERATORS':ICO.op,'SECTIONS':ICO.dir,'INCIDENTS':ICO.warn,'RESEARCH':ICO.doc,'LOGS':ICO.log};
+  const mk=(node)=>{
+    const el=document.createElement('div');
+    el.className='tree-item'+(node.active?' active':'');
+    el.innerHTML='<span style="color:var(--ink3)">'+node.icon+'</span><span class="nm">'+esc(node.name)+'</span><span class="ct">'+(node.count||'')+'</span>';
+    el.onclick=()=>{curPath=node.path;selectedFile=null;syncAll()};
+    tree.appendChild(el);
+  };
+  Object.keys(FS).filter(k=>k&&k!=='SEARCH').forEach(k=>{
+    mk({name:NO[k]+' · '+k,path:k,active:curPath===k,count:FS[k].length,icon:KICON[k]||ICO.dir});
+  });
+  $('#treeCount').textContent=Object.keys(FS).filter(k=>k&&k!=='SEARCH').length+' 类';
+}
+
+/* ================= 工具 ================= */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmtName(n){return n.toLowerCase().endsWith('.txt')||n.toLowerCase().endsWith('.log')?n:n+'/'}
+function fileMeta(it){return (it.size||'—')+'  ·  '+it.date}
+
+/* ================= 开机流程 ================= */
+const BOOT_LINES = [
+  '校验 BIOS 完整性',
+  '加载 RHINE·LAB OS 内核',
+  '连接特里蒙总部节点 TRM-01',
+  '同步移动城市主干网络',
+  '装载档案数据库（1,847 条记录）',
+  '执行权限扫描（LEVEL-3）',
+  '身份确认 → 开始处理'
+];
+function initStream(){
+  const box=$('#pvStream');
+  if(!box||box.children.length)return;
+  const n=window.innerWidth<=680?5:9;
+  for(let i=0;i<n;i++){
+    const el=document.createElement('i');
+    el.style.left=(4+Math.random()*92)+'%';
+    el.style.height=(12+Math.random()*18)+'%';
+    el.style.animationDuration=(4.5+Math.random()*4)+'s';
+    el.style.animationDelay=(-Math.random()*8)+'s';
+    box.appendChild(el);
+  }
+}
+function boot(){
+  const list=$('#bootList');
+  const bar=$('#bootBar');
+  const hint=$('#bootHint');
+  hint.style.visibility='hidden';
+  const fn=$('#bootFileNo');
+  let fr=0;
+  const fileNoInt=setInterval(()=>{
+    fn.innerHTML='FILE NUMBER: 0<b>'+((fr++)%10)+'</b>';
+  },45);
+  setTimeout(()=>{
+    clearInterval(fileNoInt);
+    fn.innerHTML='FILE NUMBER: 0<b>3</b>';
+    const b=fn.querySelector('b');
+    if(b){b.style.transform='scale(1.5)';setTimeout(()=>{b.style.transform=''},320)}
+  },1500);
+  let li=0,ci=0,charTimer=null;
+  const pad=(n)=>String(n+1).padStart(2,'0');
+  function tickLine(){
+    if(li>=BOOT_LINES.length){
+      bar.style.width='100%';
+      hint.style.visibility='visible';
+      return;
+    }
+    const text=BOOT_LINES[li];
+    const row=document.createElement('div');
+    row.className='row typing';
+    row.innerHTML='<span></span><span class="st"></span>';
+    list.appendChild(row);
+    const tspan=row.children[0],st=row.children[1];
+    let i=0;
+    function typeChar(){
+      if(i<text.length){
+        tspan.textContent=text.slice(0,++i);
+        charTimer=setTimeout(typeChar,26);
+      }else{
+        row.classList.remove('typing');
+        row.classList.add('on');
+        st.textContent='OK';
+        const isScan=text.indexOf('权限扫描')>=0;
+        if(isScan){row.classList.add('scan');setTimeout(()=>row.classList.remove('scan'),1400)}
+        bar.style.width=(((li+1)/BOOT_LINES.length)*100)+'%';
+        li++;setTimeout(tickLine,140);
+      }
+    }
+    typeChar();
+  }
+  setTimeout(tickLine,700);
+  initStream();
+  const enter=e=>{
+    if(!$('#boot').classList.contains('done')){
+      sfx('boot');
+      $('#boot').classList.add('done');
+      $('#app').classList.add('on');
+      switchMode('reel');
+      $('#cmd').focus();
+      showBanner();
+    }
+  };
+  document.addEventListener('keydown',enter);
+  $('#boot').addEventListener('click',enter);
+}
+
+/* ================= 时钟 ================= */
+function tickClock(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  $('#clock').textContent=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+setInterval(tickClock,1000);
+
+/* ================= 面包屑 ================= */
+function renderCrumb(){
+  const c=$('#crumb');c.innerHTML='';
+  const segs=curPath?curPath.split('/'):[];
+  const parts=['RHINE:'].concat(segs);
+  let acc='';
+  parts.forEach((p,i)=>{
+    const el=document.createElement('span');
+    if(i===parts.length-1){
+      el.innerHTML='<span class="seg" style="cursor:default;color:var(--ink);font-weight:600">'+esc(p)+'</span>';
+    }else{
+      const path=acc;
+      el.innerHTML='<span class="seg">'+esc(p)+'</span><span style="color:var(--ink3)">/</span>';
+      el.firstChild.onclick=()=>{curPath=path;selectedFile=null;syncAll()};
+    }
+    c.appendChild(el);
+    if(i<parts.length-1)acc=acc?(acc+'/'+parts[i]):parts[i];
+  });
+}
+
+/* ================= 文件列表 ================= */
+function listFor(path){
+  if(searchTerm){
+    const q=searchTerm.toLowerCase();
+    const out=[];
+    Object.keys(FS).filter(k=>k&&k!=='SEARCH').forEach(k=>{
+      FS[k].forEach(it=>{
+        const meta=metaOf(it);
+        const hay=[meta?meta.code:'',meta?meta.en:'',meta?meta.bio:'',meta&&meta.name?meta.name:'',meta?meta.role:'',meta?meta.dept:'',it.name].join(' ').toLowerCase();
+        if(hay.includes(q))out.push(Object.assign({},it,{path:k,display:k===''?'/':'/'+k}));
+      });
+    });
+    return out;
+  }
+  const arr=(FS[path]||[]).slice();
+  const dirs=arr.filter(f=>f.kind==='dir');
+  const files=arr.filter(f=>f.kind!=='dir');
+  const cmp=(a,b)=>{
+    if(sortMode==='size'){const a1=parseFloat(a.size)||0,b1=parseFloat(b.size)||0;return a1===b1?0:(a1>b1?1:-1)}
+    if(sortMode==='date')return a.date<b.date?1:-1;
+    return a.name.localeCompare(b.name,'zh');
+  };
+  dirs.sort(cmp);files.sort(cmp);
+  return dirs.concat(files);
+}
+function metaOf(it){
+  if(it.kind==='op')return OPERATORS.find(o=>o.id===it.id);
+  if(it.kind==='sec')return SECTIONS.find(s=>s.id===it.id);
+  if(it.kind==='inc')return INCIDENTS.find(i=>i.id===it.id);
+  if(it.kind==='res')return RESEARCH.find(r=>r.id===it.id);
+  if(it.kind==='log')return LOGS.find(l=>l.id===it.id);
+  if(it.kind==='doc')return README;
+  return null;
+}
+function hl(name){
+  if(!searchTerm)return esc(name);
+  const i=name.toLowerCase().indexOf(searchTerm.toLowerCase());
+  if(i<0)return esc(name);
+  return esc(name.slice(0,i))+'<mark>'+esc(name.slice(i,i+searchTerm.length))+'</mark>'+esc(name.slice(i+searchTerm.length));
+}
+function renderFiles(){
+  const area=$('#fileArea');
+  area.classList.toggle('grid',view==='grid');
+  const list=listFor(curPath);
+  $('#infoLine').textContent=list.length+' 项 · '+view.toUpperCase()+(searchTerm?' · 搜索 "'+searchTerm+'"':'');
+  $('#stFiles').textContent='FILES '+list.length;
+  if(!list.length){
+    area.innerHTML='<div class="empty">没有匹配的记录<br><span style="font-size:11px">'+esc(searchTerm?'请尝试其他关键词':'目录为空')+'</span></div>';
+    return;
+  }
+  area.innerHTML='';
+  fileSeq=0;
+  list.forEach(it=>{
+    const meta=metaOf(it);
+    const sel=selectedFile&&selectedFile.name===it.name&&selectedFile.path===it.path;
+    const locked=!!(meta&&meta.access==='restricted');
+    fileSeq++;
+    if(view==='grid'){
+      const card=document.createElement('div');
+      card.className='file-card'+(sel?' selected':'');
+      card.style.animationDelay=Math.min(fileSeq*24,360)+'ms';
+      const thumb=it.kind==='dir'
+        ?'<div class="thumb"><div class="glyph">'+ICO.dir+'</div></div>'
+        :(meta&&meta.img?'<div class="thumb"><img src="'+meta.img+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="glyph" style="display:none">'+ICO.doc+'</div></div>'
+          :'<div class="thumb"><div class="glyph">'+(it.kind==='log'?ICO.log:ICO.doc)+'</div></div>');
+      card.innerHTML=thumb+'<div class="fname" style="display:flex;align-items:center;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis">'+hl(it.name)+'</span>'+(locked?'<span class="lock-tag" style="flex:none">'+ICO.lock+'受限</span>':'')+'</div>'
+        +'<div class="fmeta"><span>'+esc(it.size)+'</span><span>'+esc(it.date)+'</span></div>';
+      card.onclick=()=>openItem(it);
+      card.oncontextmenu=e=>{e.preventDefault();showCtx(e,it)};
+      area.appendChild(card);
+    }else{
+      const row=document.createElement('div');
+      row.className='file-row'+(sel?' selected':'');
+      row.style.animationDelay=Math.min(fileSeq*22,330)+'ms';
+      const ic=it.kind==='dir'?ICO.dir:(it.kind==='log'?ICO.log:(it.kind==='op'?ICO.op:ICO.doc));
+      row.innerHTML='<span class="ic">'+ic+'</span><span class="nm">'+hl(it.name)+(locked?' <span class="lock-tag" style="vertical-align:1px">'+ICO.lock+'受限</span>':'')+'</span>'
+        +'<span class="meta">'+esc(it.size)+'</span><span class="meta">'+esc(it.date)+'</span>'
+        +'<span class="kind-tag">'+esc(it.kind==='dir'?'DIR':(it.kind==='op'?'OPERATOR':(it.kind==='log'?'LOG':it.kind.toUpperCase())))+'</span>';
+      row.onclick=()=>openItem(it);
+      row.oncontextmenu=e=>{e.preventDefault();showCtx(e,it)};
+      area.appendChild(row);
+    }
+  });
+  const ft=$('#fileTicks');
+  if(ft){
+    ft.innerHTML='';
+    list.forEach(it=>{
+      const b=document.createElement('button');
+      b.className=(selectedFile&&selectedFile.name===it.name&&selectedFile.path===it.path)?'sel':'';
+      b.title=it.name;
+      b.onclick=()=>openItem(it);
+      ft.appendChild(b);
+    });
+  }
+}
+
+/* ================= 打开 / 详情 ================= */
+function openItem(it){
+  selectedFile={name:it.name,path:it.path||curPath,item:it};
+  if(it.kind==='dir'){
+    sfx('click');
+    curPath=it.path!==undefined?it.path:(curPath?curPath+'/'+it.name:it.name);
+    selectedFile=null;
+    syncAll();
+    return;
+  }
+  const mt0=metaOf(it);
+  sfx(mt0&&mt0.access==='restricted'?'deny':'open');
+  pushRecent(it);
+  openTab(it);
+  syncAll();
+}
+function openTab(it){
+  if(tabs.length>=8){toast('标签页已满（最多 8 个）');return}
+  const key=(it.path||curPath)+'/'+it.name;
+  const exist=tabs.findIndex(t=>t.key===key);
+  if(exist>=0){activeTab=exist}
+  else{tabs.push({key,item:Object.assign({},it,{path:it.path||curPath}),path:it.path||curPath});activeTab=tabs.length-1}
+  renderTabs();renderDetail(tabs[activeTab].item);
+}
+function renderTabs(){
+  const bar=$('#tabs');bar.innerHTML='';
+  tabs.forEach((t,i)=>{
+    const el=document.createElement('span');
+    el.className='tab'+(i===activeTab?' active':'');
+    const meta=metaOf(t.item);
+    const nm=t.item.kind==='op'?(meta?meta.code:t.item.name):t.item.name;
+    el.innerHTML='<span>'+esc(nm)+'</span><span class="x" title="关闭">×</span>';
+    el.onclick=e=>{
+      if(e.target.classList.contains('x')){tabs.splice(i,1);if(activeTab>=tabs.length)activeTab=tabs.length-1;if(!tabs.length)closeDetail();renderTabs();if(tabs[activeTab])renderDetail(tabs[activeTab].item)}
+      else{activeTab=i;renderTabs();renderDetail(tabs[i].item)}
+    };
+    bar.appendChild(el);
+  });
+  const plus=document.createElement('span');
+  plus.className='tab plus';plus.textContent='+';
+  plus.onclick=()=>{curPath='';selectedFile=null;syncAll()};
+  bar.appendChild(plus);
+}
+function detailNoOf(it){
+  if(it.kind==='op'){const m=metaOf(it);return m&&m.no?'FILE NO. '+m.no:'FILE —'}
+  if(it.kind==='inc'){const m=metaOf(it);return m?'CASE '+m.id:'FILE —'}
+  return 'FILE —';
+}
+function renderDetail(it){
+  currentItem=it;
+  recordAccess(it);
+  $('#detail').classList.remove('hidden');
+  rollNumber($('#detailNo'),detailNoOf(it));
+  const body=$('#detailBody');
+  const meta=metaOf(it);
+  $('#detailTitle').textContent=it.kind==='op'?(meta?meta.code+' 档案':it.name):it.name;
+  $('#btnFav').innerHTML=isFav(it)?ICO.star:ICO.starO;
+  $('#btnFav').classList.toggle('active',isFav(it));
+  if(meta&&meta.access==='restricted'){body.innerHTML=restrictedHTML(it,meta);return}
+  const tabs=[['overview','01 档案'],['notes','02 记录'],['history','03 访问日志']];
+  body.innerHTML='<div class="dt-tabs">'+tabs.map((t,i)=>'<button class="dt-tab'+(i===0?' active':'')+'" data-i="'+i+'">'+t[1]+'</button>').join('')+'<i class="tab-ind"></i></div>'
+    +'<div class="dt-panel">'+detailPanelFor(it,'overview')+'</div>';
+  body.querySelectorAll('.dt-tab').forEach(el=>{
+    el.onclick=()=>setDetailTab(it,Number(el.dataset.i),tabs);
+  });
+  requestAnimationFrame(()=>moveTabInd(0));
+}
+function detailPanelFor(it,tab){
+  const meta=metaOf(it);
+  if(tab==='overview'){
+    if(it.kind==='op')return withActions(dossierHTML(meta));
+    if(it.kind==='sec')return withActions(sectionHTML(meta));
+    if(it.kind==='inc')return withActions(incidentHTML(meta));
+    if(it.kind==='res')return withActions(researchHTML(meta));
+    if(it.kind==='log')return withActions(logHTML(meta));
+    if(it.kind==='doc')return withActions(readmeHTML(meta));
+    return '';
+  }
+  if(tab==='notes'){
+    if(it.kind==='op'&&meta&&meta.quote){
+      return '<div class="doc-body"><div class="title">语音记录</div><div class="sub">VOICE TRANSCRIPT · '+esc(meta.code)+'</div><div class="rule"></div><p style="font-size:12px;line-height:2;color:var(--ink2)">“'+esc(meta.quote)+'”</p></div>';
+    }
+    if(it.kind==='doc'){
+      return '<div class="doc-body"><div class="title">终端说明</div><div class="sub">TERMINAL NOTES</div><div class="rule"></div><p style="font-size:12px;line-height:2;color:var(--ink2);white-space:pre-line">'+esc(README.note)+'\n\n· 更多操作：右键档案 / 键盘 ←→↑↓ Enter / 按 / 打开检索</p></div>';
+    }
+    return '<div class="m-empty">该档案暂无附加研究记录</div>';
+  }
+  if(tab==='history'){
+    const rows=accessLog.filter(a=>a.key===favKey(it)).slice(0,5);
+    if(!rows.length)return '<div class="m-empty">本次会话尚未访问该档案</div>';
+    return '<div class="doc-body"><div class="title">访问日志</div><div class="sub">ACCESS LOG · 本次会话</div><div class="rule"></div>'
+      +rows.map(r=>'<div class="log-line"><span class="t">['+esc(r.time)+']</span>  <span class="ok">READ AUTHORIZED</span></div>').join('')
+      +'<div class="audit" style="margin-top:12px"><div class="au"><b>身份</b><span>VISITOR · '+accessLevel+'</span></div><div class="au"><b>路径</b><span>'+esc('/'+favKey(it))+'</span></div></div></div>';
+  }
+  return '';
+}
+function setDetailTab(it,i,tabs){
+  const body=$('#detailBody');
+  body.querySelectorAll('.dt-tab').forEach((el,j)=>el.classList.toggle('active',j===i));
+  const panel=body.querySelector('.dt-panel');
+  if(panel){
+    panel.innerHTML=detailPanelFor(it,tabs[i][0]);
+    panel.classList.remove('swap');void panel.offsetWidth;panel.classList.add('swap');
+  }
+  moveTabInd(i);
+}
+function moveTabInd(i){
+  const body=$('#detailBody');
+  const tab=body.querySelectorAll('.dt-tab')[i];
+  const ind=body.querySelector('.tab-ind');
+  if(tab&&ind)ind.style.transform='translateX('+tab.offsetLeft+'px) scaleX('+tab.offsetWidth+')';
+}
+function recordAccess(it){
+  accessLog.unshift({key:favKey(it),id:it.name,time:new Date().toLocaleTimeString('zh-CN',{hour12:false})});
+  if(accessLog.length>40)accessLog.pop();
+}
+function rollNumber(el,txt){
+  if(!txt){el.textContent=txt||'';return}
+  const m=txt.match(/\d+/g);
+  if(!m){el.textContent=txt;return}
+  const last=m[m.length-1];
+  const idx=txt.lastIndexOf(last);
+  const pre=txt.slice(0,idx),suf=txt.slice(idx+last.length);
+  const tmp=document.createElement('span');
+  tmp.className='rollTmp';
+  tmp.innerHTML='<i>'+last+'</i>';
+  el.textContent='';
+  el.appendChild(document.createTextNode(pre));
+  el.appendChild(tmp);
+  el.appendChild(document.createTextNode(suf));
+  const top=tmp.firstElementChild;
+  if(!top)return;
+  top.style.transition='none';
+  top.style.transform='translateY(100%)';
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      top.style.transition='transform .4s cubic-bezier(.2,.75,.25,1)';
+      top.style.transform='translateY(0)';
+    });
+  });
+}
+function withActions(html){
+  return html+'<div class="d-actions"><button onclick="exportItem(currentItem)">'+ICO.exp+'导出 TXT</button></div>';
+}
+function restrictedHTML(it,meta){
+  const head=it.kind==='op'?esc(meta.code):esc(meta.name);
+  const sub=it.kind==='op'?'OPERATOR DOSSIER · RESTRICTED':'CASE FILE · RESTRICTED';
+  return '<div class="restricted-card">'
+    +'<div class="rc-title">'+head+'</div>'
+    +'<div class="rc-sub">'+sub+'</div>'
+    +'<div class="rc-desc">该档案被标记为 <b style="color:var(--err)">RESTRICTED</b><br>当前访问权限为 '+accessLevel+'，无权查看全文。<br>访问行为将被记录于 ACCESS LOG。</div>'
+    +'<button onclick="unlockTry()">尝试解锁</button>'
+    +'<div class="audit" style="margin-top:22px"><div class="au"><b>已记录</b><span>VISITOR · 请求读取 '+esc(it.name)+' · 被拒绝</span></div></div>'
+    +'</div>';
+}
+function unlockTry(){
+  tline('认证失败：当前身份无权解锁该档案','t-er');
+  tline('提示：尝试 cat '+currentItem.name+' 以查看拒绝记录');
+  termOut.classList.add('on');
+}
+function closeDetail(){tabs=[];activeTab=0;$('#detail').classList.add('hidden');renderTabs()}
+function dossierHTML(o){
+  const rows=[['代号',o.code+'  '],['真名',o.en+'  '],['种族',o.race],['性别',o.gender],['身高',o.height],['生日',o.birth],['出身地',o.origin],['战斗经验',o.combat],['矿石病',o.infection],['所属',o.dept],['职务',o.role]];
+  const kv=rows.map(r=>r[1]==='—'||r[1].trim()==='—'||!r[1]?'':('<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd>')).join('');
+  const portrait=o.img
+    ?'<div class="portrait"><img src="'+o.img+'" alt="'+esc(o.code)+'" style="cursor:zoom-in" onclick="zoomImg(this)" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="glyph" style="display:none">'+ICO.op+'</div></div>'
+    :'<div class="portrait"><div class="glyph">'+ICO.op+'</div></div>';
+  const quote=o.quote?'<div class="quote">“'+esc(o.quote)+'”</div>':'';
+  return '<div class="dossier"><div class="portrait">'+portrait+'</div>'
+    +'<div class="codename">'+esc(o.code)+'<span class="en">'+esc(o.en)+'</span></div>'
+    +'<div class="role-line">'+esc(o.role)+'</div>'
+    +'<dl class="kv">'+kv+'</dl>'
+    +'<h5>档案概述</h5><p>'+esc(o.bio)+'</p>'+quote+'</div>';
+}
+function sectionHTML(s){
+  const rows=[['科室',s.name],['英文',s.en],['主任',s.head],['其他',s.advisor],['方向',s.focus]];
+  const kv=rows.map(r=>'<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd>').join('');
+  return '<div class="dossier"><div class="portrait" style="background:var(--panel2)"><div class="glyph" style="width:120px;height:120px">'
+    +'<svg viewBox="0 0 240 110" width="120" height="55" fill="none"><path d="M28 55 C28 15 84 15 120 55 C156 15 212 15 212 55 C212 95 156 95 120 55 C84 95 28 95 28 55 Z" stroke="var(--accent)" stroke-width="12" stroke-linejoin="round"/><path d="M28 55 C28 15 84 15 120 55 M120 55 C156 15 212 15 212 55 M28 55 C28 95 84 95 120 55 M120 55 C156 95 212 95 212 55" stroke="var(--accent)" stroke-width="12" stroke-linecap="round"/><text x="74" y="63" font-size="30" fill="var(--accent)" text-anchor="middle">+</text><text x="166" y="63" font-size="38" fill="var(--accent)" text-anchor="middle">−</text></svg>'
+    +'</div></div><div class="codename">'+esc(s.name)+'<span class="en">'+esc(s.en)+'</span></div>'
+    +'<div class="role-line">'+esc(s.focus)+'</div>'
+    +'<dl class="kv">'+kv+'</dl>'
+    +'<h5>科室简介</h5><p>'+esc(s.desc)+'</p></div>';
+}
+function incidentHTML(inc){
+  const rows=[['事件',inc.name],['编号',inc.id],['时间',inc.date],['密级',inc.level]];
+  const kv=rows.map(r=>'<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd>').join('');
+  return '<div class="doc-body"><div class="title">'+esc(inc.name)+'</div><div class="sub">'+esc(inc.en)+'</div>'
+    +'<div class="rule"></div><dl class="kv" style="grid-template-columns:64px 1fr">'+kv+'</dl>'
+    +'<h6>事件经过</h6><p style="font-size:12px;color:var(--ink2);line-height:1.9">'+esc(inc.desc)+'</p></div>';
+}
+function researchHTML(r){
+  const rows=[['项目',r.name],['部门',r.dept],['时间',r.date]];
+  const kv=rows.map(x=>'<dt>'+esc(x[0])+'</dt><dd>'+esc(x[1])+'</dd>').join('');
+  return '<div class="doc-body"><div class="title">'+esc(r.name)+'</div><div class="sub">'+esc(r.en)+'</div>'
+    +'<div class="rule"></div><dl class="kv" style="grid-template-columns:64px 1fr">'+kv+'</dl>'
+    +'<h6>摘要</h6><p style="font-size:12px;color:var(--ink2);line-height:1.9">'+esc(r.desc)+'</p></div>';
+}
+function logHTML(l){
+  const lines=l.lines.map(x=>'<div class="log-line"><span class="t">'+esc(x[0])+'</span>  <span class="'+x[2]+'">'+esc(x[1])+'</span></div>').join('');
+  return '<div class="doc-body"><div class="title">'+esc(l.name)+'</div><div class="sub">'+esc(l.en)+' · '+esc(l.date)+'</div>'
+    +'<div class="rule"></div>'+lines+'</div>';
+}
+function readmeHTML(r){
+  const fields=r.fields.map(f=>'<div class="field"><b>'+esc(f[0])+'</b><span>'+esc(f[1])+'</span></div>').join('');
+  return '<div class="doc-body"><div class="title">'+esc(r.title)+'</div><div class="sub">'+esc(r.sub)+'</div>'
+    +'<div class="rule"></div>'+fields
+    +'<h6>说明</h6><p style="white-space:pre-line">'+esc(r.body)+'</p>'
+    +'<div class="rule"></div><p style="font-size:10.5px;color:var(--ink3)">'+esc(r.note)+'</p></div>';
+}
+
+/* ================= 导航 ================= */
+function syncAll(){renderArchive();renderCrumb();renderFiles();}
+function goHome(){curPath='';selectedFile=null;syncAll()}
+function goUp(){
+  if(curPath){const seg=curPath.split('/');seg.pop();curPath=seg.join('/');selectedFile=null;syncAll()}
+}
+function refreshList(){syncAll()}
+function setView(v){view=v;$('#btnViewList').classList.toggle('active',v==='list');$('#btnViewGrid').classList.toggle('active',v==='grid');renderFiles()}
+function sortBy(m){sortMode=m;renderFiles()}
+
+/* ================= 主题 ================= */
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',cur);
+  $('#btnTheme').innerHTML=cur==='dark'?ICO.sun:ICO.moon;
+}
+
+/* ================= 搜索 ================= */
+$('#search').addEventListener('input',e=>{
+  searchTerm=e.target.value.trim();
+  renderFiles();
+});
+$('#search').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&searchTerm){
+    const res=listFor('');
+    if(res.length){curPath=res[0].path||'';openItem(res[0]);e.target.value='';searchTerm='';renderFiles()}
+  }
+});
+
+/* ================= 终端命令 ================= */
+const termOut=$('#termOut');
+let termTarget=null;
+function tprint(html,cls){
+  const t=(termTarget==='console'&&$('#conOut'))?$('#conOut'):termOut;
+  t.innerHTML+='<div class="'+(cls||'')+'">'+html+'</div>';
+  t.scrollTop=t.scrollHeight;
+}
+function tline(txt,cls){tprint(esc(txt),cls)}
+function cmdHelp(){
+  tline('可用命令：','t-cy');
+  tline('  ls [path]        列出目录内容');
+  tline('  cd <path>        进入目录（如 cd OPERATORS）');
+  tline('  open <name>      打开文件或目录');
+  tline('  cat <name>       输出文件内容');
+  tline('  search <kw>      全局检索档案');
+  tline('  tree             打印目录树');
+  tline('  stats            显示档案库统计');
+  tline('  fav              列出已收藏档案');
+  tline('  unfav <name>     取消收藏');
+  tline('  export <name>    导出档案文本');
+  tline('  access           查看当前权限');
+  tline('  theme            切换浅色 / 深色主题');
+  tline('  whoami           显示当前身份');
+  tline('  date             显示系统时间');
+  tline('  clear            清空终端输出');
+  tline('  help             显示本帮助');
+}
+function cmdLs(args){
+  const p=args[0]?normPath(args[0]):curPath;
+  const arr=FS[p];
+  if(!arr){tline('ls: 无法访问 “'+args[0]+'”：目录不存在','t-er');return}
+  arr.forEach(f=>tline((f.kind==='dir'?fmtName(f.name):f.name)+'  '+f.size));
+}
+function normPath(p){
+  p=p.replace(/^\/+/,'');
+  if(p==='RHINE:'||p==='')return '';
+  if(p.startsWith('RHINE:/'))p=p.slice(7);
+  return p;
+}
+function cmdCd(args){
+  if(!args[0]){curPath='';selectedFile=null;syncAll();return}
+  const p=normPath(args[0]);
+  if(p&&FS[p]){curPath=p;selectedFile=null;syncAll()}
+  else tline('cd: 目录不存在','t-er');
+}
+function cmdOpen(args){
+  if(!args[0]){tline('open: 缺少文件名','t-er');return}
+  const p=normPath(args[0]);
+  const isDir=p&&FS[p];
+  if(isDir){curPath=p;selectedFile=null;syncAll();return}
+  const name=args[0].split('/').pop();
+  const dir=(args[0].includes('/'))?normPath(args[0].slice(0,args[0].lastIndexOf('/'))):curPath;
+  const it=(FS[dir]||[]).find(f=>f.name.toLowerCase()===name.toLowerCase());
+  if(it){it.path=dir;openItem(it)}
+  else tline('open: 找不到 “'+name+'”','t-er');
+}
+function cmdCat(args){
+  if(!args[0]){tline('cat: 缺少文件名','t-er');return}
+  const name=args[0].split('/').pop();
+  const dir=(args[0].includes('/'))?normPath(args[0].slice(0,args[0].lastIndexOf('/'))):curPath;
+  const it=(FS[dir]||[]).find(f=>f.name.toLowerCase()===name.toLowerCase());
+  if(!it){tline('cat: 找不到 “'+name+'”','t-er');return}
+  const meta=metaOf(it);
+  if(meta&&meta.access==='restricted'){
+    tline('cat: 权限不足 — “'+name+'” 已被标记为 RESTRICTED','t-er');
+    tline('  已将该访问请求写入 ACCESS LOG','t-wr');
+    return;
+  }
+  if(it.kind==='op'){
+    tline('── '+meta.code+' · '+meta.en+' ──','t-or');
+    tline('种族 '+meta.race+' | 性别 '+meta.gender+' | 身高 '+meta.height+' | 生日 '+meta.birth);
+    tline('出身 '+meta.origin+' | 战斗经验 '+meta.combat+' | 矿石病 '+meta.infection);
+    tline('所属 '+meta.dept+'科 | 职务 '+meta.role);
+    tline('');tline(meta.bio);
+  }else if(it.kind==='sec'){
+    tline('── '+meta.name+' · '+meta.en+' ──','t-or');
+    tline('主任 '+meta.head+' | 方向 '+meta.focus);tline('');tline(meta.desc);
+  }else if(it.kind==='inc'){
+    tline('── '+meta.name+' · '+meta.en+' ──','t-or');
+    tline('编号 '+meta.id+' | 时间 '+meta.date+' | 密级 '+meta.level);tline('');tline(meta.desc);
+  }else if(it.kind==='res'){
+    tline('── '+meta.name+' ──','t-or');
+    tline('部门 '+meta.dept+' | '+meta.date);tline('');tline(meta.desc);
+  }else if(it.kind==='log'){
+    tline('── '+meta.name+' ──','t-or');
+    meta.lines.forEach(l=>tline(l[0]+'  '+l[1]));
+  }else if(it.kind==='doc'){
+    tline(meta.title,'t-or');tline('');tline(meta.body);
+  }
+}
+function cmdSearch(args){
+  if(!args[0]){tline('search: 缺少关键词','t-er');return}
+  const q=args.join(' ').toLowerCase();
+  let n=0;
+  Object.keys(FS).filter(k=>k&&k!=='SEARCH').forEach(k=>{
+    FS[k].forEach(it=>{
+      const meta=metaOf(it);
+      let hit=it.name.toLowerCase().includes(q);
+      if(meta){
+        const hay=[meta.code,meta.en,meta.role,meta.dept,meta.name,meta.bio||''].join(' ').toLowerCase();
+        if(hay.includes(q))hit=true;
+      }
+      if(hit){n++;tline('  /'+k+'/'+it.name)}
+    });
+  });
+  tline('找到 '+n+' 条记录');
+  if(n){tline('使用 open <路径> 打开档案');termOut.scrollTop=termOut.scrollHeight}
+}
+function cmdTree(){
+  const render=(p,prefix,isLast)=>{
+    const arr=FS[p]||[];
+    arr.forEach((f,i)=>{
+      const last=i===arr.length-1;
+      const branch=isLast?'   ':'│  ';
+      tline(prefix+(last?'└── ':'├── ')+(f.kind==='dir'?fmtName(f.name):f.name),'t-cy');
+      if(f.kind==='dir')render(p+'/'+f.name,prefix+branch,last);
+    });
+  };
+  tline('RHINE:/');
+  render('', '','');
+}
+function cmdWhoami(){
+  tline('身份：VISITOR（访客）');
+  tline('权限：LEVEL-3（档案只读）');
+  tline('节点：TRM-01 · 特里蒙总部');
+  tline('会话加密：AES-256');
+}
+function cmdStats(){
+  const r=(k)=>FS[k]?FS[k].length:0;
+  tline('── RHINE·LAB OS 档案库统计 ──','t-or');
+  tline('  干员档案  OPERATORS   '+r('OPERATORS'));
+  tline('  科室档案  SECTIONS    '+r('SECTIONS'));
+  tline('  事件记录  INCIDENTS   '+r('INCIDENTS'));
+  tline('  研究报告  RESEARCH    '+r('RESEARCH'));
+  tline('  系统日志  LOGS        '+r('LOGS'));
+  tline('  收藏      SAVED       '+favs.length);
+  tline('  节点      TRM-01 · 特里蒙总部');
+  tline('  加密      AES-256 · 连接在线');
+}
+function cmdFav(){
+  if(!favs.length){tline('尚未收藏任何档案','t-wr');return}
+  tline('── 收藏列表 SAVED ──','t-or');
+  favs.forEach(k=>{const f=findByKey(k);tline('  '+(f?('/'+(f.path||'')+'/'+f.name):k))});
+}
+function cmdUnfav(args){
+  if(!args[0]){tline('unfav: 缺少文件名','t-er');return}
+  const name=args[0].toLowerCase();
+  const hit=favs.filter(k=>k.toLowerCase().endsWith('/'+name)||k.toLowerCase().endsWith(name));
+  if(!hit.length){tline('unfav: 收藏中未找到 “'+args[0]+'”','t-er');return}
+  favs=favs.filter(k=>!hit.includes(k));
+  try{localStorage.setItem('rl_favs',JSON.stringify(favs))}catch(e){}
+  renderFav();
+  tline('已取消收藏：'+args[0],'t-ok');
+}
+function cmdExport(args){
+  if(!args[0]){tline('export: 缺少文件名','t-er');return}
+  const name=args[0].split('/').pop();
+  const dir=(args[0].includes('/'))?normPath(args[0].slice(0,args[0].lastIndexOf('/'))):curPath;
+  const it=(FS[dir]||[]).find(f=>f.name.toLowerCase()===name.toLowerCase());
+  if(!it){tline('export: 找不到 “'+name+'”','t-er');return}
+  exportItem(it);
+  tline('已导出：'+it.name,'t-ok');
+}
+function cmdAccess(){
+  tline('当前权限：'+accessLevel+'（访客 · 档案只读）');
+  tline('受限档案：IFRIT.txt · FERDINAND.txt · C023_*.txt · ACCESS.log');
+  tline('解锁途径：暂无 —— 请联系总辖构件科或持有更高权限凭证');
+}
+function runCmd(raw){
+  const parts=raw.trim().match(/(?:[^\s"]+|"[^"]*")+/g)||[];
+  const cmd=(parts[0]||'').toLowerCase();
+  const args=parts.slice(1).map(s=>s.replace(/^"|"$/g,''));
+  tprint(termTarget==='console'
+    ?'<span class="t-cy">C:\\RHINE&gt;</span> '+esc(raw)
+    :'<span class="t-cy">rhine</span> <span class="t-or">❯</span> '+esc(raw));
+  switch(cmd){
+    case 'help':cmdHelp();break;
+    case 'ls':cmdLs(args);break;
+    case 'cd':cmdCd(args);break;
+    case 'open':cmdOpen(args);break;
+    case 'cat':cmdCat(args);break;
+    case 'search':cmdSearch(args);break;
+    case 'tree':cmdTree();break;
+    case 'stats':cmdStats();break;
+    case 'fav':cmdFav();break;
+    case 'unfav':cmdUnfav(args);break;
+    case 'export':cmdExport(args);break;
+    case 'access':cmdAccess();break;
+    case 'theme':toggleTheme();tline('主题已切换','t-ok');break;
+    case 'whoami':cmdWhoami();break;
+    case 'date':tline(new Date().toLocaleString('zh-CN'));break;
+    case 'clear':
+      if(termTarget==='console'){$('#conOut').innerHTML=''}
+      else{termOut.innerHTML='';termOut.classList.remove('on')}
+      break;
+    case 'about':
+      tline('RHINE·LAB OS v4.2.0 — INTERNAL ARCHIVE TERMINAL','t-or');
+      tline('Solve Intelligence. Think Different');
+      tline('莱茵生命档案终端 · 同人作品，仅供学习交流');
+      break;
+    default:
+      if(raw.trim()==='')break;
+      tline('未知命令：'+cmd+'。输入 help 查看帮助。','t-er');
+  }
+  if(termTarget!=='console')termOut.classList.add('on');
+  if(termTarget!=='console')termOut.scrollTop=termOut.scrollHeight;
+}
+const cmdInput=$('#cmd');
+cmdInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const v=cmdInput.value;
+    runCmd(v);
+    termHistory.push(v);termHistIdx=termHistory.length;
+    cmdInput.value='';
+  }else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    if(termHistIdx>0){termHistIdx--;cmdInput.value=termHistory[termHistIdx]||''}
+  }else if(e.key==='ArrowDown'){
+    e.preventDefault();
+    if(termHistIdx<termHistory.length-1){termHistIdx++;cmdInput.value=termHistory[termHistIdx]||''}
+    else{termHistIdx=termHistory.length;cmdInput.value=''}
+  }
+});
+$('#termOut').addEventListener('click',e=>{e.stopPropagation()});
+
+/* ================= CMD 控制台（简洁版） ================= */
+function toggleConsole(){
+  const c=$('#console');
+  const show=c.hidden;
+  c.hidden=!show;
+  termTarget=show?'console':null;
+  if(show){
+    const out=$('#conOut');
+    out.innerHTML='';
+    out.innerHTML+='<div class="t-cy">RHINE·LAB CONSOLE v4.2.0 — 输入 help 查看命令</div>'
+      +'<div class="t-cy">Solve Intelligence. Think Different</div>';
+    $('#conCmd').focus();
+  }
+}
+const conCmd=$('#conCmd');
+conCmd.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    runCmd(conCmd.value);
+    termHistory.push(conCmd.value);termHistIdx=termHistory.length;
+    conCmd.value='';
+  }else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    if(termHistIdx>0){termHistIdx--;conCmd.value=termHistory[termHistIdx]||''}
+  }else if(e.key==='ArrowDown'){
+    e.preventDefault();
+    if(termHistIdx<termHistory.length-1){termHistIdx++;conCmd.value=termHistory[termHistIdx]||''}
+    else{termHistIdx=termHistory.length;conCmd.value=''}
+  }else if(e.key==='Escape'){
+    toggleConsole();
+  }
+});
+$('#conOut').addEventListener('click',e=>{e.stopPropagation()});
+/* 控制台窗口拖拽（桌面端） */
+(function(){
+  const box=$('#console'),bar=box.querySelector('.con-bar');
+  let drag=false,ox=0,oy=0;
+  bar.addEventListener('mousedown',e=>{
+    if(e.target.closest('.con-btn'))return;
+    if(window.innerWidth<=680)return;
+    drag=true;
+    const r=box.getBoundingClientRect();
+    ox=e.clientX-r.left;oy=e.clientY-r.top;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!drag)return;
+    box.style.right='auto';box.style.bottom='auto';
+    box.style.left=Math.min(Math.max(4,e.clientX-ox),window.innerWidth-180)+'px';
+    box.style.top=Math.min(Math.max(4,e.clientY-oy),window.innerHeight-64)+'px';
+  });
+  document.addEventListener('mouseup',()=>{drag=false});
+})();
+
+/* ================= 右键菜单 ================= */
+function showCtx(e,it){
+  const menu=$('#ctxMenu');
+  const locked=!!(it.kind!=='dir'&&metaOf(it)&&metaOf(it).access==='restricted');
+  menu.innerHTML=''
+    +'<div class="ci" data-a="open">'+ICO.doc+'打开档案 <span class="k">Enter</span></div>'
+    +'<div class="ci" data-a="fav">'+(isFav(it)?ICO.starO+'取消收藏':ICO.starO+'加入收藏')+'</div>'
+    +'<div class="ci" data-a="export">'+ICO.exp+'导出文本 <span class="k">E</span></div>'
+    +'<div class="sep"></div>'
+    +'<div class="ci dis">'+esc((it.path||curPath)+'/'+it.name)+'</div>';
+  menu.querySelectorAll('.ci[data-a]').forEach(ci=>{
+    ci.onclick=()=>{
+      menu.classList.remove('on');
+      const a=ci.getAttribute('data-a');
+      if(a==='open')openItem(it);
+      if(a==='fav')toggleFav(it);
+      if(a==='export')exportItem(it);
+    };
+  });
+  menu.classList.add('on');
+  const w=menu.offsetWidth,h=menu.offsetHeight;
+  menu.style.left=Math.min(e.clientX,window.innerWidth-w-8)+'px';
+  menu.style.top=Math.min(e.clientY,window.innerHeight-h-8)+'px';
+}
+document.addEventListener('click',()=>{$('#ctxMenu').classList.remove('on')});
+document.addEventListener('contextmenu',()=>{$('#ctxMenu').classList.remove('on')});
+
+/* ================= 导出 / 图片预览 / Toast ================= */
+function exportItem(it){
+  const meta=metaOf(it);
+  const path='/'+(it.path||curPath)+'/'+it.name;
+  let text='';
+  if(it.kind==='op'){
+    text='【'+meta.code+' · '+meta.en+'】\n档案编号：'+meta.no+'\n'
+      +'种族 '+meta.race+' | 性别 '+meta.gender+' | 身高 '+meta.height+' | 生日 '+meta.birth+'\n'
+      +'出身 '+meta.origin+' | 战斗经验 '+meta.combat+' | 矿石病 '+meta.infection+'\n'
+      +'所属 '+meta.dept+' | 职务 '+meta.role+'\n\n'+meta.bio+(meta.quote?'\n\n“'+meta.quote+'”':'');
+  }else if(it.kind==='sec'){
+    text='【'+meta.name+' · '+meta.en+'】\n主任 '+meta.head+' | 方向 '+meta.focus+'\n\n'+meta.desc;
+  }else if(it.kind==='inc'){
+    text='【'+meta.name+' · '+meta.en+'】\n编号 '+meta.id+' | 时间 '+meta.date+' | 密级 '+meta.level+'\n\n'+meta.desc;
+  }else if(it.kind==='res'){
+    text='【'+meta.name+'】\n部门 '+meta.dept+' | '+meta.date+'\n\n'+meta.desc;
+  }else if(it.kind==='log'){
+    text='【'+meta.name+' · '+meta.en+' · '+meta.date+'】\n'+meta.lines.map(l=>l[0]+'  '+l[1]).join('\n');
+  }else if(it.kind==='doc'){
+    text=meta.title+'\n'+meta.sub+'\n\n'+meta.body+'\n\n'+meta.note;
+  }else{text=it.name+'\n路径 '+path}
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=it.name.replace(/\.(txt|log)$/,'')+'.txt';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  toast('已导出：'+it.name);
+}
+function zoomImg(img){$('#lightboxImg').src=img.src;$('#lightbox').classList.add('on')}
+let toastTimer=null;
+function toast(msg){
+  let el=$('#toast');
+  if(!el){
+    el=document.createElement('div');
+    el.id='toast';
+    el.style.cssText='position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:120;background:var(--accent);color:#fff;font-size:11px;letter-spacing:.1em;padding:7px 18px;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg;
+  el.style.opacity=1;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{el.style.opacity=0},1600);
+}
+
+/* ================= 欢迎横幅 ================= */
+function showBanner(){
+  const lines=[
+    'RHINE·LAB OS v4.2.0 — INTERNAL ARCHIVE TERMINAL',
+    'Solve Intelligence. Think Different',
+    '档案库：13 干员 / 10 科室 / 4 事件 / 3 研究 / 3 日志',
+    '输入 help 查看可用命令 · 输入 about 查看系统信息'
+  ];
+  lines.forEach(l=>tline(l,l.startsWith('RHINE')?'t-or':'t-cy'));
+  termOut.classList.add('on');
+}
+
+/* ================= 键盘导航 ================= */
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(!$('#console').hidden){toggleConsole();return}
+    if($('#gallery').classList.contains('on')){if(!$('#gView').hidden){gBackGrid()}else{closeGallery()}return}
+    if(mModal){closeArchiveModal();return}
+    if($('#pvDetail').classList.contains('on')){closePvDetail();return}
+    closeDetail();
+  }
+  if(e.key==='m'&&!e.ctrlKey&&!e.metaKey){toggleMusic();return}
+  if(e.key==='`'&&e.target.tagName!=='INPUT'){toggleConsole();return}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#search').focus()}
+  if(e.target.tagName==='INPUT')return;
+  if($('#gallery').classList.contains('on')){
+    if(!$('#gView').hidden&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){
+      e.preventDefault();gStep(e.key==='ArrowLeft'?-1:1);return;
+    }
+  }
+  if($('#app').classList.contains('on')&&$('#pvTop').style.display!=='none'&&$('#reel').style.display!=='none'){
+    if(e.key==='ArrowLeft'){e.preventDefault();reelStep(-1);return}
+    if(e.key==='ArrowRight'){e.preventDefault();reelStep(1);return}
+    if(e.key==='Enter'){reelOpen();return}
+    if(e.key===' ') {e.preventDefault();reelStep(1);return}
+  }
+  if(e.key==='Backspace'){goUp()}
+  if(e.key==='r'){refreshList()}
+  if(e.key==='/'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();$('#search').focus()}
+  if(e.key==='t'){toggleTheme()}
+});
+
+/* ================= 检索 / 收藏面板 ================= */
+function openArchiveModal(kind){
+  sfx('open');
+  mModal=kind;
+  mQuery='';mFilter='全部档案';
+  $('#modalRoot').hidden=false;
+  $('#mMode').textContent=kind==='saved'?'SAVED ARCHIVES':'ARCHIVE DIRECTORY';
+  $('#mTitle').innerHTML=kind==='saved'?'SAVED ARCHIVES<small>收藏档案</small>':'ARCHIVE INDEX<small>内部档案检索</small>';
+  $('#mQuery').value='';
+  renderMFilters();renderMResults();
+  $('#mQuery').focus();
+}
+function closeArchiveModal(){
+  sfx('close');
+  mModal=null;
+  $('#modalRoot').hidden=true;
+  $('#search').focus();
+}
+function renderMFilters(){
+  const box=$('#mFilters');box.innerHTML='';
+  CATS.forEach(c=>{
+    const b=document.createElement('button');
+    b.className=(mFilter===c)?'active':'';
+    b.textContent=c;
+    b.onclick=()=>{mFilter=c;renderMFilters();renderMResults()};
+    box.appendChild(b);
+  });
+}
+function renderMResults(){
+  const q=mQuery.toLowerCase();
+  const rows=[];
+  const catOf={'OPERATORS':'干员档案','SECTIONS':'科室档案','INCIDENTS':'事件记录','RESEARCH':'研究报告','LOGS':'系统日志'};
+  Object.keys(FS).filter(k=>k&&k!=='SEARCH').forEach(k=>{
+    FS[k].forEach(it=>{
+      const meta=metaOf(it);
+      if(mModal==='saved'&&!isFav(it))return;
+      const cat=catOf[k]||'其他';
+      if(mFilter!=='全部档案'&&cat!==mFilter)return;
+      if(q){
+        const hay=[meta?meta.code:'',meta?meta.en:'',meta?meta.name:'',meta?meta.dept:'',meta?meta.role:'',it.name].join(' ').toLowerCase();
+        if(!hay.includes(q))return;
+      }
+      rows.push({it,meta,cat,k});
+    });
+  });
+  $('#mCount').textContent=String(rows.length).padStart(2,'0')+' RECORDS FOUND';
+  const box=$('#mResults');box.innerHTML='';
+  if(!rows.length){
+    box.innerHTML='<div class="m-empty">'+(mModal==='saved'&&!q?'尚无收藏档案<br>读取档案时点击 ★ 将其保存在此处':'没有匹配的档案<br>尝试其他名称、编号或切换分类')+'</div>';
+    return;
+  }
+  rows.forEach(r=>{
+    const el=document.createElement('div');
+    el.className='m-row';
+    const id=r.meta?(r.meta.no||r.it.id):r.it.name.replace(/\.\w+$/,'');
+    const cn=r.meta?r.meta.name:r.it.name;
+    const en=r.meta?r.meta.en:'';
+    const dept=r.meta?r.meta.dept:'—';
+    const acc=(r.meta&&r.meta.access==='restricted')?'CATALOG ONLY':'AUTHORIZED';
+    el.innerHTML='<span class="r-name"><b>'+esc(id)+'</b><span class="r-cn">'+esc(cn)+(isFav(r.it)?' <i class="r-saved">★</i>':'')+'<small>'+esc(en)+'</small></span></span><span class="r-dept">'+esc(dept)+'</span><span class="r-acc '+(acc==='AUTHORIZED'?'ok':'no')+'">'+acc+' ↗</span>';
+    el.onclick=()=>{closeArchiveModal();openItem(Object.assign({},r.it,{path:r.k}))};
+    box.appendChild(el);
+  });
+}
+$('#mQuery').addEventListener('input',e=>{mQuery=e.target.value;renderMResults()});
+
+/* ================= 重播开场 / 返回 ================= */
+function replayBoot(){
+  closeDetail();
+  closeArchiveModal();
+  $('#app').classList.remove('on');
+  const bEl=$('#boot');
+  bEl.classList.remove('done');
+  $('#bootList').innerHTML='';
+  $('#bootBar').style.width='0';
+  $('#bootHint').style.visibility='hidden';
+  $('#bootFileNo').innerHTML='FILE NUMBER: 003';
+  boot();
+}
+function goBackDetail(){closeDetail()}
+
+/* ================= PV 滚动页 ================= */
+const REEL_ORDER=['OPERATORS','SECTIONS','INCIDENTS','RESEARCH','LOGS'];
+let reelList=[],reelIdx=0;
+function buildReel(){
+  reelList=[];
+  REEL_ORDER.forEach(k=>{if(FS[k])FS[k].forEach(it=>reelList.push(Object.assign({},it,{path:k})))});
+}
+function reelNoOf(it){
+  const m=metaOf(it);
+  if(m&&m.no)return 'FILE NUMBER: '+m.no;
+  if(it.kind==='inc')return 'CASE '+m.id;
+  if(it.kind==='sec'){const i=SECTIONS.findIndex(x=>x.id===it.id);return 'SECTION SEC-'+String(i+1).padStart(2,'0')}
+  if(it.kind==='res'){const i=RESEARCH.findIndex(x=>x.id===it.id);return 'REPORT RPT-'+String(i+1).padStart(2,'0')}
+  if(it.kind==='log'){const i=LOGS.findIndex(x=>x.id===it.id);return 'LOG LOG-'+String(i+1).padStart(2,'0')}
+  return 'FILE NUMBER: X-001';
+}
+function renderReel(){
+  if(!reelList.length)buildReel();
+  const it=reelList[reelIdx];
+  const m=metaOf(it);
+  rollNumber($('#reelNo'),reelNoOf(it));
+  $('#reelName').textContent=m?(m.name||m.code):it.name.replace(/\.[a-z]+$/i,'');
+  $('#reelSub').textContent=m?m.en:'';
+  $('#reelMeta').textContent=m?(m.dept||m.role||'RHINE LAB LLC'):'RHINE LAB LLC';
+  const restricted=!!(m&&m.access==='restricted');
+  const acc=$('#reelAcc');
+  acc.textContent=restricted?'CATALOG ONLY':'ACCESS FULL';
+  acc.className='reel-acc '+(restricted?'no':'ok');
+  rollNumber($('#reelCur'),String(reelIdx+1).padStart(2,'0'));
+  $('#reelTotal').textContent='/ '+String(reelList.length).padStart(2,'0');
+  const cc=document.querySelector('#reel .reel-center');
+  if(cc&&!cc.classList.contains('in')&&!cc.classList.contains('out-left')&&!cc.classList.contains('out-right')){
+    cc.classList.add('in');
+    setTimeout(()=>cc.classList.remove('in'),440);
+  }
+  $('#reelFav').innerHTML=isFav(it)?'★ SAVED':'☆ SAVE ARCHIVE';
+  const tb=$('#reelTicks');tb.innerHTML='';
+  reelList.forEach((x,i)=>{
+    const b=document.createElement('button');
+    b.className=i===reelIdx?'sel':'';
+    b.title=x.name;
+    b.onclick=()=>{reelIdx=i;renderReel()};
+    tb.appendChild(b);
+  });
+}
+let reelAnimBusy=false;
+function reelStep(d){
+  if(reelAnimBusy)return;
+  sfx('switch');
+  const c=document.querySelector('#reel .reel-center');
+  reelAnimBusy=true;
+  if(c)c.classList.add(d<0?'out-right':'out-left');
+  setTimeout(()=>{
+    reelIdx=(reelIdx+d+reelList.length)%reelList.length;
+    renderReel();
+    const bg=$('#pvBg');
+    if(bg){
+      bg.style.transition='transform .22s ease';
+      bg.style.transform=d>0?'translateX(-10px)':'translateX(10px)';
+      setTimeout(()=>{bg.style.transition='transform .6s ease-out';bg.style.transform=''},230);
+    }
+    if(c){c.classList.remove('out-left','out-right');void c.offsetWidth;c.classList.add('in')}
+    setTimeout(()=>{if(c)c.classList.remove('in');reelAnimBusy=false},320);
+  },180);
+}
+function reelFavToggle(){
+  sfx('fav');
+  toggleFav(reelList[reelIdx]);
+  renderReel();
+  updateSavedCounts();
+}
+function reelOpen(){
+  if(!reelList.length)buildReel();
+  const it=reelList[reelIdx]||reelList[0];
+  const m0=metaOf(it);
+  sfx(m0&&m0.access==='restricted'?'deny':'open');
+  currentItem=it;recordAccess(it);
+  const m=metaOf(it);
+  $('#pvDetailNo').textContent=(m&&m.no)?m.no:(m&&m.id?m.id:it.name.replace(/\.[a-z]+$/i,''));
+  $('#pvDetailTitleEn').textContent=m?m.en:'';
+  $('#pvDetailTitleCn').textContent=m?(m.name||m.code):it.name.replace(/\.[a-z]+$/i,'');
+  let meta='';
+  if(m&&m.dept)meta+='<span>DEPARTMENT / '+esc(m.dept)+'</span>';
+  if(m&&m.role)meta+='<span>ROLE / '+esc(m.role)+'</span>';
+  meta+='<span>CLASS / '+esc(it.kind.toUpperCase())+'</span>'
+    +'<span>STATUS / '+(m&&m.access==='restricted'?'CATALOG ONLY':'AUTHORIZED')+'</span>';
+  $('#pvDetailMeta').innerHTML=meta;
+  const img=$('#pvDetailImg');
+  if(it.kind==='op'&&m&&m.img){
+    img.innerHTML='<img src="'+m.img+'" alt="" onclick="zoomImg(this)" style="cursor:zoom-in">';
+  }else{
+    img.innerHTML='<svg viewBox="0 0 240 110" fill="none"><path d="M28 55 C28 15 84 15 120 55 C156 15 212 15 212 55 C212 95 156 95 120 55 C84 95 28 95 28 55 Z" stroke="var(--accent)" stroke-width="9"/><path d="M28 55 C28 15 84 15 120 55 M120 55 C156 15 212 15 212 55 M28 55 C28 95 84 95 120 55 M120 55 C156 95 212 95 212 55" stroke="var(--accent)" stroke-width="9"/></svg>';
+  }
+  $('#pvDetailBody').innerHTML=detailPanelFor(it,'overview');
+  const kids=$('#pvDetailBody').children;
+  for(let i=0;i<kids.length;i++){kids[i].style.animation='rise .3s ease backwards';kids[i].style.animationDelay=(i*50)+'ms'}
+  const acts=$('#pvDetailBody').querySelector('.d-actions');
+  if(acts)acts.insertAdjacentHTML('beforeend','<button onclick="reelFavToggle();renderPvDetailFav()">'+(isFav(it)?'★ SAVED':'☆ SAVE ARCHIVE')+'</button>');
+  $('#pvDetail').classList.add('on');
+}
+function renderPvDetailFav(){
+  const btns=$('#pvDetailBody').querySelectorAll('.d-actions button');
+  if(btns[1])btns[1].textContent=isFav(currentItem)?'★ SAVED':'☆ SAVE ARCHIVE';
+  updateSavedCounts();
+}
+function closePvDetail(){sfx('close');$('#pvDetail').classList.remove('on')}
+function updateSavedCounts(){
+  const c=String(favs.length).padStart(2,'0');
+  $('#savedCount').textContent=c;
+  const ps=$('#pvSaved');if(ps)ps.textContent=c;
+}
+function switchMode(mode){
+  const reel=mode==='reel';
+  $('#pvTop').style.display=reel?'flex':'none';
+  $('#reel').style.display=reel?'flex':'none';
+  $('#browserWrap').hidden=reel;
+  $('#cmdbar').style.display=reel?'none':'flex';
+  $('#statusbar').style.display=reel?'none':'flex';
+  $('#termOut').style.display=reel?'none':'flex';
+  closeGallery();
+  $('#musicBar').style.display=reel?'flex':'none';
+  if(reel){
+    closeDetail();closePvDetail();renderReel();$('#pvBg').classList.add('active');
+    const pv=$('#pvTop');pv.classList.remove('mode-in');void pv.offsetWidth;pv.classList.add('mode-in');
+  }else{
+    closePvDetail();syncAll();$('#pvBg').classList.remove('active');
+    const bw=$('#browserWrap');bw.classList.remove('mode-in');void bw.offsetWidth;bw.classList.add('mode-in');
+  }
+}
+function buildPvBg(){
+  const bg=$('#pvBg');
+  if(!bg||bg.children.length)return;
+  for(let i=0;i<22;i++)bg.appendChild(document.createElement('i'));
+  window.addEventListener('mousemove',e=>{
+    const b=$('#pvBg');
+    if(!b||!b.classList.contains('active'))return;
+    const x=(e.clientX/window.innerWidth-0.5)*18;
+    const y=(e.clientY/window.innerHeight-0.5)*10;
+    b.style.transform='translateX('+x.toFixed(1)+'px) translateY('+y.toFixed(1)+'px)';
+  });
+}
+
+/* ===== 触摸滑动（手机端） ===== */
+let touchX0=null,touchY0=null;
+document.addEventListener('touchstart',e=>{
+  if(!$('#app').classList.contains('on'))return;
+  const t=e.changedTouches[0];
+  touchX0=t.clientX;touchY0=t.clientY;
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(touchX0===null)return;
+  const t=e.changedTouches[0];
+  const dx=t.clientX-touchX0,dy=t.clientY-touchY0;
+  touchX0=null;touchY0=null;
+  if(Math.abs(dx)<56||Math.abs(dx)<Math.abs(dy)*1.3)return;
+  const dir=dx<0?1:-1;
+  if($('#gallery').classList.contains('on')){
+    if(!$('#gView').hidden)gStep(dir);
+    return;
+  }
+  if($('#reel').style.display==='none'||$('#pvDetail').classList.contains('on'))return;
+  reelStep(dir);
+},{passive:true});
+
+/* ================= 音效引擎（Web Audio 合成） ================= */
+let actx=null;
+function audioCtx(){
+  if(!actx){
+    try{actx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
+  }
+  if(actx&&actx.state==='suspended')actx.resume();
+  return actx;
+}
+let soundOn=localStorage.getItem('rhine-sound')!=='0';
+function toggleSoundFx(){
+  soundOn=!soundOn;
+  localStorage.setItem('rhine-sound',soundOn?'1':'0');
+  const b=$('#mSnd');if(b){b.classList.toggle('off',!soundOn);b.textContent=soundOn?'SND':'SND×'}
+}
+function beep(freq,dur,type,vol,slide){
+  const c=audioCtx();if(!c)return;
+  try{
+    const t=c.currentTime;
+    const o=c.createOscillator(),g=c.createGain();
+    o.type=type||'square';
+    o.frequency.setValueAtTime(freq,t);
+    if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,freq+slide),t+dur);
+    g.gain.setValueAtTime(vol||.12,t);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(c.destination);
+    o.start(t);o.stop(t+dur+.03);
+  }catch(e){}
+}
+function sfx(name){
+  if(!soundOn)return;
+  switch(name){
+    case 'boot':beep(110,.6,'sine',.16,720);setTimeout(()=>beep(520,.35,'sine',.12,260),380);break;
+    case 'click':beep(1500,.04,'square',.05);break;
+    case 'switch':beep(210,.1,'triangle',.11,320);setTimeout(()=>beep(340,.05,'square',.05),80);break;
+    case 'open':beep(280,.18,'sine',.12,460);break;
+    case 'close':beep(520,.14,'sine',.1,-340);break;
+    case 'fav':beep(640,.08,'square',.08);setTimeout(()=>beep(920,.1,'square',.08),95);break;
+    case 'deny':beep(170,.22,'sawtooth',.12,-50);setTimeout(()=>beep(130,.2,'sawtooth',.08),150);break;
+    case 'select':beep(1150,.03,'square',.04);break;
+  }
+}
+
+/* ================= 音乐播放器（3 曲目） ================= */
+const mAudio=$('#mAudio');
+const TRACKS=[
+  {name:'RHINE LAB — ORIGINAL SOUND',file:'assets/rhine_theme.m4a',type:'file'},
+  {name:'TERMINAL AMBIENCE',type:'synth',synth:'ambience'},
+  {name:'ARCHIVE PULSE',type:'synth',synth:'pulse'}
+];
+const musicState={track:0,playing:false,synth:null};
+let masterGain=null;
+function ensureSynth(){
+  if(masterGain)return masterGain;
+  const c=audioCtx();if(!c)return null;
+  masterGain=c.createGain();
+  masterGain.gain.value=($('#mVol').value||70)/100;
+  masterGain.connect(c.destination);
+  return masterGain;
+}
+function fmtT(sec){
+  if(!isFinite(sec))return '0:00';
+  const m=Math.floor(sec/60),ss=Math.floor(sec%60);
+  return m+':'+String(ss).padStart(2,'0');
+}
+function trackStep(d){
+  musicState.track=(musicState.track+d+TRACKS.length)%TRACKS.length;
+  const wasPlaying=musicState.playing;
+  stopAllMusic();
+  musicState.playing=wasPlaying;
+  if(wasPlaying)startCurrentTrack();
+  syncMusicUI();
+  sfx('click');
+}
+function toggleMusic(){
+  if(musicState.playing){
+    stopAllMusic();musicState.playing=false;
+  }else{
+    musicState.playing=true;
+    startCurrentTrack();
+  }
+  syncMusicUI();
+}
+function startCurrentTrack(){
+  const t=TRACKS[musicState.track];
+  if(t.type==='file'){
+    mAudio.src=t.file;mAudio.loop=true;
+    try{const p=mAudio.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}
+  }else{
+    if(t.synth==='ambience')startAmbience();else startPulse();
+  }
+}
+function stopAllMusic(){
+  mAudio.pause();
+  stopSynth();
+}
+function stopSynth(){
+  const s=musicState.synth;
+  if(s){
+    try{
+      if(s.timer)clearInterval(s.timer);
+      s.nodes.forEach(n=>{try{n.stop&&n.stop();n.disconnect&&n.disconnect()}catch(e){}});
+    }catch(e){}
+  }
+  musicState.synth=null;
+}
+/* 氛围音景：低频 drone + 拍频 + 每 6s 信号 */
+function startAmbience(){
+  const c=audioCtx(),g=ensureSynth();if(!c||!g)return;
+  const s={nodes:[],timer:null};
+  const bus=c.createGain();bus.gain.value=.5;bus.connect(g);
+  const o1=c.createOscillator();o1.type='sine';o1.frequency.value=82;
+  const o2=c.createOscillator();o2.type='sine';o2.frequency.value=82.6;
+  const o3=c.createOscillator();o3.type='triangle';o3.frequency.value=164;o3.detune.value=4;
+  const lfo=c.createOscillator();lfo.frequency.value=.06;
+  const lg=c.createGain();lg.gain.value=.5;
+  lfo.connect(lg);lg.connect(bus.gain);
+  [o1,o2,o3,lfo].forEach(o=>o.start());
+  o1.connect(bus);o2.connect(bus);o3.connect(bus);
+  s.nodes=[o1,o2,o3,lfo];
+  let tick=0;
+  s.timer=setInterval(()=>{
+    if(!musicState.playing)return;
+    if(tick%12===0){
+      const to=c.createOscillator(),tg=c.createGain();
+      to.type='sine';to.frequency.value=520;
+      tg.gain.setValueAtTime(.0001,c.currentTime);
+      tg.gain.exponentialRampToValueAtTime(.05,c.currentTime+.15);
+      tg.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.8);
+      to.connect(tg);tg.connect(g);
+      to.start();to.stop(c.currentTime+.85);
+      s.nodes.push(to);
+    }
+    tick++;
+  },500);
+  musicState.synth=s;
+}
+/* 档案脉冲：机械节拍 + 滤波噪声 */
+function startPulse(){
+  const c=audioCtx(),g=ensureSynth();if(!c||!g)return;
+  const s={nodes:[],timer:null};
+  let tick=0;
+  s.timer=setInterval(()=>{
+    if(!musicState.playing)return;
+    const t=c.currentTime;
+    const step=tick%4;
+    if(step===0){
+      const o=c.createOscillator(),og=c.createGain();
+      o.type='square';o.frequency.value=110;
+      og.gain.setValueAtTime(.06,t);
+      og.gain.exponentialRampToValueAtTime(.0001,t+.06);
+      o.connect(og);og.connect(g);
+      o.start(t);o.stop(t+.07);
+      s.nodes.push(o);
+    }
+    if(step===2){
+      const o=c.createOscillator(),og=c.createGain();
+      o.type='triangle';o.frequency.value=220;
+      og.gain.setValueAtTime(.035,t);
+      og.gain.exponentialRampToValueAtTime(.0001,t+.04);
+      o.connect(og);og.connect(g);
+      o.start(t);o.stop(t+.05);
+      s.nodes.push(o);
+    }
+    if(step===1||step===3){
+      const len=4096,buf=c.createBuffer(1,len,c.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);
+      const src=c.createBufferSource();src.buffer=buf;
+      const f=c.createBiquadFilter();f.type='highpass';f.frequency.value=1500;
+      const ng=c.createGain();ng.gain.setValueAtTime(.05,t);
+      ng.gain.exponentialRampToValueAtTime(.0001,t+.03);
+      src.connect(f);f.connect(ng);ng.connect(g);
+      src.start(t);
+      s.nodes.push(src);
+    }
+    tick++;
+  },250);
+  musicState.synth=s;
+}
+function toggleMute(){
+  mAudio.muted=!mAudio.muted;
+  $('#mVolBtn').textContent=mAudio.muted?'×':'♪';
+}
+function syncMusicUI(){
+  const playing=musicState.playing;
+  const mb=$('#musicBar');if(mb)mb.classList.toggle('playing',playing);
+  $('#mPlay').textContent=playing?'❚❚':'▶';
+  const p2=$('#mPlay2');if(p2)p2.textContent=playing?'❚❚':'▶';
+  const t=TRACKS[musicState.track];
+  $('#mName').textContent=t.name;
+  if(t.type==='file'&&mAudio.duration){
+    $('#mTime').textContent=fmtT(mAudio.currentTime)+' / '+fmtT(mAudio.duration);
+    const t2=$('#mTime2');if(t2)t2.textContent=fmtT(mAudio.currentTime);
+    $('#mSeek').value=Math.round(mAudio.currentTime/mAudio.duration*1000);
+  }else{
+    $('#mTime').textContent='--:-- / LIVE';
+    const t2=$('#mTime2');if(t2)t2.textContent='--:--';
+  }
+}
+mAudio.addEventListener('timeupdate',syncMusicUI);
+mAudio.addEventListener('loadedmetadata',syncMusicUI);
+mAudio.addEventListener('play',syncMusicUI);
+mAudio.addEventListener('pause',syncMusicUI);
+mAudio.addEventListener('ended',syncMusicUI);
+$('#mSeek').addEventListener('input',e=>{
+  if(TRACKS[musicState.track].type==='file'&&mAudio.duration)mAudio.currentTime=e.target.value/1000*mAudio.duration;
+});
+$('#mVol').addEventListener('input',e=>{
+  const v=e.target.value/100;
+  mAudio.volume=v;
+  mAudio.muted=false;
+  if(masterGain)masterGain.gain.value=v;
+  $('#mVolBtn').textContent='♪';
+});
+(function(){
+  const b=$('#mSnd');if(b){b.classList.toggle('off',!soundOn);b.textContent=soundOn?'SND':'SND×'}
+})();
+
+/* ================= 影像图库 ================= */
+let gData=[],gIdx=0,gViewMode=false;
+function buildGallery(){
+  gData=OPERATORS.filter(o=>o.img).map(o=>({meta:o}));
+}
+function showGallery(){
+  sfx('open');
+  if(!gData.length)buildGallery();
+  gViewMode=false;
+  $('#gallery').classList.add('on');
+  $('#gTotal').textContent=String(gData.length).padStart(2,'0');
+  renderGrid();renderGalleryView();
+}
+function renderGrid(){
+  const grid=$('#gGrid');
+  grid.innerHTML='';
+  gData.forEach((d,i)=>{
+    const el=document.createElement('div');
+    el.className='g-item';
+    el.style.animationDelay=Math.min(i*35,500)+'ms';
+    el.innerHTML='<img src="'+d.meta.img+'" alt="" loading="lazy" onerror="this.style.opacity=.15"><div class="g-tag"><b>'+esc(d.meta.code||d.meta.name)+'</b>'+esc(d.meta.en||'')+'</div>';
+    el.onclick=()=>{gIdx=i;gViewMode=true;renderGrid();renderGalleryView()};
+    grid.appendChild(el);
+  });
+}
+function renderGalleryView(){
+  const v=$('#gView'),grid=$('#gGrid');
+  if(gViewMode){
+    grid.hidden=true;v.hidden=false;
+    const d=gData[gIdx];
+    const gimg=$('#gImg');
+    gimg.classList.remove('gZoom');
+    void gimg.offsetWidth;
+    gimg.src=d.meta.img;
+    gimg.classList.add('gZoom');
+    $('#gCapEn').textContent=d.meta.en||'';
+    $('#gCapCn').textContent=d.meta.code||d.meta.name;
+    $('#gCount').textContent=String(gIdx+1).padStart(2,'0')+' / '+String(gData.length).padStart(2,'0');
+  }else{
+    grid.hidden=false;v.hidden=true;
+  }
+}
+function gStep(d){
+  gIdx=(gIdx+d+gData.length)%gData.length;
+  renderGalleryView();
+}
+function gBackGrid(){gViewMode=false;renderGalleryView()}
+function closeGallery(){
+  sfx('close');
+  $('#gallery').classList.remove('on');
+  gViewMode=false;
+}
+
+/* ================= 工具栏按钮 ================= */
+$('#btnUp').innerHTML=ICO.up+' 上级';
+$('#btnViewList').innerHTML=ICO.list;
+$('#btnViewGrid').innerHTML=ICO.grid;
+$('#btnTheme').innerHTML=ICO.moon;
+$('#toolbar').querySelectorAll('.tb-btn')[1].innerHTML=ICO.ref;
+
+/* ================= 初始化 ================= */
+loadFavs();
+renderFav();
+buildPvBg();
+setView('list');
+syncAll();
+boot();
+</script>
+</body>
+</html>
