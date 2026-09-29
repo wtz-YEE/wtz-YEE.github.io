@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>PRTS · 档案室</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%233FE0C8' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%233FE0C8'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
 <style>
 :root{
   --bg:#0A0C0E;--bg2:#07090A;--panel:#11151A;--panel2:#181D23;
@@ -61,9 +61,9 @@ body.ready .hero .h-mono{animation:hin .5s cubic-bezier(.22,1,.36,1) .68s both}
 .b-no{color:var(--accent);font-size:12px}
 .b-head h2{font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;font-size:22px;font-weight:700;letter-spacing:.12em;color:var(--ink)}
 .b-code{margin-left:auto;font-size:10.5px;letter-spacing:.3em;color:var(--ink3)}
-.grid.two{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.grid.two{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-@media(max-width:860px){.grid.two{grid-template-columns:1fr}}
+@media(max-width:900px){.grid.two{grid-template-columns:1fr}}
 @media(max-width:880px){.grid3{grid-template-columns:1fr}}
 
 .card{display:block;position:relative;width:100%;text-align:left;border:1px solid var(--line2);background:var(--panel);text-decoration:none;color:inherit;overflow:hidden;transform-style:preserve-3d;transition:border-color .2s,transform .2s,box-shadow .2s}
@@ -153,7 +153,7 @@ body.ready .hero .h-mono{animation:hin .5s cubic-bezier(.22,1,.36,1) .68s both}
 .pbadge{border:1px solid var(--line2);color:var(--accent);padding:3px 10px;font-size:11px;letter-spacing:.14em;font-family:var(--mono);min-width:56px;text-align:center;transition:border-color .2s,color .2s,box-shadow .2s;background:none}
 .pbadge.red{border-color:var(--bad);color:var(--bad);box-shadow:0 0 12px rgba(255,92,122,.3);animation:fpulse 1.6s ease-in-out infinite}
 .perm-hero{display:flex;align-items:center;gap:16px;border-color:var(--accent)!important;box-shadow:0 0 26px var(--accent-soft)}
-body.red{--bg:#150A0C;--bg2:#1E0D0F;--panel:#1B1012;--panel2:#241517;--line:rgba(255,92,122,.18);--line2:rgba(255,92,122,.35);--ink:#F6E4E4;--ink2:#D3A6A6;--ink3:#9E6B6B;--accent:#FF5C7A;--accent2:#FF9AAE;--accent-soft:rgba(255,92,122,.12)}
+body.inv{--bg:#F2F2F2;--bg2:#E9E9E9;--panel:#EBEBEB;--panel2:#DDDDDD;--line:rgba(0,0,0,.12);--line2:rgba(0,0,0,.24);--ink:#101010;--ink2:#4A4A4A;--ink3:#7A7A7A;--accent:#000000;--accent2:#262626;--accent-soft:rgba(0,0,0,.06)}
 .mine{position:relative}
 .gp{position:absolute;width:5px;height:5px;background:#FF5C7A;animation:gp .52s ease-out forwards;pointer-events:none;z-index:2}
 @keyframes gp{to{transform:translate(var(--dx),var(--dy));opacity:0}}
@@ -198,10 +198,10 @@ body.red{--bg:#150A0C;--bg2:#1E0D0F;--panel:#1B1012;--panel2:#241517;--line:rgba
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);z-index:95;border:1px solid var(--line2);background:var(--panel2);color:var(--accent2);font-family:var(--mono);font-size:12px;letter-spacing:.16em;padding:10px 18px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-#boot{position:fixed;inset:0;z-index:100;background:#050506;background-image:radial-gradient(rgba(232,226,212,.04) 1px,transparent 1px);background-size:22px 22px;display:flex;align-items:center;justify-content:center;transition:opacity .3s}
-#boot::before{content:"";position:absolute;inset:0;background:radial-gradient(58% 46% at 50% 44%,rgba(192,57,43,.08),transparent 70%)}
-#boot::after{content:"";position:absolute;left:0;right:0;top:0;height:38px;background:linear-gradient(180deg,rgba(224,90,74,.07),transparent);animation:crtsweep 1.4s linear .2s infinite;pointer-events:none}
-.bt{position:relative;width:min(520px,88vw);border:1px solid var(--line2);background:linear-gradient(170deg,rgba(19,19,21,.98),rgba(10,10,11,.98));padding:24px 26px 20px;box-shadow:0 0 60px rgba(192,57,43,.1),0 0 0 1px rgba(232,226,212,.05);animation:cardin .6s cubic-bezier(.22,1,.36,1) both}
+#boot{position:fixed;inset:0;z-index:100;background:#050506;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:22px 22px;display:flex;align-items:center;justify-content:center;transition:opacity .3s}
+#boot::before{content:"";position:absolute;inset:0;background:radial-gradient(58% 46% at 50% 44%,rgba(255,255,255,.06),transparent 70%)}
+#boot::after{content:"";position:absolute;left:0;right:0;top:0;height:38px;background:linear-gradient(180deg,rgba(255,255,255,.06),transparent);animation:crtsweep 1.4s linear .2s infinite;pointer-events:none}
+.bt{position:relative;width:min(520px,88vw);border:1px solid var(--line2);background:linear-gradient(170deg,rgba(19,19,21,.98),rgba(10,10,11,.98));padding:24px 26px 20px;box-shadow:0 0 60px rgba(255,255,255,.08),0 0 0 1px rgba(255,255,255,.06);animation:cardin .6s cubic-bezier(.22,1,.36,1) both}
 @keyframes cardin{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
 .bt-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink3);padding-bottom:10px;border-bottom:1px dashed var(--line2);animation:btin .4s ease .12s both}
 .bt-top .bt-sec{color:var(--accent2)}
@@ -210,7 +210,7 @@ body.red{--bg:#150A0C;--bg2:#1E0D0F;--panel:#1B1012;--panel2:#241517;--line:rgba
 .bt-seal b{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;margin-top:3px}
 @keyframes stampin{from{opacity:0;transform:rotate(-26deg) scale(1.7)}to{opacity:1;transform:rotate(-9deg) scale(1)}}
 @keyframes stampjerk{0%,100%{transform:rotate(-9deg) scale(1)}50%{transform:rotate(-9deg) scale(.972)}}
-@keyframes stampglow{0%,100%{box-shadow:0 0 4px rgba(192,57,43,.12)}50%{box-shadow:0 0 26px rgba(192,57,43,.3)}}
+@keyframes stampglow{0%,100%{box-shadow:0 0 4px rgba(255,255,255,.10)}50%{box-shadow:0 0 26px rgba(255,255,255,.28)}}
 .bt-title{font-family:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;font-size:30px;font-weight:700;letter-spacing:.3em;text-indent:.3em;color:var(--ink);text-align:center;margin:12px 0 2px;animation:btin .5s ease .06s both}
 .bt-lines{font-family:var(--mono);font-size:12px;line-height:2.1;color:var(--ink2);min-height:88px;padding-right:100px}
 .bt-lines span{display:block;opacity:0;animation:btin .45s ease forwards}
@@ -274,10 +274,10 @@ body.red{--bg:#150A0C;--bg2:#1E0D0F;--panel:#1B1012;--panel2:#241517;--line:rgba
 .term-in{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:8px 12px;background:rgba(6,10,12,.95)}
 .term-in .ps{color:var(--accent);font-size:12.5px;white-space:nowrap}
 .term-in input{flex:1;background:none;border:none;outline:none;color:var(--ink);font-family:var(--mono);font-size:12.5px;caret-color:var(--accent);letter-spacing:.06em}
-body.red .term{border-color:rgba(255,92,122,.4)}
-body.red .term-bar{background:rgba(30,13,15,.95)}
-body.red .term-out{color:#D3A6A6}
-body.red .term-in input{caret-color:var(--bad)}
+body.inv .term{border-color:rgba(0,0,0,.35)}
+body.inv .term-bar{background:rgba(230,230,230,.95)}
+body.inv .term-out{color:#4A4A4A}
+body.inv .term-in input{caret-color:var(--bad)}
 @media(max-width:560px){.term-body{height:38vh}.hero h1{font-size:24px}}
 
 
@@ -306,13 +306,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 
 /* ===== THE ARCHIVE 档案室 v2.0 ===== */
 :root{
-  --bg:#0B0B0C;--bg2:#080809;--panel:#131315;--panel2:#1A1A1C;
-  --line:rgba(232,226,212,.12);--line2:rgba(232,226,212,.26);
-  --ink:#E8E2D4;--ink2:#B5AE9D;--ink3:#7A746A;
-  --accent:#C0392B;--accent2:#E05A4A;--accent-soft:rgba(192,57,43,.12);
-  --ok:#9AA85F;--warn:#D9A441;--bad:#E05A4A;
+  --bg:#0A0A0A;--bg2:#070707;--panel:#141414;--panel2:#1C1C1C;
+  --line:rgba(255,255,255,.10);--line2:rgba(255,255,255,.22);
+  --ink:#F0F0F0;--ink2:#A6A6A6;--ink3:#707070;
+  --accent:#FFFFFF;--accent2:#D8D8D8;--accent-soft:rgba(255,255,255,.07);
+  --ok:#C9C9C9;--warn:#B0B0B0;--bad:#8C8C8C;
 }
-body{background:var(--bg);background-image:radial-gradient(rgba(232,226,212,.035) 1px,transparent 1px);background-size:26px 26px}
+body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:26px 26px}
 #status{background:rgba(11,11,12,.93);border-bottom-color:var(--line)}
 #status .st-l{color:var(--accent2)}
 .hero{padding:54px 20px 40px;text-align:center}
@@ -326,23 +326,23 @@ body{background:var(--bg);background-image:radial-gradient(rgba(232,226,212,.035
 .h-file b{color:var(--ink2);font-weight:400}
 .dh-acts{margin-top:22px}
 .dh-acts button{border-color:var(--line2);color:var(--ink2);background:none}
-.dh-acts button:hover{border-color:var(--accent);color:var(--accent2);box-shadow:0 0 16px rgba(192,57,43,.14)}
+.dh-acts button:hover{border-color:var(--accent);color:var(--accent2);box-shadow:0 0 16px rgba(255,255,255,.12)}
 .dh-acts .dh-primary{border-color:var(--accent);color:var(--accent2);background:var(--accent-soft);font-weight:700}
-.dh-acts .dh-primary:hover{box-shadow:0 0 22px rgba(192,57,43,.26);background:rgba(192,57,43,.16)}
+.dh-acts .dh-primary:hover{box-shadow:0 0 22px rgba(255,255,255,.22);background:rgba(255,255,255,.16)}
 .block{padding:16px max(20px,calc((100% - 1080px)/2)) 8px}
 .b-head h2{font-family:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;letter-spacing:.16em}
 .b-no{color:var(--accent2)}
 .b-code{color:var(--ink3)}
-.card{background:linear-gradient(165deg,#151516,#0E0E0F);border-color:var(--line);box-shadow:0 0 0 1px rgba(232,226,212,.04)}
-.card:hover{border-color:var(--accent);box-shadow:0 14px 40px rgba(0,0,0,.5),0 0 20px rgba(192,57,43,.12)}
+.card{background:linear-gradient(165deg,#151516,#0E0E0F);border-color:var(--line);box-shadow:0 0 0 1px rgba(255,255,255,.05)}
+.card:hover{border-color:var(--accent);box-shadow:0 14px 40px rgba(0,0,0,.5),0 0 20px rgba(255,255,255,.10)}
 .thumb{position:relative;border-bottom-color:var(--line);background:#080809}
-.thumb::after{content:"已归档";position:absolute;right:10px;bottom:8px;font-family:var(--mono);font-size:9px;letter-spacing:.26em;color:var(--accent2);border:1px solid rgba(224,90,74,.5);padding:2px 8px;transform:rotate(-4deg);background:rgba(8,8,9,.55);z-index:2}
+.thumb::after{content:"已归档";position:absolute;right:10px;bottom:8px;font-family:var(--mono);font-size:9px;letter-spacing:.26em;color:var(--accent2);border:1px solid rgba(255,255,255,.35);padding:2px 8px;transform:rotate(-4deg);background:rgba(8,8,9,.55);z-index:2}
 .c-tag{color:var(--accent)}
 .c-tag::before{content:"◼";margin-right:7px;font-size:8px;color:var(--accent2)}
 .card-bd h3{font-family:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;font-weight:600;letter-spacing:.08em}
 .c-go{color:var(--accent2)}
 .gcard .g-art{border-bottom-color:var(--line);background:#0A0A0B}
-.perm-hero{border-color:rgba(192,57,43,.5)!important;box-shadow:0 0 22px rgba(192,57,43,.1)}
+.perm-hero{border-color:rgba(255,255,255,.4)!important;box-shadow:0 0 22px rgba(255,255,255,.1)}
 .lv0{border-color:var(--line);color:var(--ink3);background:#0E0E0F}
 .gbar{background:var(--bg2);border-bottom-color:var(--line)}
 .gback{border-color:var(--line2);color:var(--ink2)}
@@ -362,7 +362,7 @@ body{background:var(--bg);background-image:radial-gradient(rgba(232,226,212,.035
 .m-ok:hover{background:var(--accent-soft)}
 .m-no{border-color:var(--line2);color:var(--ink3)}
 .toast{background:#171718;color:var(--accent2)}
-.dino-art{filter:drop-shadow(0 0 14px rgba(192,57,43,.28))}
+.dino-art{filter:drop-shadow(0 0 14px rgba(255,255,255,.22))}
 
 </style>
 <body>
@@ -384,7 +384,7 @@ body{background:var(--bg);background-image:radial-gradient(rgba(232,226,212,.035
 </div>
 
 <header id="status">
-  <span class="st-l">PRTS // 档案室</span>
+  <span class="st-l">PRTS // 档案室 · 黑白</span>
   <span class="st-c" id="clock">--:--:--</span>
   <span class="pbadge" id="permBadge">LV 0</span>
 </header>
@@ -399,15 +399,24 @@ body{background:var(--bg);background-image:radial-gradient(rgba(232,226,212,.035
       <span class="h-char">档</span><span class="h-char">案</span><span class="h-char">室</span>
     </h1>
     <p class="h-sub" id="permMainLv">当前 LV 0 · 可提升至 LV 1</p>
-    <p class="h-mono">技能树 ▸ 终端接口 —— 仅此两门</p>
-    <div class="h-file">FILE WTZ·ROOT &nbsp;|&nbsp; <b>2 入口</b> · 3 领域档案 · 密级待核验</div>
+    <p class="h-mono">技能树 ▸ 终端接口 ▸ 模组开发 —— 仅此三门</p>
+    <div class="h-file">FILE WTZ·ROOT &nbsp;|&nbsp; <b>3 入口</b> · 3 领域档案 · 密级待核验</div>
   </div>
 
 <div class="block" style="padding-top:0">
-    <div class="grid two" style="max-width:760px;margin:0 auto">
-      <a class="card perm-hero" href="技能树.html">
-        <div class="perm-ico">
-          <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M4 18l4.5-5.5 3.5 3 6-8"/><circle cx="18" cy="7" r="2.2" fill="currentColor"/><path fill="currentColor" d="M12 2a6 6 0 0 0-4.24 10.24A6 6 0 0 0 11 17.9V21a1 1 0 0 0 2 0v-3.1a6 6 0 0 0 3.24-5.66A6 6 0 0 0 12 2z"/></svg>
+    <div class="grid two" style="max-width:980px;margin:0 auto">
+      <a class="card" href="技能树.html">
+        <div class="thumb">
+          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <rect width="400" height="200" fill="#0A0A0A"/>
+            <circle cx="200" cy="82" r="26" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+            <path d="M200 108 L150 152 M200 108 L262 148 M200 108 L196 168" stroke="#D8D8D8" stroke-width="2"/>
+            <circle cx="150" cy="152" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
+            <circle cx="262" cy="148" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
+            <circle cx="196" cy="168" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
+            <circle cx="200" cy="82" r="8" fill="#FFFFFF"/>
+            <text x="200" y="186" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">SKILL TREE</text>
+          </svg>
         </div>
         <div class="card-bd">
           <div class="c-tag">PERSONAL FILE · 个人档案</div>
@@ -423,9 +432,9 @@ body{background:var(--bg);background-image:radial-gradient(rgba(232,226,212,.035
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
             <rect width="400" height="200" fill="#0B0B0C"/>
             <rect x="34" y="42" width="332" height="120" fill="#131315" stroke="rgba(232,226,212,.25)" stroke-width="2"/>
-            <circle cx="56" cy="58" r="4" fill="#C0392B"/><circle cx="72" cy="58" r="4" fill="#D9A441"/><circle cx="88" cy="58" r="4" fill="#9AA85F"/>
+            <circle cx="56" cy="58" r="4" fill="#F0F0F0"/><circle cx="72" cy="58" r="4" fill="#A6A6A6"/><circle cx="88" cy="58" r="4" fill="#707070"/>
             <text x="56" y="96" font-family="monospace" font-size="15" fill="#B5AE9D">&gt; whoami</text>
-            <text x="56" y="122" font-family="monospace" font-size="15" fill="#E05A4A">LV 0 · 待验证</text>
+            <text x="56" y="122" font-family="monospace" font-size="15" fill="#D8D8D8">LV 0 · 待验证</text>
             <text x="56" y="148" font-family="monospace" font-size="15" fill="#B5AE9D">&gt; _</text>
           </svg>
         </div>
@@ -434,6 +443,26 @@ body{background:var(--bg);background-image:radial-gradient(rgba(232,226,212,.035
           <h3>终端接口</h3>
           <p>命令终端 · 权限体系 · 八款小游戏 · 三重密钥，全部功能所在地。</p>
           <span class="c-go">进入终端
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
+      <a class="card" href="模组开发.html">
+        <div class="thumb">
+          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <rect width="400" height="200" fill="#0A0A0A"/>
+            <path d="M96 78 L200 38 L304 78 L304 128 L200 168 L96 128 Z" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+            <path d="M200 38 L200 168 M96 78 L304 128 M304 78 L96 128" stroke="#707070" stroke-width="2"/>
+            <path d="M286 132 a20 20 0 1 0 6 12" fill="none" stroke="#D8D8D8" stroke-width="4"/>
+            <circle cx="306" cy="156" r="7" fill="#FFFFFF"/>
+            <text x="200" y="186" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">MOD DEV</text>
+          </svg>
+        </div>
+        <div class="card-bd">
+          <div class="c-tag">PROJECT · 模组工坊</div>
+          <h3>模组开发</h3>
+          <p>开发环境 · 功能清单 · 路线图，Mod 工程总览工作台。</p>
+          <span class="c-go">进入工坊
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
           </span>
         </div>
@@ -450,7 +479,7 @@ body{background:var(--bg);background-image:radial-gradient(rgba(232,226,212,.035
 </main>
 
 <footer class="foot">
-  <span>ARCHIVE v2.0 · 档案室 已连接</span>
+  <span>ARCHIVE v2.1 · 档案室 已连接（黑白）</span>
   <a class="f-switch" href="终端接口.html">切换：终端接口</a>
 </footer>
 
@@ -461,9 +490,9 @@ function lv(){return+(sessionStorage.getItem('wzLv')||0)}
 function ch(){return sessionStorage.getItem('wzLv')==='9999'}
 function perm(){
 var l=lv(),f=l===9999;
-document.body.classList.toggle('red',f);
+document.body.classList.toggle('inv',f);
 var bd=document.getElementById('permBadge'),pl=document.getElementById('permMainLv');
-if(bd){bd.textContent=f?'LV ▓▓▓▓':('LV '+l);bd.classList.toggle('red',f)}
+if(bd){bd.textContent=f?'LV ▓▓▓▓':('LV '+l);bd.classList.toggle('inv',f)}
 if(pl)pl.textContent=f?'当前 LV 9999 · 全权限已解锁':'当前密级 LV '+l;
 }
 perm();
