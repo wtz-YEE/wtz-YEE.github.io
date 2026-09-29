@@ -196,10 +196,12 @@ left=Math.max(8,Math.min(left,7200*zoom-pw-8));
 var top=(y-ph/2)*zoom;
 top=Math.max(8,Math.min(top,4680*zoom-ph-8));
 D.style.left=left+'px';D.style.top=top+'px';
-if(left>ts.scrollLeft+ts.clientWidth-24)ts.scrollLeft=left+24-ts.clientWidth;
-else if(left<ts.scrollLeft+24)ts.scrollLeft=Math.max(0,left-24);
-if(top>ts.scrollTop+ts.clientHeight-24)ts.scrollTop=top+24-ts.clientHeight;
-else if(top<ts.scrollTop+24)ts.scrollTop=Math.max(0,top-24);
+if(left<ts.scrollLeft+16)ts.scrollLeft=Math.max(0,left-16);
+else if(left+pw>ts.scrollLeft+ts.clientWidth-16)ts.scrollLeft=Math.min(left+pw+16-ts.clientWidth,7200*zoom-ts.clientWidth);
+var svgTop=ts.getBoundingClientRect().top+window.scrollY;
+var pTop=svgTop+top,pBot=pTop+ph;
+if(pTop<window.scrollY+16)window.scrollTo(0,Math.max(0,pTop-16));
+else if(pBot>window.scrollY+innerHeight-16)window.scrollTo(0,pBot-innerHeight+16);
 }
 function T(t){return document.createElementNS('http://www.w3.org/2000/svg',t)}
 function xy(cx,cy,r,th){var a=th*Math.PI/180;return{x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)}}
