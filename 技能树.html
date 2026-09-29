@@ -40,7 +40,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .tree-head .b-code{margin-left:auto;font-size:10.5px;letter-spacing:.3em;color:var(--ink3)}
 .tree-svg{position:relative;width:100%;display:block;overflow-x:auto}
 .tree-svg svg{width:7200px;height:4680px;max-width:none;display:block;background:var(--bg2)}
-#detail{position:absolute;top:74px;right:18px;width:min(330px,86vw);border:1px solid var(--line2);background:rgba(13,17,21,.96);box-shadow:0 18px 50px rgba(0,0,0,.55);padding:20px 20px 18px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .22s,transform .22s;z-index:10;backdrop-filter:blur(6px)}
+#detail{position:absolute;width:min(330px,86vw);border:1px solid var(--line2);background:rgba(13,17,21,.96);box-shadow:0 18px 50px rgba(0,0,0,.55);padding:20px 20px 18px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .22s,transform .22s;z-index:10;backdrop-filter:blur(6px);max-height:62vh;overflow-y:auto}
 #detail.on{opacity:1;transform:none;pointer-events:auto}
 #detail .d-lv{font-family:var(--mono);font-size:10.5px;letter-spacing:.26em;padding:3px 10px;display:inline-block;border:1px solid}
 #detail h3{font-size:19px;font-weight:700;letter-spacing:.06em;margin:10px 0 4px}
@@ -51,6 +51,14 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 #detail .d-src b{color:var(--accent)}
 .hint{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink3);text-align:center;padding:14px 10px 4px}
 
+/* 缩放条 */
+.zoom-box{display:flex;align-items:center;gap:9px;margin-left:16px}
+.zoom-box .z-ico{width:14px;height:14px;color:var(--ink3);flex:none}
+.zoom-box input[type=range]{-webkit-appearance:none;appearance:none;width:150px;height:4px;border-radius:2px;background:var(--line2);outline:none;cursor:pointer}
+.zoom-box input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid #0A0C0E;box-shadow:0 0 8px rgba(63,224,200,.5)}
+.zoom-box input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid #0A0C0E;box-shadow:0 0 8px rgba(63,224,200,.5)}
+.zoom-box b{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--accent2);min-width:42px;text-align:right}
+
 /* SVG 节点 */
 .nd{cursor:pointer;transition:transform .15s}
 .nd:hover{transform:scale(1.08)}
@@ -60,8 +68,9 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .nd .r{transition:fill .15s,stroke .15s}
 .nd.sel .r{stroke-width:5}
 .core{cursor:pointer}
-.core .r{transition:transform .15s}
-.core:hover .r{transform:scale(1.04)}
+.core .r{transition:fill .2s,stroke .2s,transform .15s}
+.core:hover .r{fill:#3A0F14;stroke:var(--bad);stroke-width:5}
+.core:hover .pulse{stroke:rgba(255,92,122,.6)}
 @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.75}}
 .pulse{animation:pulse 2.6s ease-in-out infinite}
 @keyframes draw{to{stroke-dashoffset:0}}
@@ -70,7 +79,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .nd-pop{transform-box:fill-box;transform-origin:center;animation:pop .3s ease both}
 @keyframes blink{50%{opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ln{stroke-dasharray:none}}
-@media(max-width:640px){#detail{position:fixed;top:auto;bottom:10px;right:10px;left:10px;width:auto;max-height:46vh;overflow-y:auto}.tree-head h2{font-size:15px}}
+@media(max-width:640px){#detail{position:fixed;top:auto;bottom:10px;right:10px;left:10px;width:auto;max-height:46vh;overflow-y:auto}.tree-head h2{font-size:15px}.zoom-box input[type=range]{width:84px}.zoom-box{gap:6px;margin-left:10px}}
 .crt{position:fixed;inset:0;z-index:55;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(230,237,239,.02) 0 1px,transparent 1px 4px)}
 </style>
 </head>
@@ -89,6 +98,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
       <span class="b-no">SKILL // TREE</span>
       <h2>wtz 的技能树</h2>
       <span class="b-code">3 DOMAINS · 33 NODES</span>
+      <label class="zoom-box" for="zoom" title="缩放科技树">
+        <svg class="z-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M8 10.5h5M10.5 8v5"/></svg>
+        <input id="zoom" type="range" min="0.3" max="2" step="0.05" value="1" aria-label="缩放科技树">
+        <b id="zoomVal">100%</b>
+      </label>
     </div>
     <div class="tree-svg">
       <svg id="tree" viewBox="0 0 7200 4680" role="img" aria-label="wtz 技能树：三个领域从中央圆形延展">
@@ -116,10 +130,10 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
           <text x="3600" y="2484" text-anchor="middle" fill="var(--ink3)" font-size="20" font-family="var(--mono)" letter-spacing="12">3 DOMAINS</text>
         </g>
       </svg>
+      <div id="detail" role="dialog" aria-label="技能详情"></div>
     </div>
     <p class="hint">点击中央圆形查看总览 · 点击任意节点查看技能详情</p>
   </div>
-  <div id="detail" role="dialog" aria-label="技能详情"></div>
 </main>
 <div class="crt" aria-hidden="true"></div>
 
@@ -173,6 +187,20 @@ nxt:[
 ];
 var NS={},pref={pre:{t:'前置 · 基础',c:'#66767A'},got:{t:'已学会',c:'#3FE0C8'},nxt:{t:'可继续学习',c:'#F5A32C'}};
 var svg=document.getElementById('tree'),lns=document.getElementById('lines'),nds=document.getElementById('nodes'),D=document.getElementById('detail');
+var zoom=1,curId=null,ts=document.querySelector('.tree-svg'),zi=document.getElementById('zoom'),zl=document.getElementById('zoomVal');
+function placeDetail(x,y,off){
+if(innerWidth<=640)return;
+var pw=D.offsetWidth,ph=D.offsetHeight,o=off||70;
+var left=(x>3600?x-o:x+o)*zoom;
+left=Math.max(8,Math.min(left,7200*zoom-pw-8));
+var top=(y-ph/2)*zoom;
+top=Math.max(8,Math.min(top,4680*zoom-ph-8));
+D.style.left=left+'px';D.style.top=top+'px';
+if(left>ts.scrollLeft+ts.clientWidth-24)ts.scrollLeft=left+24-ts.clientWidth;
+else if(left<ts.scrollLeft+24)ts.scrollLeft=Math.max(0,left-24);
+if(top>ts.scrollTop+ts.clientHeight-24)ts.scrollTop=top+24-ts.clientHeight;
+else if(top<ts.scrollTop+24)ts.scrollTop=Math.max(0,top-24);
+}
 function T(t){return document.createElementNS('http://www.w3.org/2000/svg',t)}
 function xy(cx,cy,r,th){var a=th*Math.PI/180;return{x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)}}
 function link(x1,y1,x2,y2,c){
@@ -195,7 +223,7 @@ var t1=T('text');t1.setAttribute('x',pos.x);t1.setAttribute('y',pos.y+84);t1.set
 var lines1=(n.n||'').length>6?n.n.slice(0,6)+'…':n.n;t1.textContent=lines1;g.appendChild(t1);
 var t2=T('text');t2.setAttribute('x',pos.x);t2.setAttribute('y',pos.y+116);t2.setAttribute('text-anchor','middle');t2.setAttribute('class','lab2');t2.setAttribute('font-size','13');t2.setAttribute('letter-spacing','2');t2.setAttribute('fill','var(--ink3)');
 t2.textContent=n.s||'';g.appendChild(t2);
-var id=tree+':'+lv+':'+n.n;n.id=id;n.lv=lv;n.tree=tree;NS[id]=n;
+var id=tree+':'+lv+':'+n.n;n.id=id;n.lv=lv;n.tree=tree;n.pos={x:pos.x,y:pos.y};NS[id]=n;
 function open(){sel(g,id)}
 g.addEventListener('click',open);g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
 nds.appendChild(g);
@@ -217,6 +245,8 @@ row('描述',n.d);
 row('下一步',n.nxt);
 var src=document.createElement('div');src.className='d-src';src.innerHTML='<b>来源：</b>'+n.src;D.appendChild(src);
 D.classList.add('on');
+curId=id;
+placeDetail(n.pos.x,n.pos.y);
 }
 function build(){
 var cx=3600,cy=2220;
@@ -256,10 +286,22 @@ row('② 3D 建模动画','Blender 建模 + MMD 动画、配布模型整备、�
 row('③ 程序与数字创作','PRTS 前端、Python 脚本、AI Agent（Cyrene-Agent）、剪映与音效');
 var src=document.createElement('div');src.className='d-src';src.innerHTML='<b>来源：</b>D:\\WTZ 项目目录实测';D.appendChild(src);
 D.classList.add('on');
+curId=null;
+placeDetail(3600,2220,640);
 });
 cc.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();cc.click()}});
 document.addEventListener('click',function(e){if(!D.contains(e.target)&&!e.target.closest('.nd')&&!e.target.closest('.core'))D.classList.remove('on')});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')D.classList.remove('on')});
+zi.addEventListener('input',function(){
+var old=zoom;zoom=+zi.value;
+var cx=ts.scrollLeft+ts.clientWidth/2,cy=ts.scrollTop+ts.clientHeight/2;
+svg.style.width=(7200*zoom)+'px';svg.style.height=(4680*zoom)+'px';
+ts.scrollLeft=Math.max(0,cx*zoom/old-ts.clientWidth/2);
+ts.scrollTop=Math.max(0,cy*zoom/old-ts.clientHeight/2);
+zl.textContent=Math.round(zoom*100)+'%';
+if(curId){var nn=NS[curId];if(nn)placeDetail(nn.pos.x,nn.pos.y)}
+else if(D.classList.contains('on'))placeDetail(3600,2220,640);
+});
 build();
 setTimeout(function(){var ln=lns.querySelectorAll('.ln');for(var i=0;i<ln.length;i++)ln[i].style.strokeDashoffset=0},60);
 </script>
