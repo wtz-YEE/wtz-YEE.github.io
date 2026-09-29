@@ -77,6 +77,97 @@ main{min-height:calc(100vh - 34px)}
 .dl-btn svg{width:15px;height:15px}
 .dl-meta{margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink3)}
 </style>
+/* ==== 动效 v0.2 ==== */
+body:not(.ready) .h-eyebrow,body:not(.ready) .hero h1,body:not(.ready) .h-sub,body:not(.ready) .h-mono{opacity:0}
+body.ready .h-eyebrow{animation:hin .5s cubic-bezier(.22,1,.36,1) .05s both}
+body.ready .hero h1{animation:hin .55s cubic-bezier(.22,1,.36,1) .12s both}
+body.ready .h-sub{animation:hin .5s cubic-bezier(.22,1,.36,1) .42s both}
+body.ready .h-mono{animation:hin .5s cubic-bezier(.22,1,.36,1) .55s both}
+@keyframes hin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.b-head{opacity:0;transform:translateY(10px);transition:opacity .45s cubic-bezier(.22,1,.36,1),transform .45s cubic-bezier(.22,1,.36,1)}
+.b-head.in{opacity:1;transform:none}
+.card,.step{opacity:0;transform:translateY(20px);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1),border-color .2s,box-shadow .2s}
+.card.in,.step.in{opacity:1;transform:none}
+.card::before{transition:opacity .35s}
+.card:hover::before{opacity:1}
+.card .c-tag{transition:letter-spacing .3s}
+.card:hover .c-tag{letter-spacing:.4em}
+.card li{transition:color .25s,padding-left .25s}
+.card li::before{transition:color .25s}
+.card:hover li.done{color:#F0F0F0}
+.card:hover li::before{color:#F0F0F0}
+li.done::before{animation:dpulse 2.2s ease-in-out infinite}
+@keyframes dpulse{0%,100%{opacity:.45}50%{opacity:1}}
+.step b{transition:color .25s}
+.step:hover b{color:#F0F0F0}
+.dl-btn{transition:background .2s,box-shadow .2s,transform .2s}
+.dl-btn svg{transition:transform .3s cubic-bezier(.22,1,.36,1)}
+.dl-btn:hover svg{transform:translateY(2px)}
+.dl-box::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,#FFFFFF 30%,transparent);opacity:0;transition:opacity .3s;animation:shw 2.4s linear infinite}
+.dl-box:hover::after{opacity:.6}
+@keyframes shw{0%{transform:translateX(-40%)}100%{transform:translateX(140%)}}
+body{background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px)}
+@media (prefers-reduced-motion:reduce){.card,.step,.b-head{opacity:1!important;transform:none!important}}
+
+/* ==== 动效 v0.3 ==== */
+.hero h1 svg{filter:drop-shadow(0 0 10px rgba(255,255,255,.35));animation:icopulse 2.6s ease-in-out infinite}
+@keyframes icopulse{0%,100%{filter:drop-shadow(0 0 6px rgba(255,255,255,.2));transform:scale(1)}50%{filter:drop-shadow(0 0 16px rgba(255,255,255,.45));transform:scale(1.05)}}
+.hero::after{animation:linerglow 3.4s ease-in-out infinite}
+@keyframes linerglow{0%,100%{opacity:.6;transform:translateX(-50%) scaleX(.9)}50%{opacity:1;transform:translateX(-50%) scaleX(1.1)}}
+.card::before{opacity:.25;transition:opacity .3s,height .3s}
+.card:hover::before{opacity:1}
+.card::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#FFFFFF 40%,transparent);opacity:0;transform:scaleX(.4);transition:opacity .3s,transform .35s}
+.card:hover::after{opacity:.55;transform:scaleX(1)}
+.step{transition:border-color .2s,transform .5s cubic-bezier(.22,1,.36,1),opacity .5s cubic-bezier(.22,1,.36,1)}
+.step:hover{border-color:rgba(255,255,255,.4)}
+.dl-btn{position:relative;overflow:hidden}
+.dl-btn::before{content:"";position:absolute;left:-60%;top:0;bottom:0;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.18),transparent);transition:left .45s}
+.dl-btn:hover::before{left:120%}
+.dl-btn span{display:inline-block;transition:transform .25s}
+.dl-btn:hover span{transform:translateX(3px)}
+.dl-box{transition:border-color .2s,box-shadow .2s,transform .3s cubic-bezier(.22,1,.36,1)}
+.dl-box:hover{transform:translateY(-2px)}
+
+/* ==== 动效 v0.4 ==== */
+.card h3{transition:transform .3s cubic-bezier(.22,1,.36,1),color .25s}
+.card p,.card ul{transition:transform .3s cubic-bezier(.22,1,.36,1)}
+.card:hover h3{transform:translateY(-2px);color:#FFFFFF}
+.card:hover p,.card:hover ul{transform:translateY(-1px)}
+.step b{transition:transform .3s cubic-bezier(.22,1,.36,1)}
+.step:hover b{transform:translateX(3px)}
+.note{transition:border-color .3s}
+.note:hover{border-color:rgba(255,255,255,.4)}
+.foot a{transition:all .2s}
+.foot a:hover{transform:translateY(-1px)}
+.foot a:active{transform:scale(.97)}
+.dl-btn:active{transform:scale(.98)}
+.b-no{transition:transform .3s cubic-bezier(.22,1,.36,1),color .3s}
+.b-head:hover .b-no{transform:translateX(3px);color:#FFFFFF}
+
+/* ==== 动效 v0.5 ==== */
+.hero{position:relative;overflow:hidden}
+.h-grid{position:absolute;inset:0;background:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:22px 22px;opacity:.55;pointer-events:none;animation:gshift 30s linear infinite;transform:translateZ(0)}
+@keyframes gshift{to{background-position:44px 44px}}
+.hero>*{position:relative;z-index:1}
+.b-head{position:relative;padding-bottom:8px}
+.b-head::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,#FFFFFF,transparent 70%);transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.b-head.in::after{transform:scaleX(1)}
+.card{position:relative}
+.card .spot{position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0;transition:opacity .3s;background:radial-gradient(300px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.08),transparent 45%)}
+.card:hover .spot{opacity:1}
+.card-bd,.card h3,.card ul{position:relative;z-index:2}
+
+/* ==== 动效 v0.6 ==== */
+.dl-meta{transition:color .3s}
+.dl-box:hover .dl-meta{color:#A6A6A6}
+.hero .h-eyebrow{display:inline-block;animation-delay:.05s}
+.hero h1 svg{transform-origin:center}
+.hero:hover h1 svg{transform:scale(1.08)}
+.hero h1 svg{transition:transform .4s cubic-bezier(.22,1,.36,1)}
+.step{position:relative}
+.step::after{content:"";position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,#FFFFFF 40%,transparent);opacity:0;transform:scaleY(.4);transform-origin:top;transition:opacity .3s,transform .35s}
+.step:hover::after{opacity:.5;transform:scaleY(1)}
+
 .note{margin:18px max(20px,calc((100% - 980px)/2)) 0;border:1px dashed var(--line2);padding:16px 18px;font-size:12.5px;color:var(--ink3);line-height:1.9}
 .note b{color:var(--ink2);font-weight:400}
 .foot{display:flex;align-items:center;gap:14px;padding:22px max(20px,calc((100% - 980px)/2)) 30px;border-top:1px solid var(--line);margin-top:30px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink3);flex-wrap:wrap}
@@ -96,6 +187,7 @@ main{min-height:calc(100vh - 34px)}
 
 <main>
   <section class="hero">
+    <div class="h-grid" aria-hidden="true"></div>
     <div class="h-eyebrow">WTZ // MOD WORKSHOP</div>
     <h1>
       <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 44 L32 18 L44 44 Z" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M26 44 L38 44" stroke="currentColor" stroke-width="3.5"/></svg>
@@ -119,6 +211,7 @@ main{min-height:calc(100vh - 34px)}
     <div class="b-head"><span class="b-no">02</span><h2>功能清单</h2><span class="b-code">FEATURES</span></div>
     <div class="grid">
       <div class="card">
+        <div class="spot" aria-hidden="true"></div>
         <div class="c-tag">CRAFT · 配方与容器</div>
         <h3>酿造与熔炉体系</h3>
         <ul>
@@ -129,6 +222,7 @@ main{min-height:calc(100vh - 34px)}
         </ul>
       </div>
       <div class="card">
+        <div class="spot" aria-hidden="true"></div>
         <div class="c-tag">MACHINE · 机械元素</div>
         <h3>新机械 / 装置</h3>
         <ul>
@@ -139,6 +233,7 @@ main{min-height:calc(100vh - 34px)}
         </ul>
       </div>
       <div class="card">
+        <div class="spot" aria-hidden="true"></div>
         <div class="c-tag">ASSET · 美术素材</div>
         <h3>精灵图与贴图</h3>
         <ul>
@@ -155,6 +250,7 @@ main{min-height:calc(100vh - 34px)}
     <div class="b-head"><span class="b-no">03</span><h2>路线图</h2><span class="b-code">ROADMAP</span></div>
     <div class="grid">
       <div class="card">
+        <div class="spot" aria-hidden="true"></div>
         <div class="c-tag">PHASE 1 · 基建</div>
         <h3>工程搭起</h3>
         <ul>
@@ -164,6 +260,7 @@ main{min-height:calc(100vh - 34px)}
         </ul>
       </div>
       <div class="card">
+        <div class="spot" aria-hidden="true"></div>
         <div class="c-tag">PHASE 2 · 玩法</div>
         <h3>内容填充</h3>
         <ul>
@@ -173,6 +270,7 @@ main{min-height:calc(100vh - 34px)}
         </ul>
       </div>
       <div class="card">
+        <div class="spot" aria-hidden="true"></div>
         <div class="c-tag">PHASE 3 · 打磨</div>
         <h3>发布准备</h3>
         <ul>
@@ -195,7 +293,7 @@ main{min-height:calc(100vh - 34px)}
       </div>
       <a class="dl-btn" href="https://raw.githubusercontent.com/wtz-YEE/wtz-YEE.github.io/main/mods/wtz_mod-1.0.0.jar" download="wtz_mod-1.0.0.jar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
-        下载
+        <span>下载</span>
       </a>
     </div>
   </section>
@@ -210,6 +308,24 @@ main{min-height:calc(100vh - 34px)}
 
 <script>
 (function(){var d=new Date(),f=function(n){return(n<10?'0':'')+n};document.getElementById('clock').textContent=f(d.getHours())+':'+f(d.getMinutes())+':'+f(d.getSeconds())})();
+
+(function(){var cs=document.querySelectorAll('.card');
+for(var i=0;i<cs.length;i++)(function(c){
+var sp=c.querySelector('.spot');
+if(!sp)return;
+c.addEventListener('mousemove',function(e){var r=c.getBoundingClientRect();sp.style.setProperty('--mx',(e.clientX-r.left)+'px');sp.style.setProperty('--my',(e.clientY-r.top)+'px')});
+})(cs[i]);})();
+
+(function(){document.body.classList.add('ready')})();
+(function(){
+var io=null;
+if('IntersectionObserver' in window){io=new IntersectionObserver(function(es){
+for(var i=0;i<es.length;i++){if(es[i].isIntersecting){es[i].target.classList.add('in');io.unobserve(es[i].target)}}},{threshold:.12});
+}else{var all=document.querySelectorAll('.card,.step,.b-head');for(var i=0;i<all.length;i++)all[i].classList.add('in')}
+var tg=document.querySelectorAll('.card,.step,.b-head');
+for(var i=0;i<tg.length;i++){var d=(i%6)*70;tg[i].style.transitionDelay=d+'ms'}
+if(io)for(var i=0;i<tg.length;i++)io.observe(tg[i]);
+})();
 setInterval(function(){var d=new Date(),f=function(n){return(n<10?'0':'')+n};document.getElementById('clock').textContent=f(d.getHours())+':'+f(d.getMinutes())+':'+f(d.getSeconds())},1000);
 </script>
 
