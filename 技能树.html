@@ -39,7 +39,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .tree-head h2{font-size:18px;letter-spacing:.2em;font-weight:700}
 .tree-head .b-code{margin-left:auto;font-size:10.5px;letter-spacing:.3em;color:var(--ink3)}
 .tree-svg{position:relative;width:100%;display:block;overflow-x:auto}
-.tree-svg svg{width:7200px;height:4680px;max-width:none;display:block;background:var(--bg2)}
+.tree-svg svg{width:9000px;height:6000px;max-width:none;display:block;background:var(--bg2)}
 #detail{position:absolute;width:min(330px,86vw);border:1px solid var(--line2);background:rgba(13,17,21,.96);box-shadow:0 18px 50px rgba(0,0,0,.55);padding:20px 20px 18px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .22s,transform .22s;z-index:10;backdrop-filter:blur(6px);max-height:62vh;overflow-y:auto}
 #detail.on{opacity:1;transform:none;pointer-events:auto}
 #detail .d-lv{font-family:var(--mono);font-size:10.5px;letter-spacing:.26em;padding:3px 10px;display:inline-block;border:1px solid}
@@ -74,12 +74,23 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.75}}
 .pulse{animation:pulse 2.6s ease-in-out infinite}
 @keyframes draw{to{stroke-dashoffset:0}}
-.ln{stroke-dasharray:8 7;animation:draw 1.1s linear forwards}
+.ln{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1.1s ease-out forwards}
 @keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
-.nd-pop{transform-box:fill-box;transform-origin:center;animation:pop .3s ease both}
+.nd-pop{transform-box:fill-box;transform-origin:center;animation:pop .3s ease backwards}
+@keyframes bootcore{from{opacity:0;transform:scale(.12)}to{opacity:1;transform:none}}
+.core{transform-box:fill-box;transform-origin:center;opacity:0;animation:bootcore .5s cubic-bezier(.22,1,.36,1) 0s forwards}
+@keyframes sidein{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:none}}
+#side{position:absolute;top:120px;right:26px;width:min(348px,42vw);z-index:20;background:rgba(11,15,19,.84);border:1px solid var(--line2);box-shadow:0 24px 60px rgba(0,0,0,.5);padding:24px 24px 20px;opacity:0;transform:translateX(50px);animation:sidein .65s cubic-bezier(.22,1,.36,1) 3.95s forwards}
+#side .s-tag{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--accent)}
+#side h1{font-size:26px;font-weight:900;letter-spacing:.18em;margin:10px 0 6px}
+#side .s-sub{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ink3);margin-bottom:16px}
+#side .s-item{display:flex;gap:10px;align-items:baseline;font-size:13px;line-height:1.8;color:var(--ink2);margin-top:8px}
+#side .s-item i{flex:none;width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;align-self:center}
+#side .s-item b{color:var(--ink);font-weight:600}
+#side .s-hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--ink3);margin-top:18px;padding-top:12px;border-top:1px solid var(--line)}
 @keyframes blink{50%{opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ln{stroke-dasharray:none}}
-@media(max-width:640px){#detail{position:fixed;top:auto;bottom:10px;right:10px;left:10px;width:auto;max-height:46vh;overflow-y:auto}.tree-head h2{font-size:15px}.zoom-box input[type=range]{width:84px}.zoom-box{gap:6px;margin-left:10px}}
+@media(max-width:640px){#detail{position:fixed;top:auto;bottom:10px;right:10px;left:10px;width:auto;max-height:46vh;overflow-y:auto}.tree-head h2{font-size:15px}.zoom-box input[type=range]{width:84px}.zoom-box{gap:6px;margin-left:10px}#side{position:fixed;top:auto;bottom:16px;left:10px;right:10px;width:auto;padding:14px 16px}#side h1{font-size:19px}#side .s-item{font-size:12px;line-height:1.6;margin-top:5px}#side .s-sub{margin-bottom:10px}#side .s-hint{display:none}}
 .crt{position:fixed;inset:0;z-index:55;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(230,237,239,.02) 0 1px,transparent 1px 4px)}
 </style>
 </head>
@@ -97,15 +108,15 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="tree-head">
       <span class="b-no">SKILL // TREE</span>
       <h2>wtz 的技能树</h2>
-      <span class="b-code">3 DOMAINS · 33 NODES</span>
+      <span class="b-code">3 DOMAINS · 84 NODES</span>
       <label class="zoom-box" for="zoom" title="缩放科技树">
         <svg class="z-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M8 10.5h5M10.5 8v5"/></svg>
-        <input id="zoom" type="range" min="0.3" max="2" step="0.05" value="1" aria-label="缩放科技树">
-        <b id="zoomVal">100%</b>
+        <input id="zoom" type="range" min="0.3" max="2" step="0.05" value="0.7" aria-label="缩放科技树">
+        <b id="zoomVal">70%</b>
       </label>
     </div>
     <div class="tree-svg">
-      <svg id="tree" viewBox="0 0 7200 4680" role="img" aria-label="wtz 技能树：三个领域从中央圆形延展">
+      <svg id="tree" viewBox="0 0 9000 6000" role="img" aria-label="wtz 技能树：三个领域从中央圆形延展为树形">
         <defs>
           <radialGradient id="coreG" cx="50%" cy="42%" r="60%">
             <stop offset="0%" stop-color="rgba(63,224,200,.5)"/>
@@ -113,91 +124,146 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
           </radialGradient>
           <filter id="glow"><feGaussianBlur stdDeviation="14" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
-        <rect width="7200" height="4680" fill="#07090A"/>
+        <rect width="9000" height="6000" fill="#07090A"/>
         <g stroke="rgba(63,224,200,.05)" stroke-width="2">
-          <path d="M0 780H7200M0 1560H7200M0 2340H7200M0 3120H7200M0 3900H7200"/>
-          <path d="M900 0V4680M1800 0V4680M2700 0V4680M3600 0V4680M4500 0V4680M5400 0V4680M6300 0V4680"/>
+          <path d="M0 1000H9000M0 2000H9000M0 3000H9000M0 4000H9000M0 5000H9000"/>
+          <path d="M1500 0V6000M3000 0V6000M4500 0V6000M6000 0V6000M7500 0V6000"/>
         </g>
-        <circle cx="3600" cy="2220" r="1392" fill="none" stroke="rgba(63,224,200,.07)" stroke-width="2"/>
-        <circle cx="3600" cy="2220" r="900" fill="none" stroke="rgba(63,224,200,.09)" stroke-width="2" stroke-dasharray="18 36"/>
+        <circle cx="4500" cy="3000" r="1800" fill="none" stroke="rgba(63,224,200,.07)" stroke-width="2"/>
+        <circle cx="4500" cy="3000" r="1200" fill="none" stroke="rgba(63,224,200,.09)" stroke-width="2" stroke-dasharray="18 36"/>
         <g id="lines"></g>
         <g id="nodes"></g>
         <g class="core" data-core="1" role="button" aria-label="wtz 技能树核心">
-          <circle class="pulse" cx="3600" cy="2220" r="708" fill="url(#coreG)" stroke="rgba(63,224,200,.55)" stroke-width="2.5"/>
-          <circle class="r" cx="3600" cy="2220" r="576" fill="#0B1417" stroke="var(--accent)" stroke-width="4" filter="url(#glow)"/>
-          <text x="3600" y="2112" text-anchor="middle" fill="var(--accent2)" font-size="60" font-weight="900" font-family="Microsoft YaHei,sans-serif" letter-spacing="36">WTZ</text>
-          <text x="3600" y="2316" text-anchor="middle" fill="var(--ink2)" font-size="30" font-family="Microsoft YaHei,sans-serif" letter-spacing="24">技能树</text>
-          <text x="3600" y="2484" text-anchor="middle" fill="var(--ink3)" font-size="20" font-family="var(--mono)" letter-spacing="12">3 DOMAINS</text>
+          <circle class="pulse" cx="4500" cy="3000" r="708" fill="url(#coreG)" stroke="rgba(63,224,200,.55)" stroke-width="2.5"/>
+          <circle class="r" cx="4500" cy="3000" r="576" fill="#0B1417" stroke="var(--accent)" stroke-width="4" filter="url(#glow)"/>
+          <text x="4500" y="2892" text-anchor="middle" fill="var(--accent2)" font-size="60" font-weight="900" font-family="Microsoft YaHei,sans-serif" letter-spacing="36">WTZ</text>
+          <text x="4500" y="3096" text-anchor="middle" fill="var(--ink2)" font-size="30" font-family="Microsoft YaHei,sans-serif" letter-spacing="24">技能树</text>
+          <text x="4500" y="3264" text-anchor="middle" fill="var(--ink3)" font-size="20" font-family="var(--mono)" letter-spacing="12">3 DOMAINS</text>
         </g>
       </svg>
       <div id="detail" role="dialog" aria-label="技能详情"></div>
+      <aside id="side" aria-label="技能树总览">
+        <div class="s-tag">PRTS // OVERVIEW</div>
+        <h1>wtz 的技能树</h1>
+        <p class="s-sub">3 DOMAINS · 84 NODES · TREE STRUCTURE</p>
+        <div class="s-item" style="color:#3FE0C8"><i></i><b>游戏模组开发</b> · Minecraft / Forge / wtz_mod</div>
+        <div class="s-item" style="color:#8A7BFF"><i></i><b>3D 建模与动画</b> · Blender / MMD / 布料解算</div>
+        <div class="s-item" style="color:#F5A32C"><i></i><b>程序与数字创作</b> · Web / Python / AI Agent</div>
+        <p class="s-hint">← 拖动画布探索 · 点击节点查看详情</p>
+      </aside>
     </div>
-    <p class="hint">点击中央圆形查看总览 · 点击任意节点查看技能详情</p>
+    <p class="hint">点击中央圆形查看总览 · 点击任意节点查看技能详情 · 分支结构为树状</p>
   </div>
 </main>
 <div class="crt" aria-hidden="true"></div>
 
 <script>
 var TREES=[
-{name:'游戏模组开发',sub:'MINECRAFT MODDING',color:'#3FE0C8',theta:210,span:48,
-pre:[
-{n:'Minecraft 基础',s:'启动器与游玩',d:'熟悉 PCL 启动器与 Forge 环境，掌握基本生存与指令。',src:'PCL · forge · .minecraft',nxt:'进阶：命令方块与数据包'},
-{n:'Java 基础',s:'编程语言入门',d:'变量、类、方法、循环——所有模组的地基。',src:'wtz_mod 的 build.gradle',nxt:'集合、泛型、异常'}],
-got:[
-{n:'Forge 模组工程',s:'Gradle 构建',d:'从零搭起 Forge 开发环境，能独立完成编译与调试。',src:'wtz_mod（build.gradle · gradle）',nxt:'多版本分支管理'},
-{n:'自定义护甲',s:'装备与贴图',d:'自绘护甲贴图（armor_1~4）并注册进游戏。',src:'wtz_mod/armor_*.png',nxt:'盔甲属性与模型'},
-{n:'干员立绘入模',s:'资源整合',d:'把干员立绘（amiya / closure）做成模组资源。',src:'wtz_mod/amiya_art.png',nxt:'阵营音乐与语音'},
-{n:'自研模组玩法',s:'沉浸式法阵 / 矿石战争',d:'自制玩法向模组：法阵、矿石战争与物理机关。',src:'noida 下 沉浸式法阵 · 矿石战争',nxt:'数值平衡与存档'},
-{n:'音效与数据导出',s:'资源管线',d:'自备 wav 音效接入；Python 导出建筑 NBT 数据。',src:'audio_backup_矿石战争 · export_nbt_48.py',nxt:'自动化资源管线'}],
-nxt:[
-{n:'实体 AI 与 Boss 战',s:'更深的游戏性',d:'自定义怪物行为、技能与 Boss 阶段。',src:'——',nxt:'学习 NBT 与 AI 调度'},
-{n:'Fabric / NeoForge',s:'多加载器',d:'同一份模组跑通多加载器，扩大受众。',src:'——',nxt:'混用架构与移植'},
-{n:'联机与插件生态',s:'服务器侧',d:'把作品搬上服务器：插件、权限、数据同步。',src:'——',nxt:'Spigot / Bukkit API'},
-{n:'作品发布',s:'CurseForge · Modrinth',d:'整理文档、版本、多平台发布与维护。',src:'——',nxt:'社区运营'}]},
-{name:'3D 建模与动画',sub:'BLENDER · MMD',color:'#8A7BFF',theta:330,span:48,
-pre:[
-{n:'3D 空间概念',s:'坐标与视角',d:'理解三维坐标、模型轴心与视图操作。',src:'MMD932 工程',nxt:'关键帧与曲线'},
-{n:'模型格式认知',s:'glb · pmx · vmd',d:'分清网格、骨骼、动画文件与配布包结构。',src:'model · 1.glb · 1.pmm',nxt:'格式转换与解算'}],
-got:[
-{n:'Blender 建模',s:'场景与工程',d:'独立完成 Blender 工程：建模、场景、导出。',src:'test.blend · K_test.blend',nxt:'雕刻与拓扑'},
-{n:'MMD 动画制作',s:'MikuMikuDance',d:'用 MMD 编排动作、镜头与特效（MMEffect）。',src:'MMD932 · 1.pmm · cp.vmd',nxt:'镜头语言与节奏'},
-{n:'配布模型整备',s:'星穹铁道 / 阮梅素体',d:'导入并整备各游戏配布模型（昔涟、银狼、遐蝶等）。',src:'model 目录',nxt:'角色专属骨骼绑定'},
-{n:'物理与布料解算',s:'火花布料',d:'处理衣物布料与物理优化，避免穿模抖动。',src:'model/火花布料解算 · 物理优化',nxt:'刚体与约束'},
-{n:'动画渲染出片',s:'输出管线',d:'完成渲染设置并导出成片（cyrene 视频等）。',src:'cyrene-lll_x264.mp4',nxt:'多机位与调色'}],
-nxt:[
-{n:'骨骼绑定与权重',s:'Rigging',d:'给新模型绑定骨骼、刷权重，让人物真正动起来。',src:'——',nxt:'权重镜像与修形'},
-{n:'PBR 材质与贴图',s:'写实材质',d:'法线、粗糙度、金属度——让表面读得懂。',src:'——',nxt:'Substance 流程'},
-{n:'灯光与运镜',s:'电影感',d:'三点布光与镜头运动，把场景拍出故事。',src:'——',nxt:'色彩管理'},
-{n:'游戏模型导出',s:'glTF · FBX',d:'为游戏引擎优化并导出模型。',src:'——',nxt:'LOD 与面数预算'}]},
-{name:'程序与数字创作',sub:'CODE · AGENT · MEDIA',color:'#F5A32C',theta:90,span:48,
-pre:[
-{n:'HTML / CSS 基础',s:'网页骨架',d:'结构、样式、盒模型——所有前端的地基。',src:'prts 项目',nxt:'布局与响应式'},
-{n:'Python 基础',s:'脚本思维',d:'用脚本自动化重复劳动。',src:'gen_keys.py',nxt:'面向对象与标准库'}],
-got:[
-{n:'网页前端开发',s:'PRTS 终端站',d:'独立开发多页 PRTS 站点：终端接口、指挥中心、8 个小游戏。',src:'prts（index · 泰拉大典 · 莱茵）',nxt:'动画与工程化'},
-{n:'Python 自动化',s:'密钥与导出',d:'编写密钥生成脚本与 NBT 导出工具。',src:'gen_keys.py · export_*.py',nxt:'脚本框架化'},
-{n:'AI Agent 开发',s:'Cyrene-Agent',d:'搭建带 skills / prompts / scripts 的 AI Agent 工程。',src:'Cyrene-Agent（node · src）',nxt:'工具调用与多模态'},
-{n:'视频剪辑',s:'剪映成片',d:'剪辑、加字幕音效、导出成品视频。',src:'JianyingPro · cyrene 视频',nxt:'特效与调色'},
-{n:'音频制作',s:'游戏音效',d:'设计并导出游戏音效（矿石战争 wav 系列）。',src:'audio_backup_矿石战争',nxt:'混音与母带'}],
-nxt:[
-{n:'JS 框架与工程化',s:'Vue / React',d:'组件化开发与构建工具链。',src:'——',nxt:'TypeScript'},
-{n:'后端与接口',s:'数据怎么来',d:'数据库、接口、鉴权——把站点做成系统。',src:'——',nxt:'Node / Go'},
-{n:'游戏引擎',s:'Godot · Unity',d:'把 3D 与编程合流，做自己的完整游戏。',src:'——',nxt:'物理与寻路'},
-{n:'开源与发布',s:'GitHub 协作',d:'版本管理、PR、文档，把作品交给世界。',src:'——',nxt:'社区贡献'}]}
+{name:'游戏模组开发',sub:'MINECRAFT · FORGE · GODOT',color:'#3FE0C8',theta:210,span:64,
+root:{n:'游戏模组开发',s:'MODDING',lv:'root',children:[
+{n:'Forge 模组工程',s:'GRADLE 构建',lv:'pre',d:'wtz_mod 从零搭建：Gradle 编译、运行环境调试、数据生成器。',src:'wtz_mod/build.gradle · gradle.properties · WtzMod.java',nxt:'多版本与多加载器',children:[
+{n:'源石科技系统',s:'工业线',lv:'got',d:'熔炉/液化器/合成器/矿机/精炼器/粉碎器/能量提取器完整工业链。',src:'wtz_mod Originium* 系列（energy · fluid · screen）',nxt:'AE2 自动化联动',children:[
+{n:'AE2 自动化联动',s:'ME 总线终端',lv:'nxt',d:'ME 总线、终端、控制器与源石工业对接。',src:'wtz_mod/ae2/*.java',nxt:'自动化配方'},
+{n:'能源与物流网络',s:'能量物品管道',lv:'nxt',d:'能量提取、物品输送与网络寻路。',src:'wtz_mod/energy · logistics · network',nxt:'网络扩展'},
+{n:'源石配方扩展',s:'更多产线',lv:'nxt',d:'为源石工业扩充配方与多方块结构。',src:'wtz_mod/datagen · OriginiumCraftedItems',nxt:'数据驱动配方'}]},
+{n:'干员与实体系统',s:'8 类实体',lv:'got',d:'干员投射物、罗德岛 NPC、灵魂阴影、棋子、猎犬、矿石病源石虫、术士、维什戴尔投射物。',src:'wtz_mod/entity/*.java · client/ModEntityRenderers',nxt:'干员技能与 AI',children:[
+{n:'干员技能与 AI',s:'行为调度',lv:'nxt',d:'干员技能释放与 AI 行为树。',src:'——',nxt:'AI 调度'},
+{n:'自定义渲染与粒子',s:'渲染管线',lv:'nxt',d:'PRTS HUD、干员/灵魂阴影渲染、矿石病粒子。',src:'wtz_mod/client/*Renderer.java · PRTSHud.java',nxt:'特效深化'},
+{n:'实体模型与动画',s:'模型绑定',lv:'nxt',d:'实体骨骼模型与动作绑定。',src:'——',nxt:'动画状态机'}]},
+{n:'天灾系统 Calamity',s:'事件系统',lv:'got',d:'天灾管理器、事件分发、矿石病扩散、源石突发事件。',src:'wtz_mod/calamity/*.java',nxt:'天灾事件设计',children:[
+{n:'天灾事件设计',s:'玩法驱动',lv:'nxt',d:'多种天灾类型与客户端表现。',src:'wtz_mod/calamity/CalamityType.java',nxt:'事件平衡'},
+{n:'世界动态压力',s:'生存挑战',lv:'nxt',d:'天灾对地形与玩家的持续影响。',src:'——',nxt:'世界改造'}]},
+{n:'模组内嵌 AI 聊天',s:'LLM 接入',lv:'got',d:'AIChatClient/Manager/Screen：模组内嵌 AI 对话与教科书内容。',src:'wtz_mod/client/ai/*.java · ModTextbookContent',nxt:'AI NPC 记忆',children:[
+{n:'AI NPC 记忆',s:'对话连续性',lv:'nxt',d:'NPC 记住玩家与剧情分支。',src:'——',nxt:'记忆系统'},
+{n:'语音对话接入',s:'语音交互',lv:'nxt',d:'把语音识别接入模组对话。',src:'——',nxt:'ASR 集成'}]}]},
+{n:'Godot 游戏开发',s:'NOIDA 项目集',lv:'pre',d:'noida 项目集：矿石战争、魔法工厂、沉浸式法阵、37智学、noila、物理、3D 七个独立 Godot 项目。',src:'noida/*/project.godot（7 个独立项目）',nxt:'游戏循环设计',children:[
+{n:'矿石战争',s:'国家战争策略',lv:'got',d:'国家科技树、技能系统、下界战略化、BattleSystem/SkillManager。',src:'noida/矿石战争（导出 k/矿石战争.exe）',nxt:'科技树扩展',children:[
+{n:'国家科技树扩展',s:'铜国新阵营',lv:'nxt',d:'新增国家节点与专属技能。',src:'矿石战争/铜国科技树-新增节点.md',nxt:'阵营平衡'},
+{n:'数值平衡与单局',s:'时长体验',lv:'nxt',d:'拉长单局、玩家策略化、平衡模拟、手游适配。',src:'balance_sim.py · 拉长单局时长-实现规格.md',nxt:'数值回归'}]},
+{n:'魔法工厂与法阵',s:'自动化玩法',lv:'got',d:'魔法工厂（传送带/工厂）与沉浸式法阵（主单元/Manager）。',src:'noida/magic-factory · noida/沉浸式法阵',nxt:'自动化产线',children:[
+{n:'自动化产线设计',s:'工厂循环',lv:'nxt',d:'物品、传送带与建筑自动化。',src:'magic-factory/factory.gd',nxt:'物流系统'},
+{n:'法阵机制扩展',s:'技能组合',lv:'nxt',d:'法阵触发与组合机制。',src:'沉浸式法阵/Manager.gd',nxt:'技能组合'}]},
+{n:'37智学',s:'学习应用',lv:'got',d:'37ed 学习应用：英语背单词、UI 设计与学习工具。',src:'noida/37ed（scenes · scripts · data）· 37智学_*.md',nxt:'背单词玩法',children:[
+{n:'英语背单词玩法',s:'记忆机制',lv:'nxt',d:'单词库、复习算法与闯关设计。',src:'37智学_英语背单词建议.md',nxt:'记忆算法'},
+{n:'UI 与学习工具',s:'体验设计',lv:'nxt',d:'学习界面与工具链打磨。',src:'37智学_UI设计建议.md',nxt:'界面打磨'}]},
+{n:'noila 肉鸽实验',s:'NOITA-LIKE',lv:'got',d:'noita-like 肉鸽原型：主场景、玩家、道具。',src:'noida/noila（玩家 · 道具 · 主场景）',nxt:'随机生成',children:[
+{n:'随机世界生成',s:'肉鸽循环',lv:'nxt',d:'地形生成与肉鸽关卡循环。',src:'——',nxt:'生成算法'},
+{n:'法术与技能系统',s:'玩法深化',lv:'nxt',d:'法术编组与技能交互。',src:'——',nxt:'技能交互'}]},
+{n:'物理与 3D 实验',s:'实验原型',lv:'got',d:'physics 物理模拟与 3D 场景实验项目。',src:'noida/physics · noida/3d（project.godot）',nxt:'物理模拟',children:[
+{n:'物理模拟',s:'刚体约束',lv:'nxt',d:'物理交互与沙盒实验。',src:'——',nxt:'物理参数'},
+{n:'3D 场景实验',s:'三维空间',lv:'nxt',d:'3D 场景搭建与光照。',src:'——',nxt:'场景渲染'}]},
+{n:'游戏音效制作',s:'WAV 资源线',lv:'got',d:'战争号角、传送门、同盟、傀儡、阵营覆灭、爆炸、火焰、UI 点击。',src:'audio_backup_矿石战争/*.wav',nxt:'程序化音效',children:[
+{n:'程序化音效与混音',s:'声音设计',lv:'nxt',d:'合成与混音生成专属音效。',src:'——',nxt:'混音管线'}]}]},
+{n:'泰拉建筑导入',s:'RHODES ISLAND',lv:'pre',d:'把明日方舟罗德岛建筑群导入 Minecraft 世界。',src:'Arknights Rhodes Island（nbt + 家具 jar）',nxt:'建筑管线',children:[
+{n:'NBT 导出管线',s:'PYTHON 脚本',lv:'got',d:'export_nbt_48.py 导出分区建筑 NBT，load_rhodes.mcfunction 加载。',src:'export_nbt_48.py · export_final.py · load_rhodes.mcfunction',nxt:'建筑生成自动化',children:[
+{n:'建筑生成自动化',s:'脚本化建造',lv:'nxt',d:'脚本参数化生成建筑与内饰。',src:'——',nxt:'程序化建筑'},
+{n:'多区块合并',s:'存档整合',lv:'nxt',d:'大建筑跨区块合并与存档兼容。',src:'rhodes_x0_y0_z*.nbt',nxt:'区块加载'}]}]}]}},
+{name:'3D 建模与动画',sub:'BLENDER · MMD',color:'#8A7BFF',theta:330,span:64,
+root:{n:'3D 建模与动画',s:'3D · MMD',lv:'root',children:[
+{n:'Blender 基础',s:'场景与工程',lv:'pre',d:'test.blend、K_test.blend、未命名.blend 多个实战工程。',src:'test.blend · K_test.blend',nxt:'建模与材质',children:[
+{n:'Blender 建模与场景',s:'工程实战',lv:'got',d:'独立完成建模、场景搭建与工程管理。',src:'test.blend · K_test.blend · 未命名.blend',nxt:'雕刻与拓扑',children:[
+{n:'雕刻与拓扑',s:'模型精修',lv:'nxt',d:'高模雕刻与重拓扑。',src:'——',nxt:'重拓扑'},
+{n:'PBR 材质与贴图',s:'写实材质',lv:'nxt',d:'法线、粗糙度、金属度。',src:'——',nxt:'Substance'}]},
+{n:'配布模型整备',s:'星铁方舟角色',lv:'got',d:'昔涟、银狼、遐蝶、风堇、阮梅素体、蓝砚、混球先生等配布模型。',src:'model/（星穹铁道—银狼 · 遐蝶 · 风堇 · 阮梅素体）',nxt:'骨骼绑定',children:[
+{n:'骨骼绑定与权重',s:'RIGGING',lv:'nxt',d:'为配布模型绑定骨骼、刷权重。',src:'——',nxt:'权重修形'},
+{n:'换装与贴图替换',s:'形象改造',lv:'nxt',d:'替换贴图材质、改造服装细节。',src:'model/tex · model/旗袍昔涟',nxt:'材质替换'}]}]},
+{n:'MMD 动画制作',s:'MIKUMIKUDANCE',lv:'pre',d:'MMD932 + MMEffect 环境，动作、镜头、特效。',src:'MMD932（MikuMikudance.exe · MMEffect.dll）',nxt:'动作与镜头',children:[
+{n:'MMD 动画制作',s:'动作镜头特效',lv:'got',d:'编排动作（cp.vmd）、镜头与 MMEffect 特效。',src:'1.pmm · cp.vmd · 火花l.pmm',nxt:'镜头语言与分镜',children:[
+{n:'镜头语言与分镜',s:'叙事表达',lv:'nxt',d:'用镜头运动与节奏讲清动作。',src:'——',nxt:'关键帧曲线'},
+{n:'关键帧与节奏',s:'动作打磨',lv:'nxt',d:'关键帧姿势与节奏卡点。',src:'——',nxt:'动作捕捉'}]},
+{n:'布料物理与解算',s:'物理优化',lv:'got',d:'大昔涟物理优化、火花布料解算、胸部软体模拟插件。',src:'model/大昔涟 物理优化 · model/火花布料解算',nxt:'刚体与约束',children:[
+{n:'刚体与约束',s:'物理稳定',lv:'nxt',d:'刚体碰撞与约束防穿模。',src:'——',nxt:'碰撞配置'},
+{n:'布料参数调优',s:'柔软质感',lv:'nxt',d:'布料参数呈现自然垂坠。',src:'临时/胸部软体模拟插件.zip',nxt:'物理模拟'}]},
+{n:'渲染与成片',s:'输出管线',lv:'got',d:'MMD 渲染导出成片（cyrene-lll_x264.mp4）。',src:'cyrene-lll_x264.mp4',nxt:'灯光与运镜',children:[
+{n:'灯光与运镜',s:'电影感',lv:'nxt',d:'三点布光与镜头运动。',src:'——',nxt:'色彩管理'},
+{n:'多机位与调色',s:'成片质感',lv:'nxt',d:'多机位剪辑与整体调色。',src:'——',nxt:'成片渲染'}]}]},
+{n:'模型格式认知',s:'GLB·PMX·VMD',lv:'pre',d:'分清网格、骨骼、动画与配布包结构。',src:'1.glb · 1.pmm · 大喜场景.pmx',nxt:'跨格式管线',children:[
+{n:'跨格式资源管线',s:'格式转换',lv:'got',d:'pmx→glb→pmm 转换与 vmd 动作配布。',src:'1.glb · 1.pmm · cp.vmd',nxt:'格式转换与解算',children:[
+{n:'格式转换与解算',s:'管线工具',lv:'nxt',d:'批量转换与动作解算工具化。',src:'——',nxt:'转换工具'},
+{n:'模型优化与导出',s:'面数规格',lv:'nxt',d:'为渲染与游戏导出优化模型。',src:'——',nxt:'LOD 预算'}]}]}]}},
+{name:'程序与数字创作',sub:'WEB · PYTHON · AI',color:'#F5A32C',theta:90,span:64,
+root:{n:'程序与数字创作',s:'CODE · MEDIA',lv:'root',children:[
+{n:'HTML / CSS 基础',s:'网页骨架',lv:'pre',d:'结构、样式、盒模型、响应式。',src:'prts 项目',nxt:'前端开发',children:[
+{n:'PRTS 终端站',s:'8 页面站点',lv:'got',d:'指挥中心、终端接口、泰拉大典、莱茵生命、机密终端、模组开发、技能树、泰拉肉鸽。',src:'prts/*.html（GitHub 发布）',nxt:'动画与工程化',children:[
+{n:'动画与前端工程化',s:'动效打磨',lv:'nxt',d:'启动动效、过渡动画与工程化实践。',src:'技能树.html 启动动画',nxt:'性能优化'},
+{n:'JS 框架',s:'Vue / React',lv:'nxt',d:'组件化与构建工具链。',src:'——',nxt:'TypeScript'},
+{n:'后端与接口',s:'数据服务',lv:'nxt',d:'数据库、接口、鉴权。',src:'——',nxt:'Node / Go'}]},
+{n:'Python 自动化',s:'工具脚本',lv:'got',d:'密钥生成、NBT 导出、纹理批量生成脚本组。',src:'gen_keys.py · export_nbt_48.py · generate_*textures.py',nxt:'脚本框架化',children:[
+{n:'脚本框架化',s:'复用维护',lv:'nxt',d:'散装脚本整理成可复用工具。',src:'——',nxt:'CLI 参数化'},
+{n:'数据可视化',s:'图表呈现',lv:'nxt',d:'用图表把数据讲清楚。',src:'——',nxt:'ECharts'}]}]},
+{n:'TypeScript / Electron',s:'桌面应用',lv:'pre',d:'Electron 主/渲染进程、TypeScript 工程。',src:'Cyrene-Agent（tsconfig.*.json）',nxt:'桌面 AI 开发',children:[
+{n:'Cyrene-Agent 核心',s:'桌面 AI 陪伴',lv:'got',d:'ASR、TTS、RAG 记忆、orchestrator 编排、memory、scheduler。',src:'Cyrene-Agent/src（Electron + TS）',nxt:'语音识别与合成',children:[
+{n:'语音识别与合成',s:'ASR / TTS',lv:'nxt',d:'语音输入输出管线。',src:'Cyrene-Agent/src/asr · tts',nxt:'音色克隆'},
+{n:'记忆与 RAG',s:'EMBEDDING',lv:'nxt',d:'embedding 场景嵌入与检索。',src:'Cyrene-Agent/src/rag · embedding-manager.ts',nxt:'长期记忆'}]},
+{n:'Agent 技能系统',s:'SKILLS',lv:'got',d:'docx/pdf/pptx/xlsx 生成、写报销、skill-creator、self-improving、音乐陪伴。',src:'Cyrene-Agent/skills/*',nxt:'自定义技能开发',children:[
+{n:'自定义技能开发',s:'SKILL 工程',lv:'nxt',d:'manifest + SKILL.md + 执行脚本的技能规范。',src:'Cyrene-Agent/skills/contracts.ts',nxt:'技能编排'},
+{n:'多模态工具链',s:'能力扩展',lv:'nxt',d:'文件、图像、音频等工具接入。',src:'——',nxt:'工具调用'}]},
+{n:'关系与游戏助手',s:'互动系统',lv:'got',d:'relationship 关系、sim 模拟、game-bot 游戏机器人、music 音乐。',src:'Cyrene-Agent/src/relationship · sim · game-bot · music',nxt:'关系模拟',children:[
+{n:'关系模拟与性格',s:'人格化',lv:'nxt',d:'关系数值与性格状态机。',src:'Cyrene-Agent/src/relationship',nxt:'人格模型'},
+{n:'游戏机器人',s:'AUTO BOT',lv:'nxt',d:'游戏自动化操作与策略。',src:'Cyrene-Agent/src/game-bot',nxt:'视觉识别'}]}]},
+{n:'视频剪辑基础',s:'剪映',lv:'pre',d:'剪辑、字幕、音效、导出。',src:'phi/JianyingPro',nxt:'成片制作',children:[
+{n:'剪映成片',s:'视频产出',lv:'got',d:'剪辑合成角色视频成片。',src:'JianyingPro · cyrene-lll_x264.mp4',nxt:'特效与调色',children:[
+{n:'特效与调色',s:'画面语言',lv:'nxt',d:'蒙版、关键帧、风格化调色。',src:'——',nxt:'蒙版关键帧'},
+{n:'字幕与音效设计',s:'声音画面',lv:'nxt',d:'字幕节奏与音效配合。',src:'——',nxt:'声音设计'}]}]},
+{n:'版本管理基础',s:'GIT',lv:'pre',d:'分支、提交、推送、协作。',src:'prts / Cyrene-Agent / wtz_mod / forge',nxt:'GitHub 协作',children:[
+{n:'Git / GitHub 协作',s:'多仓库管理',lv:'got',d:'prts、Cyrene-Agent、wtz_mod、forge 多仓库版本管理与发布。',src:'GitHub（wtz-YEE 仓库）',nxt:'发布与开源',children:[
+{n:'发布与开源文档',s:'README · LICENSE',lv:'nxt',d:'README、开源协议与发布说明。',src:'Cyrene-Agent/README.md · LICENSE',nxt:'开源治理'},
+{n:'CI 与自动化',s:'流水线',lv:'nxt',d:'自动构建、测试与部署。',src:'——',nxt:'CI/CD'}]}]}]}}
 ];
-var NS={},pref={pre:{t:'前置 · 基础',c:'#66767A'},got:{t:'已学会',c:'#3FE0C8'},nxt:{t:'可继续学习',c:'#F5A32C'}};
+var NS={},pref={pre:{t:'前置 · 基础',c:'#66767A'},got:{t:'已学会',c:'#3FE0C8'},nxt:{t:'可继续学习',c:'#F5A32C'},root:{t:'领域',c:'#8FF0E2'}};
 var svg=document.getElementById('tree'),lns=document.getElementById('lines'),nds=document.getElementById('nodes'),D=document.getElementById('detail');
-var zoom=1,curId=null,ts=document.querySelector('.tree-svg'),zi=document.getElementById('zoom'),zl=document.getElementById('zoomVal');
+var zoom=.7,curId=null,ts=document.querySelector('.tree-svg'),zi=document.getElementById('zoom'),zl=document.getElementById('zoomVal'),bseq=0;
+var CX=4500,CY=3000,RR=[1200,1800,2400],RB=780;
 function placeDetail(x,y,off){
 if(innerWidth<=640)return;
 var pw=D.offsetWidth,ph=D.offsetHeight,o=off||70;
-var left=(x>3600?x-o:x+o)*zoom;
-left=Math.max(8,Math.min(left,7200*zoom-pw-8));
+var left=(x>CX?x-o:x+o)*zoom;
+left=Math.max(8,Math.min(left,9000*zoom-pw-8));
 var top=(y-ph/2)*zoom;
-top=Math.max(8,Math.min(top,4680*zoom-ph-8));
+top=Math.max(8,Math.min(top,6000*zoom-ph-8));
 D.style.left=left+'px';D.style.top=top+'px';
 if(left<ts.scrollLeft+16)ts.scrollLeft=Math.max(0,left-16);
-else if(left+pw>ts.scrollLeft+ts.clientWidth-16)ts.scrollLeft=Math.min(left+pw+16-ts.clientWidth,7200*zoom-ts.clientWidth);
+else if(left+pw>ts.scrollLeft+ts.clientWidth-16)ts.scrollLeft=Math.min(left+pw+16-ts.clientWidth,9000*zoom-ts.clientWidth);
 var svgTop=ts.getBoundingClientRect().top+window.scrollY;
 var pTop=svgTop+top,pBot=pTop+ph;
 if(pTop<window.scrollY+16)window.scrollTo(0,Math.max(0,pTop-16));
@@ -210,69 +276,94 @@ var p=T('path');
 var mx=(x1+x2)/2,my=(y1+y2)/2;
 p.setAttribute('d','M'+x1+' '+y1+' Q'+mx+' '+my+' '+x2+' '+y2);
 p.setAttribute('fill','none');p.setAttribute('stroke',c);p.setAttribute('stroke-width','2.2');p.setAttribute('class','ln');
-p.style.strokeDashoffset=1400;lns.appendChild(p);return p;
+p.setAttribute('pathLength','100');
+bseq++;p.style.animationDelay=(0.5+bseq*0.045)+'s';
+lns.appendChild(p);return p;
 }
-function node(n,pos,tc,lv,tree){
+function nodeEl(n,x,y,tc,id){
 var g=T('g');g.setAttribute('class','nd nd-pop');g.setAttribute('role','button');g.setAttribute('tabindex','0');
-var cir=T('circle');cir.setAttribute('cx',pos.x);cir.setAttribute('cy',pos.y);cir.setAttribute('r','34');cir.setAttribute('class','r');
-var stroke=tc;
+bseq++;g.style.animationDelay=(0.7+bseq*0.05)+'s';
+var cir=T('circle');cir.setAttribute('cx',x);cir.setAttribute('cy',y);cir.setAttribute('r','34');cir.setAttribute('class','r');
+var lv=n.lv;
 if(lv==='pre'){cir.setAttribute('fill','#0E1114');cir.setAttribute('stroke','rgba(102,118,122,.7)');cir.setAttribute('stroke-width','2.4')}
 else if(lv==='got'){cir.setAttribute('fill',tc);cir.setAttribute('stroke',tc);cir.setAttribute('stroke-width','2.4')}
 else{cir.setAttribute('fill','#0E1114');cir.setAttribute('stroke',tc);cir.setAttribute('stroke-dasharray','10 8');cir.setAttribute('stroke-width','2.8')}
 g.appendChild(cir);
-var dot=T('circle');dot.setAttribute('cx',pos.x);dot.setAttribute('cy',pos.y);dot.setAttribute('r','9');dot.setAttribute('fill',lv==='pre'?'#3A4147':tc);g.appendChild(dot);
-var t1=T('text');t1.setAttribute('x',pos.x);t1.setAttribute('y',pos.y+84);t1.setAttribute('text-anchor','middle');t1.setAttribute('class','lab');t1.setAttribute('font-size','20');t1.setAttribute('font-weight','600');t1.setAttribute('fill','var(--ink)');
+var dot=T('circle');dot.setAttribute('cx',x);dot.setAttribute('cy',y);dot.setAttribute('r','9');dot.setAttribute('fill',lv==='pre'?'#3A4147':tc);g.appendChild(dot);
+var a=Math.atan2(y-CY,x-CX),ox=Math.cos(a)*42,oy=Math.sin(a)*42;
+var t1=T('text');t1.setAttribute('x',x+ox);t1.setAttribute('y',y+oy+6);t1.setAttribute('text-anchor','middle');t1.setAttribute('class','lab');t1.setAttribute('font-size','19');t1.setAttribute('font-weight','600');t1.setAttribute('fill','var(--ink)');
 var lines1=(n.n||'').length>6?n.n.slice(0,6)+'…':n.n;t1.textContent=lines1;g.appendChild(t1);
-var t2=T('text');t2.setAttribute('x',pos.x);t2.setAttribute('y',pos.y+116);t2.setAttribute('text-anchor','middle');t2.setAttribute('class','lab2');t2.setAttribute('font-size','13');t2.setAttribute('letter-spacing','2');t2.setAttribute('fill','var(--ink3)');
-t2.textContent=n.s||'';g.appendChild(t2);
-var id=tree+':'+lv+':'+n.n;n.id=id;n.lv=lv;n.tree=tree;n.pos={x:pos.x,y:pos.y};NS[id]=n;
+var t2=T('text');t2.setAttribute('x',x+ox);t2.setAttribute('y',y+oy+38);t2.setAttribute('text-anchor','middle');t2.setAttribute('class','lab2');t2.setAttribute('font-size','12.5');t2.setAttribute('letter-spacing','1.5');t2.setAttribute('fill','var(--ink3)');
+var s2=(n.s||'').length>8?(n.s||'').slice(0,8)+'…':(n.s||'');t2.textContent=s2;g.appendChild(t2);
+var id2=id;n.pos={x:x,y:y};NS[id2]=n;
+function open(){sel(g,id2)}
+g.addEventListener('click',open);g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
+nds.appendChild(g);
+return g;
+}
+function rootEl(tr,x,y){
+var g=T('g');g.setAttribute('class','nd nd-pop');g.setAttribute('role','button');g.setAttribute('tabindex','0');
+bseq++;g.style.animationDelay=(0.7+bseq*0.05)+'s';
+var cir=T('circle');cir.setAttribute('cx',x);cir.setAttribute('cy',y);cir.setAttribute('r','30');cir.setAttribute('fill','#0E1114');cir.setAttribute('stroke',tr.color);cir.setAttribute('stroke-width','3.5');
+g.appendChild(cir);
+var dot=T('circle');dot.setAttribute('cx',x);dot.setAttribute('cy',y);dot.setAttribute('r','8');dot.setAttribute('fill',tr.color);g.appendChild(dot);
+var a=Math.atan2(y-CY,x-CX),ox=Math.cos(a)*44,oy=Math.sin(a)*44;
+var t1=T('text');t1.setAttribute('x',x+ox);t1.setAttribute('y',y+oy+6);t1.setAttribute('text-anchor','middle');t1.setAttribute('class','lab');t1.setAttribute('font-size','20');t1.setAttribute('font-weight','700');t1.setAttribute('fill',tr.color);
+t1.textContent=tr.name.slice(0,3);g.appendChild(t1);
+var t2=T('text');t2.setAttribute('x',x+ox);t2.setAttribute('y',y+oy+38);t2.setAttribute('text-anchor','middle');t2.setAttribute('class','lab2');t2.setAttribute('font-size','13');t2.setAttribute('letter-spacing','2');t2.setAttribute('fill','var(--ink3)');
+var s2=(tr.name||'').length>8?tr.name.slice(0,8)+'…':tr.name;t2.textContent=s2;g.appendChild(t2);
+var id=tr.name+':root';tr.root.id=id;tr.root.pos={x:x,y:y};NS[id]=tr.root;
 function open(){sel(g,id)}
 g.addEventListener('click',open);g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
 nds.appendChild(g);
-var lbl={x:pos.x,y:pos.y+124};
-return{id:id,g:g,lbl:lbl};
+return g;
 }
 function sel(g,id){
 var cs=nds.querySelectorAll('.nd');for(var i=0;i<cs.length;i++)cs[i].classList.remove('sel');
 g.classList.add('sel');
 var n=NS[id];
-if(!n){return}
-var m=n.tree;
+if(!n)return;
+var m=TREES[0];for(var t=0;t<TREES.length;t++)if(n.tree===TREES[t].name)m=TREES[t];
 D.innerHTML='';
 var lv=document.createElement('span');lv.className='d-lv';lv.style.color=pref[n.lv].c;lv.style.borderColor=pref[n.lv].c;lv.textContent=pref[n.lv].t;D.appendChild(lv);
 var h=document.createElement('h3');h.textContent=n.n;D.appendChild(h);
-var su=document.createElement('div');su.className='d-sub';su.textContent=m.name+' · '+m.sub+'  /  '+n.s;D.appendChild(su);
+var su=document.createElement('div');su.className='d-sub';su.textContent=m.name+' · '+m.sub+'  /  '+(n.s||'');D.appendChild(su);
 function row(k,v){var r=document.createElement('div');r.className='d-row';var b=document.createElement('b');b.textContent=k;r.appendChild(b);var s=document.createElement('span');s.textContent=v;r.appendChild(s);D.appendChild(r)}
 row('描述',n.d);
 row('下一步',n.nxt);
-var src=document.createElement('div');src.className='d-src';src.innerHTML='<b>来源：</b>'+n.src;D.appendChild(src);
+var src=document.createElement('div');src.className='d-src';src.innerHTML='<b>来源：</b>'+(n.src||'——');D.appendChild(src);
 D.classList.add('on');
 curId=id;
 placeDetail(n.pos.x,n.pos.y);
 }
+function place(node,depth,center,span,tr){
+var a=center*Math.PI/180,R0=depth===0?RB:RR[depth-1];
+var x=CX+R0*Math.cos(a),y=CY+R0*Math.sin(a);
+node.pos={x:x,y:y};
+var ch=node.children||[];
+if(ch.length){
+var sub=span/ch.length;
+for(var i=0;i<ch.length;i++){
+var ctr2=center-span/2+sub*(i+0.5);
+place(ch[i],depth+1,ctr2,sub*.92,tr);
+link(x,y,ch[i].pos.x,ch[i].pos.y,tr.color);
+}
+}
+}
+function drawNode(node,tr){
+if(node.lv==='root'){rootEl(tr,node.pos.x,node.pos.y);}
+else{var id=tr.name+':'+node.lv+':'+node.n;node.id=id;node.tree=tr.name;nodeEl(node,node.pos.x,node.pos.y,tr.color,id);}
+var ch=node.children||[];
+for(var i=0;i<ch.length;i++)drawNode(ch[i],tr);
+}
 function build(){
-var cx=3600,cy=2220;
 for(var t=0;t<TREES.length;t++){
 var tr=TREES[t],c=tr.color,th=tr.theta,sp=tr.span;
-var root=xy(cx,cy,576,th);
-var rl=link(cx+Math.cos(th*Math.PI/180)*576,cy+Math.sin(th*Math.PI/180)*576,root.x,root.y,c);
-var rc=T('circle');rc.setAttribute('cx',root.x);rc.setAttribute('cy',root.y);rc.setAttribute('r','28');rc.setAttribute('fill','#0E1114');rc.setAttribute('stroke',c);rc.setAttribute('stroke-width','3.5');
-nds.appendChild(rc);
-var rt=T('text');rt.setAttribute('x',root.x);rt.setAttribute('y',root.y+8);rt.setAttribute('text-anchor','middle');rt.setAttribute('font-size','16');rt.setAttribute('font-weight','700');rt.setAttribute('fill',c);rt.textContent=tr.name.slice(0,3);nds.appendChild(rt);
-var layers=[['pre',900],['got',1320],['nxt',1728]];
-var prev=[{x:root.x,y:root.y}];
-for(var L=0;L<layers.length;L++){
-var lv=layers[L][0],R=layers[L][1],arr=tr[lv];
-var n0=arr.length,deg=(sp*2)/(n0-1||1),start=th-sp;
-for(var i=0;i<n0;i++){
-var ang=start+deg*i;
-if(lv==='pre'&&n0===2)ang=th+(i===0?-1:1)*sp*.55;
-var p=xy(cx,cy,R,ang);
-link(prev[0].x,prev[0].y,p.x,p.y,c);
-var nd=node(arr[i],p,c,lv,tr);
-prev.push({x:p.x,y:p.y});
-}
-}
+var root=xy(CX,CY,RB,th);
+link(CX+Math.cos(th*Math.PI/180)*RB,CY+Math.sin(th*Math.PI/180)*RB,root.x,root.y,c);
+tr.root.pos={x:root.x,y:root.y};
+place(tr.root,0,th,sp,tr);
+drawNode(tr.root,tr);
 }
 }
 var cc=document.querySelector('.core');
@@ -281,7 +372,7 @@ var cs=nds.querySelectorAll('.nd');for(var i=0;i<cs.length;i++)cs[i].classList.r
 D.innerHTML='';
 var lv=document.createElement('span');lv.className='d-lv';lv.style.color='#3FE0C8';lv.style.borderColor='#3FE0C8';lv.textContent='总览';D.appendChild(lv);
 var h=document.createElement('h3');h.textContent='wtz 的技能树';D.appendChild(h);
-var su=document.createElement('div');su.className='d-sub';su.textContent='三大兴趣领域 · 已学会 / 前置 / 可继续学习';D.appendChild(su);
+var su=document.createElement('div');su.className='d-sub';su.textContent='三大兴趣领域 · 树形分支 · 已学会 / 前置 / 可继续学习';D.appendChild(su);
 function row(k,v){var r=document.createElement('div');r.className='d-row';var b=document.createElement('b');b.textContent=k;r.appendChild(b);var s=document.createElement('span');s.textContent=v;r.appendChild(s);D.appendChild(r)}
 row('① 游戏模组开发','Minecraft 模组（Forge · wtz_mod）、自研玩法（矿石战争）与音效整合');
 row('② 3D 建模动画','Blender 建模 + MMD 动画、配布模型整备、布料与物理优化');
@@ -289,7 +380,7 @@ row('③ 程序与数字创作','PRTS 前端、Python 脚本、AI Agent（Cyrene
 var src=document.createElement('div');src.className='d-src';src.innerHTML='<b>来源：</b>D:\\WTZ 项目目录实测';D.appendChild(src);
 D.classList.add('on');
 curId=null;
-placeDetail(3600,2220,640);
+placeDetail(CX,CY,640);
 });
 cc.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();cc.click()}});
 document.addEventListener('click',function(e){if(!D.contains(e.target)&&!e.target.closest('.nd')&&!e.target.closest('.core'))D.classList.remove('on')});
@@ -297,15 +388,90 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')D.classList.
 zi.addEventListener('input',function(){
 var old=zoom;zoom=+zi.value;
 var cx=ts.scrollLeft+ts.clientWidth/2,cy=ts.scrollTop+ts.clientHeight/2;
-svg.style.width=(7200*zoom)+'px';svg.style.height=(4680*zoom)+'px';
+svg.style.width=(9000*zoom)+'px';svg.style.height=(6000*zoom)+'px';
 ts.scrollLeft=Math.max(0,cx*zoom/old-ts.clientWidth/2);
 ts.scrollTop=Math.max(0,cy*zoom/old-ts.clientHeight/2);
 zl.textContent=Math.round(zoom*100)+'%';
 if(curId){var nn=NS[curId];if(nn)placeDetail(nn.pos.x,nn.pos.y)}
-else if(D.classList.contains('on'))placeDetail(3600,2220,640);
+else if(D.classList.contains('on'))placeDetail(CX,CY,640);
 });
 build();
-setTimeout(function(){var ln=lns.querySelectorAll('.ln');for(var i=0;i<ln.length;i++)ln[i].style.strokeDashoffset=0},60);
+(function boot(){
+var t0=null,D=5200,rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function top0(){var r=ts.getBoundingClientRect();return r.top+window.scrollY}
+function center(z){return 4500*z-ts.clientWidth/2}
+var z1=ts.clientWidth>640?.4:.4,z0=ts.clientWidth>640?.55:.4;
+svg.style.width=(9000*z0)+'px';svg.style.height=(6000*z0)+'px';
+ts.scrollLeft=center(z0);
+window.scrollTo(0,Math.max(0,top0()+3000*z0-innerHeight/2));
+if(rm){svg.style.width=(9000*z1)+'px';svg.style.height=(6000*z1)+'px';ts.scrollLeft=center(z1)+380;window.scrollTo(0,Math.max(0,top0()+3000*z1-innerHeight/2));zoom=z1;zl.textContent=Math.round(z1*100)+'%';return}
+function frame(t){
+if(t0===null)t0=t;
+var el=t-t0,z=z0;
+if(el>=2900){var k=Math.min(1,(el-2900)/1100);k=k*(2-k);z=z0-(z0-z1)*k}
+svg.style.width=(9000*z)+'px';svg.style.height=(6000*z)+'px';
+var base=center(z);
+ts.scrollLeft=base;
+if(el>=3800&&ts.clientWidth>640){var k2=Math.min(1,(el-3800)/900);k2=k2*(2-k2);ts.scrollLeft=base+380*k2}
+window.scrollTo(0,Math.max(0,top0()+3000*z-innerHeight/2));
+if(el>=D){zoom=z;zl.textContent=Math.round(z*100)+'%';return}
+requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
 </script>
+
+
+<div id="vbox" class="site-visitor" style="position:relative;z-index:25;text-align:center;padding:12px 10px 0;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:11px;letter-spacing:.18em;color:inherit;opacity:.75">
+<span id="vlabel">GUEST // 输入访客名</span>
+<input id="vinput" maxlength="12" placeholder="你的名字" style="width:120px;background:rgba(127,127,127,.08);border:1px solid rgba(127,127,127,.35);color:inherit;padding:3px 8px;margin:0 8px;font-family:inherit;font-size:11px;outline:none">
+<button id="vbtn" style="border:1px solid rgba(127,127,127,.45);color:inherit;padding:3px 12px;font-family:inherit;font-size:11px;letter-spacing:.1em;cursor:pointer">确认</button>
+</div>
+<script>
+(function(){try{
+var K='prts_vn',N='prts_vc',g=function(k){try{return localStorage.getItem(k)}catch(e){return null}};
+var nm=g(K),c=(g(N)?parseInt(g(N),10):0)+1;
+try{localStorage.setItem(N,String(c))}catch(e){}
+var v=document.getElementById('vinput'),b=document.getElementById('vbtn'),l=document.getElementById('vlabel');
+function done(){l.textContent='VISITOR // '+(nm||'未命名')+' · 第'+c+'次访问本站';if(v)v.style.display='none';if(b)b.style.display='none';var bx=document.getElementById('vbox');if(bx){bx.style.cursor='pointer';bx.title='点击修改名字'}}
+if(nm){done();return}
+if(b)b.addEventListener('click',function(){var x=v?v.value.trim():'';if(!x)return;try{localStorage.setItem(K,x)}catch(e){}nm=x;done()});
+if(v)v.addEventListener('keydown',function(e){if(e.key==='Enter'&&b)b.click()});
+}catch(e){}})();
+</script>
+
+<div class="site-stat" style="position:relative;z-index:25;text-align:center;padding:16px 10px 28px;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:10.5px;letter-spacing:.2em;color:inherit;opacity:.55">SITE // <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS</div>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+<script>
+(function(){
+var k='wtz_vn',kc='wtz_vc',n=localStorage.getItem(k);
+function esc(s){return s.replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
+function upd(){
+var c=localStorage.getItem(kc)||0,el=document.querySelectorAll('.site-stat');
+for(var i=0;i<el.length;i++)el[i].innerHTML='SITE // VISITOR '+(n?esc(n):'GUEST')+' · '+c+' VISITS · <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS';
+}
+function ask(){
+var m=document.createElement('div'),b=document.createElement('div');
+m.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(5,7,8,.78);display:flex;align-items:center;justify-content:center';
+b.style.cssText='background:#11151A;border:1px solid rgba(63,224,200,.35);padding:26px 30px;max-width:340px;width:86%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)';
+var t=document.createElement('p');t.textContent='输入你的名字以登记访问';t.style.cssText='color:#E6EDEF;font-size:15px;letter-spacing:.12em;margin-bottom:14px';
+var s=document.createElement('p');s.textContent='此名字仅保存在你的浏览器';s.style.cssText='color:#66767A;font-size:11px;letter-spacing:.1em;margin-bottom:14px';
+var i=document.createElement('input');i.placeholder='访客昵称';i.maxLength=14;i.style.cssText='width:100%;background:#0A0C0E;border:1px solid rgba(63,224,200,.3);color:#E6EDEF;padding:10px 12px;font-size:14px;outline:none;text-align:center';
+var ok=document.createElement('button');ok.textContent='登 记';ok.style.cssText='margin-top:14px;width:100%;padding:10px;border:1px solid #3FE0C8;color:#3FE0C8;background:rgba(63,224,200,.08);font-size:13px;letter-spacing:.3em;cursor:pointer';
+b.appendChild(t);b.appendChild(s);b.appendChild(i);b.appendChild(ok);m.appendChild(b);document.body.appendChild(m);i.focus();
+function done(){var v=i.value.replace(/^\s+|\s+$/g,'');if(!v){i.style.borderColor='#FF5C7A';return}localStorage.setItem(k,v);n=v;document.body.removeChild(m);upd()}
+ok.onclick=done;i.onkeydown=function(e){if(e.key==='Enter')done();if(e.key==='Escape')document.body.removeChild(m)};
+}
+(function(){var c=+(localStorage.getItem(kc)||0)+1;localStorage.setItem(kc,c);
+var el=document.querySelectorAll('.site-stat');
+for(var i=0;i<el.length;i++)el[i].style.cursor='pointer';
+if(!n){ask()}else{upd()}
+document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.className&&(' '+t.className+' ').indexOf(' site-stat ')>-1){ask();return}t=t.parentNode}});
+})();
+})();
+</script>
+
 </body>
 </html>

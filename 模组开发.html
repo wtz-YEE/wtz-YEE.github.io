@@ -64,7 +64,6 @@ main{min-height:calc(100vh - 34px)}
 .step{border:1px solid var(--line);padding:14px;background:var(--panel)}
 .step b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:#F0F0F0;margin-bottom:6px}
 .step span{font-size:12.5px;color:var(--ink2);line-height:1.8;display:block}
-<style>
 .dl-box{border:1px solid var(--line2);background:linear-gradient(165deg,#161616,#0E0E0F);padding:22px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s}
 .dl-box:hover{border-color:#F0F0F0;box-shadow:0 14px 40px rgba(0,0,0,.5),0 0 20px rgba(255,255,255,.1)}
 .dl-box::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,transparent,#F0F0F0 30%,transparent);opacity:.5}
@@ -76,7 +75,6 @@ main{min-height:calc(100vh - 34px)}
 .dl-btn:hover{background:rgba(255,255,255,.14);box-shadow:0 0 22px rgba(255,255,255,.18);transform:translateY(-2px)}
 .dl-btn svg{width:15px;height:15px}
 .dl-meta{margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink3)}
-</style>
 /* ==== 动效 v0.2 ==== */
 body:not(.ready) .h-eyebrow,body:not(.ready) .hero h1,body:not(.ready) .h-sub,body:not(.ready) .h-mono{opacity:0}
 body.ready .h-eyebrow{animation:hin .5s cubic-bezier(.22,1,.36,1) .05s both}
@@ -327,6 +325,59 @@ for(var i=0;i<tg.length;i++){var d=(i%6)*70;tg[i].style.transitionDelay=d+'ms'}
 if(io)for(var i=0;i<tg.length;i++)io.observe(tg[i]);
 })();
 setInterval(function(){var d=new Date(),f=function(n){return(n<10?'0':'')+n};document.getElementById('clock').textContent=f(d.getHours())+':'+f(d.getMinutes())+':'+f(d.getSeconds())},1000);
+</script>
+
+
+
+<div id="vbox" class="site-visitor" style="position:relative;z-index:25;text-align:center;padding:12px 10px 0;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:11px;letter-spacing:.18em;color:inherit;opacity:.75">
+<span id="vlabel">GUEST // 输入访客名</span>
+<input id="vinput" maxlength="12" placeholder="你的名字" style="width:120px;background:rgba(127,127,127,.08);border:1px solid rgba(127,127,127,.35);color:inherit;padding:3px 8px;margin:0 8px;font-family:inherit;font-size:11px;outline:none">
+<button id="vbtn" style="border:1px solid rgba(127,127,127,.45);color:inherit;padding:3px 12px;font-family:inherit;font-size:11px;letter-spacing:.1em;cursor:pointer">确认</button>
+</div>
+<script>
+(function(){try{
+var K='prts_vn',N='prts_vc',g=function(k){try{return localStorage.getItem(k)}catch(e){return null}};
+var nm=g(K),c=(g(N)?parseInt(g(N),10):0)+1;
+try{localStorage.setItem(N,String(c))}catch(e){}
+var v=document.getElementById('vinput'),b=document.getElementById('vbtn'),l=document.getElementById('vlabel');
+function done(){l.textContent='VISITOR // '+(nm||'未命名')+' · 第'+c+'次访问本站';if(v)v.style.display='none';if(b)b.style.display='none';var bx=document.getElementById('vbox');if(bx){bx.style.cursor='pointer';bx.title='点击修改名字'}}
+if(nm){done();return}
+if(b)b.addEventListener('click',function(){var x=v?v.value.trim():'';if(!x)return;try{localStorage.setItem(K,x)}catch(e){}nm=x;done()});
+if(v)v.addEventListener('keydown',function(e){if(e.key==='Enter'&&b)b.click()});
+}catch(e){}})();
+</script>
+
+<div class="site-stat" style="position:relative;z-index:25;text-align:center;padding:16px 10px 28px;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:10.5px;letter-spacing:.2em;color:inherit;opacity:.55">SITE // <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS</div>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+<script>
+(function(){
+var k='wtz_vn',kc='wtz_vc',n=localStorage.getItem(k);
+function esc(s){return s.replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
+function upd(){
+var c=localStorage.getItem(kc)||0,el=document.querySelectorAll('.site-stat');
+for(var i=0;i<el.length;i++)el[i].innerHTML='SITE // VISITOR '+(n?esc(n):'GUEST')+' · '+c+' VISITS · <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS';
+}
+function ask(){
+var m=document.createElement('div'),b=document.createElement('div');
+m.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(5,7,8,.78);display:flex;align-items:center;justify-content:center';
+b.style.cssText='background:#11151A;border:1px solid rgba(63,224,200,.35);padding:26px 30px;max-width:340px;width:86%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)';
+var t=document.createElement('p');t.textContent='输入你的名字以登记访问';t.style.cssText='color:#E6EDEF;font-size:15px;letter-spacing:.12em;margin-bottom:14px';
+var s=document.createElement('p');s.textContent='此名字仅保存在你的浏览器';s.style.cssText='color:#66767A;font-size:11px;letter-spacing:.1em;margin-bottom:14px';
+var i=document.createElement('input');i.placeholder='访客昵称';i.maxLength=14;i.style.cssText='width:100%;background:#0A0C0E;border:1px solid rgba(63,224,200,.3);color:#E6EDEF;padding:10px 12px;font-size:14px;outline:none;text-align:center';
+var ok=document.createElement('button');ok.textContent='登 记';ok.style.cssText='margin-top:14px;width:100%;padding:10px;border:1px solid #3FE0C8;color:#3FE0C8;background:rgba(63,224,200,.08);font-size:13px;letter-spacing:.3em;cursor:pointer';
+b.appendChild(t);b.appendChild(s);b.appendChild(i);b.appendChild(ok);m.appendChild(b);document.body.appendChild(m);i.focus();
+function done(){var v=i.value.replace(/^\s+|\s+$/g,'');if(!v){i.style.borderColor='#FF5C7A';return}localStorage.setItem(k,v);n=v;document.body.removeChild(m);upd()}
+ok.onclick=done;i.onkeydown=function(e){if(e.key==='Enter')done();if(e.key==='Escape')document.body.removeChild(m)};
+}
+(function(){var c=+(localStorage.getItem(kc)||0)+1;localStorage.setItem(kc,c);
+var el=document.querySelectorAll('.site-stat');
+for(var i=0;i<el.length;i++)el[i].style.cursor='pointer';
+if(!n){ask()}else{upd()}
+document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.className&&(' '+t.className+' ').indexOf(' site-stat ')>-1){ask();return}t=t.parentNode}});
+})();
+})();
 </script>
 
 </body>
