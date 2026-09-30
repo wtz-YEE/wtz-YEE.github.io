@@ -88,8 +88,17 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 #side .s-item i{flex:none;width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;align-self:center}
 #side .s-item b{color:var(--ink);font-weight:600}
 #side .s-hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--ink3);margin-top:18px;padding-top:12px;border-top:1px solid var(--line)}
+#skip{position:absolute;right:18px;top:74px;z-index:30;font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--ink2);border:1px solid var(--line2);background:rgba(11,15,19,.72);padding:8px 16px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s}
+#skip.on{opacity:1;pointer-events:auto}
+#skip:hover{border-color:var(--accent);color:var(--accent)}
+.nd.hit .r{stroke-width:6;stroke:var(--warn)}
+.nd.hit .lab{fill:var(--warn)}
+#srch{width:150px;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:6px 10px;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;outline:none;transition:border-color .2s;margin-left:16px}
+#srch:focus{border-color:var(--accent)}
+#srch::placeholder{color:var(--ink3)}
+.hit-n{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--warn);min-width:46px;text-align:left}
 @keyframes blink{50%{opacity:0}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ln{stroke-dasharray:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ln{stroke-dasharray:none}.core{opacity:1}#side{opacity:1;transform:none}}
 @media(max-width:640px){#detail{position:fixed;top:auto;bottom:10px;right:10px;left:10px;width:auto;max-height:46vh;overflow-y:auto}.tree-head h2{font-size:15px}.zoom-box input[type=range]{width:84px}.zoom-box{gap:6px;margin-left:10px}#side{position:fixed;top:auto;bottom:16px;left:10px;right:10px;width:auto;padding:14px 16px}#side h1{font-size:19px}#side .s-item{font-size:12px;line-height:1.6;margin-top:5px}#side .s-sub{margin-bottom:10px}#side .s-hint{display:none}}
 .crt{position:fixed;inset:0;z-index:55;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(230,237,239,.02) 0 1px,transparent 1px 4px)}
 </style>
@@ -105,10 +114,13 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 <main class="stage">
   <div class="tree-card">
+    <button id="skip" aria-label="跳过启动动画">SKIP &#9654;</button>
     <div class="tree-head">
       <span class="b-no">SKILL // TREE</span>
       <h2>wtz 的技能树</h2>
       <span class="b-code">3 DOMAINS · 84 NODES</span>
+      <input id="srch" type="text" placeholder="搜索技能..." aria-label="搜索技能">
+      <span id="hitN" class="hit-n"></span>
       <label class="zoom-box" for="zoom" title="缩放科技树">
         <svg class="z-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M8 10.5h5M10.5 8v5"/></svg>
         <input id="zoom" type="range" min="0.3" max="2" step="0.05" value="0.7" aria-label="缩放科技树">
@@ -296,6 +308,7 @@ var lines1=(n.n||'').length>6?n.n.slice(0,6)+'…':n.n;t1.textContent=lines1;g.a
 var t2=T('text');t2.setAttribute('x',x+ox);t2.setAttribute('y',y+oy+38);t2.setAttribute('text-anchor','middle');t2.setAttribute('class','lab2');t2.setAttribute('font-size','12.5');t2.setAttribute('letter-spacing','1.5');t2.setAttribute('fill','var(--ink3)');
 var s2=(n.s||'').length>8?(n.s||'').slice(0,8)+'…':(n.s||'');t2.textContent=s2;g.appendChild(t2);
 var id2=id;n.pos={x:x,y:y};NS[id2]=n;
+g.setAttribute('data-id',id2);
 function open(){sel(g,id2)}
 g.addEventListener('click',open);g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
 nds.appendChild(g);
@@ -313,6 +326,7 @@ t1.textContent=tr.name.slice(0,3);g.appendChild(t1);
 var t2=T('text');t2.setAttribute('x',x+ox);t2.setAttribute('y',y+oy+38);t2.setAttribute('text-anchor','middle');t2.setAttribute('class','lab2');t2.setAttribute('font-size','13');t2.setAttribute('letter-spacing','2');t2.setAttribute('fill','var(--ink3)');
 var s2=(tr.name||'').length>8?tr.name.slice(0,8)+'…':tr.name;t2.textContent=s2;g.appendChild(t2);
 var id=tr.name+':root';tr.root.id=id;tr.root.pos={x:x,y:y};NS[id]=tr.root;
+g.setAttribute('data-id',id);
 function open(){sel(g,id)}
 g.addEventListener('click',open);g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
 nds.appendChild(g);
@@ -385,6 +399,20 @@ placeDetail(CX,CY,640);
 cc.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();cc.click()}});
 document.addEventListener('click',function(e){if(!D.contains(e.target)&&!e.target.closest('.nd')&&!e.target.closest('.core'))D.classList.remove('on')});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')D.classList.remove('on')});
+var sx=document.getElementById('srch'),hn=document.getElementById('hitN');
+if(sx)sx.addEventListener('input',function(){
+var q=sx.value.replace(/^\s+|\s+$/g,'').toLowerCase();
+var els=nds.querySelectorAll('.nd'),hit=0,first=null;
+if(!q){for(var i=0;i<els.length;i++)els[i].classList.remove('hit');if(hn)hn.textContent='';return}
+for(var i=0;i<els.length;i++){
+var n=NS[els[i].getAttribute('data-id')];
+var m=!!n&&((n.n||'').toLowerCase().indexOf(q)>-1||(n.d||'').toLowerCase().indexOf(q)>-1||(n.s||'').toLowerCase().indexOf(q)>-1);
+els[i].classList.toggle('hit',m);
+if(m){hit++;if(!first)first=els[i]}
+}
+if(hn)hn.textContent=hit?hit+' 项':'';
+});
+if(sx)sx.addEventListener('keydown',function(e){if(e.key==='Enter'){var f=nds.querySelector('.nd.hit');if(f)f.click()}});
 zi.addEventListener('input',function(){
 var old=zoom;zoom=+zi.value;
 var cx=ts.scrollLeft+ts.clientWidth/2,cy=ts.scrollTop+ts.clientHeight/2;
@@ -397,14 +425,25 @@ else if(D.classList.contains('on'))placeDetail(CX,CY,640);
 });
 build();
 (function boot(){
-var t0=null,D=5200,rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+var t0=null,D=5200,rm=matchMedia('(prefers-reduced-motion:reduce)').matches,BD='wtz_skilltree_booted';
 function top0(){var r=ts.getBoundingClientRect();return r.top+window.scrollY}
 function center(z){return 4500*z-ts.clientWidth/2}
-var z1=ts.clientWidth>640?.4:.4,z0=ts.clientWidth>640?.55:.4;
+var z1=ts.clientWidth>640?.4:.4,z0=ts.clientWidth>640?.55:.55;
+function end(){
+svg.style.width=(9000*z1)+'px';svg.style.height=(6000*z1)+'px';
+ts.scrollLeft=center(z1)+380;
+window.scrollTo(0,Math.max(0,top0()+3000*z1-innerHeight/2));
+zoom=z1;zl.textContent=Math.round(z1*100)+'%';
+}
+if(rm||localStorage.getItem(BD)){
+end();localStorage.setItem(BD,'1');return;
+}
 svg.style.width=(9000*z0)+'px';svg.style.height=(6000*z0)+'px';
 ts.scrollLeft=center(z0);
 window.scrollTo(0,Math.max(0,top0()+3000*z0-innerHeight/2));
-if(rm){svg.style.width=(9000*z1)+'px';svg.style.height=(6000*z1)+'px';ts.scrollLeft=center(z1)+380;window.scrollTo(0,Math.max(0,top0()+3000*z1-innerHeight/2));zoom=z1;zl.textContent=Math.round(z1*100)+'%';return}
+var sk=document.getElementById('skip');
+setTimeout(function(){if(sk)sk.classList.add('on')},600);
+if(sk)sk.onclick=function(){localStorage.setItem(BD,'1');end();sk.classList.remove('on')};
 function frame(t){
 if(t0===null)t0=t;
 var el=t-t0,z=z0;
@@ -414,7 +453,7 @@ var base=center(z);
 ts.scrollLeft=base;
 if(el>=3800&&ts.clientWidth>640){var k2=Math.min(1,(el-3800)/900);k2=k2*(2-k2);ts.scrollLeft=base+380*k2}
 window.scrollTo(0,Math.max(0,top0()+3000*z-innerHeight/2));
-if(el>=D){zoom=z;zl.textContent=Math.round(z*100)+'%';return}
+if(el>=D){localStorage.setItem(BD,'1');zoom=z;zl.textContent=Math.round(z*100)+'%';return}
 requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -440,7 +479,7 @@ if(v)v.addEventListener('keydown',function(e){if(e.key==='Enter'&&b)b.click()});
 }catch(e){}})();
 </script>
 
-<div class="site-stat" style="position:relative;z-index:25;text-align:center;padding:16px 10px 28px;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:10.5px;letter-spacing:.2em;color:inherit;opacity:.55">SITE // <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS</div>
+<div class="site-stat" style="position:relative;z-index:25;text-align:center;padding:16px 10px 28px;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:10.5px;letter-spacing:.2em;color:inherit;opacity:.75">SITE // <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS</div>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
