@@ -549,9 +549,10 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 </div>
 <script>
 (function(){
-var K='wzMsg',KV='https://kvdb.io/5LAs4huAJ1tG3RxR8AMnoq/guestbook',KVK='wtzwtz1290';
+var K='wzMsg';
 var el=document.getElementById('gbL'),ni=document.getElementById('gbN'),mi=document.getElementById('gbM'),b=document.getElementById('gbB'),st=document.getElementById('gbS');
 var A=[];try{A=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){A=[]}
+function CU(){return localStorage.getItem('gbUrl')||''}
 function f(t){var d=new Date(t),p=function(n){return(n<10?'0':'')+n};return p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
 function rd(){
 el.innerHTML='';
@@ -561,7 +562,8 @@ d.innerHTML='<span class="n">'+v.n+'</span><span class="t">'+f(v.t)+'</span><spa
 }
 function sv(){try{localStorage.setItem(K,JSON.stringify(A))}catch(e){}}
 function cloud(){
-fetch(KV).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){var d;try{d=JSON.parse(t)}catch(e){throw 0}
+var u=CU();if(!u){st.textContent='云端未配置 · 点击设置';return}
+fetch(u).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){var d;try{d=JSON.parse(t)}catch(e){throw 0}
 if(Array.isArray(d)&&d.length){A=d;sv()}st.textContent='云端已连接 · '+A.length+' 条';rd()}).catch(function(){st.textContent='云端未连接 · 本地存档'});
 }
 function add(){
@@ -569,10 +571,12 @@ var n=(ni.value||'').replace(/^\s+|\s+$/g,''),m=(mi.value||'').replace(/^\s+|\s+
 if(!m){mi.style.borderColor='#FF5C7A';return}
 mi.style.borderColor='';A.push({t:Date.now(),n:n||'访客',m:m});if(A.length>100)A.shift();
 sv();ni.value='';mi.value='';rd();
-fetch(KV,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+KVK},body:JSON.stringify(A)}).then(function(r){if(r.ok)st.textContent='已同步云端 · 共 '+A.length+' 条'}).catch(function(){st.textContent='云端未连接 · 已存本地'});
+var u=CU();if(!u)return;
+fetch(u,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(A)}).then(function(r){if(r.ok)st.textContent='已同步云端 · 共 '+A.length+' 条'}).catch(function(){st.textContent='云端未连接 · 已存本地'});
 }
-b.addEventListener('click',add);mi.addEventListener('keydown',function(e){if(e.key==='Enter')add()});
-st.textContent='云端连接中…';rd();cloud();
+function cfg(){var u=prompt('留言云端地址（你的电脑服务，含 /guestbook，如 https://xxxx.cpolar.cn/guestbook）',localStorage.getItem('gbUrl')||'');if(u===null)return;u=u.replace(/^\s+|\s+$/g,'');localStorage.setItem('gbUrl',u);cloud()}
+b.addEventListener('click',add);mi.addEventListener('keydown',function(e){if(e.key==='Enter')add()});st.addEventListener('click',cfg);st.style.cursor='pointer';
+rd();cloud();
 })();
 </script>
   </div>
