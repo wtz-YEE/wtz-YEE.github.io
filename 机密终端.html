@@ -142,6 +142,28 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 </div>
 
 <script>
+
+var JB2=(function(){
+var key='$2a$10$y56G5WeQKPjCGJgh6qsZb.BONrxPfyzJTErDNraLrELGHJ.EuhEM6',bin='6abcefbdffd5d160533ebffb',cloud=null,done=false;
+function get(cb){try{var x=new XMLHttpRequest();x.open('GET','https://api.jsonbin.io/v3/b/'+bin+'/latest');x.setRequestHeader('X-Master-Key',key);x.onload=function(){if(x.status>=200&&x.status<300){try{cloud=JSON.parse(x.responseText).record}catch(e){}}cb()};x.onerror=function(){cb()};x.send()}catch(e){cb()}}
+function cloudCmd(){var out=document.getElementById('out');
+function show(){var c=cloud||{};
+lo('========== 云端数据库 · jsonbin 同步 ==========','acc');
+lo('连接状态：<span class="g">CLOUD ON</span> · BIN '+bin.slice(0,8)+' · 更新 '+ (c.u?new Date(c.u).toLocaleString():'--'));
+lo('总访问：<b>'+((+c.vc)||0)+'</b> 次 · 累计游玩：<b>'+((+c.plays)||0)+'</b> 次');
+var ach=0,devs=[];for(var d in (c.ach||{})){devs.push(d);ach+=c.ach[d]?c.ach[d].length:0}
+var bes=0;for(var d in (c.best||{}))bes++;
+lo('成就解锁：<b>'+ach+'</b> 项（'+devs.length+' 台设备） · 上报最高分设备：<b>'+bes+'</b> 台');
+var vis=c.vis||{},names=Object.keys(vis).sort(function(a,b){return(vis[b]-vis[a])});
+lo('访客名列表（'+names.length+' 位）：');
+if(names.length===0)lo('  （暂无访客登记）','dim');
+for(var i=0;i<names.length;i++)lo('  '+(i<9?'0':'')+(i+1)+'  <b>'+names[i]+'</b>  ·  '+vis[names[i]]+' 次');
+lo('==============================================','acc');
+out.scrollTop=out.scrollHeight}
+if(!done){done=true;lo('正在同步云端数据 ...','dim');get(show)}else show()}
+return{cloudCmd:cloudCmd};
+})();
+
 var ok=sessionStorage.getItem('wzKey')==='3'||sessionStorage.getItem('wzLv')==='9999';
 var btL=document.getElementById('btL'),btBar=document.getElementById('btBar'),btP=document.getElementById('btP'),boot=document.getElementById('boot');
 var lines=['SECURE TERMINAL v3.0','establishing encrypted channel ... ok','loading internal database ...... 7 records','all key solutions indexed ......... ready'];
@@ -165,7 +187,8 @@ function k2(){var d=new Date(),b=d.getDate(),c=d.getHours();return('00'+b).slice
 function k3(){var d=new Date(),b=d.getDate(),c=d.getHours(),p=('00'+b).slice(-2)+('00'+c).slice(-2)+('00'+((b*11+c*7)%100)).slice(-2),w=[],e=[];for(var i=0;i<6;i++){w.push((b*(i+1)+c)%10);e.push((+p[i]+w[i])%10)}return{p:p,w:w.join('-'),e:e.reverse().join('')}}
 var HIST=[],hi=0,V=0;
 function pr(t){lo('<span class="c">C:\\PRTS\\SECURE&gt;</span> '+t,'echo')}
-function help(){lo('可用命令：');lo('<b>help</b> | ? ................ 命令列表');lo('<b>keys</b> | db | 数据库 ...... 内部数据库 · 全部密钥解法');lo('<b>key1</b> .................. 第 1 层 · 密钥');lo('<b>key2</b> | timekey ......... 第 2 层 · 时间密钥（实时）');lo('<b>key3</b> | cipher .......... 第 3 层 · 解码校验（实时）');lo('<b>perm</b> .................. 权限提升 · 三级答案');lo('<b>secret</b> | 9999 ......... 秘技 · LV9999 解锁');lo('<b>verify</b> ................ 三重验证流程');lo('<b>whoami</b> ................ 档案');lo('<b>clear</b> | cls ............ 清屏');lo('<b>lock</b> .................. 锁定并返回索引');lo('<b>exit</b> | back ........... 返回索引')}
+function help(){lo('可用命令：');lo('<b>help</b> | ? ................ 命令列表');lo('<b>keys</b> | db | 数据库 ...... 内部数据库 · 全部密钥解法');lo('<b>key1</b> .................. 第 1 层 · 密钥');lo('<b>key2</b> | timekey ......... 第 2 层 · 时间密钥（实时）');lo('<b>key3</b> | cipher .......... 第 3 层 · 解码校验（实时）');lo('<b>perm</b> .................. 权限提升 · 三级答案');lo('<b>secret</b> | 9999 ......... 秘技 · LV9999 解锁');lo('<b>verify</b> ................ 三重验证流程');
+lo('<b>cloud</b> | visitors ....... 云端数据库 · 访客名列表');lo('<b>whoami</b> ................ 档案');lo('<b>clear</b> | cls ............ 清屏');lo('<b>lock</b> .................. 锁定并返回索引');lo('<b>exit</b> | back ........... 返回索引')}
 function keys(){
 lo('========== 内部数据库 · 全部密钥解法 ==========','acc');
 lo('【权限链】 LV0 → 1  问题：wtz 的年龄？            <b>答案：13</b>');
@@ -204,6 +227,7 @@ case'perm':case'权限':perm();break;
 case'secret':case'9999':case'秘技':secret();break;
 case'whoami':whoami();break;
 case'verify':verify();break;
+	case'cloud':case'visitors':case'访客':case'visitor':JB2.cloudCmd();break;
 case'clear':case'cls':cls();break;
 case'lock':sessionStorage.removeItem('wzKey');location.href='index.html';break;
 case'exit':case'back':case'返回':location.href='index.html';break;
@@ -225,6 +249,7 @@ setInterval(clk,1000);clk();
 function boot2(){
 lo('PRTS SECURE TERMINAL v3.0  ·  '+new Date().toLocaleString(),'acc');
 lo('内部数据库已装载 · 全部密钥解法已索引（keys / db / 数据库）');
+lo('云端已连接 · 输入 <b>cloud</b> 查看访客名列表与同步数据');
 lo('提示：输入 <b>help</b> 查看可用命令；方向键 ↑↓ 浏览历史');
 lo('');
 cmdEl.focus();
@@ -251,7 +276,7 @@ if(v)v.addEventListener('keydown',function(e){if(e.key==='Enter'&&b)b.click()});
 </script>
 
 <div class="site-stat" style="position:relative;z-index:25;text-align:center;padding:16px 10px 28px;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:10.5px;letter-spacing:.2em;color:inherit;opacity:.75">SITE // <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS</div>
-<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
 
 
 <script>
