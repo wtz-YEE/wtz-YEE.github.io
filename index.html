@@ -518,6 +518,63 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
         </div>
       </a>
     </div>
+
+<style>
+.gb{max-width:980px;margin:26px auto 0;border:1px solid var(--line2);background:var(--panel)}
+.gb-head{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink3)}
+.gb-head b{color:var(--accent);letter-spacing:.3em}
+.gb-head span{margin-left:auto;font-size:10px}
+.gb-form{display:flex;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.gb-form input{flex:1;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:9px 12px;font-size:13px;outline:none;font-family:var(--mono)}
+.gb-form input:focus{border-color:var(--accent)}
+.gb-form button{border:1px solid var(--line2);background:none;color:var(--ink);padding:0 22px;font-family:var(--mono);font-size:12px;letter-spacing:.2em;cursor:pointer;transition:all .2s}
+.gb-form button:hover{background:#FFFFFF;color:#0A0A0A}
+.gb-list{padding:6px 0;max-height:300px;overflow:auto}
+.gb-item{padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px}
+.gb-item:last-child{border-bottom:none}
+.gb-item .n{color:var(--accent);font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+.gb-item .t{margin-left:10px;color:var(--ink3);font-family:var(--mono);font-size:10px}
+.gb-item .m{display:block;margin-top:3px;color:var(--ink2);line-height:1.6}
+.gb-empty{padding:22px;text-align:center;color:var(--ink3);font-family:var(--mono);font-size:12px;letter-spacing:.2em}
+@media (max-width:640px){.gb-form{flex-wrap:wrap}.gb-form input{flex:1 1 100%}.gb-form button{flex:1 1 100%;padding:10px}}
+</style>
+<div class="gb">
+  <div class="gb-head"><b>GUESTBOOK</b> 留言板<span id="gbS">本地存档</span></div>
+  <div class="gb-form">
+    <input id="gbN" maxlength="12" placeholder="昵称（默认 访客）">
+    <input id="gbM" maxlength="80" placeholder="写点什么…">
+    <button id="gbB">留 言</button>
+  </div>
+  <div id="gbL" class="gb-list"></div>
+</div>
+<script>
+(function(){
+var K='wzMsg',KV='https://kvdb.io/5LAs4huAJ1tG3RxR8AMnoq/guestbook',KVK='wtzwtz1290';
+var el=document.getElementById('gbL'),ni=document.getElementById('gbN'),mi=document.getElementById('gbM'),b=document.getElementById('gbB'),st=document.getElementById('gbS');
+var A=[];try{A=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){A=[]}
+function f(t){var d=new Date(t),p=function(n){return(n<10?'0':'')+n};return p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
+function rd(){
+el.innerHTML='';
+if(!A.length){el.innerHTML='<div class="gb-empty">NO MESSAGES YET · 还没有留言</div>';return}
+for(var i=A.length-1;i>=0;i--){var v=A[i],d=document.createElement('div');d.className='gb-item';
+d.innerHTML='<span class="n">'+v.n+'</span><span class="t">'+f(v.t)+'</span><span class="m">'+v.m+'</span>';el.appendChild(d)}
+}
+function sv(){try{localStorage.setItem(K,JSON.stringify(A))}catch(e){}}
+function cloud(){
+fetch(KV).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){var d;try{d=JSON.parse(t)}catch(e){throw 0}
+if(Array.isArray(d)&&d.length){A=d;sv()}st.textContent='云端已连接 · '+A.length+' 条';rd()}).catch(function(){st.textContent='云端未连接 · 本地存档'});
+}
+function add(){
+var n=(ni.value||'').replace(/^\s+|\s+$/g,''),m=(mi.value||'').replace(/^\s+|\s+$/g,'');
+if(!m){mi.style.borderColor='#FF5C7A';return}
+mi.style.borderColor='';A.push({t:Date.now(),n:n||'访客',m:m});if(A.length>100)A.shift();
+sv();ni.value='';mi.value='';rd();
+fetch(KV,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+KVK},body:JSON.stringify(A)}).then(function(r){if(r.ok)st.textContent='已同步云端 · 共 '+A.length+' 条'}).catch(function(){st.textContent='云端未连接 · 已存本地'});
+}
+b.addEventListener('click',add);mi.addEventListener('keydown',function(e){if(e.key==='Enter')add()});
+st.textContent='云端连接中…';rd();cloud();
+})();
+</script>
   </div>
 
 
