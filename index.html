@@ -684,7 +684,14 @@ function rid(){
 
 /* ---------- 状态 ---------- */
 var S={api:'',user:null,peer:null,timer:null};
-try{ S.api=localStorage.getItem(K_API)||''; }catch(e){}
+/* 只有 http(s):// 开头的地址才认，否则一律回落到本地模式 */
+function normalizeApi(v){
+  v=String(v||'').trim().replace(/\/+$/,'');
+  if(!v) return '';
+  if(!/^https?:\/\//i.test(v)) return '';
+  return v;
+}
+try{ S.api=normalizeApi(localStorage.getItem(K_API)); }catch(e){ S.api=''; }
 try{
   var sv=JSON.parse(localStorage.getItem(K_SESS)||'null');
   if(sv&&sv.token&&sv.username) S.user=sv;
@@ -798,23 +805,36 @@ function localCall(path,p){
 }
 
 /* ---------- 统一调用：云端 fetch / 本地 localCall ---------- */
-function call(path,payload){
-  var body=Object.assign({token:S.user?S.user.token:''},payload||{});
-  if(S.api){
-    return fetch(S.api.replace(/\/+$/,'')+path,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},   /* ← 修复：原来是带非 ASCII 连字符的 Content‑Type */
-      body:JSON.stringify(body)
-    }).then(function(res){
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      return res.json();
-    });
-  }
+/* ---------- 统一调用：云端 fetch / 本地 localCall ---------- */
+function localAsync(path,body){
   return new Promise(function(resolve,reject){
     setTimeout(function(){
       try{ resolve(localCall(path,body)); }
       catch(e){ reject(e); }
     },40);
+  });
+}
+
+function call(path,payload){
+  var body=Object.assign({token:S.user?S.user.token:''},payload||{});
+
+  /* 没有合法 API 地址 → 走本地模式，永不发网络请求 */
+  if(!S.api) return localAsync(path,body);
+
+  var url=S.api+path;
+  return fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  }).then(function(res){
+    if(!res.ok) throw new Error('HTTP '+res.status+' @ '+url);
+    return res.json();
+  }).catch(function(err){
+    /* 把具体 URL 带进错误信息，方便定位 */
+    var e2=new Error((err&&err.message?err.message:'网络请求失败')+' — '+url);
+    e2.url=url;
+    e2.isNetwork=true;
+    throw e2;
   });
 }
 
@@ -1037,17 +1057,42 @@ function gbOpenConfig(){
 }
 function gbCloseConfig(){ $('gb_config_dialog').style.display='none'; }
 function gbSaveConfig(){
-  var v=$('gb_api_input').value.trim().replace(/\/+$/,'');
+  var raw=$('gb_api_input').value.trim();
+  var v=normalizeApi(raw);
+
+  if(raw && !v){
+    say('地址必须以 http:// 或 https:// 开头',false);
+    return;
+  }
+
   S.api=v;
   try{
     if(v) localStorage.setItem(K_API,v);
     else localStorage.removeItem(K_API);
   }catch(e){}
+
   gbCloseConfig();
   updateModeLabel();
-  say(v?'已切换到云端接口':'已切换为本地模式',true);
+  say(v?('已切换到云端 · '+v):'已切回本地模式',true);
   loadGuestBook();
   if(S.user) pmRefreshConversations();
+}
+
+/* 启动时自动从 GitHub 读取云端地址（由「一键启动云端.bat」推送） */
+function autoCloud(){
+  fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){
+    if(!r.ok) throw 0;
+    return r.text();
+  }).then(function(t){
+    var v=normalizeApi((t||'').replace(/^\s+|\s+$/g,''));
+    if(!v) return;
+    S.api=v;
+    try{ localStorage.setItem(K_API,v); }catch(e){}
+    updateModeLabel();
+    say('已自动接入云端 · '+v,true);
+    loadGuestBook();
+    if(S.user) pmRefreshConversations();
+  }).catch(function(){});
 }
 
 /* ---------- 事件绑定 ---------- */
@@ -1101,6 +1146,7 @@ bind();
 updateModeLabel();
 applyAuth();
 loadGuestBook();
+autoCloud();
 if(S.user){
   pmRefreshConversations();
   startPoll();
