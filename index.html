@@ -1016,7 +1016,7 @@ function pmSend(){
   var msg=$('pm_msg').value.trim();
   if(!to) return say('请填写对方账号',false);
   if(!msg) return say('消息不能为空',false);
-  return call('/pm_send',{to:to,msg:msg}).then(function(j){
+  return call('/pm_send',{to:to,msg:msg,token:S.user&&S.user.token}).then(function(j){
     if(!j.ok) return say(j.msg||'发送失败',false);
     $('pm_msg').value='';
     say('已发送',true);
@@ -1030,7 +1030,9 @@ function pmSend(){
 function startPoll(){
   stopPoll();
   S.timer=setInterval(function(){
-    if(document.hidden||!S.user) return;
+    if(document.hidden) return;
+    if(S.api) loadGuestBook();
+    if(!S.user) return;
     pmRefreshConversations();
     if(S.peer) pmRefreshThread();
   },6000);
@@ -1119,7 +1121,7 @@ function bind(){
     var btn=e.target.closest('[data-del]');
     if(!btn) return;
     if(!confirm('确定删除这条留言？')) return;
-    call('/guest_del',{id:btn.getAttribute('data-del')}).then(function(j){
+    call('/guest_del',{id:btn.getAttribute('data-del'),token:S.user&&S.user.token}).then(function(j){
       say(j.msg||(j.ok?'已删除':'删除失败'),!!j.ok);
       if(j.ok) loadGuestBook();
     }).catch(function(err){ say('删除失败：'+err.message,false); });
