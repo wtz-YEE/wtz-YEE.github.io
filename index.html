@@ -411,6 +411,71 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 .toast{background:#171718;color:var(--accent2)}
 .dino-art{filter:drop-shadow(0 0 14px rgba(255,255,255,.22))}
 
+/* ===== 留言板 / 私聊 v3.0 ===== */
+.gb{max-width:1080px;margin:26px auto 0;border:1px solid var(--line2);background:linear-gradient(165deg,#151516,#0E0E0F);box-shadow:0 0 0 1px rgba(255,255,255,.05)}
+.gb-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink3)}
+.gb-head b{color:var(--accent);letter-spacing:.3em}
+.gb-mode{margin-left:auto;border:1px solid var(--line2);padding:3px 10px;color:var(--ink3);cursor:pointer;transition:.2s;font-size:10.5px}
+.gb-mode:hover{border-color:var(--accent);color:var(--accent)}
+.gb-auth{padding:14px 16px;border-bottom:1px solid var(--line)}
+.gb-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.gb-row input{flex:1;min-width:110px;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:9px 12px;font-size:13px;outline:none;font-family:var(--mono);transition:border-color .2s}
+.gb-row input:focus{border-color:var(--accent)}
+.gb-row input:disabled{opacity:.6;cursor:not-allowed}
+.gb-btn{border:1px solid var(--line2);background:none;color:var(--ink);padding:9px 20px;font-family:var(--mono);font-size:12px;letter-spacing:.2em;cursor:pointer;transition:.2s}
+.gb-btn:hover{background:#FFFFFF;color:#0A0A0A;border-color:#FFFFFF}
+.gb-btn.ghost{color:var(--ink2)}
+.gb-btn.ghost:hover{background:none;color:var(--accent);border-color:var(--accent)}
+.gb-btn:disabled{opacity:.4;cursor:default;pointer-events:none}
+.gb-who{font-family:var(--mono);font-size:12px;color:var(--ink2);letter-spacing:.1em}
+.gb-who b{color:var(--accent)}
+.gb-tag{border:1px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:10px;letter-spacing:.14em;padding:2px 8px}
+.gb-say{margin-top:9px;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:var(--ink3);min-height:15px;transition:color .2s}
+.gb-say.ok{color:#2EE6A8}
+.gb-say.bad{color:#FF5C7A}
+.gb-pm{display:none;border-bottom:1px solid var(--line)}
+.gb-pm.on{display:grid;grid-template-columns:190px 1fr}
+@media(max-width:700px){.gb-pm.on{grid-template-columns:1fr}.gb-conv{max-height:170px;border-right:none!important;border-bottom:1px solid var(--line)}}
+.gb-conv{border-right:1px solid var(--line);max-height:360px;overflow:auto}
+.gb-conv-h{padding:9px 12px;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--ink3);border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
+.gb-conv-i{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .15s}
+.gb-conv-i:hover,.gb-conv-i.on{background:rgba(255,255,255,.06)}
+.gb-conv-i .p{color:var(--ink);font-family:var(--mono);font-size:12px;display:flex;align-items:center;gap:6px}
+.gb-conv-i .p .u{margin-left:auto;background:#FF5C7A;color:#fff;font-size:9.5px;line-height:15px;padding:0 6px;border-radius:8px;font-family:var(--mono)}
+.gb-conv-i .l{color:var(--ink3);font-size:11px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gb-pm-main{display:flex;flex-direction:column;min-width:0}
+.gb-msgs{flex:1;height:300px;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.gb-bub{max-width:78%;border:1px solid var(--line2);padding:7px 11px;font-size:13px;line-height:1.6;word-break:break-word;border-radius:3px}
+.gb-bub.me{align-self:flex-end;border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.07)}
+.gb-bub.you{align-self:flex-start}
+.gb-bub-t{font-family:var(--mono);font-size:9.5px;color:var(--ink3);margin-bottom:3px;letter-spacing:.06em}
+.gb-pm-input{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.gb-pm-input input{background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:8px 11px;font-size:12.5px;outline:none;font-family:var(--mono);transition:border-color .2s}
+.gb-pm-input input:focus{border-color:var(--accent)}
+#pm_target{width:120px;flex:none}
+#pm_msg{flex:1;min-width:120px}
+@media(max-width:560px){#pm_target{width:100%}}
+.gb-form{padding:14px 16px;border-bottom:1px solid var(--line)}
+.gb-form textarea{width:100%;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:10px 12px;font-size:13px;outline:none;font-family:inherit;resize:vertical;min-height:70px;transition:border-color .2s;line-height:1.7}
+.gb-form textarea:focus{border-color:var(--accent)}
+.gb-list{max-height:340px;overflow:auto}
+.gb-item{padding:12px 16px;border-bottom:1px solid var(--line)}
+.gb-item:last-child{border-bottom:none}
+.gb-item-h{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+.gb-name{color:var(--accent);letter-spacing:.08em;font-weight:700}
+.gb-time{color:var(--ink3);margin-left:auto;font-size:10px;letter-spacing:.06em}
+.gb-del{border:1px solid var(--line2);color:var(--ink3);font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 9px;cursor:pointer;transition:.2s}
+.gb-del:hover{border-color:#FF5C7A;color:#FF5C7A}
+.gb-text{margin-top:6px;color:var(--ink2);font-size:13.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+.gb-empty{padding:26px 16px;text-align:center;color:var(--ink3);font-family:var(--mono);font-size:12px;letter-spacing:.18em}
+.gb-dlg{position:fixed;inset:0;z-index:9999;background:rgba(5,7,8,.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.gb-dlg-c{width:min(420px,90vw);background:#171718;border:1px solid var(--line2);padding:24px 22px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.gb-dlg-c h4{font-size:14px;letter-spacing:.24em;font-family:var(--mono);color:var(--accent);font-weight:700}
+.gb-dlg-c p{margin:10px 0 14px;font-size:12.5px;line-height:1.8;color:var(--ink3)}
+.gb-dlg-c input{width:100%;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:10px 12px;font-size:13px;outline:none;font-family:var(--mono)}
+.gb-dlg-c input:focus{border-color:var(--accent)}
+@media(max-width:640px){.gb-head{flex-wrap:wrap}.gb-mode{margin-left:0}}
+
 </style>
 <body>
 
@@ -519,71 +584,543 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
       </a>
     </div>
 
-<style>
-.gb{max-width:980px;margin:26px auto 0;border:1px solid var(--line2);background:var(--panel)}
-.gb-head{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink3)}
-.gb-head b{color:var(--accent);letter-spacing:.3em}
-.gb-head span{margin-left:auto;font-size:10px}
-.gb-form{display:flex;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
-.gb-form input{flex:1;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:9px 12px;font-size:13px;outline:none;font-family:var(--mono)}
-.gb-form input:focus{border-color:var(--accent)}
-.gb-form button{border:1px solid var(--line2);background:none;color:var(--ink);padding:0 22px;font-family:var(--mono);font-size:12px;letter-spacing:.2em;cursor:pointer;transition:all .2s}
-.gb-form button:hover{background:#FFFFFF;color:#0A0A0A}
-.gb-list{padding:6px 0;max-height:300px;overflow:auto}
-.gb-item{padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px}
-.gb-item:last-child{border-bottom:none}
-.gb-item .n{color:var(--accent);font-family:var(--mono);font-size:11px;letter-spacing:.06em}
-.gb-item .t{margin-left:10px;color:var(--ink3);font-family:var(--mono);font-size:10px}
-.gb-item .m{display:block;margin-top:3px;color:var(--ink2);line-height:1.6}
-.gb-empty{padding:22px;text-align:center;color:var(--ink3);font-family:var(--mono);font-size:12px;letter-spacing:.2em}
-@media (max-width:640px){.gb-form{flex-wrap:wrap}.gb-form input{flex:1 1 100%}.gb-form button{flex:1 1 100%;padding:10px}}
-</style>
-<div class="gb">
-  <div class="gb-head"><b>GUESTBOOK</b> 留言板<span id="gbS">本地存档</span></div>
-  <div class="gb-form">
-    <input id="gbN" maxlength="12" placeholder="昵称（默认 访客）">
-    <input id="gbM" maxlength="80" placeholder="写点什么…">
-    <button id="gbB">留 言</button>
+<!-- ============ GUESTBOOK / 私聊 ============ -->
+<div class="gb" id="gbRoot">
+  <div class="gb-head">
+    <b>GUESTBOOK</b>
+    <span>访客留言板 · 私聊频道</span>
+    <span class="gb-mode" id="gb_status" title="点击配置云端接口">本地模式</span>
   </div>
-  <div id="gbL" class="gb-list"></div>
+
+  <!-- 账号区 -->
+  <div class="gb-auth">
+    <div class="gb-row" id="gb_login_area">
+      <input id="gb_user" placeholder="账号" autocomplete="username" maxlength="16">
+      <input id="gb_pwd" type="password" placeholder="密码" autocomplete="current-password" maxlength="32">
+      <button class="gb-btn" id="gb_btn_login">登 录</button>
+      <button class="gb-btn ghost" id="gb_btn_reg">注 册</button>
+    </div>
+    <div class="gb-row" id="gb_userinfo" style="display:none">
+      <span class="gb-who">已登录 · <b id="gb_curuser"></b></span>
+      <span class="gb-tag" id="gb_isadmin" style="display:none">管理员</span>
+      <button class="gb-btn ghost" id="gb_btn_logout">登 出</button>
+    </div>
+    <div class="gb-say" id="gb_say"></div>
+  </div>
+
+  <!-- 私聊区 -->
+  <div class="gb-pm" id="gb_pm_panel">
+    <div class="gb-conv">
+      <div class="gb-conv-h">会话列表</div>
+      <div id="pm_conv"></div>
+    </div>
+    <div class="gb-pm-main">
+      <div class="gb-conv-h" id="pm_title">选择会话，或直接输入对方账号</div>
+      <div class="gb-msgs" id="pm_box"></div>
+      <div class="gb-pm-input">
+        <input id="pm_target" placeholder="对方账号" maxlength="16">
+        <input id="pm_msg" placeholder="输入消息，回车发送" maxlength="500">
+        <button class="gb-btn" id="pm_send_btn">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 留言输入 -->
+  <div class="gb-form">
+    <div class="gb-row" style="margin-bottom:8px">
+      <input id="gb_name" placeholder="昵称（访客）" maxlength="16">
+    </div>
+    <textarea id="gb_text" placeholder="写下留言…" maxlength="500"></textarea>
+    <div class="gb-row" style="margin-top:10px">
+      <button class="gb-btn" id="gb_submit">提交留言</button>
+      <span class="gb-say" id="gb_say2" style="margin:0"></span>
+    </div>
+  </div>
+
+  <!-- 留言列表 -->
+  <div class="gb-list" id="guestbookList"></div>
 </div>
+
+<!-- 云端配置弹窗 -->
+<div id="gb_config_dialog" class="gb-dlg" style="display:none">
+  <div class="gb-dlg-c">
+    <h4>云端接口配置</h4>
+    <p>填入后端地址（如 <code>http://127.0.0.1:8787</code>）即可启用云端账号 / 私聊；留空则使用本地模式，数据只保存在本机浏览器。</p>
+    <input id="gb_api_input" placeholder="https://example.com/api">
+    <div class="gb-row" style="margin-top:16px;justify-content:flex-end">
+      <button class="gb-btn ghost" id="gb_cfg_cancel">取消</button>
+      <button class="gb-btn" id="gb_cfg_save">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
-var K='wzMsg';
-var el=document.getElementById('gbL'),ni=document.getElementById('gbN'),mi=document.getElementById('gbM'),b=document.getElementById('gbB'),st=document.getElementById('gbS');
-var A=[];try{A=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){A=[]}
-function CU(){return localStorage.getItem('gbUrl')||''}
-function f(t){var d=new Date(t),p=function(n){return(n<10?'0':'')+n};return p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
-function rd(){
-el.innerHTML='';
-if(!A.length){el.innerHTML='<div class="gb-empty">NO MESSAGES YET · 还没有留言</div>';return}
-for(var i=A.length-1;i>=0;i--){var v=A[i],d=document.createElement('div');d.className='gb-item';
-d.innerHTML='<span class="n">'+v.n+'</span><span class="t">'+f(v.t)+'</span><span class="m">'+v.m+'</span>';el.appendChild(d)}
+'use strict';
+
+/* ---------- 常量 & 工具 ---------- */
+var K_API='gb_api_url', K_SESS='gb_session', K_DB='gb_db_v1';
+var AUTH_ERR={ok:false,msg:'登录已失效，请重新登录'};
+function $(id){return document.getElementById(id)}
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
 }
-function sv(){try{localStorage.setItem(K,JSON.stringify(A))}catch(e){}}
-function cloud(){
-var u=CU();if(!u){st.textContent='云端未配置 · 点击设置';return}
-fetch(u).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){var d;try{d=JSON.parse(t)}catch(e){throw 0}
-if(Array.isArray(d)&&d.length){A=d;sv()}st.textContent='云端已连接 · '+A.length+' 条';rd()}).catch(function(){st.textContent='云端未连接 · 本地存档'});
+function nowStr(){
+  var d=new Date(),p=function(n){return(n<10?'0':'')+n};
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
 }
-function add(){
-var n=(ni.value||'').replace(/^\s+|\s+$/g,''),m=(mi.value||'').replace(/^\s+|\s+$/g,'');
-if(!m){mi.style.borderColor='#FF5C7A';return}
-mi.style.borderColor='';A.push({t:Date.now(),n:n||'访客',m:m});if(A.length>100)A.shift();
-sv();ni.value='';mi.value='';rd();
-var u=CU();if(!u)return;
-fetch(u,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(A)}).then(function(r){if(r.ok)st.textContent='已同步云端 · 共 '+A.length+' 条'}).catch(function(){st.textContent='云端未连接 · 已存本地'});
+/* 仅用于本地模式的弱哈希，别拿它当生产安全 */
+function hash(s){
+  var h=5381,i;
+  s=String(s);
+  for(i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))|0;
+  return 'h'+(h>>>0).toString(16);
 }
-function cfg(){var u=prompt('留言云端地址（你的电脑服务，含 /guestbook，如 https://xxxx.cpolar.cn/guestbook）',localStorage.getItem('gbUrl')||'');if(u===null)return;u=u.replace(/^\s+|\s+$/g,'');localStorage.setItem('gbUrl',u);cloud()}
-b.addEventListener('click',add);mi.addEventListener('keydown',function(e){if(e.key==='Enter')add()});st.addEventListener('click',cfg);st.style.cursor='pointer';
-rd();cloud();
+function rid(){
+  return Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+}
+
+/* ---------- 状态 ---------- */
+var S={api:'',user:null,peer:null,timer:null};
+try{ S.api=localStorage.getItem(K_API)||''; }catch(e){}
+try{
+  var sv=JSON.parse(localStorage.getItem(K_SESS)||'null');
+  if(sv&&sv.token&&sv.username) S.user=sv;
+}catch(e){}
+
+/* ---------- 本地模式数据库 ---------- */
+function dbLoad(){
+  try{
+    var d=JSON.parse(localStorage.getItem(K_DB));
+    if(d&&d.users&&d.guests&&d.pms){
+      d.sessions=d.sessions||{};
+      if(typeof d.seq!=='number') d.seq=1;
+      return d;
+    }
+  }catch(e){}
+  return {users:{},guests:[],pms:[],sessions:{},seq:1};
+}
+function dbSave(d){ try{ localStorage.setItem(K_DB,JSON.stringify(d)); }catch(e){} }
+
+/* ---------- 本地模式路由（与后端接口完全一致） ---------- */
+function localCall(path,p){
+  var d=dbLoad();
+  function me(){
+    var n=d.sessions[p.token];
+    return (n&&d.users[n]) ? {name:n,is_admin:!!d.users[n].is_admin} : null;
+  }
+
+  switch(path){
+    case '/register':{
+      var ru=String(p.username||'').trim(), rp=String(p.password||'');
+      if(!/^[\w\u4e00-\u9fa5]{2,16}$/.test(ru)) return {ok:false,msg:'账号需 2–16 位字母/数字/汉字'};
+      if(rp.length<3) return {ok:false,msg:'密码至少 3 位'};
+      if(d.users[ru]) return {ok:false,msg:'该账号已存在'};
+      var first=Object.keys(d.users).length===0;
+      d.users[ru]={pw:hash(rp),is_admin:first};
+      dbSave(d);
+      return {ok:true,msg:first?'注册成功 · 你已成为管理员':'注册成功，请登录'};
+    }
+    case '/login':{
+      var lu=String(p.username||'').trim(), lp=String(p.password||'');
+      var rec=d.users[lu];
+      if(!rec||rec.pw!==hash(lp)) return {ok:false,msg:'账号或密码错误'};
+      var tk='tk'+rid();
+      d.sessions[tk]=lu; dbSave(d);
+      return {ok:true,username:lu,is_admin:!!rec.is_admin,token:tk};
+    }
+    case '/logout':{
+      if(p.token) delete d.sessions[p.token];
+      dbSave(d); return {ok:true};
+    }
+    case '/guests':
+      return {ok:true,list:d.guests.slice().sort(function(a,b){return b.id-a.id})};
+
+    case '/guest_add':{
+      var txt=String(p.text||'').trim().slice(0,500);
+      if(!txt) return {ok:false,msg:'内容不能为空'};
+      var cu=me();
+      var nm=(cu?cu.name:(String(p.name||'').trim()||'访客')).slice(0,16);
+      d.guests.push({id:d.seq++,user:cu?cu.name:null,name:nm,text:txt,time:nowStr()});
+      dbSave(d);
+      return {ok:true};
+    }
+    case '/guest_del':{
+      var cd=me(); if(!cd) return AUTH_ERR;
+      var g=null,i;
+      for(i=0;i<d.guests.length;i++){ if(String(d.guests[i].id)===String(p.id)){ g=d.guests[i]; break; } }
+      if(!g) return {ok:false,msg:'留言不存在'};
+      if(!cd.is_admin&&g.user!==cd.name) return {ok:false,msg:'无权删除该留言'};
+      d.guests=d.guests.filter(function(x){return x!==g});
+      dbSave(d);
+      return {ok:true,msg:'已删除'};
+    }
+    case '/pm_send':{
+      var cs=me(); if(!cs) return AUTH_ERR;
+      var to=String(p.to||'').trim(), msg=String(p.msg||'').trim().slice(0,500);
+      if(!to||!msg) return {ok:false,msg:'请填写收件人与内容'};
+      if(to===cs.name) return {ok:false,msg:'不能给自己发私聊'};
+      if(!d.users[to]) return {ok:false,msg:'收件人不存在'};
+      d.pms.push({id:d.seq++,from:cs.name,to:to,msg:msg,time:nowStr(),read:false});
+      dbSave(d);
+      return {ok:true};
+    }
+    case '/pm_thread':{
+      var ct=me(); if(!ct) return AUTH_ERR;
+      var peer=String(p.peer||'').trim();
+      var list=d.pms.filter(function(m){
+        return (m.from===ct.name&&m.to===peer)||(m.from===peer&&m.to===ct.name);
+      });
+      var ch=false;
+      list.forEach(function(m){ if(m.to===ct.name&&!m.read){ m.read=true; ch=true; } });
+      if(ch) dbSave(d);
+      return {ok:true,list:list};
+    }
+    case '/pm_conv':{
+      var cc=me(); if(!cc) return AUTH_ERR;
+      var map={};
+      d.pms.forEach(function(m){
+        if(m.from!==cc.name&&m.to!==cc.name) return;
+        var peer=m.from===cc.name?m.to:m.from;
+        if(!map[peer]) map[peer]={peer:peer,last:'',time:'',unread:0};
+        map[peer].last=m.msg; map[peer].time=m.time;
+        if(m.to===cc.name&&!m.read) map[peer].unread++;
+      });
+      var arr=Object.keys(map).map(function(k){return map[k]});
+      arr.sort(function(a,b){ return a.time<b.time?1:-1; });
+      return {ok:true,list:arr};
+    }
+    default:
+      return {ok:false,msg:'未知接口 '+path};
+  }
+}
+
+/* ---------- 统一调用：云端 fetch / 本地 localCall ---------- */
+function call(path,payload){
+  var body=Object.assign({token:S.user?S.user.token:''},payload||{});
+  if(S.api){
+    return fetch(S.api.replace(/\/+$/,'')+path,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},   /* ← 修复：原来是带非 ASCII 连字符的 Content‑Type */
+      body:JSON.stringify(body)
+    }).then(function(res){
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return res.json();
+    });
+  }
+  return new Promise(function(resolve,reject){
+    setTimeout(function(){
+      try{ resolve(localCall(path,body)); }
+      catch(e){ reject(e); }
+    },40);
+  });
+}
+
+/* ---------- 提示 ---------- */
+function say(msg,ok){
+  var el1=$('gb_say'), el2=$('gb_say2');
+  var cls='gb-say'+(ok===true?' ok':(ok===false?' bad':''));
+  [el1,el2].forEach(function(el){
+    if(!el) return;
+    el.className=cls;
+    el.textContent=msg||'';
+  });
+  if(msg) setTimeout(function(){
+    [el1,el2].forEach(function(el){
+      if(el&&el.textContent===msg) el.textContent='';
+    });
+  },4200);
+}
+
+/* ---------- 登录态 UI ---------- */
+function applyAuth(){
+  var on=!!S.user;
+  $('gb_login_area').style.display=on?'none':'flex';
+  $('gb_userinfo').style.display=on?'flex':'none';
+  $('gb_pm_panel').classList.toggle('on',on);
+  if(on){
+    $('gb_curuser').textContent=S.user.username;
+    $('gb_isadmin').style.display=S.user.is_admin?'inline-block':'none';
+    $('gb_name').value=S.user.username;
+    $('gb_name').disabled=true;
+    $('gb_name').placeholder='已登录账号';
+  }else{
+    $('gb_name').disabled=false;
+    $('gb_name').placeholder='昵称（访客）';
+  }
+}
+
+/* ---------- 注册 / 登录 / 登出 ---------- */
+function gbRegister(){
+  var u=$('gb_user').value.trim(), p=$('gb_pwd').value;
+  if(!u||!p) return say('请先填写账号与密码',false);
+  return call('/register',{username:u,password:p}).then(function(j){
+    say(j.msg||(j.ok?'注册成功':'注册失败'), !!j.ok);
+    if(j.ok) $('gb_pwd').value='';
+  }).catch(function(e){ say('请求失败：'+e.message,false); });
+}
+
+function gbLogin(){
+  var u=$('gb_user').value.trim(), p=$('gb_pwd').value;
+  if(!u||!p) return say('请先填写账号与密码',false);
+  return call('/login',{username:u,password:p}).then(function(j){
+    if(!j.ok) return say(j.msg||'登录失败',false);
+    S.user={username:j.username,is_admin:!!j.is_admin,token:j.token};
+    try{ localStorage.setItem(K_SESS,JSON.stringify(S.user)); }catch(e){}
+    $('gb_pwd').value='';
+    applyAuth();
+    say('欢迎回来，'+j.username,true);
+    loadGuestBook();
+    pmRefreshConversations();
+    startPoll();
+  }).catch(function(e){ say('请求失败：'+e.message,false); });
+}
+
+function gbLogout(){
+  var done=function(){
+    S.user=null; S.peer=null;
+    try{ localStorage.removeItem(K_SESS); }catch(e){}
+    stopPoll();
+    applyAuth();
+    $('pm_box').innerHTML='';
+    $('pm_conv').innerHTML='';
+    $('pm_target').value='';
+    $('pm_msg').value='';
+    say('已登出',true);
+    loadGuestBook();
+  };
+  call('/logout',{}).then(done,function(){ done(); });
+}
+
+/* ---------- 留言 ---------- */
+function renderGuests(list){
+  var box=$('guestbookList');
+  if(!list||!list.length){
+    box.innerHTML='<div class="gb-empty">暂无留言 · 来做第一个吧</div>';
+    return;
+  }
+  box.innerHTML=list.map(function(g){
+    var mine = S.user && g.user===S.user.username;
+    var canDel = S.user && (S.user.is_admin || mine);
+    return '<div class="gb-item">'+
+      '<div class="gb-item-h">'+
+        '<span class="gb-name">'+esc(g.name)+'</span>'+
+        (g.user?'<span class="gb-tag" style="font-size:9px;padding:1px 6px">已认证</span>':'')+
+        '<span class="gb-time">'+esc(g.time)+'</span>'+
+        (canDel?'<button class="gb-del" data-del="'+esc(g.id)+'">删除</button>':'')+
+      '</div>'+
+      '<div class="gb-text">'+esc(g.text)+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function loadGuestBook(){
+  return call('/guests',{}).then(function(j){
+    renderGuests(j.list||[]);
+  }).catch(function(e){
+    $('guestbookList').innerHTML='<div class="gb-empty">留言加载失败 · '+esc(e.message)+'</div>';
+  });
+}
+
+function submitGuestBook(){
+  var text=$('gb_text').value.trim();
+  var name=$('gb_name').value.trim();
+  if(!text) return say('请先写点内容',false);
+  return call('/guest_add',{name:name,text:text}).then(function(j){
+    if(!j.ok) return say(j.msg||'提交失败',false);
+    $('gb_text').value='';
+    say('留言已提交',true);
+    loadGuestBook();
+  }).catch(function(e){ say('提交失败：'+e.message,false); });
+}
+
+/* ---------- 私聊 ---------- */
+function renderConvs(list){
+  var box=$('pm_conv');
+  if(!list||!list.length){
+    box.innerHTML='<div class="gb-empty" style="padding:18px 10px">暂无会话</div>';
+    return;
+  }
+  box.innerHTML=list.map(function(c){
+    var on = S.peer===c.peer ? ' on' : '';
+    return '<div class="gb-conv-i'+on+'" data-peer="'+esc(c.peer)+'">'+
+      '<div class="p">'+esc(c.peer)+(c.unread?'<span class="u">'+c.unread+'</span>':'')+'</div>'+
+      '<div class="l">'+esc(c.last)+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderThread(list){
+  var box=$('pm_box');
+  if(!list||!list.length){
+    box.innerHTML='<div class="gb-empty">还没有消息 · 说点什么吧</div>';
+    return;
+  }
+  box.innerHTML=list.map(function(m){
+    var mine = S.user && m.from===S.user.username;
+    return '<div class="gb-bub '+(mine?'me':'you')+'">'+
+      '<div class="gb-bub-t">'+esc(m.time)+' · '+esc(m.from)+'</div>'+
+      '<div class="gb-bub-m">'+esc(m.msg)+'</div>'+
+    '</div>';
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+}
+
+function pmRefreshConversations(){
+  if(!S.user) return Promise.resolve();
+  return call('/pm_conv',{}).then(function(j){
+    renderConvs(j.list||[]);
+  }).catch(function(){});
+}
+
+function pmOpen(peer){
+  if(!S.user||!peer) return;
+  S.peer=peer;
+  $('pm_target').value=peer;
+  $('pm_title').textContent='与 '+peer+' 的私聊';
+  return pmRefreshThread().then(pmRefreshConversations);
+}
+
+function pmRefreshThread(){
+  if(!S.user||!S.peer) return Promise.resolve();
+  return call('/pm_thread',{peer:S.peer}).then(function(j){
+    renderThread(j.list||[]);
+  }).catch(function(){});
+}
+
+function pmSend(){
+  if(!S.user) return say('请先登录',false);
+  var to=$('pm_target').value.trim();
+  var msg=$('pm_msg').value.trim();
+  if(!to) return say('请填写对方账号',false);
+  if(!msg) return say('消息不能为空',false);
+  return call('/pm_send',{to:to,msg:msg}).then(function(j){
+    if(!j.ok) return say(j.msg||'发送失败',false);
+    $('pm_msg').value='';
+    say('已发送',true);
+    S.peer=to;
+    $('pm_title').textContent='与 '+to+' 的私聊';
+    return pmRefreshThread().then(pmRefreshConversations);
+  }).catch(function(e){ say('发送失败：'+e.message,false); });
+}
+
+/* ---------- 轮询 ---------- */
+function startPoll(){
+  stopPoll();
+  S.timer=setInterval(function(){
+    if(document.hidden||!S.user) return;
+    pmRefreshConversations();
+    if(S.peer) pmRefreshThread();
+  },6000);
+}
+function stopPoll(){
+  if(S.timer){ clearInterval(S.timer); S.timer=null; }
+}
+
+/* ---------- 云端配置 ---------- */
+function updateModeLabel(){
+  var el=$('gb_status');
+  if(S.api){
+    el.textContent='云端 · '+S.api.replace(/^https?:\/\//,'');
+    el.title='点击修改后端地址';
+  }else{
+    el.textContent='本地模式';
+    el.title='点击配置云端接口';
+  }
+}
+function gbOpenConfig(){
+  $('gb_api_input').value=S.api;
+  $('gb_config_dialog').style.display='flex';
+  setTimeout(function(){ $('gb_api_input').focus(); },40);
+}
+function gbCloseConfig(){ $('gb_config_dialog').style.display='none'; }
+function gbSaveConfig(){
+  var v=$('gb_api_input').value.trim().replace(/\/+$/,'');
+  S.api=v;
+  try{
+    if(v) localStorage.setItem(K_API,v);
+    else localStorage.removeItem(K_API);
+  }catch(e){}
+  gbCloseConfig();
+  updateModeLabel();
+  say(v?'已切换到云端接口':'已切换为本地模式',true);
+  loadGuestBook();
+  if(S.user) pmRefreshConversations();
+}
+
+/* ---------- 事件绑定 ---------- */
+function bind(){
+  $('gb_btn_reg').addEventListener('click',gbRegister);
+  $('gb_btn_login').addEventListener('click',gbLogin);
+  $('gb_btn_logout').addEventListener('click',gbLogout);
+  $('gb_submit').addEventListener('click',submitGuestBook);
+  $('pm_send_btn').addEventListener('click',pmSend);
+  $('gb_status').addEventListener('click',gbOpenConfig);
+  $('gb_cfg_save').addEventListener('click',gbSaveConfig);
+  $('gb_cfg_cancel').addEventListener('click',gbCloseConfig);
+  $('gb_config_dialog').addEventListener('click',function(e){
+    if(e.target===$('gb_config_dialog')) gbCloseConfig();
+  });
+
+  /* 密码框回车即登录 */
+  $('gb_pwd').addEventListener('keydown',function(e){
+    if(e.key==='Enter') gbLogin();
+  });
+
+  /* 留言删除（事件委托，管理员 / 本人可删） */
+  $('guestbookList').addEventListener('click',function(e){
+    var btn=e.target.closest('[data-del]');
+    if(!btn) return;
+    if(!confirm('确定删除这条留言？')) return;
+    call('/guest_del',{id:btn.getAttribute('data-del')}).then(function(j){
+      say(j.msg||(j.ok?'已删除':'删除失败'),!!j.ok);
+      if(j.ok) loadGuestBook();
+    }).catch(function(err){ say('删除失败：'+err.message,false); });
+  });
+
+  /* 会话列表点击 */
+  $('pm_conv').addEventListener('click',function(e){
+    var it=e.target.closest('[data-peer]');
+    if(!it) return;
+    pmOpen(it.getAttribute('data-peer'));
+  });
+
+  /* 私聊回车发送 */
+  $('pm_msg').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); pmSend(); }
+  });
+  $('pm_target').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); $('pm_msg').focus(); }
+  });
+}
+
+/* ---------- 启动 ---------- */
+bind();
+updateModeLabel();
+applyAuth();
+loadGuestBook();
+if(S.user){
+  pmRefreshConversations();
+  startPoll();
+}
+
+/* 暴露到全局，兼容页面里可能存在的内联调用 */
+window.gbRegister=gbRegister;
+window.gbLogin=gbLogin;
+window.gbLogout=gbLogout;
+window.submitGuestBook=submitGuestBook;
+window.loadGuestBook=loadGuestBook;
+window.pmSend=pmSend;
+window.pmRefresh=pmRefreshThread;
+window.gbOpenConfig=gbOpenConfig;
+window.gbCloseConfig=gbCloseConfig;
+window.gbSaveConfig=gbSaveConfig;
+
 })();
 </script>
   </div>
-
-
-
-
 
 </section>
 
@@ -604,7 +1141,7 @@ var l=lv(),f=l===9999;
 document.body.classList.toggle('inv',f);
 var bd=document.getElementById('permBadge'),pl=document.getElementById('permMainLv');
 if(bd){bd.textContent=f?'LV ▓▓▓▓':('LV '+l);bd.classList.toggle('inv',f)}
-if(pl)pl.textContent=f?'当前 LV 9999 · 全权限已解锁':'当前密级 LV '+l;
+if(pl)pl.textContent=f?'当前 LV ▓▓▓▓ · 全权限已解锁':'当前密级 LV '+l;
 }
 perm();
 (function(){
