@@ -697,6 +697,8 @@ def api_risk_words_add():
     for w in raw:
         w = str(w).strip()[:20]
         if w and w not in ws:
+            if len(ws) >= 50:
+                return jsonify({"ok": False, "words": ws, "msg": "关键词已达上限 50 个"})
             ws.append(w)
     _save(RISK_FILE, ws)
     return jsonify({"ok": True, "words": ws, "msg": "已上传 " + str(len(raw)) + " 个关键词"})
@@ -780,7 +782,7 @@ def api_admin_scan():
         if m:
             hit.append(u)
     if not hit:
-        return jsonify({"ok": True, "hits": [], "words": words, "msg": "未发现匹配用户"})
+        return jsonify({"ok": True, "hits": [], "words": words, "msg": "已扫描 " + str(len(words)) + " 个关键词，未发现匹配用户"})
     for u in hit:
         del us[u]
     g = [x for x in g if (x.get("name") or "") not in hit]
