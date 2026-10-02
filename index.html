@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>WTZ 的个人网站</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A0C0E">
 <style>
 :root{
   --bg:#0A0C0E;--bg2:#07090A;--panel:#11151A;--panel2:#181D23;
@@ -88,6 +90,20 @@ body.ready .h-file{animation:hin .5s cubic-bezier(.22,1,.36,1) .8s both}
 .dh-acts button:hover::before{left:130%}
 
 .hero .h-grid{position:absolute;inset:0;background:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:22px 22px;opacity:.6;pointer-events:none;animation:gshift 26s linear infinite;transform:translateZ(-80px)}
+/* ==== 卡片图标美术 v2.7 ==== */
+.thumb svg{transition:transform .45s cubic-bezier(.22,1,.36,1)}
+.card:hover .thumb svg{transform:scale(1.05)}
+.t-scan{animation:tscan 3.4s linear infinite}
+@keyframes tscan{0%{transform:translateY(-34px);opacity:0}10%{opacity:.85}82%{opacity:.85}100%{transform:translateY(176px);opacity:0}}
+.t-pulse{animation:tpulse 2.1s ease-in-out infinite}
+@keyframes tpulse{0%,100%{opacity:.22}50%{opacity:1}}
+.t-blink{animation:tblink 1.4s steps(1) infinite}
+@keyframes tblink{50%{opacity:.15}}
+.t-drift{animation:tdrift 5s ease-in-out infinite}
+@keyframes tdrift{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.t-glow{animation:tglow 3s ease-in-out infinite}
+@keyframes tglow{0%,100%{opacity:.5}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.t-scan,.t-pulse,.t-blink,.t-drift,.t-glow{animation:none}}
 .hero .h-eyebrow{position:relative;font-family:var(--mono);font-size:12px;letter-spacing:.5em;color:var(--accent);margin-bottom:14px;text-indent:.5em;transform:translateZ(16px)}
 .hero h1{position:relative;font-size:clamp(40px,7vw,72px);font-weight:900;letter-spacing:.06em;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:18px;transform-style:preserve-3d;text-shadow:0 0 32px rgba(255,255,255,.16)}
 .hero h1 svg{width:34px;height:34px;color:var(--accent);flex:none}
@@ -370,6 +386,8 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 .hero .h-mono{font-size:10.5px;letter-spacing:.24em;color:var(--ink3)}
 .hero::after{background:linear-gradient(90deg,transparent,var(--accent),transparent)}
 .h-file{margin-top:18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--ink3);display:inline-block;border:1px solid var(--line2);padding:6px 14px;text-indent:0}
+.h-q{margin-top:12px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--ink3);cursor:pointer;user-select:none;line-height:1.7}
+.h-q b{color:var(--accent);font-weight:400}
 .h-file b{color:var(--ink2);font-weight:400}
 .dh-acts{margin-top:22px}
 .dh-acts button{border-color:var(--line2);color:var(--ink2);background:none}
@@ -677,6 +695,66 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
 @keyframes glitch{0%{transform:none}25%{transform:translate(-5px,2px) skewX(3deg)}50%{transform:translate(4px,-2px)}75%{transform:translate(-3px,1px) skewX(-2deg)}100%{transform:none}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
+
+/* ==== v2.8 通知/主页/转场/留言动效 ==== */
+.nt-badge{position:relative}
+.nt-badge .nt-dot{position:absolute;top:-5px;right:-7px;min-width:15px;height:15px;border-radius:8px;background:var(--bad);color:#fff;font-size:9px;line-height:15px;text-align:center;padding:0 3px;display:none;font-family:var(--mono)}
+.nt-badge.on .nt-dot{display:block;animation:ntbounce .9s ease}
+@keyframes ntbounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-4px) scale(1.15)}60%{transform:translateY(2px)}}
+#ntPanel{position:fixed;top:52px;right:14px;width:min(330px,92vw);max-height:60vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);z-index:996;box-shadow:0 18px 40px rgba(0,0,0,.45);display:none}
+#ntPanel.on{display:block}
+#ntPanel h4{padding:10px 14px;margin:0;font-size:11px;letter-spacing:.2em;color:var(--accent);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.nt-it{padding:9px 14px;border-bottom:1px solid var(--line);font-size:12px;line-height:1.6;cursor:pointer;transition:background .2s}
+.nt-it:hover{background:var(--bg2)}
+.nt-it.unread{border-left:2px solid var(--bad)}
+.nt-it b{font-weight:700;color:var(--ink)}
+.nt-it .nt-m{color:var(--ink3);font-size:10.5px;margin-top:2px}
+#pfMask{position:fixed;inset:0;z-index:997;background:rgba(5,7,8,.72);display:none;align-items:center;justify-content:center}
+#pfMask.on{display:flex}
+#pfBox{width:min(430px,92vw);max-height:78vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);position:relative}
+#pfBox .pf-h{padding:18px 18px 14px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:center}
+.pf-ava{width:54px;height:54px;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
+.pf-ava img{width:100%;height:100%;object-fit:cover}
+.pf-nm{font-size:17px;font-weight:700;letter-spacing:.08em}
+.pf-sub{font-size:10.5px;color:var(--ink3);margin-top:4px;line-height:1.8}
+.pf-bd{padding:6px 18px 16px}
+.pf-sec{font-size:10.5px;color:var(--accent);letter-spacing:.18em;margin:12px 0 6px;border-bottom:1px dashed var(--line);padding-bottom:4px}
+.pf-row{padding:7px 0;border-bottom:1px solid var(--line);font-size:12px;line-height:1.6;cursor:pointer}
+.pf-row:hover{background:var(--bg2)}
+.pf-row .pf-t{color:var(--ink2)}
+.pf-row .pf-m{color:var(--ink3);font-size:10.5px;margin-top:2px}
+.pf-close{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--ink3);font-size:15px;cursor:pointer;padding:4px}
+#tvLayer{position:fixed;inset:0;z-index:998;pointer-events:none;opacity:0;visibility:hidden}
+#tvLayer.on{opacity:1;visibility:visible;pointer-events:auto}
+.tv-grid{position:absolute;inset:0;background:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:20px 20px}
+.tv-scan{position:absolute;left:0;right:0;height:90px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.5),transparent);top:-90px}
+#tvLayer.on .tv-scan{animation:tvscan .6s linear forwards}
+@keyframes tvscan{to{top:110%}}
+.tv-txt{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--ink);text-align:center;white-space:nowrap}
+.tv-txt small{display:block;margin-top:8px;font-size:10px;color:var(--ink3);letter-spacing:.2em}
+.tv-bar{position:absolute;left:50%;top:calc(50% + 40px);transform:translateX(-50%);width:190px;height:2px;background:var(--line);overflow:hidden}
+.tv-bar i{position:absolute;inset:0;background:var(--accent);transform:translateX(-100%);animation:tvbar .6s ease forwards}
+@keyframes tvbar{to{transform:translateX(0)}}
+.gb-item-new{animation:gbIn .5s cubic-bezier(.22,1,.36,1)}
+@keyframes gbIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.gb-ty-cu::after{content:'▌';animation:tblink2 1s steps(1) infinite;color:var(--accent)}
+@keyframes tblink2{50%{opacity:0}}
+.th-btn.pmhot{animation:ntbounce 1s ease infinite}
+mark.hl{background:var(--accent);color:#000;padding:0 2px}
+.srch-tabs{display:flex;gap:6px;margin:8px 0 4px;flex-wrap:wrap}
+.srch-tab{border:1px solid var(--line);padding:2px 10px;font-size:11px;cursor:pointer;color:var(--ink2);background:none}
+.srch-tab.on{border-color:var(--accent);color:var(--accent)}
+@media(prefers-reduced-motion:reduce){#tvLayer.on .tv-scan,#tvLayer.on .tv-bar i,.gb-item-new,.nt-badge.on .nt-dot{animation:none}}
+
+#status{transition:background .35s ease,border-color .35s ease}
+#status.scrl{background:rgba(4,5,6,.97);border-bottom-color:var(--accent)}
+#status .st-l{position:relative}
+#status .st-l::after{content:"";position:absolute;left:0;right:0;bottom:-5px;height:1px;background:linear-gradient(90deg,transparent 0%,var(--accent) 50%,transparent 100%);background-size:200% 100%;opacity:0;transition:opacity .3s}
+#status.scrl .st-l::after{opacity:.9;animation:scan 2.6s linear infinite}
+@keyframes scan{0%{background-position:120% 0}100%{background-position:-120% 0}}
+#status .st-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:breath 2.2s ease-in-out infinite;flex:none}
+@keyframes breath{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@media(prefers-reduced-motion:reduce){#status.scrl .st-l::after,.st-dot{animation:none}}
 </style>
 <body>
 
@@ -699,12 +777,14 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
   </div>
 </div>
 
+<canvas id="fx" style="position:fixed;inset:0;z-index:6;pointer-events:none;display:none"></canvas>
 <header id="status">
-  <span class="st-l">WTZ // 个人网站 · 黑白</span>
+  <span class="st-dot"></span><span class="st-l">WTZ // 个人网站 · 黑白</span>
   <span class="st-c" id="clock">--:--:--</span>
   <span class="pbadge" id="permBadge">LV 0</span>
   <button class="th-btn" id="lvBtn" title="签到 · 经验等级" style="display:none">LV 1</button>
   <button class="th-btn" id="pmBadge" title="私聊未读" style="display:none">✉</button>
+  <button class="th-btn nt-badge" id="ntBadge" title="通知" style="display:none">🔔<span class="nt-dot" id="ntDot">0</span></button>
   <button class="th-btn" id="bgmBtn" title="背景音乐">♪</button>
   <button class="th-btn" id="srchBtn" title="站内搜索">⌕ 搜索</button>
   <button class="th-btn" id="thBtn" title="界面配色">◐ 配色</button>
@@ -724,6 +804,7 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
     <p class="h-sub">PRTS 档案室 ▸ 守夜人论坛 ▸ 卡塞尔学院 —— 多入口</p>
     <p class="h-mono">档案 · 终端 · 技能 · 模组 · 更新日志 —— 云端留言板在此</p>
     <div class="h-file">FILE WTZ·ROOT &nbsp;|&nbsp; <b>4 入口</b> · 档案 + 论坛 + 学院 + 日志 · 云端联动</div>
+    <div class="h-q" id="qotd" title="点击换一句">[ 语录 ] ▸ LOADING…</div>
   </div>
 
 <div class="block" style="padding-top:0">
@@ -732,15 +813,30 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <defs><linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#3d3d3d" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <path d="M200 26 L330 84 V144 L200 182 L70 144 V84 Z" fill="none" stroke="#FFFFFF" stroke-width="3"/>
-            <path d="M200 26 L200 182 M70 84 L330 144 M330 84 L70 144" stroke="#909090" stroke-width="2"/>
-            <rect x="160" y="58" width="80" height="80" rx="4" fill="none" stroke="#E8E8E8" stroke-width="2.5"/>
-            <circle cx="200" cy="98" r="12" fill="none" stroke="#E8E8E8" stroke-width="2"/>
-            <circle cx="200" cy="98" r="4" fill="#E8E8E8"/>
-            <path d="M200 98 L226 74" stroke="#E8E8E8" stroke-width="2"/>
-            <text x="200" y="196" font-family="monospace" font-size="12" fill="#909090" text-anchor="middle">PRTS ARCHIVE</text>
+            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
+            <rect x="30" y="22" width="96" height="16" rx="2" fill="none" stroke="#454545" stroke-width="1"/>
+            <rect x="38" y="27" width="44" height="6" fill="#555"/>
+            <circle cx="104" cy="30" r="3" fill="#666"/>
+            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg1)" opacity="0"/>
+            <g class="t-drift">
+              <path d="M200 20 L340 88 V154 L200 180 L60 154 V88 Z" fill="none" stroke="#FFFFFF" stroke-width="2.6"/>
+              <path d="M200 20 L200 180 M60 88 L340 154 M340 88 L60 154" stroke="#5a5a5a" stroke-width="1.2"/>
+              <path d="M200 42 L302 93 V147 L200 168 L98 147 V93 Z" fill="none" stroke="#888" stroke-width="1.1"/>
+              <rect x="154" y="60" width="92" height="92" rx="5" fill="none" stroke="#E8E8E8" stroke-width="2"/>
+              <circle class="t-pulse" cx="200" cy="106" r="16" fill="none" stroke="#fff" stroke-width="1.5"/>
+              <circle cx="200" cy="106" r="5.5" fill="#E8E8E8"/>
+              <circle class="t-pulse" cx="200" cy="106" r="2.2" fill="#fff"/>
+              <path d="M200 106 L232 74" stroke="#E8E8E8" stroke-width="1.6"/>
+              <circle cx="232" cy="74" r="2.6" fill="#fff"/>
+              <path d="M168 106 H182 M218 106 H232" stroke="#E8E8E8" stroke-width="1.4"/>
+            </g>
+            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+              <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
+              <text x="200" y="190" letter-spacing="7">PRTS ARCHIVE</text>
+            </g>
           </svg>
         </div>
         <div class="card-bd">
@@ -756,17 +852,34 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <defs><linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#3d3d3d" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <rect x="64" y="46" width="272" height="104" rx="6" fill="none" stroke="#FFFFFF" stroke-width="3"/>
-            <rect x="64" y="46" width="272" height="26" fill="rgba(255,255,255,.09)"/>
-            <circle cx="82" cy="59" r="4.5" fill="#E8E8E8"/><circle cx="100" cy="59" r="4.5" fill="#909090"/><circle cx="118" cy="59" r="4.5" fill="#555"/>
-            <rect x="82" y="84" width="150" height="9" fill="#808080"/>
-            <rect x="82" y="102" width="196" height="9" fill="#5a5a5a"/>
-            <rect x="82" y="120" width="124" height="9" fill="#454545"/>
-            <rect x="294" y="92" width="22" height="16" rx="3" fill="#FF5C7A"/>
-            <path d="M300 96 h10 M305 92 v8" stroke="#fff" stroke-width="2" fill="none"/>
-            <text x="200" y="178" font-family="monospace" font-size="12" fill="#909090" text-anchor="middle">NIGHT WATCH FORUM</text>
+            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
+            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg2)" opacity="0"/>
+            <g class="t-drift">
+              <rect x="58" y="42" width="176" height="116" rx="6" fill="none" stroke="#FFFFFF" stroke-width="2.6"/>
+              <rect x="58" y="42" width="176" height="26" fill="rgba(255,255,255,.10)"/>
+              <circle cx="76" cy="55" r="4" fill="#E8E8E8"/><circle cx="94" cy="55" r="4" fill="#909090"/><circle cx="112" cy="55" r="4" fill="#555"/>
+              <rect x="132" y="51" width="58" height="7" fill="#6a6a6a"/>
+              <rect x="76" y="82" width="118" height="9" fill="#808080"/>
+              <rect x="76" y="100" width="140" height="9" fill="#5a5a5a"/>
+              <rect x="76" y="118" width="96" height="9" fill="#454545"/>
+              <rect x="188" y="118" width="28" height="9" fill="#3a3a3a"/>
+              <path d="M202 120 l8 3 -8 3" fill="#FF5C7A"/>
+              <circle class="t-pulse" cx="212" cy="140" r="6" fill="#FF5C7A"/>
+            </g>
+            <g>
+              <circle cx="312" cy="74" r="22" fill="none" stroke="#C9C9C9" stroke-width="2"/>
+              <path d="M292 74 a20 20 0 0 1 40 0 z" fill="#C9C9C9"/>
+              <path d="M312 74 L312 60 M312 74 L322 68 M312 74 L302 68" stroke="#0A0A0A" stroke-width="2"/>
+              <path d="M312 74 q-10 10 0 18 q10 -8 0 -18" fill="none" stroke="#0A0A0A" stroke-width="1.4"/>
+              <circle cx="336" cy="140" r="4" fill="#FF5C7A" class="t-blink"/>
+            </g>
+            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+              <path d="M112 187 H288" stroke="#444" stroke-width="1"/>
+              <text x="200" y="186" letter-spacing="5">NIGHT WATCH FORUM</text>
+            </g>
           </svg>
         </div>
         <div class="card-bd">
@@ -782,21 +895,35 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <defs><linearGradient id="sg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#3d3d3d" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <path d="M64 40 H300 V96 H64 Z" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
-            <rect x="80" y="52" width="14" height="8" fill="#E8E8E8"/>
-            <rect x="104" y="52" width="52" height="8" fill="#6E6E6E"/>
-            <rect x="166" y="52" width="96" height="8" fill="#6E6E6E"/>
-            <rect x="80" y="72" width="180" height="8" fill="#454545"/>
-            <path d="M64 116 H300 M64 136 H300 M64 156 H300" stroke="#FFFFFF" stroke-width="2"/>
-            <rect x="80" y="110" width="8" height="8" fill="#E8E8E8"/>
-            <rect x="96" y="112" width="150" height="5" fill="#808080"/>
-            <rect x="80" y="130" width="8" height="8" fill="#E8E8E8"/>
-            <rect x="96" y="132" width="120" height="5" fill="#5a5a5a"/>
-            <rect x="80" y="150" width="8" height="8" fill="#E8E8E8"/>
-            <rect x="96" y="152" width="170" height="5" fill="#454545"/>
-            <text x="200" y="186" font-family="monospace" font-size="12" fill="#909090" text-anchor="middle">CHANGELOG</text>
+            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
+            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg3)" opacity="0"/>
+            <g class="t-drift">
+              <path d="M104 44 V166 M272 44 V166" stroke="#444" stroke-width="1.2"/>
+              <path d="M104 52 H272 M104 76 H272 M104 100 H272 M104 124 H272 M104 148 H272" stroke="#2e2e2e" stroke-width="1"/>
+              <circle class="t-pulse" cx="104" cy="52" r="5" fill="#E8E8E8"/>
+              <rect x="120" y="47" width="96" height="8" fill="#808080"/>
+              <rect x="224" y="47" width="34" height="8" fill="#3a3a3a"/>
+              <circle cx="104" cy="76" r="3.5" fill="#666"/>
+              <rect x="120" y="72" width="130" height="8" fill="#5a5a5a"/>
+              <circle cx="104" cy="100" r="3.5" fill="#666"/>
+              <rect x="120" y="96" width="76" height="8" fill="#454545"/>
+              <rect x="204" y="96" width="48" height="8" fill="#3a3a3a"/>
+              <circle cx="104" cy="124" r="3.5" fill="#666"/>
+              <rect x="120" y="120" width="112" height="8" fill="#4a4a4a"/>
+              <circle cx="104" cy="148" r="3.5" fill="#555"/>
+              <rect x="120" y="144" width="88" height="8" fill="#3a3a3a"/>
+              <rect x="284" y="46" width="44" height="22" rx="3" fill="none" stroke="#E8E8E8" stroke-width="1.6"/>
+              <text x="306" y="61" font-family="monospace" font-size="11" fill="#E8E8E8" text-anchor="middle">V2</text>
+              <rect x="284" y="76" width="44" height="22" rx="3" fill="none" stroke="#777" stroke-width="1.2"/>
+              <text x="306" y="91" font-family="monospace" font-size="11" fill="#777" text-anchor="middle">V1</text>
+            </g>
+            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+              <path d="M126 187 H274" stroke="#444" stroke-width="1"/>
+              <text x="200" y="186" letter-spacing="6">CHANGELOG</text>
+            </g>
           </svg>
         </div>
         <div class="card-bd">
@@ -812,15 +939,30 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <defs>
+              <linearGradient id="sg4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+              <radialGradient id="rg4" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#C9A961" stop-opacity=".28"/><stop offset="1" stop-color="#C9A961" stop-opacity="0"/></radialGradient>
+            </defs>
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#3d3d3d" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <path d="M200 30 L292 72 V124 L200 168 L108 124 V72 Z" fill="none" stroke="#C9A961" stroke-width="3"/>
-            <path d="M200 30 L200 168 M108 72 L292 124 M292 72 L108 124" stroke="#8A7448" stroke-width="1.6"/>
-            <path d="M200 62 L252 90 L236 142 L164 142 L148 90 Z" fill="rgba(201,169,97,.16)" stroke="#C9A961" stroke-width="1.8"/>
-            <path d="M200 84 L224 100 L218 118 L182 118 L176 100 Z" fill="#C9A961"/>
-            <circle cx="200" cy="100" r="7" fill="none" stroke="#E8DCC0" stroke-width="1.6"/>
-            <circle cx="200" cy="100" r="2.5" fill="#E8DCC0"/>
-            <text x="200" y="188" font-family="monospace" font-size="12" fill="#8A7448" text-anchor="middle">CASSEL COLLEGE</text>
+            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
+            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg4)" opacity="0"/>
+            <circle cx="200" cy="104" r="76" fill="url(#rg4)" class="t-glow"/>
+            <g class="t-drift">
+              <path d="M200 22 L300 70 V124 L200 176 L100 124 V70 Z" fill="none" stroke="#C9A961" stroke-width="2.8"/>
+              <path d="M200 22 L200 176 M100 70 L300 124 M300 70 L100 124" stroke="#8A7448" stroke-width="1.3"/>
+              <path d="M200 52 L258 84 L246 142 L154 142 L142 84 Z" fill="rgba(201,169,97,.14)" stroke="#C9A961" stroke-width="1.6"/>
+              <path d="M200 62 C186 72 178 82 178 92 C178 104 190 110 200 104 C210 110 222 104 222 92 C222 82 214 72 200 62 Z" fill="none" stroke="#8A7448" stroke-width="1.2"/>
+              <path d="M200 66 C196 80 192 88 192 94 M200 66 C204 80 208 88 208 94" stroke="#C9A961" stroke-width="1.4" fill="none"/>
+              <path d="M200 104 L200 132 M188 122 L200 132 L212 122" stroke="#C9A961" stroke-width="1.6" fill="none"/>
+              <circle class="t-pulse" cx="200" cy="104" r="8" fill="none" stroke="#E8DCC0" stroke-width="1.5"/>
+              <circle cx="200" cy="104" r="2.6" fill="#E8DCC0"/>
+              <circle cx="200" cy="104" r="13" fill="none" stroke="#C9A961" stroke-width=".8" opacity=".6"/>
+            </g>
+            <g font-family="monospace" font-size="11" fill="#8A7448" text-anchor="middle">
+              <path d="M118 191 H282" stroke="#5a4c2a" stroke-width="1"/>
+              <text x="200" y="190" letter-spacing="5">CASSEL COLLEGE</text>
+            </g>
           </svg>
         </div>
         <div class="card-bd">
@@ -860,6 +1002,7 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
       <input id="gb_pwd" type="password" placeholder="密码" autocomplete="current-password" maxlength="32">
       <button class="gb-btn" id="gb_btn_login">登 录</button>
       <button class="gb-btn ghost" id="gb_btn_reg">注 册</button>
+      <button class="gb-btn ghost" id="gb_btn_recover" style="font-size:11px">忘记密码</button>
     </div>
     <div class="gb-row" id="gb_userinfo" style="display:none">
       <span class="gb-who">已登录 · <b id="gb_curuser"></b></span>
@@ -867,6 +1010,7 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
       <button class="gb-btn ghost" id="gb_btn_ck">签到</button>
       <span class="gb-tag" id="gb_ckinfo" style="display:none"></span>
       <button class="gb-btn ghost" id="gb_btn_pwd">改密</button>
+      <button class="gb-btn ghost" id="gb_btn_sec">安全问题</button>
       <button class="gb-btn ghost" id="gb_btn_logout">登 出</button>
     </div>
     <div class="gb-say" id="gb_say"></div>
@@ -883,6 +1027,25 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
         <button class="gb-btn" id="gb_risk_all" style="padding:6px 12px;border-color:var(--bad);color:var(--bad)">扫描全部</button>
       </div>
       <div id="gb_risk_words" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+    <div style="display:flex;gap:6px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap">
+      <button class="gb-btn" id="gb_aud_btn" style="padding:5px 12px;font-size:11px">▦ 审计日志</button>
+      <button class="gb-btn" id="gb_sta_btn" style="padding:5px 12px;font-size:11px">▤ 数据面板</button>
+      <button class="gb-btn ghost" id="gb_aud_close" style="padding:5px 12px;font-size:11px;display:none">收起</button>
+    </div>
+    <div id="gb_aud" style="display:none;padding:8px 0;border-bottom:1px solid var(--line)">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--ink3);letter-spacing:.12em">操作日志 · 删帖/删用户/拉黑/风控留痕</span>
+        <span id="gb_aud_total" style="font-size:10.5px;color:var(--dim)"></span>
+        <button class="gb-btn ghost" id="gb_aud_json" style="margin-left:auto;padding:3px 10px;font-size:10.5px">导出 JSON</button>
+        <button class="gb-btn ghost" id="gb_aud_csv" style="padding:3px 10px;font-size:10.5px">导出 CSV</button>
+      </div>
+      <div id="gb_aud_list" style="font-size:11px;line-height:1.8;max-height:240px;overflow-y:auto;color:var(--ink2)"></div>
+    </div>
+    <div id="gb_sta" style="display:none;padding:8px 0;border-bottom:1px solid var(--line)">
+      <div id="gb_sta_tot" style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--ink3);letter-spacing:.06em;margin-bottom:8px"></div>
+      <div id="gb_sta_trend" style="margin-bottom:10px"></div>
+      <div id="gb_sta_hours"></div>
     </div>
     <div id="gb_ulist"></div>
   </div>
@@ -953,6 +1116,57 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
     </div>
   </div>
 </div>
+
+
+<div id="gbRecMask" style="display:none;position:fixed;inset:0;z-index:990;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px;font-size:12px;font-family:var(--mono)">
+    <div style="font-size:13px;margin-bottom:10px;letter-spacing:.1em">找回密码 · RECOVER</div>
+    <div style="color:var(--ink2);margin-bottom:8px;line-height:1.6">输入账号获取安全问题，验证通过后即可重置密码。</div>
+    <input id="gb_rc_user" placeholder="账号" maxlength="16" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px">
+    <div id="gb_rc_q" style="color:var(--ok);margin-bottom:8px;min-height:16px;display:none;line-height:1.5"></div>
+    <input id="gb_rc_ans" placeholder="安全问题答案" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px;display:none">
+    <input id="gb_rc_pwd" type="password" placeholder="新密码" maxlength="32" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:10px;font-size:12px;display:none">
+    <div style="display:flex;gap:8px">
+      <button class="gb-btn" id="gb_rc_go" style="flex:1">获取问题</button>
+      <button class="gb-btn ghost" id="gb_rc_ok" style="flex:1;display:none">重置密码</button>
+      <button class="gb-btn ghost" id="gb_rc_x" style="flex:1">关闭</button>
+    </div>
+    <div class="gb-say" id="gb_rc_say" style="margin-top:8px;min-height:14px"></div>
+  </div>
+</div>
+<div id="gbSecMask" style="display:none;position:fixed;inset:0;z-index:990;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px;font-size:12px;font-family:var(--mono)">
+    <div style="font-size:13px;margin-bottom:10px;letter-spacing:.1em">设置安全问题 · SECURITY</div>
+    <div style="color:var(--ink2);margin-bottom:8px;line-height:1.6">设置后可用它找回密码。请牢记问题与答案。</div>
+    <input id="gb_sec_q" placeholder="问题（如：你的第一个网名是？）" maxlength="60" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px">
+    <input id="gb_sec_a" placeholder="答案" maxlength="60" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:10px;font-size:12px">
+    <div style="display:flex;gap:8px">
+      <button class="gb-btn" id="gb_sec_ok" style="flex:1">保存</button>
+      <button class="gb-btn ghost" id="gb_sec_x" style="flex:1">关闭</button>
+    </div>
+    <div class="gb-say" id="gb_sec_say" style="margin-top:8px;min-height:14px"></div>
+  </div>
+</div>
+<div id="srchM" style="display:none;position:fixed;inset:0;z-index:995;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px">
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input id="srchIn" style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px 10px;font-family:inherit;font-size:13px" placeholder="搜索留言 / 论坛帖子 / 私聊…">
+      <button class="gb-btn" id="srchGo" style="padding:8px 14px">搜索</button>
+    </div>
+    <div id="srchOut" style="max-height:52vh;overflow-y:auto;font-size:12px;line-height:1.7;color:var(--ink2)"></div>
+  </div>
+</div>
+
+<div id="ntPanel">
+  <h4>通知中心 <span id="ntClear" style="cursor:pointer;font-size:10.5px;color:var(--ink3);letter-spacing:.1em">全部已读</span></h4>
+  <div id="ntNotices" style="display:none;padding:8px 14px;border-bottom:1px dashed var(--line);font-size:11.5px;color:var(--ink2);line-height:1.7"></div>
+  <div id="ntList" style="font-size:12px;color:var(--ink3);padding:12px 14px">加载中…</div>
+</div>
+
+<div id="pfMask"><div id="pfBox">
+  <button class="pf-close" id="pfClose">✕</button>
+  <div id="pfBody"></div>
+</div></div>
 
 <script>
 (function(){
@@ -1165,11 +1379,13 @@ function parseApis(raw){
   return out;
 }
 try{ S.apis=parseApis(localStorage.getItem(K_API)); }catch(e){ S.apis=[]; }
+S.apis=(S.apis||[]).filter(function(x){return x.indexOf('36c3116e')<0});
 S.api=(S.apis&&S.apis[0])||'';
 try{
   var sv=JSON.parse(localStorage.getItem(K_SESS)||'null');
   if(sv&&sv.token&&sv.username) S.user=sv;
 }catch(e){}
+setTimeout(autoRelogin,800);
 
 /* ---------- 本地模式数据库 ---------- */
 function dbLoad(){
@@ -1400,6 +1616,7 @@ function gbLogin(){
     if(!j.ok) return say(j.msg||'登录失败',false);
     S.user={username:j.username,is_admin:!!j.is_admin,token:j.token};
     try{ localStorage.setItem(K_SESS,JSON.stringify(S.user)); }catch(e){}
+    try{ localStorage.setItem('gb_pwd',p); }catch(e){}
     $('gb_pwd').value='';
     applyAuth();
     say('欢迎回来，'+j.username,true);
@@ -1409,6 +1626,46 @@ function gbLogin(){
   }).catch(function(e){ say('请求失败：'+e.message,false); });
 }
 
+/* 找回密码 + 安全问题 */
+function gbRcShow(){
+  $('gbRecMask').style.display='flex';
+  $('gb_rc_user').value=''; $('gb_rc_q').textContent=''; $('gb_rc_q').style.display='none';
+  $('gb_rc_ans').value=''; $('gb_rc_ans').style.display='none';
+  $('gb_rc_pwd').value=''; $('gb_rc_pwd').style.display='none';
+  $('gb_rc_go').style.display=''; $('gb_rc_ok').style.display='none';
+  $('gb_rc_say').textContent='';
+}
+function gbRcQ(){
+  var u=$('gb_rc_user').value.trim();
+  if(!u) return $('gb_rc_say').textContent='请输入账号';
+  call('/recover_q',{username:u}).then(function(j){
+    if(!j.ok) return $('gb_rc_say').textContent=j.msg||'获取失败';
+    $('gb_rc_q').textContent='问题：'+j.question; $('gb_rc_q').style.display='';
+    $('gb_rc_ans').style.display=''; $('gb_rc_pwd').style.display='';
+    $('gb_rc_go').style.display='none'; $('gb_rc_ok').style.display='';
+    $('gb_rc_say').textContent='';
+  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+e.message; });
+}
+function gbRcGo(){
+  var u=$('gb_rc_user').value.trim(), a=$('gb_rc_ans').value.trim(), p=$('gb_rc_pwd').value;
+  if(!a||!p) return $('gb_rc_say').textContent='请填写答案与新密码';
+  call('/recover',{username:u,answer:a,newpwd:p}).then(function(j){
+    $('gb_rc_say').textContent=j.msg||(j.ok?'已重置':'失败');
+    if(j.ok){ setTimeout(function(){ $('gbRecMask').style.display='none'; },1300); }
+  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+e.message; });
+}
+function gbSecShow(){
+  $('gbSecMask').style.display='flex';
+  $('gb_sec_q').value=''; $('gb_sec_a').value=''; $('gb_sec_say').textContent='';
+}
+function gbSecSave(){
+  var q=$('gb_sec_q').value.trim(), a=$('gb_sec_a').value.trim();
+  if(!q||!a) return $('gb_sec_say').textContent='请填写问题与答案';
+  if(!S.user) return $('gb_sec_say').textContent='请先登录';
+  call('/sec_set',{token:S.user.token,q:q,a:a}).then(function(j){
+    $('gb_sec_say').textContent=j.msg||(j.ok?'已设置':'失败');
+  }).catch(function(e){ $('gb_sec_say').textContent='请求失败：'+e.message; });
+}
 function gbLogout(){
   var done=function(){
     S.user=null; S.peer=null;
@@ -1430,11 +1687,16 @@ function likeBtn(g){
   var ls=g.likes||[], liked=S.user&&ls.indexOf(S.user.username)>=0;
   return '<div class="gb-like'+(liked?' on':'')+'" data-like="'+esc(g.id)+'">'+(liked?'♥':'♡')+' '+ls.length+'</div>';
 }
-function renderGuests(list){
+function renderGuests(list, fresh){
   var box=$('guestbookList');
   if(!list||!list.length){
     box.innerHTML='<div class="gb-empty">暂无留言 · 来做第一个吧</div>';
     return;
+  }
+  var freshIds={};
+  if(fresh){
+    if(Array.isArray(fresh)) fresh.forEach(function(x){ freshIds[x.id]=1; });
+    else if(fresh===true){}
   }
   box.innerHTML=list.map(function(g){
     var mine = S.user && g.user===S.user.username;
@@ -1442,19 +1704,33 @@ function renderGuests(list){
     var av=g.avatar,avH;
     if(typeof av==='string'&&av.indexOf('/uploads/')===0) avH='<img class="gb-ava-img" src="'+esc(S.api+av)+'">';
     else{var av0=AVATARS[(+g.avatar||0)%AVATARS.length];avH='<span class="gb-ava" style="background:'+av0.c+'">'+av0.s+'</span>'}
-    return '<div class="gb-item">'+
+    var isNew=fresh===true||freshIds[g.id];
+    var txtBody=isNew?'<div class="gb-text gb-ty" data-t="'+esc(g.text)+'"></div>':'<div class="gb-text">'+esc(g.text)+'</div>';
+    return '<div class="gb-item'+(isNew?' gb-item-new':'')+'">'+
       '<div class="gb-item-h">'+
         avH+
-        '<span class="gb-name">'+esc(g.name)+'</span>'+
+        '<span class="gb-name" data-u="'+esc(g.user||g.name)+'">'+esc(g.name)+'</span>'+
         (g.user?'<span class="gb-tag" style="font-size:9px;padding:1px 6px">已认证</span>':'')+
         '<span class="gb-time">'+esc(g.time)+'</span>'+
         (canDel?'<button class="gb-del" data-del="'+esc(g.id)+'">删除</button>':'')+
       '</div>'+
-      '<div class="gb-text">'+esc(g.text)+'</div>'+
+      txtBody+
       (g.image&&S.api?'<img class="gb-img" src="'+esc(S.api+g.image)+'" onclick="window.open(this.src)">':'')+
       likeBtn(g)+
     '</div>';
   }).join('');
+  var tys=box.querySelectorAll('.gb-ty');
+  for(var i=0;i<tys.length;i++)(function(el){
+    var full=el.getAttribute('data-t')||'';
+    el.removeAttribute('data-t');
+    el.textContent='';
+    el.classList.add('gb-ty-cu');
+    var ci=0;
+    var iv=setInterval(function(){
+      el.textContent=full.slice(0,++ci);
+      if(ci>=full.length){ clearInterval(iv); el.classList.remove('gb-ty-cu'); }
+    },9);
+  })(tys[i]);
 }
 
 function loadGuestBook(){
@@ -1491,7 +1767,7 @@ function loadGuestBook(){
       cache.list=all;
       cache.maxId=Math.max(cache.maxId||0,(nl[0]&&nl[0].id)||0);
       try{ localStorage.setItem(K_GB,JSON.stringify(cache)); }catch(e){}
-      renderGuests(all);
+      renderGuests(all, nl);
     }else if(!cache.list.length){
       renderGuests([]);
     }
@@ -1727,6 +2003,113 @@ function pmRefreshConversations(){
   }).catch(function(){});
 }
 
+/* ---------- v2.8 自动重登 / 通知中心 / 个人主页 / 转场 ---------- */
+function autoRelogin(){
+  if(!S.user||!S.api||!S.user.username) return;
+  call('/me',{}).then(function(j){
+    if(j&&j.ok) return;
+    var pw='';
+    try{ pw=localStorage.getItem('gb_pwd')||''; }catch(e){}
+    if(!pw) return;
+    call('/login',{username:S.user.username,password:pw}).then(function(k){
+      if(!k||!k.ok) return;
+      S.user={username:k.username,is_admin:!!k.is_admin,token:k.token};
+      try{ localStorage.setItem(K_SESS,JSON.stringify(S.user)); }catch(e){}
+      applyAuth(); loadGuestBook(); pmRefreshConversations(); startPoll(); ntRefresh();
+    }).catch(function(){});
+  }).catch(function(){});
+}
+function ntRefresh(){
+  var b=$('ntBadge'),d=$('ntDot');
+  if(!b) return Promise.resolve();
+  if(!S.user){ b.style.display='none'; return Promise.resolve(); }
+  b.style.display='';
+  return call('/notify_get',{}).then(function(j){
+    var un=(j&&j.unread)||0;
+    if(un>0){ d.textContent=un>99?'99+':un; b.classList.add('on'); }
+    else{ d.textContent='0'; b.classList.remove('on'); }
+    var nb=$('ntNotices');
+    if(nb){
+      var ns=(j&&j.notices)||[];
+      if(ns.length){ nb.style.display='block'; nb.innerHTML='<div style="color:var(--accent);letter-spacing:.2em;margin-bottom:4px">▣ 公告</div>'+ns.map(function(x){return '<div style="margin:3px 0">['+esc(x.time||'')+'] '+esc((x.text||'').slice(0,60))+'</div>'}).join(''); }
+      else nb.style.display='none';
+    }
+    var ls=$('ntList');
+    if(ls){
+      var arr=(j&&j.list)||[];
+      if(!arr.length) ls.innerHTML='<div style="color:var(--ink3);padding:12px 14px">暂无通知</div>';
+      else ls.innerHTML=arr.map(function(x){
+        var kind=x.type==='at'?'提到了你':(x.type==='reply'?'评论了你的帖子':(x.type==='pm'?'私信你':'系统'));
+        return '<div class="nt-it'+(x.read?'':' unread')+'" data-nt="'+esc(x.id)+'"><b>'+esc((x.from||'系统'))+'</b> '+kind+'<div class="nt-m">'+esc((x.text||'').slice(0,80))+' · '+esc(x.time)+'</div></div>';
+      }).join('');
+    }
+  }).catch(function(){});
+}
+function openProfile(nm){
+  if(!nm) return;
+  var m=$('pfMask'),bd=$('pfBody');
+  if(!m||!bd) return;
+  bd.innerHTML='<div style="padding:30px;color:var(--ink3);text-align:center">载入中…</div>';
+  m.classList.add('on');
+  call('/profile',{name:nm}).then(function(j){
+    if(!j||!j.ok||!j.profile){ bd.innerHTML='<div style="padding:30px;text-align:center;color:var(--ink3)">用户不存在或加载失败</div>'; return; }
+    var pf=j.profile,avH;
+    if(pf.avatar&&String(pf.avatar).indexOf('/uploads/')===0) avH='<div class="pf-ava"><img src="'+esc(S.api+pf.avatar)+'"></div>';
+    else{ var av0=AVATARS[(+pf.avatar||0)%AVATARS.length]; avH='<div class="pf-ava" style="background:'+av0.c+'">'+av0.s+'</div>'; }
+    var gs=(j.guests||[]).map(function(x){return '<div class="pf-row" data-u="'+esc(x.user||x.name)+'"><span class="pf-t">'+esc((x.text||'').slice(0,70))+'</span><div class="pf-m">'+esc(x.time)+'</div></div>'}).join('')||'<div style="color:var(--ink3);font-size:11.5px;padding:6px 0">暂无留言</div>';
+    var ps=(j.posts||[]).map(function(x){return '<div class="pf-row" data-pf="p"><span class="pf-t">'+esc((x.text||'').slice(0,70))+'</span><div class="pf-m">'+esc(x.time)+'</div></div>'}).join('')||'<div style="color:var(--ink3);font-size:11.5px;padding:6px 0">暂无发帖</div>';
+    var cm=(j.comments||[]).map(function(x){return '<div class="pf-row" data-pf="p"><span class="pf-t">'+esc((x.text||'').slice(0,70))+'</span><div class="pf-m">'+esc(x.time)+'</div></div>'}).join('')||'<div style="color:var(--ink3);font-size:11.5px;padding:6px 0">暂无评论</div>';
+    bd.innerHTML=
+      '<div class="pf-h">'+avH+'<div><div class="pf-nm">'+esc(pf.name)+(pf.is_admin?' <span style="color:var(--accent);font-size:10px;letter-spacing:.1em;border:1px solid var(--accent);padding:0 5px">ADMIN</span>':'')+(pf.banned?' <span style="color:var(--bad);font-size:10px;border:1px solid var(--bad);padding:0 5px">已拉黑</span>':'')+'</div>'+
+      '<div class="pf-sub">LV '+pf.lv+' · '+esc(pf.title)+' · 经验 '+pf.exp+'<br>签到 '+pf.streak+' 连签 / 共 '+pf.total+' 次 · 注册 '+esc(pf.reg||'未知')+'</div></div></div>'+
+      '<div class="pf-bd">'+
+      '<div class="pf-sec">TA 的留言</div>'+gs+
+      '<div class="pf-sec">TA 的帖子</div>'+ps+
+      '<div class="pf-sec">TA 的评论</div>'+cm+
+      '</div>';
+  }).catch(function(){ bd.innerHTML='<div style="padding:30px;text-align:center;color:var(--ink3)">加载失败</div>'; });
+}
+function go(u){
+  var L=$('tvLayer');
+  if(!L||!S.api){ location.href=u; return; }
+  var lb=$('tvLbl'),segs=['接入节点','同步档案','握手中','校验密级','传送中'],i=0;
+  var iv=setInterval(function(){ lb.textContent=' · '+segs[i%segs.length]; i++; },140);
+  L.classList.add('on');
+  setTimeout(function(){ clearInterval(iv); location.href=u; },650);
+}
+(function(){
+  var nb=$('ntBadge');
+  if(nb) nb.addEventListener('click',function(e){
+    e.stopPropagation();
+    var pn=$('ntPanel');
+    if(pn){
+      var on=pn.classList.toggle('on');
+      if(on) ntRefresh();
+    }
+  });
+  var cl=$('ntClear');
+  if(cl) cl.addEventListener('click',function(){
+    call('/notify_read',{}).then(function(j){ if(j&&j.ok) ntRefresh(); }).catch(function(){});
+  });
+  var nl=$('ntList');
+  if(nl) nl.addEventListener('click',function(e){
+    var t=e.target.closest('[data-nt]');
+    if(!t) return;
+    call('/notify_read',{}).then(function(j){ if(j&&j.ok) ntRefresh(); }).catch(function(){});
+  });
+  var pc=$('pfClose');
+  if(pc) pc.addEventListener('click',function(){ $('pfMask').classList.remove('on'); });
+  var pm=$('pfMask');
+  if(pm) pm.addEventListener('click',function(e){ if(e.target===pm) pm.classList.remove('on'); });
+  var pb=$('pfBody');
+  if(pb) pb.addEventListener('click',function(e){
+    var t=e.target.closest('[data-u]');
+    if(t){ openProfile(t.getAttribute('data-u')); return; }
+    var p2=e.target.closest('[data-pf="p"]');
+    if(p2) window.open('守夜人论坛.html');
+  });
+})();
+
 function pmOpen(peer){
   if(!S.user||!peer) return;
   S.peer=peer;
@@ -1765,6 +2148,7 @@ function startPoll(){
     if(document.hidden) return;
     if(!S.user) return;
     pmRefreshConversations();
+    ntRefresh();
     if(S.user&&S.user.is_admin) loadUsers();
     if(S.peer) pmRefreshThread();
   },6000);
@@ -1821,7 +2205,7 @@ function autoCloud(){
     if(!r.ok) throw 0;
     return r.text();
   }).then(function(t){
-    var apis=parseApis(t||'');
+    var apis=parseApis(t||'').filter(function(x){return x.indexOf('36c3116e')<0});
     if(!apis.length) return;
     S.apis=apis;
     S.api=apis[0];
@@ -1832,6 +2216,8 @@ function autoCloud(){
     loadNotes();
     hitCloud();
     if(S.user) pmRefreshConversations();
+    autoRelogin();
+    ntRefresh();
   }).catch(function(){});
 }
 
@@ -1857,6 +2243,86 @@ function autoCloud(){
   setTimeout(chk,1200);
 })();
 
+/* ---------- 顶栏动态 ---------- */
+(function(){
+  var st=document.getElementById('status');
+  if(!st) return;
+  var on=function(){ st.classList.toggle('scrl',(window.scrollY||document.documentElement.scrollTop)>40); };
+  window.addEventListener('scroll',on,{passive:true}); on();
+})();
+
+/* ---------- 节日彩蛋 ---------- */
+(function(){
+  var fxmap={
+    '01-01':{t:'fire',n:'元旦'},'02-14':{t:'heart',n:'情人节'},'03-08':{t:'balloon',n:'妇女节'},
+    '04-01':{t:'confetti',n:'愚人节'},'05-01':{t:'confetti',n:'劳动节'},'06-01':{t:'confetti',n:'儿童节'},
+    '10-01':{t:'fire',n:'国庆节'},'10-31':{t:'ghost',n:'万圣节'},'12-24':{t:'snow',n:'平安夜'},'12-25':{t:'snow',n:'圣诞节'}
+  };
+  var q=(location.search.match(/[?&]fx=([\w-]+)/)||[])[1];
+  var d=new Date(), k=('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  var ev=q?{t:q,n:'彩蛋预览'}:(fxmap[k]||null);
+  if(!ev) return;
+  var cv=document.getElementById('fx'); if(!cv) return;
+  cv.style.display='block';
+  var ctx=cv.getContext('2d'),W=0,H=0,ps=[],TY=ev.t;
+  function rs(){ W=cv.width=innerWidth; H=cv.height=innerHeight; }
+  rs(); addEventListener('resize',rs);
+  var C={snow:'#FFFFFF',heart:'#FF5C7A',confetti:'#FFC24B',balloon:'#E6EDEF',ghost:'#9BA9AD',fire:'#FFC24B'}[TY]||'#FFFFFF';
+  var star=[];
+  function mkTop(){ return {x:40+Math.random()*W*.6,y:H+10,vy:-3-Math.random()*4,vx:(Math.random()-.5)*2,s:2}; }
+  function mkPart(p){
+    var a2=[];
+    for(var i=0;i<60;i++){ var a=Math.random()*6.283,sp=1+Math.random()*3.5;
+      a2.push({x:p.x,y:p.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,s:1+Math.random()*2.5,life:28+Math.random()*22,b:1}); }
+    return a2;
+  }
+  function frame(){
+    requestAnimationFrame(frame);
+    ctx.clearRect(0,0,W,H);
+    if(TY==='fire'){
+      if(star.length<2&&Math.random()<.06) star.push(mkTop());
+      for(var i=star.length-1;i>=0;i--){
+        var s=star[i]; s.x+=s.vx; s.y+=s.vy; s.vy+=.06;
+        ctx.fillStyle=C; ctx.globalAlpha=.95;
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.s,0,6.283); ctx.fill();
+        if(s.vy>-1){ ps=ps.concat(mkPart(s)); star.splice(i,1); }
+      }
+    }
+    if(ps.length<120&&Math.random()<.35){
+      var p={x:Math.random()*W,y:TY==='balloon'?H+30:-30,vx:(Math.random()-.5)*.8,vy:1+Math.random()*2,s:TY==='balloon'?9+Math.random()*11:2+Math.random()*4,b:0};
+      if(TY==='snow'){p.vy=.5+Math.random()*1.1;p.vx=(Math.random()-.5)*.5;}
+      if(TY==='confetti'){p.vy=1.5+Math.random()*2.5;p.vx=(Math.random()-.5)*2;}
+      if(TY==='heart'){p.vy=.8+Math.random()*1.1;p.vx=(Math.random()-.5)*.9;p.s=5+Math.random()*7;}
+      if(TY==='ghost'){p.vy=.5+Math.random()*1.1;p.vx=(Math.random()-.5)*1.5;p.s=7+Math.random()*9;}
+      if(TY==='balloon'){p.vy=-(.5+Math.random()*.7);p.vx=(Math.random()-.5)*.8;}
+      ps.push(p);
+    }
+    for(var j=ps.length-1;j>=0;j--){
+      var q2=ps[j];
+      if(q2.b){ q2.x+=q2.vx; q2.y+=q2.vy; q2.vy+=.035; q2.life--; if(q2.life<=0){ps.splice(j,1);continue} }
+      else { q2.x+=q2.vx; q2.y+=q2.vy; }
+      ctx.globalAlpha=q2.b?Math.min(1,q2.life/20)*.9:.75;
+      ctx.fillStyle=q2.b?C:'#E6EDEF';
+      if(TY==='heart'){
+        ctx.save(); ctx.translate(q2.x,q2.y); ctx.scale(q2.s/10,q2.s/10);
+        ctx.beginPath(); ctx.moveTo(0,3);
+        ctx.bezierCurveTo(-6,-3,-2,-8,0,-4); ctx.bezierCurveTo(2,-8,6,-3,0,3);
+        ctx.fill(); ctx.restore();
+      } else if(TY==='ghost'){
+        ctx.beginPath(); ctx.arc(q2.x,q2.y,q2.s,Math.PI,0); ctx.rect(q2.x-q2.s,q2.y,q2.s*2,q2.s*.8); ctx.fill();
+      } else if(TY==='balloon'){
+        ctx.beginPath(); ctx.ellipse(q2.x,q2.y,q2.s,q2.s*1.3,0,0,6.283); ctx.fill();
+        ctx.strokeStyle=C; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(q2.x,q2.y+q2.s*1.3); ctx.lineTo(q2.x,q2.y+q2.s*2.2); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(q2.x,q2.y,q2.s,0,6.283); ctx.fill();
+      }
+      if(q2.y>H+40||q2.y<-80||q2.x<-60||q2.x>W+60) ps.splice(j,1);
+    }
+    ctx.globalAlpha=1;
+  }
+  frame();
+})();
+
 /* ---------- 事件绑定 ---------- */
 function bind(){
   $('gb_btn_reg').addEventListener('click',gbRegister);
@@ -1874,6 +2340,13 @@ function bind(){
       loadNotes();
     }).catch(function(e){ say('请求失败：'+e.message,false); });
   });
+  $('gb_btn_recover').addEventListener('click',gbRcShow);
+  $('gb_rc_go').addEventListener('click',gbRcQ);
+  $('gb_rc_ok').addEventListener('click',gbRcGo);
+  $('gb_rc_x').addEventListener('click',function(){ $('gbRecMask').style.display='none'; });
+  $('gb_btn_sec').addEventListener('click',gbSecShow);
+  $('gb_sec_ok').addEventListener('click',gbSecSave);
+  $('gb_sec_x').addEventListener('click',function(){ $('gbSecMask').style.display='none'; });
   $('gb_btn_pwd').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='flex'; });
   $('gb_pwd_cancel').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='none'; });
   $('gb_pwd_save').addEventListener('click',function(){
@@ -1885,6 +2358,8 @@ function bind(){
     }).catch(function(e){ say('请求失败：'+e.message,false); });
   });
   $('guestbookList').addEventListener('click',function(e){
+    var pu=e.target.closest('[data-u]');
+    if(pu){ openProfile(pu.getAttribute('data-u')); return; }
     var b=e.target.closest('.gb-like'); if(!b) return;
     if(!S.user) return say('请先登录后再点赞',false);
     call('/guest_like',{id:b.getAttribute('data-like')}).then(function(j){
@@ -2023,29 +2498,22 @@ var AC=null,bgmG=null,bgmT=null;
 var bgmSeq=[[220,261.63,329.63],[174.61,220,261.63],[261.63,329.63,392],[196,246.94,293.66]];
 var bgmOn=localStorage.getItem('wzBgm')==='1';
 var bgmB=document.getElementById('bgmBtn');
-function bgmNote(f,t0,d){
-  var o=AC.createOscillator(),g=AC.createGain();
-  o.type='sine';o.frequency.value=f;o.connect(g);g.connect(bgmG);
-  g.gain.setValueAtTime(0,t0);
-  g.gain.linearRampToValueAtTime(0.05,t0+0.05);
-  g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
-  o.start(t0);o.stop(t0+d+0.1);
-}
+var bgmA=null,bgmErr=false;
 function bgmPlay(){
-  if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}}
-  if(AC.state==='suspended')AC.resume();
-  bgmG=AC.createGain();bgmG.gain.value=0.4;bgmG.connect(AC.destination);
-  var i=0;
-  bgmT=setInterval(function(){
-    var t=AC.currentTime+0.05,ch=bgmSeq[i%4];i++;
-    for(var k=0;k<ch.length;k++)bgmNote(ch[k],t,3.4);
-  },1900);
+  if(bgmErr) return;
+  if(!bgmA){
+    bgmA=new Audio('bgm.mp3');
+    bgmA.loop=true;
+    bgmA.volume=0.4;
+    bgmA.addEventListener('error',function(){ bgmErr=true; if(bgmB)bgmB.textContent='♪'; });
+  }
+  var pr=bgmA.play();
+  if(pr&&pr.catch) pr.catch(function(){});
   bgmOn=true;localStorage.setItem('wzBgm','1');
   if(bgmB)bgmB.textContent='♫';
 }
 function bgmStop(){
-  if(bgmT){clearInterval(bgmT);bgmT=null}
-  if(bgmG){var t=AC.currentTime;try{bgmG.gain.linearRampToValueAtTime(0,t+0.4)}catch(e){};setTimeout(function(){try{bgmG.disconnect()}catch(e){}},500)}
+  if(bgmA){ try{bgmA.pause()}catch(e){} try{bgmA.currentTime=0}catch(e){} }
   bgmOn=false;localStorage.setItem('wzBgm','0');
   if(bgmB)bgmB.textContent='♪';
 }
@@ -2053,50 +2521,62 @@ if(bgmB)bgmB.onclick=function(){if(bgmOn)bgmStop();else bgmPlay()};
 if(bgmOn)bgmPlay();
 var srchB=document.getElementById('srchBtn'),srchM=document.getElementById('srchM'),srchIn=document.getElementById('srchIn'),srchGo=document.getElementById('srchGo'),srchOut=document.getElementById('srchOut');
 function escS(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function hlW(q,s){ var qq=String(q||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); return escS(s).replace(new RegExp('('+qq+')','ig'),'<mark class="hl">$1</mark>'); }
+function srchRender(res, cur, q){
+  var keys=['用户','留言','帖子','评论'];
+  var tabs='<div class="srch-tabs"><button class="srch-tab'+(cur===''?' on':'')+'" data-t="">全部</button>';
+  var total=0;
+  keys.forEach(function(k){ var n=(res[k]||[]).length; total+=n; if(n) tabs+='<button class="srch-tab'+(cur===k?' on':'')+'" data-t="'+k+'">'+k+' ('+n+')</button>'; });
+  tabs+='</div>';
+  var h=tabs;
+  if(cur===''){ keys.forEach(function(k){ var arr=res[k]||[]; if(!arr.length) return; h+='<div style="margin:8px 0 4px;color:var(--accent)">'+k+' ('+arr.length+')</div>'; h+=arr.slice(0,6).map(function(x){ return srchRow(x,q,k); }).join(''); }); }
+  else{ var arr=res[cur]||[]; h+=arr.slice(0,20).map(function(x){ return srchRow(x,q,cur); }).join(''); }
+  if(!total) h+='<div style="color:var(--ink3);padding:8px">未找到相关结果</div>';
+  srchOut.innerHTML=h;
+  var ts=srchOut.querySelectorAll('.srch-tab');
+  for(var i=0;i<ts.length;i++) ts[i].addEventListener('click',function(){ srchRender(res,this.getAttribute('data-t'),q); });
+}
+function srchRow(x,q,k){
+  var body=hlW(q,(x.text||'').slice(0,90));
+  var usr=hlW(q,x.user||'');
+  if(k==='用户') body=usr;
+  var jump=k==='用户'?'<span style="color:var(--ink)">'+body+'</span><div style="color:var(--ink3);font-size:10.5px">账号库</div>':'<span style="color:var(--ink)">'+usr+' · '+escS(x.time)+'</span><br>'+body+'<div style="color:var(--ink3);font-size:10.5px">'+escS(x.ref||'')+'</div>';
+  return '<div class="pf-row" data-srch="'+k+'">'+jump+'</div>';
+}
 function doSearch(){
   var q=(srchIn.value||'').trim();
   if(!q){srchOut.innerHTML='<div style="color:var(--ink3);padding:8px">请输入关键词</div>';return}
   srchOut.innerHTML='<div style="color:var(--ink3);padding:8px">搜索中…</div>';
-  var ql=q.toLowerCase(),gl=[];
+  var ql=q.toLowerCase(),res={用户:[],留言:[],帖子:[],评论:[]};
   try{var c=JSON.parse(localStorage.getItem(K_GB)||'null');
     if(c&&c.list)c.list.forEach(function(x){
-      if((x.text||'').toLowerCase().indexOf(ql)>=0||(x.name||'').toLowerCase().indexOf(ql)>=0)gl.push(x)});
+      if((x.text||'').toLowerCase().indexOf(ql)>=0||(x.name||'').toLowerCase().indexOf(ql)>=0)res['留言'].push({text:x.text,user:x.name||x.user||'',time:x.time,ref:'留言板'})});
   }catch(e){}
   var done=false;
   call('/search',{q:q},'GET').then(function(j){
     if(done)return;done=true;
-    var h='';
-    if(gl.length){
-      h+='<div style="margin:6px 0 4px;color:var(--accent)">留言 ('+gl.length+')</div>';
-      gl.slice(0,8).forEach(function(x){
-        h+='<div style="padding:4px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)">'+escS(x.name)+' · '+escS(x.time)+'</span><br>'+escS((x.text||'').slice(0,80))+'</div>';
-      });
-    }
-    if(j&&j.ok&&j.list&&j.list.length){
-      var gp={};
-      j.list.forEach(function(x){gp[x.type]=gp[x.type]||[];gp[x.type].push(x)});
-      for(var t in gp){
-        h+='<div style="margin:8px 0 4px;color:var(--accent)">'+escS(t)+' ('+gp[t].length+')</div>';
-        gp[t].slice(0,8).forEach(function(x){
-          h+='<div style="padding:4px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="window.open(\'守夜人论坛.html\')"><span style="color:var(--ink)">'+escS(x.user)+' · '+escS(x.time)+'</span><br>'+escS((x.text||'').slice(0,80))+'</div>';
-        });
-      }
-    }
-    if(!h)h='<div style="color:var(--ink3);padding:8px">未找到相关结果</div>';
-    srchOut.innerHTML=h;
+    if(j&&j.ok&&j.list) j.list.forEach(function(x){
+      var k=x.type==='用户'?'用户':(x.type==='帖子'?'帖子':(x.type==='评论'?'评论':'留言'));
+      if(k==='留言'&&res['留言'].some(function(y){return y.time===x.time&&y.text===x.text})) return;
+      res[k].push(x);
+    });
+    srchRender(res,'',q);
   }).catch(function(){
     if(done)return;done=true;
-    var h='';
-    if(gl.length){
-      h+='<div style="margin:6px 0 4px;color:var(--accent)">留言 ('+gl.length+')</div>';
-      gl.slice(0,8).forEach(function(x){
-        h+='<div style="padding:4px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)">'+escS(x.name)+' · '+escS(x.time)+'</span><br>'+escS((x.text||'').slice(0,80))+'</div>';
-      });
-    }
-    if(!h)h='<div style="color:var(--ink3);padding:8px">云端未连接 · 仅本地留言</div>';
-    srchOut.innerHTML=h;
+    if(res['留言'].length) srchRender(res,'',q);
+    else srchOut.innerHTML='<div style="color:var(--ink3);padding:8px">云端未连接 · 仅本地留言</div>';
   });
 }
+if(srchOut) srchOut.addEventListener('click',function(e){
+  var t=e.target.closest('[data-srch]');
+  if(!t) return;
+  var k=t.getAttribute('data-srch');
+  if(k==='用户'){
+    var nm=(t.querySelector('.pf-t')||t.querySelector('span')||{}).textContent||'';
+    nm=nm.replace(/<[^>]+>/g,'');
+    openProfile(nm);
+  }else{ window.open('守夜人论坛.html'); }
+});
 if(srchB)srchB.onclick=function(){if(srchM){srchM.style.display='flex';setTimeout(function(){if(srchIn)srchIn.focus()},60)}};
 if(srchGo)srchGo.onclick=doSearch;
 if(srchIn)srchIn.addEventListener('keydown',function(e){if(e.key==='Enter')doSearch()});
@@ -2177,6 +2657,7 @@ if(rkAll)rkAll.onclick=function(){
 if(rkIn)rkIn.addEventListener('keydown',function(e){if(e.key==='Enter')riskRun()});
 call('/risk_words_get',{}).then(function(j){rkWShow(j.words||[])}).catch(function(){});
 })();
+window.$=$;window.esc=esc;window.call=call;window.go=go;window.S=S;
 })();
 </script>
   </div>
@@ -2191,6 +2672,13 @@ call('/risk_words_get',{}).then(function(j){rkWShow(j.words||[])}).catch(functio
 </footer>
 
 <div class="crt" aria-hidden="true"></div>
+
+<div id="tvLayer" aria-hidden="true">
+  <div class="tv-grid"></div>
+  <div class="tv-scan"></div>
+  <div class="tv-txt">LOADING // 正在接入<span id="tvLbl">…</span><small id="tvSub">ARCHIVE OS · TRANSIT</small></div>
+  <div class="tv-bar"><i></i></div>
+</div>
 
 <script>
 function lv(){return+(sessionStorage.getItem('wzLv')||0)}
@@ -2227,6 +2715,11 @@ c.addEventListener('mousemove',function(e){var r=c.getBoundingClientRect(),px=(e
 c.addEventListener('mouseleave',function(){c.style.transform=''});
 })(cs[i]);
 })();
+(function(){var cs=document.querySelectorAll('a.card');
+for(var i=0;i<cs.length;i++)cs[i].addEventListener('click',function(e){
+  var u=this.getAttribute('href'); if(!u) return;
+  e.preventDefault(); go(u);
+});})();
 
 (function(){var io=null;
 var cs=document.querySelectorAll('.grid.two .card');
@@ -2415,15 +2908,127 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
   </div>
 </div>
 
-<div id="srchM" style="display:none;position:fixed;inset:0;z-index:995;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
-  <div style="width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px">
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <input id="srchIn" style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px 10px;font-family:inherit;font-size:13px" placeholder="搜索留言 / 论坛帖子 / 私聊…">
-      <button class="gb-btn" id="srchGo" style="padding:8px 14px">搜索</button>
-    </div>
-    <div id="srchOut" style="max-height:52vh;overflow-y:auto;font-size:12px;line-height:1.7;color:var(--ink2)"></div>
-  </div>
-</div>
+<script>
+/* ==== v2.9 每日一言 ==== */
+(function(){
+  var Q=[
+    '代码即剑，终端即鞘。',
+    '夜已深，守夜人仍在值守。',
+    '权限不是身份，是责任。',
+    '圣山在脚下，深渊在身后。',
+    '每次签到，都是与自己的约定。',
+    '数据不会说谎，人才会。',
+    '黑白之外，还有第三种颜色：你的选择。',
+    '种子按时间生成，命运按选择展开。',
+    '日志记录过去，代码书写未来。',
+    '风控是一把刀，管理员是握刀的人。',
+    '离线不等于失联，缓存也是记忆。',
+    '留言板是时间的回声。',
+    '当你凝视终端，终端也在凝视你。',
+    '路虽远，行则将至。',
+    '每一个 BUG 都是未被发现的真相。',
+    '守护者不追求被记住，只追求被需要。',
+    '代码无注释，但心有批注。',
+    '凌晨的服务器最安静。',
+    '世界树半枯，但根系仍深。',
+    '你的每一次点击，都算数。'
+  ];
+  var el=$('qotd');
+  if(el){
+    var show=function(){ el.innerHTML='[ 语录 ] ▸ <b>'+esc(Q[Math.floor(Math.random()*Q.length)])+'</b>'; };
+    show();
+    el.addEventListener('click',show);
+  }
+})();
+/* ==== v2.9 审计 + 数据面板 ==== */
+(function(){
+  var isAdmin=function(){ return S.user&&S.user.is_admin; };
+  function dl(fn,txt){
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+    a.download=fn; a.click();
+  }
+  var audBtn=$('gb_aud_btn'),staBtn=$('gb_sta_btn'),audCls=$('gb_aud_close');
+  if(audBtn) audBtn.addEventListener('click',function(){
+    var A=$('gb_aud'),S2=$('gb_sta');
+    A.style.display=A.style.display==='none'?'block':'none';
+    audCls.style.display=A.style.display;
+    if(S2) S2.style.display='none';
+    if(A.style.display==='block') audRefresh();
+  });
+  if(staBtn) staBtn.addEventListener('click',function(){
+    var A=$('gb_aud'),S2=$('gb_sta');
+    S2.style.display=S2.style.display==='none'?'block':'none';
+    audCls.style.display=S2.style.display;
+    if(A) A.style.display='none';
+    if(S2.style.display==='block') staRefresh();
+  });
+  if(audCls) audCls.addEventListener('click',function(){
+    var A=$('gb_aud'),S2=$('gb_sta');
+    if(A) A.style.display='none'; if(S2) S2.style.display='none';
+    audCls.style.display='none';
+  });
+  function audRefresh(){
+    var L=$('gb_aud_list'),T=$('gb_aud_total');
+    if(!L) return;
+    L.innerHTML='加载中…';
+    call('/audit_get',{}).then(function(j){
+      if(!j||!j.ok){ L.innerHTML='无权限或加载失败'; return; }
+      T.textContent='共 '+j.total+' 条';
+      var arr=j.list||[];
+      if(!arr.length){ L.innerHTML='<div style="color:var(--ink3)">暂无操作记录</div>'; return; }
+      L.innerHTML=arr.map(function(x){
+        return '<div style="border-bottom:1px dashed var(--line);padding:3px 0"><span style="color:var(--accent)">'+esc(x.who||'')+'</span> <span style="color:var(--ink2)">'+esc(x.act||'')+'</span> → '+esc(x.target||'')+'<div style="color:var(--ink3);font-size:10px">'+esc(x.t||'')+' · '+esc(x.detail||'')+'</div></div>';
+      }).join('');
+    }).catch(function(e){ L.innerHTML='加载失败 · '+esc(e.message); });
+  }
+  var aj=$('gb_aud_json'),ac=$('gb_aud_csv');
+  if(aj) aj.addEventListener('click',function(){
+    call('/audit_export',{fmt:'json'}).then(function(j){ if(j&&j.ok) dl('audit_log.json',JSON.stringify(j.data,null,1)); });
+  });
+  if(ac) ac.addEventListener('click',function(){
+    call('/audit_export',{fmt:'csv'}).then(function(j){ if(j&&j.ok) dl('audit_log.csv',j.data); });
+  });
+  function svgLine(vals,labels,W,H,opt){
+    var mx=Math.max.apply(null,vals.concat([1])),pts=[],st=W/(vals.length-1||1);
+    for(var i=0;i<vals.length;i++) pts.push((4+i*st).toFixed(1)+','+(H-10-(vals[i]/mx)*(H-24)).toFixed(1));
+    var grid='',G=opt||{},ga=G.grid==null?4:G.grid;
+    for(var i2=1;i2<ga;i2++){ var yy=(H-10-(i2/ga)*(H-24)).toFixed(1); grid+='<line x1="0" y1="'+yy+'" x2="'+W+'" y2="'+yy+'" stroke="#222" stroke-width="1"/>'; }
+    return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block">'+grid+
+      '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+(G.c||'#E8E8E8')+'" stroke-width="1.8"/>'+
+      pts.map(function(pt,i3){ var c=pt.split(','); return '<circle cx="'+c[0]+'" cy="'+c[1]+'" r="2.4" fill="'+(G.c||'#E8E8E8')+'"/>'; }).join('')+
+      '<g font-size="8" fill="#66767A">'+labels.map(function(lb,i4){ return '<text x="'+(4+i4*st-8).toFixed(0)+'" y="'+(H-2)+'">'+esc(String(lb).slice(5))+'</text>'; }).join('')+'</g></svg>';
+  }
+  function staRefresh(){
+    var T=$('gb_sta_tot'),D=$('gb_sta_trend'),H2=$('gb_sta_hours');
+    if(!D) return;
+    T.innerHTML='载入中…'; D.innerHTML=''; H2.innerHTML='';
+    call('/stats2',{}).then(function(j){
+      if(!j||!j.ok){ T.innerHTML='无权限或加载失败'; return; }
+      var t=j.total||{};
+      T.innerHTML='<span style="color:var(--accent)">用户 '+t.users+'</span> · 留言 '+t.guests+' · 帖子 '+t.posts+' · 累计访问 '+t.visits;
+      D.innerHTML='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:4px">近 7 天 · 留言 ─ 注册 ─</div>'+
+        svgLine(j.gday,j.days,320,84,{c:'#E8E8E8'})+
+        svgLine(j.rday,j.days,320,84,{c:'#FFC24B',grid:3})+
+        '<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin:10px 0 4px">用户增长（累计）</div>'+
+        svgLine(j.cum,j.days,320,84,{c:'#2EE6A8',grid:4});
+      var mx=Math.max.apply(null,j.hours.concat([1])),hb='';
+      for(var i=0;i<24;i++){
+        var hh=Math.round((j.hours[i]/mx)*56);
+        hb+='<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1"><div style="height:'+hh+'px;width:7px;background:'+(hh?'var(--accent)':'#262626')+';opacity:'+(hh?'.9':'.5')+'"></div><span style="font-size:8px;color:var(--ink3)">'+i+'</span></div>';
+      }
+      H2.innerHTML='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:4px">留言活跃时段（24h）</div><div style="display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid var(--line);padding-bottom:2px">'+hb+'</div>';
+    }).catch(function(e){ T.innerHTML='加载失败 · '+esc(e.message); });
+  }
+  window.audRefresh=audRefresh; window.staRefresh=staRefresh;
+})();
+/* ==== v2.9 PWA ==== */
+(function(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+})();
+</script>
 
 </body>
 </html>
