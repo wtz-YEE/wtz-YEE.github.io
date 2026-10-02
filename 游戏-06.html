@@ -395,6 +395,7 @@ body.red .term-in input{caret-color:var(--bad)}
 <div id="toast" class="toast"></div>
 <script>
 
+function submitS(g,sc){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');if(!s||!s.token)return;var u=localStorage.getItem('gb_api_url')||'',aps=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0}),a=aps[0]||'';if(!a)return;var k='wSubT'+g,n=Date.now(),t=+(localStorage.getItem(k)||0);if(n-t<4000)return;localStorage.setItem(k,n);function go(){fetch(a+'/score_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,game:g,score:Math.floor(sc)||0})}).then(function(r){if(r.status===429)setTimeout(go,3200)}).catch(function(){})}go()}catch(e){}}
 var toastEl=document.getElementById('toast'),toastT;
 function ch(){return sessionStorage.getItem('wzLv')==='9999'}
 var Gp=[];
@@ -411,7 +412,7 @@ function rs(){px=W/2;py=H/2;t=0;bul=[];tm=1;st='run';SC.textContent=0}
 function loop(t2){if(!on){raf=0;return}raf=requestAnimationFrame(loop);var dt=Math.min(.05,(t2-last)/1000);last=t2;
 if(st==='run'){t+=dt;tm-=dt;if(tm<=0){var n=1+Math.floor(Math.random()*2);for(var k=0;k<n;k++){var a=Math.random()*6.283,sp=90+Math.random()*70;bul.push({x:px+Math.cos(a)*320,y:py+Math.sin(a)*320,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp})}tm=Math.max(.4,1.2-t/15)}
 for(var i=bul.length-1;i>=0;i--){var b=bul[i];b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.x<-20||b.x>W+20||b.y<-20||b.y>H+20)bul.splice(i,1)}
-if(!ch()){for(var i=bul.length-1;i>=0;i--){var b=bul[i];if(Math.abs(b.x-px)<14&&Math.abs(b.y-py)<14){st='over';break}}}
+if(!ch()){for(var i=bul.length-1;i>=0;i--){var b=bul[i];if(Math.abs(b.x-px)<14&&Math.abs(b.y-py)<14){st='over';submitS('dodge',Math.floor(t));break}}}
 SC.textContent=Math.floor(t)}
 draw()}
 function draw(){X.fillStyle='#0C0F12';X.fillRect(0,0,W,H);
@@ -443,7 +444,7 @@ if(bx<36&&by>ay-42&&by<ay+42){vx=Math.abs(vx)*1.06;vy+=(by-ay)/42*120;bx=38}
 if(bx>W-36&&by>py-42&&by<py+42){vx=-Math.abs(vx)*1.06;vy+=(by-py)/42*120;bx=W-38;psc++;SC.textContent=psc;if(psc>hi){hi=psc;HI.textContent=hi;localStorage.setItem('wPong',hi)}sp+=50}
 if(bx<10){asc++;bx=W/2;by=H/2;vx=180;vy=(Math.random()-.5)*160;sp=0}
 if(bx>W-10){psc++;SC.textContent=psc;if(psc>hi){hi=psc;HI.textContent=hi;localStorage.setItem('wPong',hi)}sp+=50;bx=W/2;by=H/2;vx=-180;vy=(Math.random()-.5)*160}
-if(asc>=7||psc>=7)st='over';
+if(asc>=7||psc>=7){st='over';submitS('pong',psc)}
 draw()}
 function draw(){X.fillStyle='#0C0F12';X.fillRect(0,0,W,H);
 X.strokeStyle='rgba(63,224,200,.25)';X.lineWidth=2;X.beginPath();X.moveTo(W/2,10);X.lineTo(W/2,H-10);X.stroke();
@@ -472,7 +473,7 @@ dist+=dt*60;SC.textContent=Math.floor(dist/10);
 vy+=980*dt;py+=vy*dt;if(py>=grd-34){py=grd-34;vy=0;onG=1;jumps=0}
 tm-=dt;if(tm<=0){var h=Math.random()<.3?150:0;obs.push({x:W+30,w:22,h:h});tm=Math.max(.55,1.3-dist/4000)}
 for(var i=obs.length-1;i>=0;i--){var o=obs[i];o.x-=220*dt;if(o.x<-40)obs.splice(i,1)}
-if(!ch()){for(var i=0;i<obs.length;i++){var o=obs[i];if(o.x<60&&o.x+o.w>34&&py+34>grd-o.h){st='over';break}}}
+if(!ch()){for(var i=0;i<obs.length;i++){var o=obs[i];if(o.x<60&&o.x+o.w>34&&py+34>grd-o.h){st='over';submitS('runner',Math.floor(dist/10));break}}}
 draw()}
 function draw(){X.fillStyle='#0C0F12';X.fillRect(0,0,W,H);
 X.fillStyle='rgba(63,224,200,.05)';for(var i=0;i<W;i+=24)X.fillRect(i,0,1,H);
@@ -503,7 +504,7 @@ vx*=Math.pow(.02,dt);vy*=Math.pow(.02,dt);
 if(!ch()){px+=vx*dt;py+=vy*dt;if(px<12){px=12;vx*=-.6}if(px>W-12){px=W-12;vx*=-.6}if(py<12){py=12;vy*=-.6}if(py>H-12){py=H-12;vy*=-.6}}
 else{if(!stars.length)return;var s2=stars[0],bd=1e9,bi=0;for(var i=0;i<stars.length;i++){var d=(stars[i].x-px)*(stars[i].x-px)+(stars[i].y-py)*(stars[i].y-py);if(d<bd){bd=d;bi=i}}var s2=stars[bi];px+=(s2.x-px)*Math.min(1,dt*3);py+=(s2.y-py)*Math.min(1,dt*3)}
 for(var i=stars.length-1;i>=0;i--){var s=stars[i];if(Math.abs(s.x-px)<18&&Math.abs(s.y-py)<18){stars.splice(i,1);total++;ACH.note('collect',(ACH.get('collect')||0)+1);gb(s.x,s.y,10,'#FFC24B');SC.textContent=total}}
-if(!stars.length){lv++;mk();gb(px,py,24,'#2EE6A8')}
+if(!stars.length){lv++;mk();submitS('collect',total);gb(px,py,24,'#2EE6A8')}
 draw()}
 function draw(){X.fillStyle='#0C0F12';X.fillRect(0,0,W,H);
 for(var i=0;i<stars.length;i++){var s=stars[i];X.fillStyle='#FFC24B';X.beginPath();X.moveTo(s.x,s.y-8);X.lineTo(s.x+3,s.y-2);X.lineTo(s.x+8,s.y-2);X.lineTo(s.x+4,s.y+3);X.lineTo(s.x+6,s.y+8);X.lineTo(s.x,s.y+5);X.lineTo(s.x-6,s.y+8);X.lineTo(s.x-4,s.y+3);X.lineTo(s.x-8,s.y-2);X.lineTo(s.x-3,s.y-2);X.closePath();X.fill()}

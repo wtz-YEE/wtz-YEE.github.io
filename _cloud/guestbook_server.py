@@ -11,8 +11,14 @@ GUESTBOOK_FILE = os.path.join(_BASE, "guestbook.json")
 USER_FILE = os.path.join(_BASE, "users.json")
 PM_FILE = os.path.join(_BASE, "pm.json")
 CHANGELOG_FILE = os.path.join(_BASE, "changelog.json")
+SCORE_FILE = os.path.join(_BASE, "scores.json")
 import time as _t
 DEL_LOG = []
+
+# 初始化排行榜
+if not os.path.exists(SCORE_FILE):
+    with open(SCORE_FILE, "w", encoding="utf-8") as f:
+        json.dump({}, f, ensure_ascii=False)
 
 # 初始化更新日志
 if not os.path.exists(CHANGELOG_FILE):
@@ -214,6 +220,30 @@ def _save(p, x):
 def _now():
     return _time.strftime("%Y-%m-%d %H:%M:%S")
 
+TITLES = ["见习守夜人", "守夜人", "资深守夜人", "守夜骑士",
+          "守望者", "夜色领主", "冥灯主宰", "WTZ亲卫队"]
+
+def _lv(exp):
+    L = 1
+    while exp >= 50 * L * (L + 1):
+        L += 1
+    return L
+
+def _lvl_info(exp):
+    L = _lv(exp)
+    base = 50 * L * (L - 1) if L > 1 else 0
+    nxt = 50 * L * (L + 1)
+    return {"lv": L, "title": TITLES[min(L - 1, len(TITLES) - 1)],
+            "base": base, "next": nxt, "cur": exp - base, "need": nxt - base}
+
+def _add_exp(us, cu, n):
+    if not cu:
+        return
+    rec = us.setdefault(cu, {})
+    exp = int(rec.get("exp") or 0) + int(n)
+    rec["exp"] = exp
+    _save(USER_FILE, us)
+
 def _clean_sessions(u):
     ses = u.get("__sessions", {})
     if not ses:
@@ -303,6 +333,7 @@ def api_guest_add():
     im = str(p.get("image") or "").strip()[:300]
     g.append({"id": nid, "user": cu, "name": nm, "text": txt, "time": _now(), "avatar": av, "image": im})
     _save(GUESTBOOK_FILE, g)
+    _add_exp(_load(USER_FILE, {}), cu, 5)
     return jsonify({"ok": True})
 
 @app.route("/post_get", methods=["GET", "POST"])
@@ -331,6 +362,7 @@ def api_post_add():
     ps.append({"id": nid, "user": cu, "name": cu, "text": txt, "tags": tags,
                "image": im, "time": _now(), "comments": []})
     _save(POST_FILE, ps)
+    _add_exp(_load(USER_FILE, {}), cu, 8)
     return jsonify({"ok": True, "msg": "发布成功"})
 
 @app.route("/post_del", methods=["POST"])
@@ -368,6 +400,7 @@ def api_comment_add():
             cs = x.setdefault("comments", [])
             cs.append({"user": cu, "text": txt, "time": _now()})
             _save(POST_FILE, ps)
+            _add_exp(_load(USER_FILE, {}), cu, 3)
             return jsonify({"ok": True, "msg": "评论成功"})
     return jsonify({"ok": False, "msg": "帖子不存在"})
 
@@ -442,7 +475,8 @@ def api_checkin_status():
     ck = (us.get(cu) or {}).get("checkin") or {}
     today = _time.strftime("%Y-%m-%d")
     return jsonify({"ok": True, "done": ck.get("date") == today,
-                    "streak": ck.get("streak") or 0, "total": ck.get("total") or 0})
+                    "streak": ck.get("streak") or 0, "total": ck.get("total") or 0,
+                    "exp": int((us.get(cu) or {}).get("exp") or 0)})
 
 @app.route("/checkin", methods=["POST"])
 def api_checkin():
@@ -462,6 +496,7 @@ def api_checkin():
     total = (ck.get("total") or 0) + 1
     rec["checkin"] = {"date": today, "streak": streak, "total": total}
     _save(USER_FILE, us)
+    _add_exp(_load(USER_FILE, {}), cu, 10)
     return jsonify({"ok": True, "done": False, "streak": streak, "total": total})
 
 @app.route("/guest_like", methods=["POST"])
@@ -480,6 +515,7 @@ def api_guest_like():
                 ls.append(cu)
             x["likes"] = ls
             _save(GUESTBOOK_FILE, g)
+            _add_exp(_load(USER_FILE, {}), cu, 2)
             return jsonify({"ok": True, "likes": len(ls)})
     return jsonify({"ok": False, "msg": "留言不存在"})
 
@@ -707,6 +743,101 @@ def api_changelog_del():
     return jsonify({"ok": True, "msg": "已删除"})
 
 
+@app.route("/me", methods=["GET", "POST"])
+def api_me():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    rec = us.get(cu) or {}
+    exp = int(rec.get("exp") or 0)
+    info = _lvl_info(exp)
+    ck = rec.get("checkin") or {}
+    info.update({"username": cu, "is_admin": bool(rec.get("is_admin")),
+                 "exp": exp, "streak": ck.get("streak") or 0, "total": ck.get("total") or 0})
+    return jsonify({"ok": True, "me": info})
+
+
+@app.route("/score_add", methods=["POST"])
+def api_score_add():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    game = str(p.get("game") or "").strip()[:24]
+    try:
+        score = int(p.get("score") or 0)
+    except Exception:
+        return jsonify({"ok": False, "msg": "分数格式错误"})
+    if not game or score <= 0:
+        return jsonify({"ok": False, "msg": "参数错误"})
+    sc = _load(SCORE_FILE, {})
+    lst = sc.setdefault(game, [])
+    found = None
+    for x in lst:
+        if x.get("user") == cu:
+            found = x
+            break
+    if found:
+        if int(found.get("score") or 0) < score:
+            found["score"] = score
+            found["time"] = _now()
+            _save(SCORE_FILE, sc)
+        return jsonify({"ok": True, "best": int(found.get("score") or 0)})
+    lst.append({"user": cu, "score": score, "time": _now()})
+    lst.sort(key=lambda x: -int(x.get("score") or 0))
+    _save(SCORE_FILE, sc)
+    return jsonify({"ok": True, "best": score})
+
+
+@app.route("/score_top", methods=["GET", "POST"])
+def api_score_top():
+    game = ""
+    if request.method == "POST":
+        game = str((request.get_json() or {}).get("game") or "")
+    else:
+        game = str(request.args.get("game") or "")
+    limit = 10
+    try:
+        limit = int(request.args.get("limit") or 10) if request.method == "GET" else int((request.get_json() or {}).get("limit") or 10)
+    except Exception:
+        limit = 10
+    sc = _load(SCORE_FILE, {})
+    lst = sorted(sc.get(game, []), key=lambda x: -int(x.get("score") or 0))[:limit]
+    return jsonify({"ok": True, "list": lst})
+
+
+@app.route("/search", methods=["GET", "POST"])
+def api_search():
+    q = ""
+    if request.method == "POST":
+        q = str((request.get_json() or {}).get("q") or "")
+    else:
+        q = str(request.args.get("q") or "")
+    q = q.strip()[:50]
+    if not q:
+        return jsonify({"ok": True, "list": []})
+    ql = q.lower()
+    out = []
+    for g in _load(GUESTBOOK_FILE, []):
+        if ql in str(g.get("text") or "").lower():
+            out.append({"type": "留言", "text": str(g.get("text") or "")[:120],
+                        "user": g.get("name") or g.get("user") or "", "time": g.get("time") or "",
+                        "ref": "留言板"})
+    for ps in _load(POST_FILE, []):
+        t = str(ps.get("text") or "")
+        if ql in t.lower() or ql in (" ".join(ps.get("tags") or [])).lower():
+            out.append({"type": "帖子", "text": t[:120], "user": ps.get("user") or "",
+                        "time": ps.get("time") or "", "ref": "守夜人论坛"})
+        for cm in ps.get("comments") or []:
+            if ql in str(cm.get("text") or "").lower():
+                out.append({"type": "评论", "text": str(cm.get("text") or "")[:120],
+                            "user": cm.get("user") or "", "time": cm.get("time") or "",
+                            "ref": "守夜人论坛"})
+    return jsonify({"ok": True, "list": out[:20]})
+
+
 @app.route("/pm_conv", methods=["POST"])
 def api_pm_conv():
     p = request.get_json() or {}
@@ -756,7 +887,7 @@ POST_FILE = os.path.join(_BASE, "posts.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/changelog_add", "/changelog_del", "/upload")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/changelog_add", "/changelog_del", "/score_add", "/upload")
 
 @app.before_request
 def _rate():

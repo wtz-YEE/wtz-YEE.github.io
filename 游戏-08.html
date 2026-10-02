@@ -395,6 +395,7 @@ body.red .term-in input{caret-color:var(--bad)}
 <div id="toast" class="toast"></div>
 <script>
 
+function submitS(g,sc){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');if(!s||!s.token)return;var u=localStorage.getItem('gb_api_url')||'',aps=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0}),a=aps[0]||'';if(!a)return;var k='wSubT'+g,n=Date.now(),t=+(localStorage.getItem(k)||0);if(n-t<4000)return;localStorage.setItem(k,n);function go(){fetch(a+'/score_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,game:g,score:Math.floor(sc)||0})}).then(function(r){if(r.status===429)setTimeout(go,3200)}).catch(function(){})}go()}catch(e){}}
 var toastEl=document.getElementById('toast'),toastT;
 function ch(){return sessionStorage.getItem('wzLv')==='9999'}
 var Gp=[];
@@ -430,8 +431,8 @@ function start(){if(!on){on=true;rs();last=performance.now();raf=requestAnimatio
 function stop(){on=false;if(raf)cancelAnimationFrame(raf);raf=0}
 document.addEventListener('keydown',function(e){if(!on||st!=='run')return;var k=e.key.toUpperCase();if(k.length!==1||k<'A'||k>'Z')return;
 if(guessed.indexOf(k)>-1)return;guessed.push(k);
-if(word.indexOf(k)<0){wrong++;if(wrong>=6){st='over';if(sc>hi){hi=sc;HI.textContent=hi;localStorage.setItem('wHang',hi)}}}
-else{var ok=true;for(var i=0;i<word.length;i++)if(guessed.indexOf(word[i])<0){ok=false;break}if(ok){st='win';sc++;SC.textContent=sc;if(sc>hi){hi=sc;HI.textContent=hi;localStorage.setItem('wHang',hi)}gb(W/2,300,24,'#2EE6A8')}}});
+if(word.indexOf(k)<0){wrong++;if(wrong>=6){st='over';submitS('hangman',sc);if(sc>hi){hi=sc;HI.textContent=hi;localStorage.setItem('wHang',hi)}}}
+else{var ok=true;for(var i=0;i<word.length;i++)if(guessed.indexOf(word[i])<0){ok=false;break}if(ok){st='win';sc++;submitS('hangman',sc);SC.textContent=sc;if(sc>hi){hi=sc;HI.textContent=hi;localStorage.setItem('wHang',hi)}gb(W/2,300,24,'#2EE6A8')}}});
 C.addEventListener('click',function(){if(on&&(st==='over'||st==='win'))rs()});
 return{start:start,stop:stop};
 })();
@@ -460,10 +461,10 @@ gs(X)}
 function start(){if(!on){on=true;rs();last=performance.now();raf=requestAnimationFrame(loop)}}
 function stop(){on=false;if(raf)cancelAnimationFrame(raf);raf=0}
 function win(){if(val(ph)===21)ACH.note('bj21',1);wins++;SC.textContent=wins;if(wins>hi){hi=wins;HI.textContent=hi;localStorage.setItem('wJack',hi)}gb(180,200,24,'#2EE6A8')}
-function hit(){ph.push(deck.pop());if(val(ph)>21){msg='爆牌！超过 21';st='over'}}
+function hit(){ph.push(deck.pop());if(val(ph)>21){msg='爆牌！超过 21';st='over';submitS('blackjack',wins)}}
 function stand(){while(val(dh)<17)dh.push(deck.pop());var p=val(ph),d=val(dh);
 if(d>21||p>d){msg='你赢了！';win()}else if(p===d){msg='平局'}else{msg='庄家胜'}
-st='over'}
+st='over';submitS('blackjack',wins)}
 C.addEventListener('click',function(e){if(!on)return;var r=C.getBoundingClientRect(),gx=(e.clientX-r.left)/r.width*W,gy=(e.clientY-r.top)/r.height*H;
 if(st==='play'){if(gx>60&&gx<160&&gy>270&&gy<310)hit();else if(gx>200&&gx<300&&gy>270&&gy<310)stand()}
 else if(gx>110&&gx<250&&gy>270&&gy<310)rs()});
@@ -489,7 +490,7 @@ if(!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.
 g.gain.setValueAtTime(.0001,ac.currentTime);g.gain.exponentialRampToValueAtTime(.25,ac.currentTime+.008);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.3);
 o.connect(g);g.connect(ac.destination);o.start(ac.currentTime);o.stop(ac.currentTime+.32);
 if(ac.state==='suspended')ac.resume()}
-function pl(i){if(press.indexOf(i)<0)press.push(i);ACH.note('piano',(ACH.get('piano')||0)+(ch()?3:1));tone(i);setTimeout(function(){var k=press.indexOf(i);if(k>-1)press.splice(k,1)},140)}
+function pl(i){if(press.indexOf(i)<0)press.push(i);ACH.note('piano',(ACH.get('piano')||0)+(ch()?3:1));submitS('piano',ACH.get('piano')||0);tone(i);setTimeout(function(){var k=press.indexOf(i);if(k>-1)press.splice(k,1)},140)}
 function start(){if(!on){on=true;rs();last=performance.now();raf=requestAnimationFrame(loop)}}
 function stop(){on=false;if(raf)cancelAnimationFrame(raf);raf=0}
 C.addEventListener('click',function(e){if(!on)return;var r=C.getBoundingClientRect(),gx=(e.clientX-r.left)/r.width*W,gy=(e.clientY-r.top)/r.height*H;
@@ -528,7 +529,7 @@ if(sel<0){sel=i;msg='再选一个元素';return}
 if(sel===i){sel=-1;msg='';return}
 var a=inv[sel],b=inv[i],n=combo(a,b);sel=-1;
 if(!n){msg=a+' + '+b+' 无法合成';return}
-if(inv.indexOf(n)<0){inv.push(n);found++;SC.textContent=found;gb(W/2,200,18,COL[n]||'#9BA9AD');if(found>hi){hi=found;HI.textContent=hi;localStorage.setItem('wAlch',hi)}msg='合成 '+n+'！';if(found>=RULES.length)st='win'}
+if(inv.indexOf(n)<0){inv.push(n);found++;SC.textContent=found;gb(W/2,200,18,COL[n]||'#9BA9AD');if(found>hi){hi=found;HI.textContent=hi;localStorage.setItem('wAlch',hi)}msg='合成 '+n+'！';if(found>=RULES.length){st='win';submitS('alchemy',found)}}
 else{msg=n+' 已拥有'}});
 return{start:start,stop:stop};
 })();

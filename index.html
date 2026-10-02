@@ -703,6 +703,10 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
   <span class="st-l">WTZ // 个人网站 · 黑白</span>
   <span class="st-c" id="clock">--:--:--</span>
   <span class="pbadge" id="permBadge">LV 0</span>
+  <button class="th-btn" id="lvBtn" title="签到 · 经验等级" style="display:none">LV 1</button>
+  <button class="th-btn" id="pmBadge" title="私聊未读" style="display:none">✉</button>
+  <button class="th-btn" id="bgmBtn" title="背景音乐">♪</button>
+  <button class="th-btn" id="srchBtn" title="站内搜索">⌕ 搜索</button>
   <button class="th-btn" id="thBtn" title="界面配色">◐ 配色</button>
   <button class="th-btn" id="uiBtn" title="界面主题">▣ 界面</button>
   <button class="th-btn" id="vmBtn" title="切换手机/电脑界面">▦ 视图</button>
@@ -1629,6 +1633,7 @@ function checkinStatus(){
     if(!j.ok) return;
     el.textContent='签到：'+(j.done?'今日已签':'未签')+' · 连签 '+j.streak+' 天 · 共 '+j.total+' 天';
     el.style.display='';
+    if(typeof window.lvUpd==='function')window.lvUpd(j);
   }).catch(function(){});
 }
 function loadUsers(){
@@ -1679,6 +1684,15 @@ function renderConvs(list){
       '<div class="l">'+esc(c.last)+'</div>'+
     '</div>';
   }).join('');
+  var pmB=document.getElementById('pmBadge'),nn=0;
+  if(pmB){
+    if(S.user){
+      var us=box.querySelectorAll('.u');
+      for(var ii=0;ii<us.length;ii++)nn+=parseInt(us[ii].textContent)||0;
+      pmB.textContent='✉'+(nn>9?'9+':(nn||''));
+      pmB.style.display=nn>0?'':'none';
+    }else{pmB.style.display='none'}
+  }
 }
 
 function renderThread(list){
@@ -1982,6 +1996,102 @@ window.gbOpenConfig=gbOpenConfig;
 window.gbCloseConfig=gbCloseConfig;
 window.gbSaveConfig=gbSaveConfig;
 
+(function(){
+var TITLES=['访客','常客','守卫','执笔者','夜行者','学者','守护者','泰拉传说'];
+function lvUpd(j){
+  var b=document.getElementById('lvBtn');if(!b)return;
+  if(!S.user){b.style.display='none';return}
+  if(j&&j.exp!==undefined){var e=+j.exp||0,l=Math.min(8,Math.floor(e/100)+1);b.textContent='LV '+l+' · '+TITLES[l-1]}
+  b.style.display='';
+  b.title='点击签到';
+}
+window.lvUpd=lvUpd;
+var lvB=document.getElementById('lvBtn');
+if(lvB)lvB.onclick=function(){if(typeof doCheckin==='function')doCheckin()};
+var pmB=document.getElementById('pmBadge');
+if(pmB)pmB.onclick=function(){var p=document.getElementById('gb_pm_panel');if(p)p.classList.toggle('on')};
+var AC=null,bgmG=null,bgmT=null;
+var bgmSeq=[[220,261.63,329.63],[174.61,220,261.63],[261.63,329.63,392],[196,246.94,293.66]];
+var bgmOn=localStorage.getItem('wzBgm')==='1';
+var bgmB=document.getElementById('bgmBtn');
+function bgmNote(f,t0,d){
+  var o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine';o.frequency.value=f;o.connect(g);g.connect(bgmG);
+  g.gain.setValueAtTime(0,t0);
+  g.gain.linearRampToValueAtTime(0.05,t0+0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
+  o.start(t0);o.stop(t0+d+0.1);
+}
+function bgmPlay(){
+  if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}}
+  if(AC.state==='suspended')AC.resume();
+  bgmG=AC.createGain();bgmG.gain.value=0.4;bgmG.connect(AC.destination);
+  var i=0;
+  bgmT=setInterval(function(){
+    var t=AC.currentTime+0.05,ch=bgmSeq[i%4];i++;
+    for(var k=0;k<ch.length;k++)bgmNote(ch[k],t,3.4);
+  },1900);
+  bgmOn=true;localStorage.setItem('wzBgm','1');
+  if(bgmB)bgmB.textContent='♫';
+}
+function bgmStop(){
+  if(bgmT){clearInterval(bgmT);bgmT=null}
+  if(bgmG){var t=AC.currentTime;try{bgmG.gain.linearRampToValueAtTime(0,t+0.4)}catch(e){};setTimeout(function(){try{bgmG.disconnect()}catch(e){}},500)}
+  bgmOn=false;localStorage.setItem('wzBgm','0');
+  if(bgmB)bgmB.textContent='♪';
+}
+if(bgmB)bgmB.onclick=function(){if(bgmOn)bgmStop();else bgmPlay()};
+if(bgmOn)bgmPlay();
+var srchB=document.getElementById('srchBtn'),srchM=document.getElementById('srchM'),srchIn=document.getElementById('srchIn'),srchGo=document.getElementById('srchGo'),srchOut=document.getElementById('srchOut');
+function escS(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function doSearch(){
+  var q=(srchIn.value||'').trim();
+  if(!q){srchOut.innerHTML='<div style="color:var(--ink3);padding:8px">请输入关键词</div>';return}
+  srchOut.innerHTML='<div style="color:var(--ink3);padding:8px">搜索中…</div>';
+  var ql=q.toLowerCase(),gl=[];
+  try{var c=JSON.parse(localStorage.getItem(K_GB)||'null');
+    if(c&&c.list)c.list.forEach(function(x){
+      if((x.text||'').toLowerCase().indexOf(ql)>=0||(x.name||'').toLowerCase().indexOf(ql)>=0)gl.push(x)});
+  }catch(e){}
+  var done=false;
+  call('/search',{q:q},'GET').then(function(j){
+    if(done)return;done=true;
+    var h='';
+    if(gl.length){
+      h+='<div style="margin:6px 0 4px;color:var(--accent)">留言 ('+gl.length+')</div>';
+      gl.slice(0,8).forEach(function(x){
+        h+='<div style="padding:4px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)">'+escS(x.name)+' · '+escS(x.time)+'</span><br>'+escS((x.text||'').slice(0,80))+'</div>';
+      });
+    }
+    if(j&&j.ok&&j.list&&j.list.length){
+      var gp={};
+      j.list.forEach(function(x){gp[x.type]=gp[x.type]||[];gp[x.type].push(x)});
+      for(var t in gp){
+        h+='<div style="margin:8px 0 4px;color:var(--accent)">'+escS(t)+' ('+gp[t].length+')</div>';
+        gp[t].slice(0,8).forEach(function(x){
+          h+='<div style="padding:4px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="window.open(\'守夜人论坛.html\')"><span style="color:var(--ink)">'+escS(x.user)+' · '+escS(x.time)+'</span><br>'+escS((x.text||'').slice(0,80))+'</div>';
+        });
+      }
+    }
+    if(!h)h='<div style="color:var(--ink3);padding:8px">未找到相关结果</div>';
+    srchOut.innerHTML=h;
+  }).catch(function(){
+    if(done)return;done=true;
+    var h='';
+    if(gl.length){
+      h+='<div style="margin:6px 0 4px;color:var(--accent)">留言 ('+gl.length+')</div>';
+      gl.slice(0,8).forEach(function(x){
+        h+='<div style="padding:4px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)">'+escS(x.name)+' · '+escS(x.time)+'</span><br>'+escS((x.text||'').slice(0,80))+'</div>';
+      });
+    }
+    if(!h)h='<div style="color:var(--ink3);padding:8px">云端未连接 · 仅本地留言</div>';
+    srchOut.innerHTML=h;
+  });
+}
+if(srchB)srchB.onclick=function(){if(srchM){srchM.style.display='flex';setTimeout(function(){if(srchIn)srchIn.focus()},60)}};
+if(srchGo)srchGo.onclick=doSearch;
+if(srchIn)srchIn.addEventListener('keydown',function(e){if(e.key==='Enter')doSearch()});
+})();
 })();
 </script>
   </div>
@@ -2217,6 +2327,16 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
     <h2>界面主题</h2>
     <div class="th-sub">7 种界面风格 · 与配色叠加使用</div>
     <div class="th-grid" id="uiGrid"></div>
+  </div>
+</div>
+
+<div id="srchM" style="display:none;position:fixed;inset:0;z-index:995;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px">
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input id="srchIn" style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px 10px;font-family:inherit;font-size:13px" placeholder="搜索留言 / 论坛帖子 / 私聊…">
+      <button class="gb-btn" id="srchGo" style="padding:8px 14px">搜索</button>
+    </div>
+    <div id="srchOut" style="max-height:52vh;overflow-y:auto;font-size:12px;line-height:1.7;color:var(--ink2)"></div>
   </div>
 </div>
 

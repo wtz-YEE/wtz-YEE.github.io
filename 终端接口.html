@@ -382,7 +382,7 @@ body.red .term-in input{caret-color:var(--bad)}
   </div>
 
   <div class="block" id="blk2">
-    <div class="b-head"><span class="b-no">02</span><h2>小游戏</h2><span class="b-code">MINI GAMES · 32</span></div>
+    <div class="b-head"><span class="b-no">02</span><h2>小游戏</h2><span class="b-code">MINI GAMES · 32</span><button id="rankBtn" style="margin-left:auto;border:1px solid #3FE0C8;color:#3FE0C8;background:none;padding:7px 16px;font-family:'Cascadia Mono',Consolas,monospace;font-size:12px;letter-spacing:.15em;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(63,224,200,.12)'" onmouseout="this.style.background='none'">RANK 排行榜</button></div>
     <div class="grid grid4">
       <a class="card" href="游戏-01.html" data-g="1">
         <div class="card-bd">
@@ -1216,5 +1216,52 @@ try{JB.push()}catch(e){}
   </div>
 </div>
 <div id="glitchFx" class="glitch hidden" aria-hidden="true"></div>
+<div id="rankM" style="display:none;position:fixed;inset:0;z-index:990;background:rgba(4,8,10,.82);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(560px,92vw);max-height:76vh;overflow:hidden;background:#0A0F12;border:1px solid #1E3A3E;display:flex;flex-direction:column;font-family:'Cascadia Mono',Consolas,monospace">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #16282C">
+      <span style="color:#3FE0C8;letter-spacing:.2em;font-size:13px">CLOUD RANK · 云端排行榜</span>
+      <span style="color:#5b6870;font-size:11px;letter-spacing:.1em">每 4 秒合并最高分</span>
+      <button id="rankX" style="margin-left:auto;border:1px solid #2A3F44;background:none;color:#8a97a0;width:28px;height:28px;cursor:pointer;font-size:13px">×</button>
+    </div>
+    <div style="padding:12px 16px;border-bottom:1px solid #16282C;display:flex;align-items:center;gap:10px">
+      <span style="color:#8a97a0;font-size:12px;letter-spacing:.1em">游戏</span>
+      <select id="rankSel" style="flex:1;background:#0C1216;color:#E6EDEF;border:1px solid #1E3A3E;padding:7px 10px;font-family:inherit;font-size:12px"></select>
+    </div>
+    <div id="rankList" style="flex:1;overflow-y:auto;padding:8px 12px;min-height:200px;font-size:13px"></div>
+  </div>
+</div>
+<style>
+#rankList::-webkit-scrollbar{width:6px}
+#rankList::-webkit-scrollbar-thumb{background:#1E3A3E}
+.rm-row{display:flex;align-items:center;gap:12px;padding:8px 10px;border-bottom:1px solid rgba(30,58,62,.5)}
+.rm-no{width:26px;color:#5b6870;text-align:center;font-size:12px}
+.rm-no.gold{color:#FFC24B}.rm-no.silver{color:#C9D8DE}.rm-no.bronze{color:#B57B4A}
+.rm-u{flex:1;color:#E6EDEF;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-s{color:#3FE0C8;font-weight:700;font-size:14px}
+.rm-empty{color:#5b6870;text-align:center;padding:40px 0;letter-spacing:.15em;font-size:12px}
+
+</style>
+<script>
+(function(){
+var B=document.getElementById('rankBtn'),M=document.getElementById('rankM'),SEL=document.getElementById('rankSel'),LS=document.getElementById('rankList');
+if(!B||!M||!SEL||!LS)return;
+var GM=[['2048','2048'],['dino','小恐龙'],['snake','贪吃蛇'],['tetris','俄罗斯方块'],['mine','扫雷'],['break','打砖块'],['flappy','Flappy鸟'],['strike','战机'],['gomoku','五子棋'],['tictactoe','井字棋'],['sudoku','数独'],['slide','滑块拼图'],['maze','迷宫'],['memory','记忆翻牌'],['guess','猜数字'],['match3','消消乐'],['whack','打地鼠'],['catch','接苹果'],['fruit','切水果'],['target','打靶'],['dodge','躲避弹幕'],['pong','乒乓球'],['runner','跑酷'],['collect','收集星'],['fish','大鱼吃小鱼'],['reflex','反应测试'],['simon','西蒙记忆'],['typer','打字'],['hangman','猜单词'],['blackjack','21点'],['piano','钢琴'],['alchemy','炼金']];
+function api(){try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0});return a[0]||''}catch(e){return''}}
+function esc(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function load(g){
+LS.textContent='加载中…';
+fetch(api()+'/score_top?game='+g+'&limit=8').then(function(r){return r.json()}).then(function(j){
+var h='';
+if(!j.ok||!j.list.length){h='<div class="rm-empty">暂无记录 · 快去创造纪录</div>'}
+else{j.list.forEach(function(x,i){var c=i===0?'gold':i===1?'silver':i===2?'bronze':'';h+='<div class="rm-row"><span class="rm-no '+c+'">'+(i+1)+'</span><span class="rm-u">'+esc(x.user)+'</span><span class="rm-s">'+x.score+'</span></div>'})}
+LS.innerHTML=h;
+}).catch(function(){LS.innerHTML='<div class="rm-empty">加载失败 · 云端未连接</div>'});
+}
+B.onclick=function(){SEL.innerHTML='';GM.forEach(function(g){var o=document.createElement('option');o.value=g[0];o.textContent=g[1];SEL.appendChild(o)});load(SEL.value);M.style.display='flex'};
+var X=document.getElementById('rankX');if(X)X.onclick=function(){M.style.display='none'};
+SEL.onchange=function(){load(SEL.value)};
+M.addEventListener('click',function(e){if(e.target===M)M.style.display='none'});
+})();
+</script>
 </body>
 </html>
