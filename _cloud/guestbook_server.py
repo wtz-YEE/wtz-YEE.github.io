@@ -10,6 +10,8 @@ _BASE = os.path.dirname(os.path.abspath(__file__))
 GUESTBOOK_FILE = os.path.join(_BASE, "guestbook.json")
 USER_FILE = os.path.join(_BASE, "users.json")
 PM_FILE = os.path.join(_BASE, "pm.json")
+import time as _t
+DEL_LOG = []
 
 # 初始化留言板
 if not os.path.exists(GUESTBOOK_FILE):
@@ -266,7 +268,8 @@ def api_guests_new():
         on = after
     except Exception:
         on = 0
-    return jsonify({"ok": True, "list": nl, "online": on})
+    deleted = [d["id"] for d in DEL_LOG if d["t"] > _t.time() - 600]
+    return jsonify({"ok": True, "list": nl, "online": on, "deleted": deleted})
 
 
 @app.route("/guest_add", methods=["POST"])
@@ -511,6 +514,9 @@ def api_guest_del():
         return jsonify({"ok": False, "msg": "无权删除该留言"})
     n = [x for x in g if str(x.get("id")) != str(p.get("id"))]
     _save(GUESTBOOK_FILE, n)
+    DEL_LOG.append({"id": int(t.get("id", 0)), "t": _t.time()})
+    if len(DEL_LOG) > 200:
+        del DEL_LOG[:100]
     return jsonify({"ok": True, "msg": "已删除"})
 
 import base64 as _b64

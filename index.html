@@ -1193,6 +1193,11 @@ function localCall(path,p){
       if(!cd.is_admin&&g.user!==cd.name) return {ok:false,msg:'无权删除该留言'};
       d.guests=d.guests.filter(function(x){return x!==g});
       dbSave(d);
+      try{
+        var cc=JSON.parse(localStorage.getItem(K_GB)||'null');
+        if(cc&&cc.list) cc.list=cc.list.filter(function(x){return String(x&&x.id)!==String(p.id)});
+        localStorage.setItem(K_GB,JSON.stringify(cc));
+      }catch(e){}
       return {ok:true,msg:'已删除'};
     }
     case '/pm_send':{
@@ -1416,6 +1421,15 @@ function loadGuestBook(){
     if(o&&j.online!==undefined){ o.textContent='在线 '+j.online; o.style.display=''; }
     var nl=j.list||[];
     if(!cache||!cache.list) cache={list:[],maxId:0};
+    var del=j.deleted||[];
+    if(del.length){
+      var oldLen=cache.list.length;
+      cache.list=cache.list.filter(function(x){return del.indexOf((x&&x.id)||-1)<0});
+      if(cache.list.length!==oldLen){
+        try{ localStorage.setItem(K_GB,JSON.stringify(cache)); }catch(e){}
+        renderGuests(cache.list);
+      }
+    }
     if(nl.length){
       var all=cache.list.slice();
       for(var i=0;i<nl.length;i++){
@@ -1879,7 +1893,15 @@ function bind(){
     if(!confirm('确定删除这条留言？')) return;
     call('/guest_del',{id:btn.getAttribute('data-del'),token:S.user&&S.user.token}).then(function(j){
       say(j.msg||(j.ok?'已删除':'删除失败'),!!j.ok);
-      if(j.ok) loadGuestBook();
+      if(j.ok){
+        var did=String(btn.getAttribute('data-del'));
+        try{
+          var cc=JSON.parse(localStorage.getItem(K_GB)||'null');
+          if(cc&&cc.list) cc.list=cc.list.filter(function(x){return String(x&&x.id)!==did});
+          localStorage.setItem(K_GB,JSON.stringify(cc));
+        }catch(e){}
+        loadGuestBook();
+      }
     }).catch(function(err){ say('删除失败：'+err.message,false); });
   });
 
