@@ -474,6 +474,31 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
   .hero h1{letter-spacing:.06em}
   .gb-btn{padding:8px 14px;font-size:11px}
 }
+/* ===== 配色主题 ===== */
+.th-btn{margin-left:auto;border:1px solid var(--line2);color:var(--ink2);padding:2px 10px;font-size:10.5px;letter-spacing:.12em;cursor:pointer;transition:.2s;background:none}
+.th-btn:hover{border-color:var(--accent);color:var(--accent)}
+#thMask{position:fixed;inset:0;z-index:120;background:rgba(4,5,6,.74);display:flex;align-items:center;justify-content:center;padding:18px}
+#thMask.hidden{display:none}
+#thBox{width:min(680px,94vw);max-height:86vh;overflow-y:auto;background:#101214;border:1px solid var(--line2);padding:20px 22px 22px;box-shadow:0 24px 70px rgba(0,0,0,.6);animation:pactin .35s cubic-bezier(.22,1,.36,1) both}
+#thBox h2{font-family:var(--mono);font-size:13px;letter-spacing:.3em;color:var(--accent);margin-bottom:4px}
+#thBox .th-sub{font-size:11px;color:var(--ink3);margin-bottom:14px;letter-spacing:.08em}
+.th-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:10px}
+.th-card{border:1px solid var(--line2);padding:11px 12px;cursor:pointer;transition:.18s;background:rgba(255,255,255,.02)}
+.th-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.th-card.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.th-swat{display:flex;gap:5px;margin-bottom:8px}
+.th-swat i{flex:1;height:26px;border:1px solid rgba(255,255,255,.14)}
+.th-card .tn{font-size:12px;color:var(--ink2)}
+.th-card .td{font-size:10px;color:var(--ink3);margin-top:2px}
+.th-custom{margin-top:16px;border-top:1px solid var(--line);padding-top:13px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+.th-custom label{font-size:11px;color:var(--ink3);display:flex;flex-direction:column;gap:6px;letter-spacing:.06em}
+.th-custom input[type=color]{width:56px;height:30px;border:1px solid var(--line2);background:none;padding:2px;cursor:pointer}
+.th-custom .btn{border:1px solid var(--line2);color:var(--ink2);padding:8px 16px;font-size:11.5px;letter-spacing:.18em;cursor:pointer;transition:.2s;background:none}
+.th-custom .btn:hover{border-color:var(--accent);color:var(--accent)}
+.th-custom .btn.prim{border-color:var(--accent);color:var(--accent)}
+.th-custom .btn.prim:hover{background:var(--accent-soft)}
+.th-close{position:absolute;top:10px;right:12px;border:none;background:none;color:var(--ink3);font-size:16px;cursor:pointer;padding:4px}
+.th-close:hover{color:var(--accent)}
 
 /* ===== 留言板 / 私聊 v3.0 ===== */
 .gb{max-width:1080px;margin:26px auto 0;border:1px solid var(--line2);background:linear-gradient(165deg,#151516,#0E0E0F);box-shadow:0 0 0 1px rgba(255,255,255,.05)}
@@ -620,6 +645,7 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
   <span class="st-l">WTZ // 个人网站 · 黑白</span>
   <span class="st-c" id="clock">--:--:--</span>
   <span class="pbadge" id="permBadge">LV 0</span>
+  <button class="th-btn" id="thBtn" title="界面配色">◐ 配色</button>
 </header>
 
 <main>
@@ -828,6 +854,90 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 <script>
 (function(){
 'use strict';
+
+/* ===== 配色主题 ===== */
+var THEMES=[
+{id:'t1',n:'墨黑档案',d:'默认 · 档案室黑白',bg:'#0A0A0A',a:'#FFFFFF'},
+{id:'t2',n:'终端青',d:'青绿 · 复古终端',bg:'#0A1012',a:'#3FE0C8'},
+{id:'t3',n:'烈焰橙',d:'暖橙 · 能量跃动',bg:'#120B07',a:'#FF8A3D'},
+{id:'t4',n:'深渊蓝',d:'冰蓝 · 深海回声',bg:'#070D16',a:'#4FA8FF'},
+{id:'t5',n:'紫夜',d:'暗紫 · 秘夜徽记',bg:'#0E0916',a:'#B08CFF'},
+{id:'t6',n:'绯红',d:'红警 · 警戒终端',bg:'#14080C',a:'#FF5C7A'},
+{id:'t7',n:'琥珀金',d:'暖金 · 学院风格',bg:'#120E05',a:'#D4A643'}
+];
+var TK='wz_theme';
+function hexR(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function mix(h,f){var c=hexR(h);return 'rgb('+Math.round(c[0]+(255-c[0])*f)+','+Math.round(c[1]+(255-c[1])*f)+','+Math.round(c[2]+(255-c[2])*f)+')'}
+function rgba(h,a){var c=hexR(h);return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'}
+function lum(h){var c=hexR(h);return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]}
+function setV(bg,a){
+  var dark=lum(bg)>150;
+  var ink=dark?'#101010':'#F0F0F0';
+  var ink2=dark?'#4A4A4A':'#A6A6A6';
+  var ink3=dark?'#7A7A7A':'#707070';
+  var line=dark?'rgba(0,0,0,.12)':'rgba(255,255,255,.10)';
+  var line2=dark?'rgba(0,0,0,.26)':'rgba(255,255,255,.22)';
+  var panel=dark?'#E9E9E9':'#141414';
+  var panel2=dark?'#DDDDDD':'#1C1C1C';
+  var st=document.documentElement.style;
+  st.setProperty('--bg',bg);st.setProperty('--bg2',mix(bg,.04));
+  st.setProperty('--panel',panel);st.setProperty('--panel2',panel2);
+  st.setProperty('--ink',ink);st.setProperty('--ink2',ink2);st.setProperty('--ink3',ink3);
+  st.setProperty('--accent',a);st.setProperty('--accent2',mix(a,.22));st.setProperty('--accent-soft',rgba(a,.12));
+  st.setProperty('--line',line);st.setProperty('--line2',line2);
+  st.setProperty('--ok',a);st.setProperty('--warn',mix(a,.28));st.setProperty('--bad','#FF5C7A');
+}
+function applyT(t){
+  setV(t.bg,t.a);
+  try{localStorage.setItem(TK,JSON.stringify({id:t.id,bg:t.bg,a:t.a}))}catch(e){}
+}
+function loadT(){
+  try{
+    var s=JSON.parse(localStorage.getItem(TK)||'null');
+    if(s&&s.a){setV(s.bg||'#0A0A0A',s.a);return}
+  }catch(e){}
+  setV('#0A0A0A','#FFFFFF');
+}
+loadT();
+function renderTh(){
+  var g=document.getElementById('thGrid');
+  if(!g)return;
+  var cur='';
+  try{cur=(JSON.parse(localStorage.getItem(TK)||'null')||{}).id}catch(e){}
+  g.innerHTML=THEMES.map(function(t){
+    return '<div class="th-card'+(cur===t.id?' on':'')+'" data-id="'+t.id+'"><div class="th-swat"><i style="background:'+t.bg+'"></i><i style="background:'+t.a+'"></i></div><div class="tn">'+t.n+'</div><div class="td">'+t.d+'</div></div>';
+  }).join('');
+}
+function thSay(t){var m=document.getElementById('thBox');if(m){var d=document.createElement('div');d.style.cssText='font-size:10.5px;color:var(--ink3);margin-top:10px;letter-spacing:.08em';d.textContent=t;m.appendChild(d);setTimeout(function(){d.style.opacity='0';d.style.transition='.6s'},1600);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},2300)}}
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(t&&t.id==='thBtn'){document.getElementById('thMask').classList.remove('hidden');renderTh();return}
+  if(t&&t.id==='thClose'){document.getElementById('thMask').classList.add('hidden');return}
+  var tc=t;
+  while(tc&&tc.classList&&!tc.classList.contains('th-card'))tc=tc.parentNode;
+  if(tc&&tc.classList&&tc.classList.contains('th-card')){
+    var id=tc.getAttribute('data-id');
+    var th=null;
+    for(var i=0;i<THEMES.length;i++)if(THEMES[i].id===id)th=THEMES[i];
+    if(th){applyT(th);renderTh();thSay('已应用配色 · '+th.n)}
+    return;
+  }
+  if(t&&t.id==='thApply'){
+    var a=document.getElementById('thC').value,b=document.getElementById('thB').value;
+    applyT({id:'custom',bg:b,a:a});
+    renderTh();
+    thSay('已应用自定义配色');
+    return;
+  }
+  if(t&&t.id==='thReset'){
+    try{localStorage.removeItem(TK)}catch(e){}
+    setV('#0A0A0A','#FFFFFF');
+    renderTh();
+    thSay('已恢复默认配色');
+    return;
+  }
+  if(t&&t.id==='thMask'){t.classList.add('hidden');return}
+});
 
 /* ---------- 常量 & 工具 ---------- */
 var K_API='gb_api_url', K_SESS='gb_session', K_DB='gb_db_v1';
@@ -1650,15 +1760,13 @@ var boot=document.getElementById('boot'),bBar=document.getElementById('btBar'),b
 function hideBoot(){document.body.classList.add('ready');setTimeout(function(){boot.style.display='none'},720);sessionStorage.setItem('wzBoot','1')}
 function runBoot(){
 var art=[
-'        ██████',
-'       ████████',
-'      ██████████',
-'     ████████████',
-'    ██████████████',
-'     ████████████',
-'      ██████████',
-'       ████████',
-'        ██████'
+'██    ██ █████ █████',
+'██    ██   █     ███',
+'██ ██ ██   █    ██',
+'████████   █   ██',
+'████████   █  ██',
+'██ ██ ██   █ ██',
+'██    ██   █ █████'
 ];
 var artEl=document.getElementById('btArt'),tyEl=document.getElementById('btTy'),lnEl=document.getElementById('btLines');
 var lines=[
@@ -1801,6 +1909,22 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
 })();
 })();
 </script>
+
+<!-- ============ 配色主题面板 ============ -->
+<div id="thMask" class="hidden">
+  <div class="thBox" id="thBox" style="position:relative">
+    <button class="th-close" id="thClose" title="关闭">✕</button>
+    <h2>界面配色</h2>
+    <div class="th-sub">7 套内置方案 · 亦可自定义主色与底色</div>
+    <div class="th-grid" id="thGrid"></div>
+    <div class="th-custom">
+      <label>主色 <input type="color" id="thC" value="#3FE0C8"></label>
+      <label>底色 <input type="color" id="thB" value="#0A1012"></label>
+      <button class="btn prim" id="thApply">应用自定义</button>
+      <button class="btn" id="thReset">恢复默认</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
