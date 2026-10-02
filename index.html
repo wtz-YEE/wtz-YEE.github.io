@@ -1189,16 +1189,23 @@ function localCall(path,p){
       var cd=me(); if(!cd) return AUTH_ERR;
       var g=null,i;
       for(i=0;i<d.guests.length;i++){ if(String(d.guests[i].id)===String(p.id)){ g=d.guests[i]; break; } }
-      if(!g) return {ok:false,msg:'留言不存在'};
-      if(!cd.is_admin&&g.user!==cd.name) return {ok:false,msg:'无权删除该留言'};
-      d.guests=d.guests.filter(function(x){return x!==g});
-      dbSave(d);
+      var inCache=false;
+      try{
+        var cc0=JSON.parse(localStorage.getItem(K_GB)||'null');
+        if(cc0&&cc0.list) inCache=cc0.list.some(function(x){return String(x&&x.id)===String(p.id)});
+      }catch(e){}
+      if(!g&&!inCache) return {ok:false,msg:'留言不存在'};
+      if(g){
+        if(!cd.is_admin&&g.user!==cd.name) return {ok:false,msg:'无权删除该留言'};
+        d.guests=d.guests.filter(function(x){return x!==g});
+        dbSave(d);
+      }
       try{
         var cc=JSON.parse(localStorage.getItem(K_GB)||'null');
         if(cc&&cc.list) cc.list=cc.list.filter(function(x){return String(x&&x.id)!==String(p.id)});
         localStorage.setItem(K_GB,JSON.stringify(cc));
       }catch(e){}
-      return {ok:true,msg:'已删除'};
+      return {ok:true,msg:g?'已删除':'已从列表移除'};
     }
     case '/pm_send':{
       var cs=me(); if(!cs) return AUTH_ERR;
