@@ -876,8 +876,9 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
   <div class="gb-users" id="gb_users_panel" style="display:none">
     <div class="gb-conv-h">当前用户 <span id="gb_ucnt"></span><button class="gb-btn ghost" id="gb_uref" style="float:right;padding:2px 10px;font-size:11px">刷新</button></div>
     <div style="padding:6px 2px;border-bottom:1px solid var(--line)">
-      <div style="display:flex;gap:6px">
-        <input id="gb_risk_kw" placeholder="多个关键词用逗号分隔" style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:6px 8px;font-size:12px">
+      <div style="font-size:11px;color:var(--dim);margin-bottom:4px">风控管理 · 命中即删用户及其内容</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <input id="gb_risk_kw" placeholder="多个关键词用逗号分隔，回车即扫" style="flex:1;min-width:120px;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:6px 8px;font-size:12px">
         <button class="gb-btn" id="gb_risk_btn" style="padding:6px 12px;border-color:var(--bad);color:var(--bad)">上传关键词</button>
         <button class="gb-btn" id="gb_risk_all" style="padding:6px 12px;border-color:var(--bad);color:var(--bad)">扫描全部</button>
       </div>
@@ -2106,7 +2107,15 @@ var rkW=document.getElementById('gb_risk_words');
 function rkWShow(l){
   if(!rkW)return;
   rkW.textContent='';
-  (l||[]).forEach(function(w){
+  var ls=l||[];
+  if(!ls.length){
+    var e=document.createElement('span');
+    e.textContent='暂无关键词';
+    e.style.cssText='font-size:12px;color:var(--dim)';
+    rkW.appendChild(e);
+    return;
+  }
+  ls.forEach(function(w){
     var s=document.createElement('span');
     s.style.cssText='display:inline-flex;align-items:center;gap:5px;border:1px solid var(--bad);padding:2px 8px;font-size:12px;color:var(--bad)';
     var t=document.createElement('span');
@@ -2125,33 +2134,45 @@ function rkWShow(l){
     rkW.appendChild(s);
   });
 }
+function rkBusy(on,btn,txt){
+  if(!btn)return;
+  btn.disabled=on;
+  if(on){btn.dataset.t=btn.textContent;btn.textContent=txt}
+  else if(btn.dataset.t){btn.textContent=btn.dataset.t;delete btn.dataset.t}
+}
 function riskRun(){
   var kw=(rkIn.value||'').trim();
   if(!kw){if(typeof say==='function')say('请输入风控关键词',false);return}
   if(typeof say==='function')say('上传云端扫描中…',true);
+  rkBusy(true,rkAll,'扫描中…');
   call('/admin_scan',{kw:kw}).then(function(j){
+    rkBusy(false,rkAll);
     if(!j.ok){if(typeof say==='function')say(j.msg||'风控失败',false);return}
     if(typeof say==='function')say((j.msg||'')+'：'+(j.hits||[]).join('、'),true);
     if(typeof loadUsers==='function')loadUsers();
     rkWShow(j.words||[]);
-  }).catch(function(e){if(typeof say==='function')say('请求失败：'+e.message,false)});
+  }).catch(function(e){rkBusy(false,rkAll);if(typeof say==='function')say('请求失败：'+e.message,false)});
 }
 if(rkB)rkB.onclick=function(){
   var kw=(rkIn.value||'').trim();
   if(!kw){if(typeof say==='function')say('请输入风控关键词',false);return}
+  rkBusy(true,rkB,'上传中…');
   call('/risk_words_add',{words:kw}).then(function(j){
+    rkBusy(false,rkB);
     if(typeof say==='function')say(j.msg||'',true);
     rkWShow(j.words||[]);
-    rkIn.value='';
-  }).catch(function(e){if(typeof say==='function')say('失败：'+e.message,false)});
+    if(j.ok)rkIn.value='';
+  }).catch(function(e){rkBusy(false,rkB);if(typeof say==='function')say('失败：'+e.message,false)});
 };
 if(rkAll)rkAll.onclick=function(){
   if(typeof say==='function')say('云端扫描全部关键词…',true);
+  rkBusy(true,rkAll,'扫描中…');
   call('/admin_scan',{}).then(function(j){
+    rkBusy(false,rkAll);
     if(!j.ok){if(typeof say==='function')say(j.msg||'风控失败',false);return}
     if(typeof say==='function')say((j.msg||'')+'：'+(j.hits||[]).join('、'),true);
     if(typeof loadUsers==='function')loadUsers();
-  }).catch(function(e){if(typeof say==='function')say('请求失败：'+e.message,false)});
+  }).catch(function(e){rkBusy(false,rkAll);if(typeof say==='function')say('请求失败：'+e.message,false)});
 };
 if(rkIn)rkIn.addEventListener('keydown',function(e){if(e.key==='Enter')riskRun()});
 call('/risk_words_get',{}).then(function(j){rkWShow(j.words||[])}).catch(function(){});
