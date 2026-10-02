@@ -1,0 +1,14 @@
+{
+  "name": "WTZ 的个人网站",
+  "short_name": "WTZ",
+  "description": "PRTS 档案室 · 守夜人论坛 · 卡塞尔学院 · 更新日志",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0A0C0E",
+  "theme_color": "#0A0C0E",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

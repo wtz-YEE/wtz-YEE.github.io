@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>WTZ 的个人网站</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A0C0E">
 <style>
 :root{
   --bg:#0A0C0E;--bg2:#07090A;--panel:#11151A;--panel2:#181D23;
@@ -384,6 +386,8 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 .hero .h-mono{font-size:10.5px;letter-spacing:.24em;color:var(--ink3)}
 .hero::after{background:linear-gradient(90deg,transparent,var(--accent),transparent)}
 .h-file{margin-top:18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--ink3);display:inline-block;border:1px solid var(--line2);padding:6px 14px;text-indent:0}
+.h-q{margin-top:12px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--ink3);cursor:pointer;user-select:none;line-height:1.7}
+.h-q b{color:var(--accent);font-weight:400}
 .h-file b{color:var(--ink2);font-weight:400}
 .dh-acts{margin-top:22px}
 .dh-acts button{border-color:var(--line2);color:var(--ink2);background:none}
@@ -789,6 +793,7 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
     <p class="h-sub">PRTS 档案室 ▸ 守夜人论坛 ▸ 卡塞尔学院 —— 多入口</p>
     <p class="h-mono">档案 · 终端 · 技能 · 模组 · 更新日志 —— 云端留言板在此</p>
     <div class="h-file">FILE WTZ·ROOT &nbsp;|&nbsp; <b>4 入口</b> · 档案 + 论坛 + 学院 + 日志 · 云端联动</div>
+    <div class="h-q" id="qotd" title="点击换一句">[ 语录 ] ▸ LOADING…</div>
   </div>
 
 <div class="block" style="padding-top:0">
@@ -1009,6 +1014,25 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
         <button class="gb-btn" id="gb_risk_all" style="padding:6px 12px;border-color:var(--bad);color:var(--bad)">扫描全部</button>
       </div>
       <div id="gb_risk_words" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+    <div style="display:flex;gap:6px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap">
+      <button class="gb-btn" id="gb_aud_btn" style="padding:5px 12px;font-size:11px">▦ 审计日志</button>
+      <button class="gb-btn" id="gb_sta_btn" style="padding:5px 12px;font-size:11px">▤ 数据面板</button>
+      <button class="gb-btn ghost" id="gb_aud_close" style="padding:5px 12px;font-size:11px;display:none">收起</button>
+    </div>
+    <div id="gb_aud" style="display:none;padding:8px 0;border-bottom:1px solid var(--line)">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--ink3);letter-spacing:.12em">操作日志 · 删帖/删用户/拉黑/风控留痕</span>
+        <span id="gb_aud_total" style="font-size:10.5px;color:var(--dim)"></span>
+        <button class="gb-btn ghost" id="gb_aud_json" style="margin-left:auto;padding:3px 10px;font-size:10.5px">导出 JSON</button>
+        <button class="gb-btn ghost" id="gb_aud_csv" style="padding:3px 10px;font-size:10.5px">导出 CSV</button>
+      </div>
+      <div id="gb_aud_list" style="font-size:11px;line-height:1.8;max-height:240px;overflow-y:auto;color:var(--ink2)"></div>
+    </div>
+    <div id="gb_sta" style="display:none;padding:8px 0;border-bottom:1px solid var(--line)">
+      <div id="gb_sta_tot" style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--ink3);letter-spacing:.06em;margin-bottom:8px"></div>
+      <div id="gb_sta_trend" style="margin-bottom:10px"></div>
+      <div id="gb_sta_hours"></div>
     </div>
     <div id="gb_ulist"></div>
   </div>
@@ -1899,12 +1923,18 @@ function ntRefresh(){
     var un=(j&&j.unread)||0;
     if(un>0){ d.textContent=un>99?'99+':un; b.classList.add('on'); }
     else{ d.textContent='0'; b.classList.remove('on'); }
+    var nb=$('ntNotices');
+    if(nb){
+      var ns=(j&&j.notices)||[];
+      if(ns.length){ nb.style.display='block'; nb.innerHTML='<div style="color:var(--accent);letter-spacing:.2em;margin-bottom:4px">▣ 公告</div>'+ns.map(function(x){return '<div style="margin:3px 0">['+esc(x.time||'')+'] '+esc((x.text||'').slice(0,60))+'</div>'}).join(''); }
+      else nb.style.display='none';
+    }
     var ls=$('ntList');
     if(ls){
       var arr=(j&&j.list)||[];
       if(!arr.length) ls.innerHTML='<div style="color:var(--ink3);padding:12px 14px">暂无通知</div>';
       else ls.innerHTML=arr.map(function(x){
-        var kind=x.type==='at'?'提到了你':(x.type==='pm'?'私信你':'系统');
+        var kind=x.type==='at'?'提到了你':(x.type==='reply'?'评论了你的帖子':(x.type==='pm'?'私信你':'系统'));
         return '<div class="nt-it'+(x.read?'':' unread')+'" data-nt="'+esc(x.id)+'"><b>'+esc((x.from||'系统'))+'</b> '+kind+'<div class="nt-m">'+esc((x.text||'').slice(0,80))+' · '+esc(x.time)+'</div></div>';
       }).join('');
     }
@@ -2697,6 +2727,7 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
 
 <div id="ntPanel">
   <h4>通知中心 <span id="ntClear" style="cursor:pointer;font-size:10.5px;color:var(--ink3);letter-spacing:.1em">全部已读</span></h4>
+  <div id="ntNotices" style="display:none;padding:8px 14px;border-bottom:1px dashed var(--line);font-size:11.5px;color:var(--ink2);line-height:1.7"></div>
   <div id="ntList" style="font-size:12px;color:var(--ink3);padding:12px 14px">加载中…</div>
 </div>
 
@@ -2704,6 +2735,128 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
   <button class="pf-close" id="pfClose">✕</button>
   <div id="pfBody"></div>
 </div></div>
+
+<script>
+/* ==== v2.9 每日一言 ==== */
+(function(){
+  var Q=[
+    '代码即剑，终端即鞘。',
+    '夜已深，守夜人仍在值守。',
+    '权限不是身份，是责任。',
+    '圣山在脚下，深渊在身后。',
+    '每次签到，都是与自己的约定。',
+    '数据不会说谎，人才会。',
+    '黑白之外，还有第三种颜色：你的选择。',
+    '种子按时间生成，命运按选择展开。',
+    '日志记录过去，代码书写未来。',
+    '风控是一把刀，管理员是握刀的人。',
+    '离线不等于失联，缓存也是记忆。',
+    '留言板是时间的回声。',
+    '当你凝视终端，终端也在凝视你。',
+    '路虽远，行则将至。',
+    '每一个 BUG 都是未被发现的真相。',
+    '守护者不追求被记住，只追求被需要。',
+    '代码无注释，但心有批注。',
+    '凌晨的服务器最安静。',
+    '世界树半枯，但根系仍深。',
+    '你的每一次点击，都算数。'
+  ];
+  var el=$('qotd');
+  if(el){
+    var show=function(){ el.innerHTML='[ 语录 ] ▸ <b>'+esc(Q[Math.floor(Math.random()*Q.length)])+'</b>'; };
+    show();
+    el.addEventListener('click',show);
+  }
+})();
+/* ==== v2.9 审计 + 数据面板 ==== */
+(function(){
+  var isAdmin=function(){ return S.user&&S.user.is_admin; };
+  function dl(fn,txt){
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+    a.download=fn; a.click();
+  }
+  var audBtn=$('gb_aud_btn'),staBtn=$('gb_sta_btn'),audCls=$('gb_aud_close');
+  if(audBtn) audBtn.addEventListener('click',function(){
+    var A=$('gb_aud'),S2=$('gb_sta');
+    A.style.display=A.style.display==='none'?'block':'none';
+    audCls.style.display=A.style.display;
+    if(S2) S2.style.display='none';
+    if(A.style.display==='block') audRefresh();
+  });
+  if(staBtn) staBtn.addEventListener('click',function(){
+    var A=$('gb_aud'),S2=$('gb_sta');
+    S2.style.display=S2.style.display==='none'?'block':'none';
+    audCls.style.display=S2.style.display;
+    if(A) A.style.display='none';
+    if(S2.style.display==='block') staRefresh();
+  });
+  if(audCls) audCls.addEventListener('click',function(){
+    var A=$('gb_aud'),S2=$('gb_sta');
+    if(A) A.style.display='none'; if(S2) S2.style.display='none';
+    audCls.style.display='none';
+  });
+  function audRefresh(){
+    var L=$('gb_aud_list'),T=$('gb_aud_total');
+    if(!L) return;
+    L.innerHTML='加载中…';
+    call('/audit_get',{}).then(function(j){
+      if(!j||!j.ok){ L.innerHTML='无权限或加载失败'; return; }
+      T.textContent='共 '+j.total+' 条';
+      var arr=j.list||[];
+      if(!arr.length){ L.innerHTML='<div style="color:var(--ink3)">暂无操作记录</div>'; return; }
+      L.innerHTML=arr.map(function(x){
+        return '<div style="border-bottom:1px dashed var(--line);padding:3px 0"><span style="color:var(--accent)">'+esc(x.who||'')+'</span> <span style="color:var(--ink2)">'+esc(x.act||'')+'</span> → '+esc(x.target||'')+'<div style="color:var(--ink3);font-size:10px">'+esc(x.t||'')+' · '+esc(x.detail||'')+'</div></div>';
+      }).join('');
+    }).catch(function(e){ L.innerHTML='加载失败 · '+esc(e.message); });
+  }
+  var aj=$('gb_aud_json'),ac=$('gb_aud_csv');
+  if(aj) aj.addEventListener('click',function(){
+    call('/audit_export',{fmt:'json'}).then(function(j){ if(j&&j.ok) dl('audit_log.json',JSON.stringify(j.data,null,1)); });
+  });
+  if(ac) ac.addEventListener('click',function(){
+    call('/audit_export',{fmt:'csv'}).then(function(j){ if(j&&j.ok) dl('audit_log.csv',j.data); });
+  });
+  function svgLine(vals,labels,W,H,opt){
+    var mx=Math.max.apply(null,vals.concat([1])),pts=[],st=W/(vals.length-1||1);
+    for(var i=0;i<vals.length;i++) pts.push((4+i*st).toFixed(1)+','+(H-10-(vals[i]/mx)*(H-24)).toFixed(1));
+    var grid='',G=opt||{},ga=G.grid==null?4:G.grid;
+    for(var i2=1;i2<ga;i2++){ var yy=(H-10-(i2/ga)*(H-24)).toFixed(1); grid+='<line x1="0" y1="'+yy+'" x2="'+W+'" y2="'+yy+'" stroke="#222" stroke-width="1"/>'; }
+    return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block">'+grid+
+      '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+(G.c||'#E8E8E8')+'" stroke-width="1.8"/>'+
+      pts.map(function(pt,i3){ var c=pt.split(','); return '<circle cx="'+c[0]+'" cy="'+c[1]+'" r="2.4" fill="'+(G.c||'#E8E8E8')+'"/>'; }).join('')+
+      '<g font-size="8" fill="#66767A">'+labels.map(function(lb,i4){ return '<text x="'+(4+i4*st-8).toFixed(0)+'" y="'+(H-2)+'">'+esc(String(lb).slice(5))+'</text>'; }).join('')+'</g></svg>';
+  }
+  function staRefresh(){
+    var T=$('gb_sta_tot'),D=$('gb_sta_trend'),H2=$('gb_sta_hours');
+    if(!D) return;
+    T.innerHTML='载入中…'; D.innerHTML=''; H2.innerHTML='';
+    call('/stats2',{}).then(function(j){
+      if(!j||!j.ok){ T.innerHTML='无权限或加载失败'; return; }
+      var t=j.total||{};
+      T.innerHTML='<span style="color:var(--accent)">用户 '+t.users+'</span> · 留言 '+t.guests+' · 帖子 '+t.posts+' · 累计访问 '+t.visits;
+      D.innerHTML='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:4px">近 7 天 · 留言 ─ 注册 ─</div>'+
+        svgLine(j.gday,j.days,320,84,{c:'#E8E8E8'})+
+        svgLine(j.rday,j.days,320,84,{c:'#FFC24B',grid:3})+
+        '<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin:10px 0 4px">用户增长（累计）</div>'+
+        svgLine(j.cum,j.days,320,84,{c:'#2EE6A8',grid:4});
+      var mx=Math.max.apply(null,j.hours.concat([1])),hb='';
+      for(var i=0;i<24;i++){
+        var hh=Math.round((j.hours[i]/mx)*56);
+        hb+='<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1"><div style="height:'+hh+'px;width:7px;background:'+(hh?'var(--accent)':'#262626')+';opacity:'+(hh?'.9':'.5')+'"></div><span style="font-size:8px;color:var(--ink3)">'+i+'</span></div>';
+      }
+      H2.innerHTML='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:4px">留言活跃时段（24h）</div><div style="display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid var(--line);padding-bottom:2px">'+hb+'</div>';
+    }).catch(function(e){ T.innerHTML='加载失败 · '+esc(e.message); });
+  }
+  window.audRefresh=audRefresh; window.staRefresh=staRefresh;
+})();
+/* ==== v2.9 PWA ==== */
+(function(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+})();
+</script>
 
 </body>
 </html>
