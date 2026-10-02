@@ -1,6 +1,6 @@
 $u = & python 'D:\WTZ\prts\_cloud\get_url.py'
 if ($u) {
-    Set-Content -Path 'D:\WTZ\prts\云端地址.txt' -Value $u -Encoding UTF8
+    [IO.File]::WriteAllText('D:\WTZ\prts\云端地址.txt', $u, (New-Object Text.UTF8Encoding $false))
     Set-Clipboard -Value $u
     Write-Host ''
     Write-Host ('  本机公网地址: ' + $u)
