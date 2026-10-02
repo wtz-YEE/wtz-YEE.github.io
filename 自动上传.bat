@@ -1,17 +1,29 @@
 @echo off
-chcp 65001 >nul
+chcp 936 >nul
 cd /d D:\WTZ\prts
 echo ========================================
-echo   PRTS è‡ªåŠ¨ä¸Šä¼  GitHub
+echo   PRTS ×Ô¶¯ÉÏ´« GitHub
 echo ========================================
 echo.
-echo [1/3] æš‚å­˜å…¨éƒ¨æ›´æ”¹ ...
+echo [1/3] ÔÝ´æ²¢Ìá½»±¾µØ¸ü¸Ä ...
 git add -A
-echo [2/3] æäº¤ ...
-git commit -m "auto upload %date% %time%"
-echo [3/3] æŽ¨é€åˆ° GitHub ...
-git push origin main
+git commit -m "auto upload %date% %time%" >nul 2>nul
+echo [2/3] ³¢ÊÔ git push ...
+git -c http.version=HTTP/1.1 push origin main >nul 2>nul
+if %errorlevel%==0 (
+  echo       git push ³É¹¦
+  goto :done
+)
+echo       git Í¨µÀÊ§°Ü£¬¸ÄÓÃ API Ö±´« ...
+echo [3/3] È«Á¿ API Ö±´« ...
+python _gb\push_all_api.py
+if %errorlevel%==0 (
+  echo       API Ö±´«Íê³É
+) else (
+  echo       API Ö±´«Ê§°Ü£¬Çë¼ì²éÍøÂç»òÁîÅÆ
+)
+:done
 echo.
-echo [OK] æµç¨‹ç»“æŸï¼Œè¯·æ£€æŸ¥ä¸Šæ–¹è¾“å‡º
-echo      è‹¥æ˜¾ç¤º "nothing to commit" è¡¨ç¤ºæ— æ–°æ›´æ”¹
+echo [OK] Á÷³Ì½áÊø£¬Çë¼ì²éÉÏ·½Êä³ö
+echo       Pages ¹¹½¨Ô¼Ðè 1-2 ·ÖÖÓÉúÐ§
 pause
