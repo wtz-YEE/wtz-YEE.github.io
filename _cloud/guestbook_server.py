@@ -10,8 +10,14 @@ _BASE = os.path.dirname(os.path.abspath(__file__))
 GUESTBOOK_FILE = os.path.join(_BASE, "guestbook.json")
 USER_FILE = os.path.join(_BASE, "users.json")
 PM_FILE = os.path.join(_BASE, "pm.json")
+CHANGELOG_FILE = os.path.join(_BASE, "changelog.json")
 import time as _t
 DEL_LOG = []
+
+# 初始化更新日志
+if not os.path.exists(CHANGELOG_FILE):
+    with open(CHANGELOG_FILE, "w", encoding="utf-8") as f:
+        json.dump([], f, ensure_ascii=False)
 
 # 初始化留言板
 if not os.path.exists(GUESTBOOK_FILE):
@@ -657,6 +663,50 @@ def api_admin_ban_user():
     return jsonify({"ok": True, "msg": (("已拉黑" if ban else "已解除拉黑") + "：" + tgt)})
 
 
+@app.route("/changelog_get", methods=["GET", "POST"])
+def api_changelog_get():
+    return jsonify({"ok": True, "list": _load(CHANGELOG_FILE, [])})
+
+
+@app.route("/changelog_add", methods=["POST"])
+def api_changelog_add():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    title = str(p.get("title") or "").strip()[:60]
+    items = [str(x).strip()[:200] for x in (p.get("items") or []) if str(x).strip()][:20]
+    if not title and not items:
+        return jsonify({"ok": False, "msg": "内容不能为空"})
+    cl = _load(CHANGELOG_FILE, [])
+    mid = max([int(x.get("id", 0) or 0) for x in cl] or [0]) + 1
+    cl.insert(0, {"id": mid, "title": title, "items": items,
+                  "image": str(p.get("image") or "")[:300],
+                  "user": cu, "time": _now()})
+    _save(CHANGELOG_FILE, cl)
+    return jsonify({"ok": True, "msg": "已发布更新日志"})
+
+
+@app.route("/changelog_del", methods=["POST"])
+def api_changelog_del():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    cl = _load(CHANGELOG_FILE, [])
+    n = [x for x in cl if str(x.get("id")) != str(p.get("id"))]
+    if len(n) == len(cl):
+        return jsonify({"ok": False, "msg": "记录不存在"})
+    _save(CHANGELOG_FILE, n)
+    return jsonify({"ok": True, "msg": "已删除"})
+
+
 @app.route("/pm_conv", methods=["POST"])
 def api_pm_conv():
     p = request.get_json() or {}
@@ -706,7 +756,7 @@ POST_FILE = os.path.join(_BASE, "posts.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/upload")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/changelog_add", "/changelog_del", "/upload")
 
 @app.before_request
 def _rate():

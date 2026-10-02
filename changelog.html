@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>更新日志 // WTZ</title>
+<style>
+:root{--bg:#0A0A0A;--panel:#101010;--panel2:#161616;--line:#2a2a2a;--line2:#3d3d3d;--ink:#F2F2F2;--ink2:#B8B8B8;--ink3:#6E6E6E;--accent:#FFFFFF;--accent2:#909090;--bad:#FF5C7A;--ok:#5CE08A}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:Consolas,'Courier New',monospace;font-size:14px;min-height:100vh}
+a{color:var(--ink);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+#top{position:sticky;top:0;z-index:50;height:34px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--panel);border-bottom:1px solid var(--line);font-size:10.5px;letter-spacing:.14em}
+#top .t-l{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+#top .t-l b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-btn{background:transparent;border:1px solid var(--line2);color:var(--ink2);font-size:10px;letter-spacing:.12em;padding:3px 10px;transition:.25s}
+.t-btn:hover{border-color:var(--ink);color:var(--ink)}
+#wrap{max-width:900px;margin:0 auto;padding:26px 16px 60px}
+.hero{border:1px solid var(--line);background:var(--panel);padding:24px 22px;margin-bottom:24px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-30px;top:-30px;width:140px;height:140px;border:1px solid var(--line2);transform:rotate(45deg)}
+.hero h1{font-size:22px;letter-spacing:.22em;font-weight:700}
+.hero .sub{color:var(--ink2);font-size:11px;letter-spacing:.16em;margin-top:8px}
+.hero .file{margin-top:12px;font-size:10px;color:var(--ink3);letter-spacing:.1em}
+#st{display:inline-block;border:1px solid var(--line2);padding:2px 8px;font-size:10px;color:var(--ink2);margin-left:6px}
+#pubBtn{margin-top:14px}
+.tl{position:relative;padding-left:26px}
+.tl::before{content:'';position:absolute;left:7px;top:4px;bottom:4px;width:1px;background:var(--line2)}
+.cl-item{position:relative;margin-bottom:18px;border:1px solid var(--line);background:var(--panel);padding:16px 18px;transition:.25s}
+.cl-item:hover{border-color:var(--line2)}
+.cl-item::before{content:'';position:absolute;left:-25px;top:20px;width:9px;height:9px;background:var(--bg);border:1px solid var(--ink);transform:rotate(45deg)}
+.cl-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.cl-id{color:var(--ink3);font-size:10px;letter-spacing:.1em}
+.cl-title{font-size:16px;letter-spacing:.1em;font-weight:700}
+.cl-time{margin-left:auto;color:var(--ink3);font-size:10px;letter-spacing:.06em;white-space:nowrap}
+.cl-user{color:var(--ink2);font-size:10px}
+.cl-items{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.cl-items li{list-style:none;position:relative;padding-left:16px;color:var(--ink2);font-size:12.5px;line-height:1.7}
+.cl-items li::before{content:'▸';position:absolute;left:0;color:var(--ink3)}
+.cl-img{margin-top:12px;max-width:100%;max-height:280px;border:1px solid var(--line2);display:block;cursor:pointer}
+.cl-del{float:right;background:transparent;border:1px solid var(--bad);color:var(--bad);font-size:10px;padding:2px 8px;opacity:.8}
+.cl-del:hover{opacity:1}
+.empty{text-align:center;color:var(--ink3);font-size:12px;letter-spacing:.12em;padding:40px 0}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.mask.hidden{display:none}
+.box{background:var(--panel2);border:1px solid var(--line2);width:min(560px,94vw);padding:20px 22px}
+.box h3{font-size:14px;letter-spacing:.18em;margin-bottom:16px}
+.box label{display:block;font-size:10px;color:var(--ink2);letter-spacing:.12em;margin:12px 0 6px}
+.box input[type=text],.box textarea{width:100%;background:var(--bg);border:1px solid var(--line2);color:var(--ink);font-family:inherit;font-size:13px;padding:8px 10px;outline:none}
+.box textarea{min-height:120px;resize:vertical;line-height:1.7}
+.box input:focus,.box textarea:focus{border-color:var(--ink)}
+.box .row{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
+.bx-btn{background:transparent;border:1px solid var(--line2);color:var(--ink2);font-size:11px;letter-spacing:.12em;padding:6px 16px}
+.bx-btn:hover{border-color:var(--ink);color:var(--ink)}
+.bx-btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#imgPrev{max-width:100%;max-height:140px;border:1px solid var(--line2);margin-top:8px;display:none}
+#say{margin-top:10px;font-size:10.5px;color:var(--ok);letter-spacing:.1em;min-height:16px}
+#say.err{color:var(--bad)}
+@media(max-width:560px){.hero h1{font-size:18px}.cl-title{font-size:14px}.cl-time{margin-left:0;width:100%}}
+</style>
+</head>
+<body>
+
+<div id="top">
+  <span class="t-l">UPDATE LOG <b>更新日志</b></span>
+  <span id="st">云端不可达</span>
+  <a class="t-btn" href="index.html">◂ 返回主页</a>
+</div>
+
+<div id="wrap">
+  <div class="hero">
+    <h1>更新日志</h1>
+    <div class="sub">CHANGELOG · 记录 WTZ 网站的每一次进化</div>
+    <div class="file">FILE WTZ·LOG &nbsp;|&nbsp; <b id="cnt">0 条记录</b></div>
+    <button class="t-btn" id="pubBtn" style="display:none">＋ 发布更新</button>
+  </div>
+
+  <div id="say"></div>
+  <div id="list"></div>
+</div>
+
+<div class="mask hidden" id="mask">
+  <div class="box">
+    <h3>发布更新</h3>
+    <label>标题</label>
+    <input type="text" id="cl_title" maxlength="60" placeholder="例如：v2.3 留言板改版">
+    <label>功能条目（每行一条）</label>
+    <textarea id="cl_items" maxlength="4000" placeholder="新增留言板删除功能&#10;修复云端连接失败问题"></textarea>
+    <label>配图（可选）</label>
+    <button class="bx-btn" id="imgBtn">选择图片</button>
+    <input type="file" id="imgFile" accept="image/*" style="display:none">
+    <img id="imgPrev" alt="">
+    <div class="row">
+      <button class="bx-btn" id="clCancel">取消</button>
+      <button class="bx-btn primary" id="clOk">发布</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var S={api:'',user:null,img:''};
+var K_API='gb_api_url',K_SESS='gb_session';
+function $(id){return document.getElementById(id)}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function normalizeApi(v){v=String(v||'').trim().replace(/\/+$/,'');return /^https?:\/\//i.test(v)?v:''}
+function parseApis(raw){var out=[];String(raw||'').split(/[\n,;]+/).forEach(function(x){var v=normalizeApi(x);if(v&&out.indexOf(v)<0)out.push(v)});return out}
+try{S.apis=parseApis(localStorage.getItem(K_API))}catch(e){S.apis=[]}
+S.api=(S.apis&&S.apis[0])||'';
+try{var sv=JSON.parse(localStorage.getItem(K_SESS)||'null');if(sv&&sv.token&&sv.username)S.user=sv}catch(e){}
+function say(t,ok){var e=$('say');e.textContent=t;e.className=ok?'':'err';setTimeout(function(){e.textContent=''},3000)}
+function call(path,payload,method){
+  var body=Object.assign({token:S.user?S.user.token:''},payload||{});
+  if(!S.api) return Promise.reject(new Error('未连接云端'));
+  var m=method||'POST',tried=[];
+  function attempt(api){
+    tried.push(api);
+    var url=api+path,opt={method:m,headers:{'Content-Type':'application/json'}};
+    if(m!=='GET') opt.body=JSON.stringify(body);
+    return fetch(url,opt).then(function(res){if(!res.ok)throw new Error('HTTP '+res.status);return res.json()})
+      .catch(function(err){
+        var cands=(S.apis&&S.apis.length)?S.apis:[S.api],next=null;
+        for(var i=0;i<cands.length;i++)if(tried.indexOf(cands[i])<0){next=cands[i];break}
+        if(next){S.api=next;try{localStorage.setItem(K_API,S.apis.join('\n'))}catch(e){};return attempt(next)}
+        throw new Error((err&&err.message?err.message:'网络请求失败')+' — '+url);
+      });
+  }
+  return attempt(S.api);
+}
+function autoCloud(){
+  var st=$('st');
+  if(!S.api) st.textContent='正在连接云端…';
+  fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.text()})
+    .then(function(t){
+      var apis=parseApis(t||'');
+      if(!apis.length)return;
+      S.apis=apis;S.api=apis[0];
+      try{localStorage.setItem(K_API,apis.join('\n'))}catch(e){}
+      st.textContent='云端 · '+S.api.replace(/^https?:\/\//,'');
+      applyAuth();loadLogs();
+    }).catch(function(){st.textContent='云端不可达'});
+}
+function applyAuth(){
+  var on=!!S.user;
+  $('pubBtn').style.display=(on&&S.user.is_admin)?'':'none';
+  if(!S.api) return;
+  if(on&&S.user.is_admin&&$('st').textContent.indexOf('云端')>=0) loadLogs();
+}
+function render(list){
+  var box=$('list'),cnt=$('cnt');
+  cnt.textContent=list.length+' 条记录';
+  if(!list.length){box.innerHTML='<div class="empty">暂无更新记录</div>';return}
+  box.innerHTML=list.map(function(c){
+    var it=(c.items||[]).map(function(x){return '<li>'+esc(x)+'</li>'}).join('');
+    var img=(c.image&&S.api)?'<img class="cl-img" src="'+esc(S.api+c.image)+'" onclick="window.open(this.src)">':'';
+    var del=(S.user&&S.user.is_admin)?'<button class="cl-del" data-cdel="'+esc(c.id)+'">删除</button>':'';
+    return '<div class="cl-item"><div class="cl-h">'+
+      '<span class="cl-id">#'+esc(c.id)+'</span>'+
+      '<span class="cl-title">'+esc(c.title||'更新')+'</span>'+
+      '<span class="cl-user">by '+esc(c.user||'wtz')+'</span>'+
+      '<span class="cl-time">'+esc(c.time)+'</span>'+del+
+      '</div><ul class="cl-items">'+it+'</ul>'+img+'</div>';
+  }).join('');
+}
+function loadLogs(){
+  var box=$('list');
+  if(!S.api){box.innerHTML='<div class="empty">未连接云端</div>';return}
+  box.innerHTML='<div class="empty">加载中…</div>';
+  call('/changelog_get',{},'GET').then(function(j){
+    if(!j.ok) throw new Error(j.msg||'加载失败');
+    render(j.list||[]);
+  }).catch(function(e){box.innerHTML='<div class="empty">加载失败 · '+esc(e.message)+'</div>'});
+}
+/* 图片压缩 */
+function compressImg(file,cb){
+  var r=new FileReader();
+  r.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var m=Math.min(1,800/Math.max(img.width,img.height));
+      var c=document.createElement('canvas');c.width=Math.round(img.width*m);c.height=Math.round(img.height*m);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      cb(c.toDataURL('image/png'));
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
+$('imgBtn').addEventListener('click',function(){$('imgFile').click()});
+$('imgFile').addEventListener('change',function(){
+  var f=this.files&&this.files[0];if(!f)return;
+  compressImg(f,function(d){S.img=d;$('imgPrev').src=d;$('imgPrev').style.display='block'});
+});
+$('clCancel').addEventListener('click',function(){$('mask').classList.add('hidden')});
+$('pubBtn').addEventListener('click',function(){$('mask').classList.remove('hidden')});
+$('clOk').addEventListener('click',function(){
+  var title=$('cl_title').value.trim();
+  var items=$('cl_items').value.split('\n').map(function(x){return x.trim()}).filter(Boolean).slice(0,20);
+  if(!title&&!items.length)return say('标题或条目不能为空',false);
+  var doAdd=function(image){
+    call('/changelog_add',{title:title,items:items,image:image||''}).then(function(j){
+      say(j.msg||(j.ok?'已发布':'发布失败'),!!j.ok);
+      if(j.ok){$('mask').classList.add('hidden');$('cl_title').value='';$('cl_items').value='';S.img='';$('imgPrev').style.display='none';loadLogs()}
+    }).catch(function(e){say('发布失败：'+e.message,false)});
+  };
+  if(S.img){
+    call('/upload',{data:S.img}).then(function(j){
+      if(!j.ok)return say(j.msg||'图片上传失败',false);
+      doAdd(j.url||'');
+    }).catch(function(e){say('图片上传失败：'+e.message,false)});
+  }else doAdd('');
+});
+$('list').addEventListener('click',function(e){
+  var b=e.target.closest('[data-cdel]');
+  if(!b)return;
+  if(!confirm('删除这条更新记录？'))return;
+  call('/changelog_del',{id:b.getAttribute('data-cdel')}).then(function(j){
+    say(j.msg||(j.ok?'已删除':'删除失败'),!!j.ok);
+    if(j.ok)loadLogs();
+  }).catch(function(e){say('删除失败：'+e.message,false)});
+});
+autoCloud();
+</script>
+</body>
+</html>
