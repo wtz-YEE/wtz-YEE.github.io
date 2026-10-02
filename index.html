@@ -1024,6 +1024,8 @@ function renderGuests(list){
 }
 
 function loadGuestBook(){
+  var lb=$('guestbookList');
+  if(lb) lb.innerHTML='<div class="gb-empty">留言加载中…</div>';
   return call('/guests',{},'GET').then(function(j){
     var o=$('gb_online');
     if(o&&j.online!==undefined){ o.textContent='在线 '+j.online; o.style.display=''; }
@@ -1327,6 +1329,8 @@ function gbSaveConfig(){
 
 /* 启动时自动从 GitHub 读取云端地址（由「一键启动云端.bat」推送） */
 function autoCloud(){
+  var lb=$('guestbookList');
+  if(lb && !S.api) lb.innerHTML='<div class="gb-empty">正在连接云端…</div>';
   fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){
     if(!r.ok) throw 0;
     return r.text();

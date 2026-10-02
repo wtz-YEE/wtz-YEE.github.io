@@ -125,6 +125,9 @@ function normalizeApi(v){ v=String(v||'').trim().replace(/\/+$/,''); return /^ht
 try{ S.api=normalizeApi(localStorage.getItem(K_API)); }catch(e){}
 try{ var sv=JSON.parse(localStorage.getItem(K_SESS)||'null'); if(sv&&sv.token&&sv.username) S.user=sv; }catch(e){}
 function autoCloud(){
+  $('st').textContent='连接云端中…';
+  var em=$('empty');if(em){em.style.display='block';em.textContent='加载中…'}
+  var er=$('err');if(er)er.style.display='none';
   fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){
     if(!r.ok) throw 0; return r.text();
   }).then(function(t){
@@ -224,7 +227,7 @@ function send(){
 /* 列表 */
 function render(ps){
   var box=$('list'),empty=$('empty');
-  if(!ps||!ps.length){ box.innerHTML=''; empty.style.display='block'; return; }
+  if(!ps||!ps.length){ box.innerHTML=''; empty.style.display='block'; empty.textContent='还没有帖子 · 来发第一帖吧'; return; }
   empty.style.display='none';
   box.innerHTML=ps.map(function(p){
     var tk=p.tags&&p.tags.length?p.tags.map(function(t){return '<span class="tk t-'+esc(t)+'">'+esc(t)+'</span>'}).join(''):'';
@@ -244,6 +247,8 @@ function render(ps){
 }
 function loadPosts(){
   if(!S.api) return;
+  var er=$('err');if(er)er.style.display='none';
+  var em=$('empty');if(em){em.style.display='block';em.textContent='加载中…'}
   call('/post_get',{}).then(function(j){
     if(!j.ok) return;
     render(j.list||[]);
