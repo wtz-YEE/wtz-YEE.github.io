@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>PRTS · 指挥中心</title>
+<title>WTZ 的个人网站</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -245,34 +245,33 @@ body.inv{--bg:#F2F2F2;--bg2:#E9E9E9;--panel:#EBEBEB;--panel2:#DDDDDD;--line:rgba
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);z-index:95;border:1px solid var(--line2);background:var(--panel2);color:var(--accent2);font-family:var(--mono);font-size:12px;letter-spacing:.16em;padding:10px 18px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-#boot{position:fixed;inset:0;z-index:100;background:#050506;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:22px 22px;display:flex;align-items:center;justify-content:center;transition:opacity .3s}
-#boot::before{content:"";position:absolute;inset:0;background:radial-gradient(58% 46% at 50% 44%,rgba(255,255,255,.06),transparent 70%)}
-#boot::after{content:"";position:absolute;left:0;right:0;top:0;height:38px;background:linear-gradient(180deg,rgba(255,255,255,.06),transparent);animation:crtsweep 1.4s linear .2s infinite;pointer-events:none}
-.bt{position:relative;width:min(520px,88vw);border:1px solid var(--line2);background:linear-gradient(170deg,rgba(19,19,21,.98),rgba(10,10,11,.98));padding:24px 26px 20px;box-shadow:0 0 60px rgba(255,255,255,.08),0 0 0 1px rgba(255,255,255,.06);animation:cardin .6s cubic-bezier(.22,1,.36,1) both}
-@keyframes cardin{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
-.bt-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink3);padding-bottom:10px;border-bottom:1px dashed var(--line2);animation:btin .4s ease .12s both}
+#boot{position:fixed;inset:0;z-index:100;background:#040405;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:20px 20px;display:flex;align-items:center;justify-content:center;transition:opacity .35s}
+#boot::before{content:"";position:absolute;inset:0;background:radial-gradient(58% 46% at 50% 44%,rgba(255,255,255,.07),transparent 70%)}
+#boot::after{content:"";position:absolute;left:0;right:0;top:0;height:40px;background:linear-gradient(180deg,rgba(255,255,255,.07),transparent);animation:crtsweep 1.3s linear .2s infinite;pointer-events:none}
+.bt{position:relative;width:min(560px,90vw);border:1px solid var(--line2);background:linear-gradient(170deg,rgba(19,19,21,.98),rgba(9,9,10,.99));padding:22px 26px 18px;box-shadow:0 0 70px rgba(255,255,255,.09),0 0 0 1px rgba(255,255,255,.06);animation:cardin .55s cubic-bezier(.22,1,.36,1) both;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .7s}
+.bt.flip{transform:rotateX(88deg) scale(1.06);opacity:0}
+@keyframes cardin{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
+.bt-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink3);padding-bottom:10px;border-bottom:1px dashed var(--line2);animation:btin .4s ease .1s both}
 .bt-top .bt-sec{color:var(--accent2)}
-.bt-seal{position:absolute;right:22px;top:56px;width:88px;height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2.5px solid var(--accent);color:var(--accent2);transform:rotate(-9deg);opacity:0;animation:stampin .55s cubic-bezier(.18,1.9,.32,1) .5s forwards,stampjerk .3s ease 1.02s,stampglow 1s ease .5s}
-.bt-seal span{font-family:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;font-size:13px;letter-spacing:.28em;writing-mode:vertical-lr;font-weight:700;text-indent:.28em}
-.bt-seal b{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;margin-top:3px}
-@keyframes stampin{from{opacity:0;transform:rotate(-26deg) scale(1.7)}to{opacity:1;transform:rotate(-9deg) scale(1)}}
-@keyframes stampjerk{0%,100%{transform:rotate(-9deg) scale(1)}50%{transform:rotate(-9deg) scale(.972)}}
-@keyframes stampglow{0%,100%{box-shadow:0 0 4px rgba(255,255,255,.10)}50%{box-shadow:0 0 26px rgba(255,255,255,.28)}}
-.bt-title{font-family:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;font-size:30px;font-weight:700;letter-spacing:.3em;text-indent:.3em;color:var(--ink);text-align:center;margin:12px 0 2px;animation:btin .5s ease .06s both}
-.bt-lines{font-family:var(--mono);font-size:12px;line-height:2.1;color:var(--ink2);min-height:88px;padding-right:100px}
-.bt-lines span{display:block;opacity:0;animation:btin .45s ease forwards}
-.bt-lines span:nth-child(1){animation-delay:.28s}
-.bt-lines span:nth-child(2){animation-delay:.44s}
-.bt-lines span:nth-child(3){animation-delay:.6s}
-.bt-lines span:nth-child(4){animation-delay:.76s}
+.bt-zone{display:flex;flex-direction:column;align-items:center;padding:14px 0 2px;min-height:238px;overflow:hidden}
+.bt-art{font-family:var(--mono);font-size:15px;line-height:1.14;letter-spacing:.06em;color:var(--accent2);text-align:center;margin:0;text-shadow:0 0 14px rgba(255,255,255,.22);white-space:pre}
+.bt-art .al{opacity:0;animation:alin .16s ease forwards}
+@keyframes alin{from{opacity:0;transform:translateX(-7px)}to{opacity:1;transform:none}}
+.bt-art .al:nth-child(odd){animation-name:alinr}
+@keyframes alinr{from{opacity:0;transform:translateX(7px)}to{opacity:1;transform:none}}
+.bt-ty{font-family:var(--mono);font-size:15px;letter-spacing:.3em;text-indent:.3em;color:var(--ink);margin:12px 0 2px;min-height:22px;text-shadow:0 0 16px rgba(255,255,255,.18)}
+.bt-ty .cu{display:inline-block;width:9px;color:var(--accent);animation:blink .8s steps(1) infinite;text-shadow:0 0 12px var(--accent)}
+.bt-lines{font-family:var(--mono);font-size:12px;line-height:2;color:var(--ink2);width:100%;max-width:340px}
+.bt-lines .bl{opacity:0;animation:btin .3s ease forwards}
 .bt-lines .ok{color:var(--ok)}
+.bt-lines .warn{color:var(--warn)}
 .bt-lines .lk{color:var(--bad)}
 @keyframes btin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.bt-bar{position:relative;height:2px;background:var(--line);margin-top:16px;overflow:hidden}
-.bt-bar i{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--accent);box-shadow:0 0 10px var(--accent);transition:width .09s linear}
+.bt-bar{position:relative;height:2px;background:var(--line);margin-top:14px;width:100%;max-width:340px;overflow:hidden}
+.bt-bar i{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--accent);box-shadow:0 0 10px var(--accent);transition:width .12s linear}
 .bt-bar i::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 10px,rgba(232,226,212,.28) 10px 12px)}
 .bt-bar b{position:absolute;right:0;top:-17px;font-family:var(--mono);font-size:10px;color:var(--accent2);letter-spacing:.1em}
-.bt-foot{margin-top:15px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--ink3);animation:btin .4s ease .72s both}
+.bt-foot{margin-top:15px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--ink3);animation:btin .4s ease .7s both}
 @keyframes vsw{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes blink{50%{opacity:0}}
 @keyframes fpulse{0%,100%{box-shadow:0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 18px rgba(255,255,255,.16)}}
@@ -515,22 +514,19 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 
 <div id="boot" role="status" aria-label="系统启动中">
   <div class="bt">
-    <div class="bt-top"><span>FILE WTZ-2026-09-28</span><span class="bt-sec">密级 · 待核验</span></div>
-    <div class="bt-seal"><span>档案室</span><b>已归档</b></div>
-    <div class="bt-title">档案室</div>
-    <div class="bt-lines">
-      <span class="ok">调取 ROOT 索引 .......... ok</span>
-      <span class="ok">挂载泰拉大典 ............ ok</span>
-      <span class="ok">挂载莱茵终端 ............ ok</span>
-      <span class="lk">密钥库 ................. locked</span>
+    <div class="bt-top"><span>FILE WTZ · BOOTSTRAP</span><span class="bt-sec">SEQUENCE v3</span></div>
+    <div class="bt-zone">
+      <pre class="bt-art" id="btArt"></pre>
+      <div class="bt-ty" id="btTy"></div>
+      <div class="bt-lines" id="btLines"></div>
+      <div class="bt-bar"><i id="btBar"></i><b id="btP">0%</b></div>
     </div>
-    <div class="bt-bar"><i id="btBar"></i><b id="btP">0%</b></div>
-    <div class="bt-foot"><span>ARCHIVE OS</span><span>正在调取档案</span></div>
+    <div class="bt-foot"><span>ARCHIVE OS</span><span id="btFoot">BOOTING…</span></div>
   </div>
 </div>
 
 <header id="status">
-  <span class="st-l">PRTS // 档案室 · 黑白</span>
+  <span class="st-l">WTZ // 个人网站 · 黑白</span>
   <span class="st-c" id="clock">--:--:--</span>
   <span class="pbadge" id="permBadge">LV 0</span>
 </header>
@@ -539,10 +535,10 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
   <section id="v-home" class="view on">
   <div id="heroMain" class="hero">
     <div class="h-grid"></div>
-    <div class="h-eyebrow">PRTS // COMMAND CENTER</div>
+    <div class="h-eyebrow">WTZ // PERSONAL SITE</div>
     <h1>
       <span class="h-badge"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8 L52 21 V43 L32 56 L12 43 V21 Z" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M32 20 L41 26 V38 L32 44 L23 38 V26 Z" fill="currentColor"/></svg></span>
-      <span class="h-char">指</span><span class="h-char">挥</span><span class="h-char">中</span><span class="h-char">心</span>
+      <span class="h-char">个</span><span class="h-char">人</span><span class="h-char">网</span><span class="h-char">站</span>
     </h1>
     <p class="h-sub">PRTS 档案室 ▸ 守夜人论坛 —— 双入口</p>
     <p class="h-mono">档案 · 终端 · 技能 · 模组 —— 云端留言板在此</p>
@@ -1449,7 +1445,7 @@ window.gbSaveConfig=gbSaveConfig;
 </main>
 
 <footer class="foot">
-  <span>COMMAND v2.2 · 指挥中心 · 双入口 · 云端留言板</span>
+  <span>WTZ v2.2 · 个人网站 · 双入口 · 云端留言板</span>
   <a class="f-switch" href="守夜人论坛.html">切换：论坛</a>
 </footer>
 
@@ -1500,18 +1496,74 @@ for(var i=0;i<cs.length;i++){cs[i].style.transitionDelay=(i*90)+'ms';io.observe(
 })();
 
 var boot=document.getElementById('boot'),bBar=document.getElementById('btBar'),bP=document.getElementById('btP');
-function hideBoot(){boot.style.opacity=0;setTimeout(function(){boot.style.display='none'},320);sessionStorage.setItem('wzBoot','1');document.body.classList.add('ready')}
+function hideBoot(){document.body.classList.add('ready');setTimeout(function(){boot.style.display='none'},720);sessionStorage.setItem('wzBoot','1')}
+function runBoot(){
+var art=[
+'        ██████',
+'       ████████',
+'      ██████████',
+'     ████████████',
+'    ██████████████',
+'     ████████████',
+'      ██████████',
+'       ████████',
+'        ██████'
+];
+var artEl=document.getElementById('btArt'),tyEl=document.getElementById('btTy'),lnEl=document.getElementById('btLines');
+var lines=[
+{t:'调取 ROOT 索引',s:'ok'},
+{t:'挂载个人档案',s:'ok'},
+{t:'挂载守夜人论坛',s:'ok'},
+{t:'云端握手',s:'ok'},
+{t:'密钥库',s:'lk'},
+{t:'启动渲染',s:'ok'}
+];
+var t0=Date.now(),p=0,barIv;
+/* 1. ASCII 逐行绘制 */
+art.forEach(function(row,i){
+  setTimeout(function(){
+    var d=document.createElement('div');d.className='al';d.textContent=row;artEl.appendChild(d);
+  },180+i*95);
+});
+/* 2. 打字机标题 */
+var ty='WTZ // PERSONAL SITE',ti=0;
+setTimeout(function(){
+  tyEl.innerHTML='';
+  var iv=setInterval(function(){
+    tyEl.textContent=ty.slice(0,++ti);
+    if(ti>=ty.length){clearInterval(iv);tyEl.innerHTML=ty+'<span class="cu">▮</span>'}
+  },46);
+},1150);
+/* 3. 挂载日志 + 进度 */
+var done=0,LOG={ok:0,warn:0,lk:0};
+lines.forEach(function(L,i){
+  setTimeout(function(){
+    var d=document.createElement('div');
+    d.className='bl '+(L.s==='ok'?'ok':L.s==='warn'?'warn':'lk');
+    var dots=Array(Math.max(1,30-L.t.length-8)).join('.');
+    d.textContent='> '+L.t+' '+dots+' '+L.s;
+    lnEl.appendChild(d);done++;
+    if(done>=lines.length){p=100;bP.textContent='100%';bBar.style.width='100%';setTimeout(flip,420)}
+  },1650+i*280);
+});
+/* 4. 进度平滑 */
+barIv=setInterval(function(){
+  if(p>=100){clearInterval(barIv);return}
+  p=Math.min(97,p+Math.max(1,Math.round((100-p)/14)));
+  bP.textContent=p+'%';bBar.style.width=p+'%';
+},120);
+/* 5. 3D 翻转转场 */
+function flip(){
+  clearInterval(barIv);
+  var bt=document.querySelector('#boot .bt');
+  bt.classList.add('flip');
+  setTimeout(hideBoot,700);
+}
+boot.addEventListener('click',flip);
+}
 if(sessionStorage.getItem('wzBoot')==='1'||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
 boot.style.display='none';document.body.classList.add('ready');
-}else{
-var p=0;
-var iv=setInterval(function(){
-p+=4;
-if(p>=100){p=100;clearInterval(iv);setTimeout(hideBoot,340)}
-bP.textContent=p+'%';bBar.style.width=p+'%';
-},34);
-boot.addEventListener('click',hideBoot);
-}
+}else{runBoot();}
 function clk(){
 var d=new Date(),f=function(n){return(n<10?'0':'')+n};
 document.getElementById('clock').textContent=f(d.getHours())+':'+f(d.getMinutes())+':'+f(d.getSeconds());
