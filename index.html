@@ -940,7 +940,7 @@ document.addEventListener('click',function(e){
 });
 
 /* ---------- 常量 & 工具 ---------- */
-var K_API='gb_api_url', K_SESS='gb_session', K_DB='gb_db_v1';
+var K_API='gb_api_url', K_SESS='gb_session', K_DB='gb_db_v1', K_GB='gb_cache_v1';
 var AUTH_ERR={ok:false,msg:'登录已失效，请重新登录'};
 function $(id){return document.getElementById(id)}
 function esc(s){
@@ -1236,13 +1236,35 @@ function renderGuests(list){
 
 function loadGuestBook(){
   var lb=$('guestbookList');
-  if(lb) lb.innerHTML='<div class="gb-empty">留言加载中…</div>';
-  return call('/guests',{},'GET').then(function(j){
+  var cache=null;
+  try{ cache=JSON.parse(localStorage.getItem(K_GB)||'null'); }catch(e){}
+  if(cache&&cache.list&&cache.list.length){
+    renderGuests(cache.list);
+  }else if(lb){
+    lb.innerHTML='<div class="gb-empty">留言加载中…</div>';
+  }
+  return call('/guests_new',{since:cache?Math.max(0,cache.maxId||0):0},'GET').then(function(j){
     var o=$('gb_online');
     if(o&&j.online!==undefined){ o.textContent='在线 '+j.online; o.style.display=''; }
-    renderGuests(j.list||[]);
+    var nl=j.list||[];
+    if(!cache||!cache.list) cache={list:[],maxId:0};
+    if(nl.length){
+      var all=cache.list.slice();
+      for(var i=0;i<nl.length;i++){
+        var dup=false;
+        for(var k=0;k<all.length;k++) if(all[k]&&nl[i]&&all[k].id===nl[i].id){dup=true;break}
+        if(!dup) all.push(nl[i]);
+      }
+      all.sort(function(a,b){return (b.id||0)-(a.id||0)});
+      cache.list=all;
+      cache.maxId=Math.max(cache.maxId||0,(nl[0]&&nl[0].id)||0);
+      try{ localStorage.setItem(K_GB,JSON.stringify(cache)); }catch(e){}
+      renderGuests(all);
+    }else if(!cache.list.length){
+      renderGuests([]);
+    }
   }).catch(function(e){
-    $('guestbookList').innerHTML='<div class="gb-empty">留言加载失败 · '+esc(e.message)+'</div>';
+    if(lb&&(!cache||!cache.list||!cache.list.length)) lb.innerHTML='<div class="gb-empty">留言加载失败 · '+esc(e.message)+'</div>';
   });
 }
 
