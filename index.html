@@ -488,6 +488,9 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 .gb-att button{border:1px solid var(--line2);color:var(--ink3);font-family:var(--mono);font-size:10px;padding:2px 9px;cursor:pointer;transition:.2s}
 .gb-att button:hover{border-color:#FF5C7A;color:#FF5C7A}
 .gb-ava-img{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
+.gb-like{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-family:var(--mono);color:var(--ink3);cursor:pointer;user-select:none}
+.gb-like.on{color:#FF5C7A}
+.gb-like:hover{color:var(--accent2)}
 .gb-pick .gpick.up{border-style:dashed;border-color:rgba(255,255,255,.4);background:none;font-size:11px;line-height:1;letter-spacing:.04em}
 .gb-pick .gpick.up img{width:100%;height:100%;border-radius:50%;object-fit:cover}
 .gb-empty{padding:26px 16px;text-align:center;color:var(--ink3);font-family:var(--mono);font-size:12px;letter-spacing:.18em}
@@ -613,6 +616,7 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
     <b>GUESTBOOK</b>
     <span>访客留言板 · 私聊频道</span>
     <span class="gb-mode" id="gb_status" title="点击配置云端接口">本地模式</span>
+    <span class="gb-mode" id="gb_online" style="display:none"></span>
   </div>
 
   <!-- 账号区 -->
@@ -626,6 +630,7 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
     <div class="gb-row" id="gb_userinfo" style="display:none">
       <span class="gb-who">已登录 · <b id="gb_curuser"></b></span>
       <span class="gb-tag" id="gb_isadmin" style="display:none">管理员</span>
+      <button class="gb-btn ghost" id="gb_btn_pwd">改密</button>
       <button class="gb-btn ghost" id="gb_btn_logout">登 出</button>
     </div>
     <div class="gb-say" id="gb_say"></div>
@@ -687,6 +692,19 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
     <div class="gb-row" style="margin-top:16px;justify-content:flex-end">
       <button class="gb-btn ghost" id="gb_cfg_cancel">取消</button>
       <button class="gb-btn" id="gb_cfg_save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修改密码弹窗 -->
+<div id="gb_pwd_dialog" class="gb-dlg" style="display:none">
+  <div class="gb-dlg-c">
+    <h4>修改密码</h4>
+    <input id="gb_pwd_old" type="password" placeholder="旧密码" maxlength="32">
+    <input id="gb_pwd_new" type="password" placeholder="新密码（4-32 位）" maxlength="32">
+    <div class="gb-row" style="margin-top:16px;justify-content:flex-end">
+      <button class="gb-btn ghost" id="gb_pwd_cancel">取消</button>
+      <button class="gb-btn" id="gb_pwd_save">确认修改</button>
     </div>
   </div>
 </div>
@@ -958,6 +976,10 @@ function gbLogout(){
 }
 
 /* ---------- 留言 ---------- */
+function likeBtn(g){
+  var ls=g.likes||[], liked=S.user&&ls.indexOf(S.user.username)>=0;
+  return '<div class="gb-like'+(liked?' on':'')+'" data-like="'+esc(g.id)+'">'+(liked?'♥':'♡')+' '+ls.length+'</div>';
+}
 function renderGuests(list){
   var box=$('guestbookList');
   if(!list||!list.length){
@@ -980,12 +1002,15 @@ function renderGuests(list){
       '</div>'+
       '<div class="gb-text">'+esc(g.text)+'</div>'+
       (g.image&&S.api?'<img class="gb-img" src="'+esc(S.api+g.image)+'" onclick="window.open(this.src)">':'')+
+      likeBtn(g)+
     '</div>';
   }).join('');
 }
 
 function loadGuestBook(){
   return call('/guests',{},'GET').then(function(j){
+    var o=$('gb_online');
+    if(o&&j.online!==undefined){ o.textContent='在线 '+j.online; o.style.display=''; }
     renderGuests(j.list||[]);
   }).catch(function(e){
     $('guestbookList').innerHTML='<div class="gb-empty">留言加载失败 · '+esc(e.message)+'</div>';
@@ -1080,11 +1105,20 @@ function loadUsers(){
     if(!j.ok) return;
     var box=$('gb_ulist');
     $('gb_ucnt').textContent='('+j.list.length+')';
-    box.innerHTML=j.list.map(function(u){
-      return '<div class="gb-user-i"><span class="dot '+(u.online?'on':'off')+'"></span><b>'+esc(u.name)+'</b>'+
-        (u.is_admin?'<span class="adm">管理员</span>':'')+
-        '<span class="pwd">'+esc(u.pwd)+'</span></div>';
-    }).join('')||'<div class="gb-empty" style="padding:10px">暂无用户</div>';
+    if(j.root){
+      box.innerHTML=j.list.map(function(u){
+        return '<div class="gb-user-i"><span class="dot '+(u.online?'on':'off')+'"></span><b>'+esc(u.name)+'</b>'+
+          (u.is_admin?'<span class="adm">管理员</span>':'')+
+          '<span class="pwd">'+esc(u.pwd)+'</span>'+
+          (S.user&&S.user.username!==u.name?'<button class="gb-btn ghost" data-ua="'+esc(u.name)+'" data-uadm="'+(u.is_admin?'1':'0')+'" style="padding:1px 8px;font-size:10px">'+(u.is_admin?'撤销':'授予')+'</button>':'')+
+          '</div>';
+      }).join('')||'<div class="gb-empty" style="padding:10px">暂无用户</div>';
+    }else{
+      box.innerHTML='<div class="gb-user-i"><span class="adm" style="color:var(--ink3);border-color:var(--ink3)">受限视图 · 仅用户名</span></div>'+
+        j.list.map(function(u){
+          return '<div class="gb-user-i"><b>'+esc(u.name)+'</b></div>';
+        }).join('');
+    }
   }).catch(function(){});
 }
 
@@ -1237,6 +1271,32 @@ function bind(){
   $('gb_btn_logout').addEventListener('click',gbLogout);
   $('gb_submit').addEventListener('click',submitGuestBook);
   $('gb_uref').addEventListener('click',loadUsers);
+  $('gb_btn_pwd').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='flex'; });
+  $('gb_pwd_cancel').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='none'; });
+  $('gb_pwd_save').addEventListener('click',function(){
+    var o=$('gb_pwd_old').value,n=$('gb_pwd_new').value;
+    if(!o||!n) return say('请填写完整',false);
+    call('/change_pwd',{old:o,new:n}).then(function(j){
+      say(j.msg||(j.ok?'密码已修改':'修改失败'),!!j.ok);
+      if(j.ok){ $('gb_pwd_dialog').style.display='none'; $('gb_pwd_old').value=''; $('gb_pwd_new').value=''; }
+    }).catch(function(e){ say('请求失败：'+e.message,false); });
+  });
+  $('guestbookList').addEventListener('click',function(e){
+    var b=e.target.closest('.gb-like'); if(!b) return;
+    if(!S.user) return say('请先登录后再点赞',false);
+    call('/guest_like',{id:b.getAttribute('data-like')}).then(function(j){
+      if(!j.ok) return say(j.msg||'点赞失败',false);
+      loadGuestBook();
+    }).catch(function(e){ say('点赞失败：'+e.message,false); });
+  });
+  $('gb_ulist').addEventListener('click',function(e){
+    var b=e.target.closest('[data-ua]'); if(!b) return;
+    var t=b.getAttribute('data-ua'),adm=b.getAttribute('data-uadm')==='1';
+    call('/admin_set_admin',{target:t,admin:!adm}).then(function(j){
+      say(j.msg||(j.ok?'已更新':'失败'),!!j.ok);
+      if(j.ok) loadUsers();
+    }).catch(function(e){ say('请求失败：'+e.message,false); });
+  });
   $('gb_img_btn').addEventListener('click',function(){
     if(!S.api) return say('需云端模式才能发图',false);
     $('gb_file').click();
