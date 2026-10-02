@@ -186,6 +186,49 @@ td b{color:var(--ink)}
 .tl-c{line-height:1.9}
 .tl-c b{color:var(--ink)}
 @media(max-width:640px){.tl,.tl-row{grid-template-columns:64px 1fr}}
+/* ===== 权限系统 ===== */
+.permTag{cursor:pointer;user-select:none;padding:2px 10px;border:1px solid rgba(201,169,97,.5);color:var(--gold);letter-spacing:.12em;transition:border-color .2s,color .2s}
+.permTag:hover{border-color:var(--gold);color:var(--gold2)}
+.permMask{position:fixed;inset:0;z-index:95;background:rgba(4,5,6,.7);display:flex;align-items:center;justify-content:center;padding:20px}
+.permMask.hidden{display:none}
+.permBox{width:min(560px,94vw);max-height:86vh;overflow-y:auto;background:#0E0F12;border:1px solid var(--gold);box-shadow:0 0 50px rgba(201,169,97,.2);padding:28px;animation:pactin .4s cubic-bezier(.22,1,.36,1) both}
+.permBox h2{font-family:var(--serif);font-size:20px;letter-spacing:.24em;color:var(--gold);margin-bottom:16px}
+.permNow{display:flex;align-items:center;gap:14px;border:1px solid var(--line2);padding:14px 16px;margin-bottom:16px}
+.permNow .pn-lv{font-family:var(--mono);font-size:30px;color:var(--gold)}
+.permNow .pn-name{font-size:15px;color:var(--ink)}
+.permNow .pn-desc{font-size:11.5px;color:var(--ink3);margin-top:4px;line-height:1.7}
+.pchain{display:grid;gap:8px}
+.prow{border:1px solid var(--line);padding:12px 14px;display:flex;align-items:center;gap:12px;opacity:.42;transition:opacity .3s,border-color .3s}
+.prow.on{opacity:1;border-color:var(--gold)}
+.prow .pl{font-family:var(--mono);font-size:17px;color:var(--gold);min-width:56px}
+.prow .pn{font-size:13px;color:var(--ink);font-weight:600}
+.prow .pd{font-size:11px;color:var(--ink3);line-height:1.6}
+.prow .need{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--ink3);letter-spacing:.1em;white-space:nowrap}
+.permKey{margin-top:16px;display:flex;gap:10px}
+.permKey input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--line2);color:var(--ink);padding:10px 12px;font-size:12.5px;letter-spacing:.08em;outline:none}
+.permKey input:focus{border-color:var(--gold)}
+.permKey .btn{padding:9px 18px;font-size:11.5px}
+/* 搜索 */
+.searchRow{display:flex;gap:10px;margin-bottom:16px}
+.searchRow input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--line2);color:var(--ink);padding:11px 14px;font-size:13px;outline:none}
+.searchRow input:focus{border-color:var(--gold)}
+.searchRow .btn{padding:10px 22px;font-size:12px}
+.sres{margin-top:4px}
+.sitem{border:1px solid var(--line);border-left:3px solid var(--gold);padding:12px 16px;margin-bottom:10px}
+.sitem .sh{font-size:13px;color:var(--ink);font-weight:600;margin-bottom:4px}
+.sitem .sb{font-size:12px;color:var(--ink2);line-height:1.8}
+.sitem .slv{font-family:var(--mono);font-size:9.5px;color:var(--ink3);margin-top:6px;letter-spacing:.14em}
+.sitem.locked{border-left-color:var(--bad)}
+.sitem.locked .sh{color:var(--bad)}
+.sitem .lockMsg{font-size:11.5px;color:var(--bad);margin-top:6px}
+/* 隐秘档案 */
+.secret{border:1px solid var(--line);background:var(--panel2);padding:14px 16px;margin-top:10px;display:flex;align-items:center;gap:14px}
+.secret .sk{font-family:var(--mono);font-size:22px;color:var(--ink3);flex:none}
+.secret .stx{font-size:12px;color:var(--ink3);line-height:1.9}
+.secret.open{border-color:rgba(201,169,97,.5)}
+.secret.open .sk{color:var(--gold)}
+.secret.open .stx{color:var(--ink2)}
+.secret .sl{font-family:var(--mono);font-size:9.5px;color:var(--gold);letter-spacing:.2em;margin-top:4px}
 </style>
 </head>
 <body>
@@ -193,6 +236,7 @@ td b{color:var(--ink)}
 <header id="status">
   <span class="st-l">CASSEL COLLEGE // 卡塞尔学院</span>
   <span class="st-c" id="stLv" style="margin-right:14px"></span>
+  <span class="st-c"><span class="permTag" id="permTag">LV- · —</span></span>
   <span class="st-c" id="stUser" style="margin-right:16px"></span>
   <span class="st-c" id="clock">--:--:--</span>
 </header>
@@ -411,6 +455,49 @@ td b{color:var(--ink)}
       </div>
       <p class="small" style="margin-top:12px">注：主线节点为原著剧情整理，非官方年表。</p>
     </div>
+    <div class="panel">
+      <h2>搜索原著</h2>
+      <p class="small">全文检索《龙族》设定 · 绝密档案按权限解锁</p>
+      <div class="divider"></div>
+      <div class="searchRow">
+        <input id="sIn" placeholder="检索：路明非 / 君焰 / 校董会 / 黑天鹅港 …" maxlength="30">
+        <button class="btn" id="sBtn">检索</button>
+      </div>
+      <div class="sres" id="sRes"></div>
+    </div>
+    <div class="panel">
+      <h2>隐秘档案</h2>
+      <p class="small" id="secHint"></p>
+      <div class="divider"></div>
+      <div class="secret" data-lv="3" data-t="执行部档案">
+        <div class="sk">▣</div>
+        <div><div class="stx">执行部——部长冯·施耐德，准军事机构，向全球派遣屠龙专员；其前身为秘党「行动队」。任务等级分为 SS / S / A / B / C / D。</div><div class="sl">ARCHIVE · EXECUTIVE DEPT</div></div>
+      </div>
+      <div class="secret" data-lv="3" data-t="校董会">
+        <div class="sk">▣</div>
+        <div><div class="stx">校董会——学院的最高权力机构，其前身即秘党，是混血种世界的最高阶层。由包括加图索族长庞贝·加图索、洛朗族长伊丽莎白·洛朗、校长昂热在内的六位校董组成，可批准任何屠龙计划，权力凌驾于校长之上。</div><div class="sl">ARCHIVE · BOARD OF DIRECTORS</div></div>
+      </div>
+      <div class="secret" data-lv="3" data-t="专员评级">
+        <div class="sk">▣</div>
+        <div><div class="stx">执行部专员评级（自下而上）：预备 / 初级 / 中级 / 高级 / 精英 / 王牌。楚子航与恺撒，皆具王牌执行官水准。</div><div class="sl">ARCHIVE · RANKING</div></div>
+      </div>
+      <div class="secret" data-lv="4" data-t="尼伯龙根计划">
+        <div class="sk">▣</div>
+        <div><div class="stx">尼伯龙根计划由加图索家提出：以龙血改造强化混血种，突破临界血限的极限；同时清除血统可疑者。参与意味着力量，也意味着牺牲——弗罗斯特·加图索曾力主让恺撒成为候选人。</div><div class="sl">ARCHIVE · NIBELUNGEN</div></div>
+      </div>
+      <div class="secret" data-lv="5" data-t="黑天鹅港">
+        <div class="sk">▣</div>
+        <div><div class="stx">1991 年，路鸣泽自黑天鹅港出逃。有人将「疑似龙王走出黑天鹅港」的消息卖给秘党——密党几乎调动了全部精英，其中既有卡塞尔专员，也有楚天骄这般携 S 级秘密任务的高级执行官。</div><div class="sl">TOP SECRET · BLACK SWAN</div></div>
+      </div>
+      <div class="secret" data-lv="5" data-t="EVA 战争档案">
+        <div class="sk">▣</div>
+        <div><div class="stx">2003 年，人格装载进地下 200 米的超级计算机。极限状态下战争人格 EVA 苏醒，算力为诺玛的 14 万倍，主机功率 800%，网络速度提升 400 倍。其最底层代码刻着一条至死方休的至高指令。</div><div class="sl">TOP SECRET · EVA WAR FILE</div></div>
+      </div>
+      <div class="secret" data-lv="5" data-t="秘党密约">
+        <div class="sk">▣</div>
+        <div><div class="stx">《亚伯拉罕血统契》远比纸面更残酷：加入秘党意味着血脉永属学院；退学者先被洗脑、后遭遣返——而校长昂热，这位言灵·时间零的持有者，已为屠龙活了整整一个世纪。</div><div class="sl">TOP SECRET · PACT</div></div>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -435,6 +522,26 @@ td b{color:var(--ink)}
 <footer class="foot">
   CASSEL COLLEGE · <b>DATA FROM DRAGON RAJA</b> · 非官方粉丝站
 </footer>
+
+<!-- ============ 权限系统 ============ -->
+<div id="permMask" class="permMask hidden">
+  <div class="permBox">
+    <h2>学院权限系统</h2>
+    <div class="permNow">
+      <div class="pn-lv" id="pnLv">LV-</div>
+      <div>
+        <div class="pn-name" id="pnName">—</div>
+        <div class="pn-desc" id="pnDesc"></div>
+      </div>
+    </div>
+    <div class="pchain" id="pchain"></div>
+    <div class="permKey">
+      <input id="permKeyIn" placeholder="密令（若有）" maxlength="20">
+      <button class="btn" id="permKeyBtn">验证密令</button>
+    </div>
+    <div class="small" style="margin-top:10px">提示：血统评级可提升权限——B 级入社团、A 级进执行部、S 级登管理层。密令……唯有奥丁之眼可见。</div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -706,6 +813,119 @@ document.querySelectorAll('.chip').forEach(function(c){
 });
 say('你好，我是诺玛·劳恩斯，卡塞尔学院的中央电脑。有什么需要我协助的吗？','n');
 say('试试点击下方标签，或直接输入问题。','n');
+
+/* ============ 权限系统 ============ */
+var PLV=[
+  {lv:0,n:'访客',d:'未缔结血契的旁观者。仅可浏览公开档案与血统测评。',need:'签订《亚伯拉罕血统契》'},
+  {lv:1,n:'学员',d:'已签署血契的学院学子。解锁全部公开档案与诺玛日常服务。',need:'签订血契（自动）'},
+  {lv:2,n:'社团骨干',d:'狮心会 / 学生会成员。解锁部分隐秘档案。',need:'血统评定 B 级及以上'},
+  {lv:3,n:'执行部专员',d:'准军事机构的屠龙专员。解锁执行部档案与校董会情报。',need:'血统评定 A 级及以上'},
+  {lv:4,n:'学院管理层',d:'教授 / 部门部长级。可阅览尼伯龙根计划等深层机密。',need:'血统评定 S 级，或密令'},
+  {lv:5,n:'校董会',d:'秘党最高阶层，学院一切决议的最终裁决者。全部绝密档案开放。',need:'密令「奥丁之眼」'}
+];
+function calcLv(){
+  var lv=0;
+  if(localStorage.getItem('cas_pact'))lv=1;
+  if(profile){var l=profile.lv;if(l==='B'||l==='C')lv=Math.max(lv,2);if(l==='A')lv=Math.max(lv,3);if(l==='S')lv=Math.max(lv,4);}
+  if(localStorage.getItem('cas_perm')==='odin')lv=5;
+  return lv;
+}
+var curLv=0;
+function renderPerm(){
+  curLv=calcLv();
+  var tag=document.getElementById('permTag');
+  tag.textContent='LV'+curLv+' · '+PLV[curLv].n;
+  var hint=document.getElementById('secHint');
+  if(hint)hint.textContent='已开放 '+curLv+' 级档案'+(curLv>=5?'（全部）':'')+' · 提升权限以解锁更多';
+  var secs=document.querySelectorAll('.secret');
+  secs.forEach(function(s){
+    if(!s.getAttribute('data-tx'))s.setAttribute('data-tx',s.querySelector('.stx').textContent);
+    var need=+s.getAttribute('data-lv');
+    var on=curLv>=need;
+    s.classList.toggle('open',on);
+    var tx=s.querySelector('.stx');
+    tx.textContent=on?s.getAttribute('data-tx'):('权限不足 · 需要 LV'+need+'（'+PLV[need].n+'）方可阅览'+s.getAttribute('data-t'));
+  });
+}
+function openPerm(){
+  var box=document.getElementById('pchain');
+  box.innerHTML=PLV.map(function(p,i){
+    return '<div class="prow'+(i<=curLv?' on':'')+'"><div class="pl">LV'+p.lv+'</div><div><div class="pn">'+p.n+'</div><div class="pd">'+p.d+'</div></div><span class="need">'+(i<=curLv?'已解锁':p.need)+'</span></div>';
+  }).join('');
+  document.getElementById('pnLv').textContent='LV'+curLv;
+  document.getElementById('pnName').textContent=PLV[curLv].n;
+  document.getElementById('pnDesc').textContent=PLV[curLv].d;
+  document.getElementById('permMask').classList.remove('hidden');
+}
+document.getElementById('permTag').addEventListener('click',openPerm);
+document.getElementById('permMask').addEventListener('click',function(e){
+  if(e.target===this)this.classList.add('hidden');
+});
+document.getElementById('permKeyBtn').addEventListener('click',function(){
+  var v=document.getElementById('permKeyIn').value.trim().toLowerCase();
+  if(v==='odin'||v==='奥丁之眼'){
+    localStorage.setItem('cas_perm','odin');
+    renderPerm();
+    document.getElementById('permKeyIn').value='';
+    say('密令已验证 · 校董会权限授予','n');
+  }else{
+    say('密令错误，秘党不承认此令','n');
+  }
+  document.getElementById('permMask').classList.add('hidden');
+});
+document.getElementById('permKeyIn').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('permKeyBtn').click()});
+
+/* ============ 搜索原著 ============ */
+var ARCH=[
+  {k:['路明非','s级','主角'],lv:0,t:'人物 · 路明非',b:'血统评定为学院最高等级 S 级，天生双重龙血。曾以四分之一生命与路鸣泽交易，换取言灵「不要死」与临时复制言灵的能力。'},
+  {k:['楚子航','君焰'],lv:0,t:'人物 · 楚子航',b:'狮心会会长，A 级混血种，血统源流青铜与火之王。言灵·君焰（89），三度爆血后形成黑色光环领域。'},
+  {k:['夏弥','耶梦加得','风王'],lv:0,t:'人物 · 夏弥',b:'大地与山之王「耶梦加得」的人形，言灵·风王之瞳（74），领域内操控气流形成漩涡。'},
+  {k:['恺撒','加图索'],lv:0,t:'人物 · 恺撒·加图索',b:'学生会主席，A 级，加图索家族继承人。曾以暴血秘术强化血统，令言灵进化。'},
+  {k:['昂热','校长','时间零'],lv:0,t:'人物 · 昂热',b:'学院校长，言灵·时间零（91），可减缓时间流速。为屠龙已活了一个世纪。'},
+  {k:['诺诺','陈墨瞳'],lv:0,t:'人物 · 诺诺',b:'本名陈墨瞳，A 级混血种。三峡青铜计划中身负重伤，路明非因此完成第一次交易。'},
+  {k:['路鸣泽','小魔鬼'],lv:1,t:'人物 · 路鸣泽',b:'自称路明非的弟弟，与黑王关系莫测。四次以四分之一生命与路明非交易。'},
+  {k:['源稚生','王权'],lv:0,t:'人物 · 源稚生',b:'A 级混血种，言灵·王权（91），操控重力逼人下跪，天生王者气质。'},
+  {k:['零'],lv:0,t:'人物 · 零',b:'A 级混血种，言灵·镜瞳（90），可复制他人能力，血系源流直指白王。'},
+  {k:['赫尔佐格','新白王'],lv:3,t:'隐秘 · 赫尔佐格',b:'白王血系的幕后操盘者，日本篇核心阴影。试图以克隆与改造重现白王。'},
+  {k:['康斯坦丁'],lv:1,t:'人物 · 康斯坦丁',b:'青铜与火之王，楚子航以君焰黑色光环将其击杀。'},
+  {k:['爆血','暴血'],lv:1,t:'术语 · 爆血',b:'学院禁术：短暂提高血统浓度。楚子航三度爆血，恺撒亦曾暴血强化。'},
+  {k:['青铜计划','三峡','诺顿'],lv:1,t:'事件 · 青铜计划',b:'发生于三峡大坝。诺诺重伤、龙王诺顿现身，路明非完成第一次交易。'},
+  {k:['临界血限','死侍'],lv:0,t:'设定 · 临界血限',b:'龙血比例约 50% 的界线。越过即被龙血吞噬理智，沦为无法使用言灵的怪物死侍。'},
+  {k:['言灵'],lv:0,t:'设定 · 言灵',b:'混血种以龙文共鸣激发的天赋能力，按序列记录于言灵周期表。'},
+  {k:['执行部','专员'],lv:3,t:'隐秘 · 执行部',b:'部长冯·施耐德，准军事机构，向全球派遣屠龙专员；前身为秘党行动队。任务等级 SS/S/A/B/C/D。'},
+  {k:['校董会','秘党','校董'],lv:3,t:'隐秘 · 校董会',b:'学院最高权力机构，前身即秘党。由六位校董组成（含加图索族长庞贝、洛朗族长伊丽莎白、校长昂热），权力凌驾于校长之上。'},
+  {k:['尼伯龙根','计划'],lv:4,t:'隐秘 · 尼伯龙根计划',b:'加图索家提出：以龙血改造强化混血种，突破极限；同时清除血统可疑者。参与意味着力量与牺牲。'},
+  {k:['黑天鹅港'],lv:5,t:'绝密 · 黑天鹅港',b:'1991 年路鸣泽自黑天鹅港出逃，疑似龙王现身。秘党调动全部精英追查。'},
+  {k:['eva','战争人格'],lv:5,t:'绝密 · EVA 战争档案',b:'2003 年人格装载地下 200 米。极限状态算力 14 万倍、功率 800%、网络提速 400 倍，底层刻着至死方休的指令。'},
+  {k:['亚伯拉罕','血统契','血契'],lv:5,t:'绝密 · 秘党密约',b:'《亚伯拉罕血统契》远比纸面残酷：血脉永属学院；退学者先洗脑后遣返。校长昂热已为屠龙活了一个世纪。'},
+  {k:['炼金'],lv:0,t:'设定 · 炼金术',b:'龙族核心科技，以龙文与血脉驱动的古老术式。学院设有炼金课程。'},
+  {k:['龙族','龙王','黑王','白王'],lv:1,t:'世界观 · 龙族',b:'龙类是远古统治者。黑王与白王之上，有青铜与火、大地与山、海洋与水、天空与风四大龙王。'},
+  {k:['诺玛','学院主机'],lv:0,t:'设定 · 诺玛',b:'学院中央电脑，独立人格超级 AI。隐藏战争人格 EVA 为其 14 万倍算力。'}
+];
+function doSearch(){
+  var q=document.getElementById('sIn').value.trim().toLowerCase().replace(/\s+/g,'');
+  var box=document.getElementById('sRes');
+  if(!q){box.innerHTML='';return}
+  var hits=[];
+  ARCH.forEach(function(a){
+    for(var i=0;i<a.k.length;i++){
+      if(q.indexOf(a.k[i].toLowerCase().replace(/\s+/g,''))>=0||a.k[i].toLowerCase().replace(/\s+/g,'').indexOf(q)>=0){
+        hits.push(a);break;
+      }
+    }
+  });
+  if(!hits.length){
+    box.innerHTML='<div class="gb-empty">档案库中未检索到「'+esc(q)+'」相关记录</div>';
+    return;
+  }
+  box.innerHTML=hits.map(function(a){
+    if(curLv>=a.lv)return '<div class="sitem"><div class="sh">'+a.t+'</div><div class="sb">'+a.b+'</div><div class="slv">密级 LV'+a.lv+'</div></div>';
+    return '<div class="sitem locked"><div class="sh">'+a.t+'</div><div class="sb">※※※ 内容已加密 ※※※</div><div class="lockMsg">权限不足 · 需要 LV'+a.lv+'（'+PLV[a.lv].n+'）</div><div class="slv">密级 LV'+a.lv+'</div></div>';
+  }).join('');
+}
+document.getElementById('sBtn').addEventListener('click',doSearch);
+document.getElementById('sIn').addEventListener('keydown',function(e){if(e.key==='Enter')doSearch()});
+renderPerm();
 
 /* ============ 亚伯拉罕血统契 ============ */
 (function(){
