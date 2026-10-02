@@ -509,6 +509,22 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 .gb-dlg-c input{width:100%;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:10px 12px;font-size:13px;outline:none;font-family:var(--mono)}
 .gb-dlg-c input:focus{border-color:var(--accent)}
 @media(max-width:640px){.gb-head{flex-wrap:wrap}.gb-mode{margin-left:0}}
+/* ==== 卡片图标美术 v2.7 ==== */
+.thumb svg{transition:transform .45s cubic-bezier(.22,1,.36,1)}
+.card:hover .thumb svg{transform:scale(1.05)}
+.t-scan{animation:tscan 3.4s linear infinite}
+@keyframes tscan{0%{transform:translateY(-34px);opacity:0}10%{opacity:.85}82%{opacity:.85}100%{transform:translateY(176px);opacity:0}}
+.t-pulse{animation:tpulse 2.1s ease-in-out infinite}
+@keyframes tpulse{0%,100%{opacity:.22}50%{opacity:1}}
+.t-blink{animation:tblink 1.4s steps(1) infinite}
+@keyframes tblink{50%{opacity:.15}}
+.t-drift{animation:tdrift 5s ease-in-out infinite}
+@keyframes tdrift{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.t-glow{animation:tglow 3s ease-in-out infinite}
+@keyframes tglow{0%,100%{opacity:.5}50%{opacity:1}}
+.t-spin{animation:tspin 9s linear infinite;transform-origin:center}
+@keyframes tspin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.t-scan,.t-pulse,.t-blink,.t-drift,.t-glow,.t-spin{animation:none}}
 
 </style>
 <body>
@@ -555,14 +571,35 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <defs><linearGradient id="ps1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <circle cx="200" cy="82" r="26" fill="none" stroke="#FFFFFF" stroke-width="3"/>
-            <path d="M200 108 L150 152 M200 108 L262 148 M200 108 L196 168" stroke="#D8D8D8" stroke-width="2"/>
-            <circle cx="150" cy="152" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
-            <circle cx="262" cy="148" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
-            <circle cx="196" cy="168" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
-            <circle cx="200" cy="82" r="8" fill="#FFFFFF"/>
-            <text x="200" y="186" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">SKILL TREE</text>
+            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
+            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#ps1)" opacity="0"/>
+            <g class="t-drift">
+              <circle class="t-pulse" cx="200" cy="74" r="34" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity=".7"/>
+              <circle cx="200" cy="74" r="21" fill="none" stroke="#FFFFFF" stroke-width="2.6"/>
+              <circle cx="200" cy="74" r="7.5" fill="#FFFFFF"/>
+              <circle class="t-pulse" cx="200" cy="74" r="3" fill="#fff"/>
+              <path d="M200 95 L148 142 M200 95 L258 140 M200 95 L200 158" stroke="#D8D8D8" stroke-width="2"/>
+              <circle cx="148" cy="142" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.4"/>
+              <circle cx="148" cy="142" r="4" fill="#C9C9C9" class="t-pulse"/>
+              <circle cx="258" cy="140" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.4"/>
+              <circle cx="258" cy="140" r="4" fill="#C9C9C9" class="t-pulse"/>
+              <circle cx="200" cy="158" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.4"/>
+              <circle cx="200" cy="158" r="4" fill="#C9C9C9" class="t-pulse"/>
+              <path d="M148 156 l-26 18 M258 154 l26 18 M200 172 v20" stroke="#777" stroke-width="1.6"/>
+              <circle cx="122" cy="174" r="9" fill="none" stroke="#5a5a5a" stroke-width="1.8"/>
+              <circle cx="284" cy="172" r="9" fill="none" stroke="#5a5a5a" stroke-width="1.8"/>
+              <circle cx="200" cy="192" r="9" fill="none" stroke="#5a5a5a" stroke-width="1.8"/>
+              <circle cx="122" cy="174" r="2.5" fill="#707070"/>
+              <circle cx="284" cy="172" r="2.5" fill="#707070"/>
+              <circle cx="200" cy="192" r="2.5" fill="#707070"/>
+            </g>
+            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+              <path d="M126 187 H274" stroke="#444" stroke-width="1"/>
+              <text x="200" y="186" letter-spacing="6">SKILL TREE</text>
+            </g>
           </svg>
         </div>
         <div class="card-bd">
@@ -578,12 +615,27 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <rect width="400" height="200" fill="#0B0B0C"/>
-            <rect x="34" y="42" width="332" height="120" fill="#131315" stroke="rgba(232,226,212,.25)" stroke-width="2"/>
-            <circle cx="56" cy="58" r="4" fill="#F0F0F0"/><circle cx="72" cy="58" r="4" fill="#A6A6A6"/><circle cx="88" cy="58" r="4" fill="#707070"/>
-            <text x="56" y="96" font-family="monospace" font-size="15" fill="#B5AE9D">&gt; whoami</text>
-            <text x="56" y="122" font-family="monospace" font-size="15" fill="#D8D8D8">LV 0 · 待验证</text>
-            <text x="56" y="148" font-family="monospace" font-size="15" fill="#B5AE9D">&gt; <tspan class="tcur">_</tspan></text>
+            <defs><linearGradient id="ps2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+            <rect width="400" height="200" fill="#0A0A0A"/>
+            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
+            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#ps2)" opacity="0"/>
+            <g class="t-drift">
+              <rect x="44" y="36" width="312" height="132" rx="8" fill="none" stroke="#FFFFFF" stroke-width="2.6"/>
+              <rect x="44" y="36" width="312" height="28" rx="8" fill="rgba(255,255,255,.10)"/>
+              <circle cx="66" cy="50" r="4.5" fill="#E8E8E8"/><circle cx="84" cy="50" r="4.5" fill="#909090"/><circle cx="102" cy="50" r="4.5" fill="#555"/>
+              <rect x="176" y="46" width="86" height="8" fill="#6a6a6a"/>
+              <text x="64" y="90" font-family="monospace" font-size="15" fill="#B5AE9D">&gt; whoami</text>
+              <text x="64" y="116" font-family="monospace" font-size="15" fill="#D8D8D8">LV 0 · 待验证</text>
+              <rect x="64" y="130" width="60" height="2" fill="#D8D8D8" opacity=".6"/>
+              <text x="64" y="152" font-family="monospace" font-size="15" fill="#B5AE9D">&gt; <tspan class="t-blink">_</tspan></text>
+              <circle class="t-pulse" cx="324" cy="142" r="7" fill="#3FE0C8"/>
+              <circle cx="324" cy="142" r="2.6" fill="#0A0A0A"/>
+            </g>
+            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+              <path d="M118 187 H282" stroke="#444" stroke-width="1"/>
+              <text x="200" y="186" letter-spacing="5">TERMINAL INTERFACE</text>
+            </g>
           </svg>
         </div>
         <div class="card-bd">
@@ -599,12 +651,32 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <defs><linearGradient id="ps3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <path d="M96 78 L200 38 L304 78 L304 128 L200 168 L96 128 Z" fill="none" stroke="#FFFFFF" stroke-width="3"/>
-            <path d="M200 38 L200 168 M96 78 L304 128 M304 78 L96 128" stroke="#707070" stroke-width="2"/>
-            <path d="M286 132 a20 20 0 1 0 6 12" fill="none" stroke="#D8D8D8" stroke-width="4"/>
-            <circle cx="306" cy="156" r="7" fill="#FFFFFF"/>
-            <text x="200" y="186" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">MOD DEV</text>
+            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
+            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#ps3)" opacity="0"/>
+            <g class="t-drift">
+              <path d="M104 76 L200 40 L296 76 L296 128 L200 164 L104 128 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8"/>
+              <path d="M200 40 L200 164 M104 76 L296 128 M296 76 L104 128" stroke="#707070" stroke-width="1.8"/>
+              <path d="M144 90 L200 68 L256 90 L256 116 L200 138 L144 116 Z" fill="none" stroke="#A6A6A6" stroke-width="1.4"/>
+              <circle class="t-pulse" cx="200" cy="102" r="14" fill="none" stroke="#E8E8E8" stroke-width="1.5"/>
+              <circle cx="200" cy="102" r="5" fill="#E8E8E8"/>
+              <circle cx="200" cy="102" r="2" fill="#fff" class="t-pulse"/>
+              <g class="t-spin">
+                <path d="M200 56 a7 7 0 0 1 0 92 a7 7 0 0 1 0 -92" fill="none" stroke="#E8E8E8" stroke-width="1.6"/>
+                <path d="M176 102 l10 -3 l3 10 l-10 3 Z M214 102 l10 3 l-3 10 l-10 -3 Z" fill="#E8E8E8"/>
+                <circle cx="186" cy="102" r="5" fill="none" stroke="#A6A6A6" stroke-width="1.4"/>
+                <circle cx="214" cy="102" r="5" fill="none" stroke="#A6A6A6" stroke-width="1.4"/>
+              </g>
+              <circle cx="314" cy="150" r="8" fill="none" stroke="#D8D8D8" stroke-width="1.8"/>
+              <circle cx="314" cy="150" r="2.6" fill="#D8D8D8"/>
+              <circle cx="80" cy="156" r="6" fill="none" stroke="#5a5a5a" stroke-width="1.4"/>
+            </g>
+            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+              <path d="M132 187 H268" stroke="#444" stroke-width="1"/>
+              <text x="200" y="186" letter-spacing="7">MOD DEV</text>
+            </g>
           </svg>
         </div>
         <div class="card-bd">
