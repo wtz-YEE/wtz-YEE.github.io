@@ -754,6 +754,8 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
 @keyframes scan{0%{background-position:120% 0}100%{background-position:-120% 0}}
 #status .st-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:breath 2.2s ease-in-out infinite;flex:none}
 @keyframes breath{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes rcShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.rcShake{animation:rcShake .4s ease}
 @media(prefers-reduced-motion:reduce){#status.scrl .st-l::after,.st-dot{animation:none}}
 </style>
 <body>
@@ -777,7 +779,8 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
   </div>
 </div>
 
-<canvas id="fx" style="position:fixed;inset:0;z-index:6;pointer-events:none;display:none"></canvas>
+<canvas id="fx" style="position:fixed;inset:0;z-index:6;pointer-events:none;display:none;transition:opacity .9s ease"></canvas>
+<div id="fxTag" style="position:fixed;right:16px;bottom:14px;z-index:7;display:none;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ink2);border:1px solid var(--line);padding:6px 12px;background:rgba(7,9,10,.85);backdrop-filter:blur(6px);opacity:0;transition:opacity .9s ease">[ HOLIDAY ] <span id="fxTagN"></span></div>
 <header id="status">
   <span class="st-dot"></span><span class="st-l">WTZ // 个人网站 · 黑白</span>
   <span class="st-c" id="clock">--:--:--</span>
@@ -1372,7 +1375,7 @@ function normalizeApi(v){
 }
 function parseApis(raw){
   var out=[];
-  String(raw||'').split(/[\n,;]+/).forEach(function(x){
+  String(raw||'').replace(/^\uFEFF/,'').split(/[\n,;]+/).forEach(function(x){
     var v=normalizeApi(x);
     if(v && out.indexOf(v)<0) out.push(v);
   });
@@ -1637,22 +1640,27 @@ function gbRcShow(){
 }
 function gbRcQ(){
   var u=$('gb_rc_user').value.trim();
-  if(!u) return $('gb_rc_say').textContent='请输入账号';
+  if(!u){ $('gb_rc_say').textContent='请输入账号'; gbRcShake(); return; }
   call('/recover_q',{username:u}).then(function(j){
-    if(!j.ok) return $('gb_rc_say').textContent=j.msg||'获取失败';
+    if(!j.ok){ $('gb_rc_say').textContent=j.msg||'获取失败'; gbRcShake(); return; }
     $('gb_rc_q').textContent='问题：'+j.question; $('gb_rc_q').style.display='';
     $('gb_rc_ans').style.display=''; $('gb_rc_pwd').style.display='';
     $('gb_rc_go').style.display='none'; $('gb_rc_ok').style.display='';
     $('gb_rc_say').textContent='';
   }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+e.message; });
 }
+function gbRcShake(){
+  var m=document.getElementById('gbRecMask').querySelector('div');
+  m.classList.remove('rcShake'); void m.offsetWidth; m.classList.add('rcShake');
+}
 function gbRcGo(){
   var u=$('gb_rc_user').value.trim(), a=$('gb_rc_ans').value.trim(), p=$('gb_rc_pwd').value;
-  if(!a||!p) return $('gb_rc_say').textContent='请填写答案与新密码';
+  if(!a||!p){ $('gb_rc_say').textContent='请填写答案与新密码'; gbRcShake(); return; }
   call('/recover',{username:u,answer:a,newpwd:p}).then(function(j){
     $('gb_rc_say').textContent=j.msg||(j.ok?'已重置':'失败');
     if(j.ok){ setTimeout(function(){ $('gbRecMask').style.display='none'; },1300); }
-  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+e.message; });
+    else gbRcShake();
+  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+e.message; gbRcShake(); });
 }
 function gbSecShow(){
   $('gbSecMask').style.display='flex';
@@ -2264,7 +2272,11 @@ function autoCloud(){
   if(!ev) return;
   var cv=document.getElementById('fx'); if(!cv) return;
   cv.style.display='block';
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ cv.style.opacity='1'; }); });
+  var tg=document.getElementById('fxTag'),tgN=document.getElementById('fxTagN');
+  if(tg){ tgN.textContent=ev.n; tg.style.display='block'; requestAnimationFrame(function(){ requestAnimationFrame(function(){ tg.style.opacity='1'; }); }); }
   var ctx=cv.getContext('2d'),W=0,H=0,ps=[],TY=ev.t;
+  var _cap=(innerWidth<600)?60:120,_rate=(innerWidth<600)?0.18:0.35;
   function rs(){ W=cv.width=innerWidth; H=cv.height=innerHeight; }
   rs(); addEventListener('resize',rs);
   var C={snow:'#FFFFFF',heart:'#FF5C7A',confetti:'#FFC24B',balloon:'#E6EDEF',ghost:'#9BA9AD',fire:'#FFC24B'}[TY]||'#FFFFFF';
@@ -2288,7 +2300,7 @@ function autoCloud(){
         if(s.vy>-1){ ps=ps.concat(mkPart(s)); star.splice(i,1); }
       }
     }
-    if(ps.length<120&&Math.random()<.35){
+    if(ps.length<_cap&&Math.random()<_rate){
       var p={x:Math.random()*W,y:TY==='balloon'?H+30:-30,vx:(Math.random()-.5)*.8,vy:1+Math.random()*2,s:TY==='balloon'?9+Math.random()*11:2+Math.random()*4,b:0};
       if(TY==='snow'){p.vy=.5+Math.random()*1.1;p.vx=(Math.random()-.5)*.5;}
       if(TY==='confetti'){p.vy=1.5+Math.random()*2.5;p.vx=(Math.random()-.5)*2;}
@@ -2341,6 +2353,9 @@ function bind(){
     }).catch(function(e){ say('请求失败：'+e.message,false); });
   });
   $('gb_btn_recover').addEventListener('click',gbRcShow);
+  $('gb_rc_user').addEventListener('keydown',function(e){ if(e.key==='Enter') gbRcQ(); });
+  $('gb_rc_ans').addEventListener('keydown',function(e){ if(e.key==='Enter') gbRcGo(); });
+  $('gb_rc_pwd').addEventListener('keydown',function(e){ if(e.key==='Enter') gbRcGo(); });
   $('gb_rc_go').addEventListener('click',gbRcQ);
   $('gb_rc_ok').addEventListener('click',gbRcGo);
   $('gb_rc_x').addEventListener('click',function(){ $('gbRecMask').style.display='none'; });

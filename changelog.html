@@ -101,7 +101,7 @@ var K_API='gb_api_url',K_SESS='gb_session';
 function $(id){return document.getElementById(id)}
 function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function normalizeApi(v){v=String(v||'').trim().replace(/\/+$/,'');return /^https?:\/\//i.test(v)?v:''}
-function parseApis(raw){var out=[];String(raw||'').split(/[\n,;]+/).forEach(function(x){var v=normalizeApi(x);if(v&&out.indexOf(v)<0)out.push(v)});return out}
+function parseApis(raw){var out=[];String(raw||'').replace(/^\uFEFF/,'').split(/[\n,;]+/).forEach(function(x){var v=normalizeApi(x);if(v&&out.indexOf(v)<0)out.push(v)});return out}
 try{S.apis=parseApis(localStorage.getItem(K_API))}catch(e){S.apis=[]}
 S.apis=(S.apis||[]).filter(function(x){return x.indexOf('36c3116e')<0})
 S.api=(S.apis&&S.apis[0])||'';
