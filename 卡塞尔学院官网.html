@@ -39,11 +39,25 @@ button{cursor:pointer}
 main{min-height:calc(100vh - 72px);padding:26px max(18px,calc((100% - 980px)/2)) 50px}
 /* hero */
 .hero{text-align:center;padding:46px 14px 30px;position:relative}
-.hero .seal{width:118px;height:118px;margin:0 auto 18px;position:relative;animation:sealin 1s cubic-bezier(.22,1,.36,1) both}
+.hero .seal{width:118px;height:118px;margin:0 auto 18px;position:relative;animation:sealin 1s cubic-bezier(.22,1,.36,1) both,breathe 3.4s ease-in-out 2.8s infinite}
+.seal::after{content:"";position:absolute;inset:-18%;background:linear-gradient(105deg,transparent 42%,rgba(201,169,97,.30) 50%,transparent 58%);transform:translateX(-160%) skewX(-12deg);animation:glin 1s cubic-bezier(.22,1,.36,1) .4s forwards;pointer-events:none}
+.seal svg path,.seal svg circle,.seal svg ellipse{stroke-dasharray:460;stroke-dashoffset:460;animation:drw .8s cubic-bezier(.22,1,.36,1) forwards}
+.seal svg ellipse{stroke-dasharray:60;stroke-dashoffset:60;animation:popf .45s ease forwards}
+@keyframes glin{to{transform:translateX(160%) skewX(-12deg)}}
+@keyframes drw{to{stroke-dashoffset:0}}
+@keyframes popf{to{stroke-dashoffset:0;opacity:1}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
 .hero .seal svg{width:100%;height:100%;filter:drop-shadow(0 0 18px rgba(201,169,97,.28))}
-.hero h1{font-family:var(--serif);font-size:clamp(26px,5.4vw,42px);letter-spacing:.34em;text-indent:.34em;font-weight:700;color:var(--ink);animation:hin .7s cubic-bezier(.22,1,.36,1) .25s both}
-.hero .sub{font-family:var(--mono);font-size:11px;letter-spacing:.5em;text-indent:.5em;color:var(--gold);margin-top:12px;animation:hin .7s cubic-bezier(.22,1,.36,1) .4s both}
-.hero .quote{font-family:var(--serif);font-size:14px;color:var(--ink3);margin-top:16px;letter-spacing:.12em;animation:hin .7s cubic-bezier(.22,1,.36,1) .55s both}
+.hero h1{font-family:var(--serif);font-size:clamp(26px,5.4vw,42px);letter-spacing:.34em;text-indent:.34em;font-weight:700;color:var(--ink)}
+.hero h1 span{display:inline-block;opacity:0;animation:charin .55s cubic-bezier(.22,1,.36,1) forwards}
+.hero h1 span:nth-child(1){animation-delay:.6s}
+.hero h1 span:nth-child(2){animation-delay:.72s}
+.hero h1 span:nth-child(3){animation-delay:.84s}
+.hero h1 span:nth-child(4){animation-delay:.96s}
+.hero h1 span:nth-child(5){animation-delay:1.08s}
+@keyframes charin{from{opacity:0;transform:translateY(18px) rotate(4deg)}to{opacity:1;transform:none}}
+.hero .sub{font-family:var(--mono);font-size:11px;letter-spacing:.5em;text-indent:.5em;color:var(--gold);margin-top:12px;animation:hin .7s cubic-bezier(.22,1,.36,1) 1.15s both}
+.hero .quote{font-family:var(--serif);font-size:14px;color:var(--ink3);margin-top:16px;letter-spacing:.12em;animation:hin .7s cubic-bezier(.22,1,.36,1) 1.32s both}
 @keyframes sein{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes hin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes vsw{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -89,6 +103,21 @@ main{min-height:calc(100vh - 72px);padding:26px max(18px,calc((100% - 980px)/2))
 .result .desc{margin-top:12px;font-size:13.5px;color:var(--ink2);line-height:2}
 .result .grade{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--ink3);margin-top:8px}
 @keyframes lvlpulse{0%,100%{text-shadow:0 0 20px rgba(201,169,97,.4)}50%{text-shadow:0 0 44px rgba(201,169,97,.85)}}
+/* ===== motion polish ===== */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.btn,.tbtn,.chip,.color-dot{transition:transform .12s ease,background .2s ease,color .2s ease,border-color .2s ease}
+.btn:active,.tbtn:active,.chip:active{transform:scale(.94)}
+.ecard .go{transition:letter-spacing .3s cubic-bezier(.22,1,.36,1)}
+.ecard:hover .go{letter-spacing:.4em}
+.msg{animation:msgin .34s cubic-bezier(.22,1,.36,1) both}
+@keyframes msgin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#rLvl.pop{animation:lvlpop .55s cubic-bezier(.22,1,.36,1) both}
+#rLvl.s.pop{animation:lvlpop .55s cubic-bezier(.22,1,.36,1) both,lvlpulse 1.6s ease-in-out .55s infinite}
+@keyframes lvlpop{0%{transform:scale(.3) rotate(-8deg);opacity:0}55%{transform:scale(1.14) rotate(2deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.cgrid .ecard{animation:hin .5s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(1.5s + var(--i,0)*.12s)}
+#v-home .panel{animation:hin .55s cubic-bezier(.22,1,.36,1) 1.9s both}
+.ecard:hover .thumb svg{transform:scale(1.03)}
+.ecard .thumb svg{transition:transform .3s cubic-bezier(.22,1,.36,1)}
 /* norna */
 .chat{height:430px;overflow-y:auto;border:1px solid var(--line);background:#0B0C0F;padding:16px;display:flex;flex-direction:column;gap:12px;font-size:13px}
 .msg{max-width:86%;line-height:1.9;padding:10px 14px;white-space:pre-wrap}
@@ -134,12 +163,36 @@ td b{color:var(--ink)}
 #pName:focus{border-color:var(--gold)}
 .pact .btn{width:100%;padding:13px;font-size:12.5px}
 @keyframes pactin{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:none}}
+/* profile */
+.profile{border:1px solid var(--line);background:var(--panel2);margin-top:16px;padding:18px 20px;text-align:left;display:none}
+.profile .prow{display:flex;gap:26px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);line-height:2}
+.profile .prow b{color:var(--gold);font-weight:600}
+.profile .ph{font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;color:var(--ink3);margin-bottom:10px}
+.profile .plv{font-family:var(--mono);font-size:26px;color:var(--gold);letter-spacing:.1em}
+.hist{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;font-size:11px;color:var(--ink3);line-height:1.9}
+#badgeBtn{font-size:11px;padding:7px 16px}
+.st-lv{color:var(--gold);margin-right:14px;font-family:var(--mono)}
+/* eva mode */
+.eva-panel{border-color:rgba(255,60,90,.45)!important}
+.eva-panel .chat{background:rgba(20,4,8,.55)!important;border-color:rgba(255,60,90,.3)!important}
+.eva-panel .msg.n .who{color:var(--bad)!important}
+.eva-on{color:var(--bad)!important;border-color:var(--bad)!important}
+/* timeline */
+.tl{display:grid;grid-template-columns:86px 1fr;column-gap:14px;font-size:12.5px;color:var(--ink2)}
+.tl-row{display:grid;grid-template-columns:86px 1fr;gap:14px;position:relative;padding-bottom:20px}
+.tl-t{font-family:var(--mono);font-size:11.5px;color:var(--gold);text-align:right;line-height:1.4;padding-top:2px}
+.tl-axis{justify-self:center;position:relative;width:1px;background:var(--line2)}
+.tl-axis::before{content:"";position:absolute;top:2px;left:-3.5px;width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
+.tl-c{line-height:1.9}
+.tl-c b{color:var(--ink)}
+@media(max-width:640px){.tl,.tl-row{grid-template-columns:64px 1fr}}
 </style>
 </head>
 <body>
 
 <header id="status">
   <span class="st-l">CASSEL COLLEGE // 卡塞尔学院</span>
+  <span class="st-c" id="stLv" style="margin-right:14px"></span>
   <span class="st-c" id="stUser" style="margin-right:16px"></span>
   <span class="st-c" id="clock">--:--:--</span>
 </header>
@@ -181,7 +234,7 @@ td b{color:var(--ink)}
           <path d="M60 92 C50 90 40 88 32 90 M60 92 C70 90 80 88 88 90" fill="none" stroke="#7A7468" stroke-width="2.4" stroke-linecap="round"/>
         </svg>
       </div>
-      <h1>卡塞尔学院</h1>
+      <h1><span>卡</span><span>塞</span><span>尔</span><span>学</span><span>院</span></h1>
       <div class="sub">CASSEL COLLEGE · EST. 1900</div>
       <div class="quote">「这里的学生，血脉里都沉睡着龙。」</div>
     </div>
@@ -258,7 +311,19 @@ td b{color:var(--ink)}
       <div class="result" id="result">
         <div class="lvl" id="rLvl">—</div>
         <div class="grade" id="rGrade">BLOOD LEVEL</div>
-
+        <div style="margin-top:14px">
+          <button class="btn ghost" id="badgeBtn">下载血统徽章</button>
+        </div>
+      </div>
+      <div class="profile" id="profile">
+        <div class="ph">STUDENT RECORD · 学生档案</div>
+        <div class="prow">
+          <div><b>学名</b><span id="pName2">—</span></div>
+          <div><b>当前血统</b><span class="plv" id="pLvl2">—</span></div>
+          <div><b>契约状态</b><span id="pPact">未签约</span></div>
+          <div><b>最近测评</b><span id="pTime">—</span></div>
+        </div>
+        <div class="hist" id="pHist"></div>
       </div>
     </div>
   </section>
@@ -266,7 +331,7 @@ td b{color:var(--ink)}
   <!-- ============ 诺玛 ============ -->
   <section id="v-norna" class="view">
     <div class="panel">
-      <h2>诺玛 · 劳恩斯</h2>
+      <h2>诺玛 · 劳恩斯 <span class="chip" id="evaBtn" style="float:right;margin:0;border-color:var(--line2);color:var(--ink3)">EVA 模式 · OFF</span></h2>
       <p class="small">学院中央电脑 · 知识库基于《龙族》原著设定（本地运行，无需网络）</p>
       <div class="divider"></div>
       <div class="chat" id="chat"></div>
@@ -329,6 +394,23 @@ td b{color:var(--ink)}
       <h3>诺玛与 EVA</h3>
       <p><b>诺玛·劳恩斯</b>是学院的中央电脑，拥有独立人格的超级 AI，处理选课到任务分析的一切。其隐藏人格 <b>EVA</b> 算力为诺玛的 14 万倍，可掌控「天眼」与调动武器，是学院真正的终极武器——其形象模拟自格陵兰冰海任务中牺牲的学生。</p>
     </div>
+    <div class="panel">
+      <h2>主线时间轴</h2>
+      <div class="tl">
+        <div class="tl-row"><div class="tl-t">1900</div><div class="tl-axis"></div><div class="tl-c"><b>学院创办</b>——秘党于芝加哥远郊建立卡塞尔学院，表面为私立大学，实为屠龙学院。</div></div>
+        <div class="tl-row"><div class="tl-t">1946</div><div class="tl-axis"></div><div class="tl-c"><b>主机雏形</b>——学院复制 ENIAC 建成超级电脑的最初形态。</div></div>
+        <div class="tl-row"><div class="tl-t">1990</div><div class="tl-axis"></div><div class="tl-c"><b>诺玛诞生</b>——学院主机「诺玛·劳恩斯」正式建造，拥有独立人格，可攻破五角大楼防火墙。</div></div>
+        <div class="tl-row"><div class="tl-t">2001</div><div class="tl-axis"></div><div class="tl-c"><b>格陵兰冰海任务</b>——一支学生小队执行任务近乎全灭；EVA 的原型便模拟自其中牺牲的学生。</div></div>
+        <div class="tl-row"><div class="tl-t">2003</div><div class="tl-axis"></div><div class="tl-c"><b>EVA 觉醒</b>——人格装载进地下 200 米的超级计算机，战争人格在极限状态下苏醒，算力 14 万倍。</div></div>
+        <div class="tl-row"><div class="tl-t">入学篇</div><div class="tl-axis"></div><div class="tl-c"><b>路明非入学</b>——衰仔少年被评定为 S 级，卡塞尔的大门向他敞开。</div></div>
+        <div class="tl-row"><div class="tl-t">青铜篇</div><div class="tl-axis"></div><div class="tl-c"><b>三峡青铜计划</b>——诺诺身负重伤，路明非第一次与路鸣泽交易，以四分之一生命换得言灵「不要死」。</div></div>
+        <div class="tl-row"><div class="tl-t">悼亡者之瞳</div><div class="tl-axis"></div><div class="tl-c"><b>君焰 vs 康斯坦丁</b>——楚子航三度爆血，以黑色光环领域的君焰击杀青铜与火之王。</div></div>
+        <div class="tl-row"><div class="tl-t">龙王线</div><div class="tl-axis"></div><div class="tl-c"><b>夏弥 = 耶梦加得</b>——大地与山之王的人形，风王之瞳的拥有者，最终身份揭开。</div></div>
+        <div class="tl-row"><div class="tl-t">日本篇</div><div class="tl-axis"></div><div class="tl-c"><b>王权与赫尔佐格</b>——源稚生执言灵王权，白王系赫尔佐格登场，龙族之血再掀波澜。</div></div>
+        <div class="tl-row"><div class="tl-t">终章</div><div class="tl-axis"></div><div class="tl-c"><b>第四次交易</b>——路明非以全部代价直面黑王，四次交易之后，他仍未死去。</div></div>
+      </div>
+      <p class="small" style="margin-top:12px">注：主线节点为原著剧情整理，非官方年表。</p>
+    </div>
   </section>
 </main>
 
@@ -378,6 +460,18 @@ window.addEventListener('hashchange',route);
 document.querySelectorAll('.ecard').forEach(function(a){
   a.addEventListener('click',function(e){e.preventDefault();location.hash=a.getAttribute('href')});
 });
+var ecs=document.querySelectorAll('.cgrid .ecard');
+for(var i=0;i<ecs.length;i++)ecs[i].style.setProperty('--i',i);
+/* seal 内部元素描边生长编排 */
+(function(){
+  var sp=document.querySelectorAll('.seal svg path,.seal svg circle,.seal svg ellipse');
+  var dots=[0.15,0.22,0.32,0.42,0.52,0.6,0.68,0.76,0.6,0.68];
+  for(var i=0;i<sp.length;i++){
+    var isE=sp[i].tagName==='ellipse';
+    sp[i].style.animationDelay=(dots[i]!==undefined?dots[i]:0.3+Math.random()*0.15)+'s';
+    if(isE)sp[i].style.opacity='0';
+  }
+})();
 /* 时钟 */
 function clk(){var d=new Date(),f=function(n){return(n<10?'0':'')+n};$('clock').textContent=f(d.getHours())+':'+f(d.getMinutes())+':'+f(d.getSeconds())}
 setInterval(clk,1000);clk();
@@ -444,8 +538,10 @@ function bloodTest(){
   var score=Math.min(100,Math.round(inkScore+hueScore+stScore));
   var lv=score>=88?'S':score>=74?'A':score>=60?'B':score>=46?'C':score>=32?'D':score>=18?'E':'F';
   var el=$('rLvl');el.textContent=lv;el.className='lvl'+(lv==='S'?' s':'');
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
   $('rGrade').textContent='BLOOD LEVEL '+lv+' · SCORE '+score+'/100';
   $('result').style.display='block';
+  upProfile(lv,score);
   if(lv==='S')$('result').scrollIntoView({behavior:'smooth',block:'center'});
 }
 $('testBtn').addEventListener('click',bloodTest);
@@ -470,7 +566,19 @@ var KB=[
 {k:['龙族','龙王','黑王','白王'],a:'《龙族》的世界里，龙类是远古的统治者。黑王与白王之上，还有青铜与火之王、大地与山之王、海洋与水之王、天空与风之王等龙王。'},
 {k:['卡塞尔','学院','秘党'],a:'卡塞尔学院 1900 年由秘党创办，表面是芝加哥郊外的私立大学，实为培养混血种、屠戮龙类的战争学院。入学即签订《亚伯拉罕血统契》。'},
 {k:['尼伯龙根'],a:'尼伯龙根计划由加图索家提出：强化血统、突破混血种极限，同时清除越过临界血限的可疑血统。参与意味着力量，也意味着牺牲。'},
-{k:['hello','你好','hi','在吗'],a:'你好，我是诺玛。这里是卡塞尔学院的主机中枢，有什么需要我协助的吗？'}
+{k:['hello','你好','hi','在吗'],a:'你好，我是诺玛。这里是卡塞尔学院的主机中枢，有什么需要我协助的吗？'},
+{k:['诺诺','陈墨瞳'],a:'诺诺，本名陈墨瞳，A 级混血种。三峡青铜计划中身负重伤，路明非因此完成第一次交易——以四分之一生命换取言灵「不要死」。'},
+{k:['赫尔佐格','新白王'],a:'赫尔佐格，白王血系的幕后操盘者，日本篇的核心阴影。他试图以克隆与改造重现白王，是源稚生与源稚女悲剧的源头。'},
+{k:['爆血','暴血'],a:'爆血是学院的禁术：短暂提高血统浓度、压榨血脉力量。楚子航三度爆血后，君焰形成黑色光环领域；恺撒也曾以暴血强化自身，令言灵进化。'},
+{k:['青铜计划','三峡','诺顿'],a:'青铜计划发生于三峡大坝——诺诺重伤、龙王诺顿现身。路明非第一次接受路鸣泽的交易，换来两个临时言灵、封印言灵之力与永久言灵「不要死」。'},
+{k:['康斯坦丁'],a:'康斯坦丁，青铜与火之王。楚子航在悼亡者之瞳篇三度爆血，以君焰的黑色光环将其击杀。'},
+{k:['炼金','炼金术'],a:'炼金术是龙族的核心科技——以龙文与血脉驱动的古老术式。卡塞尔学院设有炼金课程，执行部的许多装备与武器皆源于此。'},
+{k:['四大龙王','青铜与火','大地与山','海洋与水','天空与风'],a:'龙族的四位君王：青铜与火、大地与山、海洋与水、天空与风。其上还有黑王与白王——龙王皆有人形，潜伏于人类社会中。'},
+{k:['黑王'],a:'黑王是龙族最初的君主，也是路鸣泽与路明非身世的漩涡中心。第四次交易之后，路明非直面黑王——他仍未死去。'},
+{k:['执行部'],a:'执行部是卡塞尔学院的武装力量：毕业生派驻世界各地，追踪龙类与混血种异常，执行最危险的屠龙任务。'},
+{k:['狮心会','学生会'],a:'学院两大社团——楚子航执掌狮心会，恺撒执掌学生会。二者针锋相对，却都是执行部最锋利的刀。'},
+{k:['选课','课程'],a:'选课、任务分析、网络监控——这些都由我，诺玛，一手包办。课程包括格斗、言灵应用与龙族历史，祝你好运。'},
+{k:['交易'],a:'路鸣泽四次以「四分之一生命」与路明非交易：第一次换得「不要死」与复制言灵之力；四次交易之后，路明非却未曾死去——血契的代价，或许另有深意。'}
 ];
 var defA='这个问题不在我的知识库索引中。你可以试试问：路明非、楚子航、夏弥、临界血限、言灵、诺玛，或直接输入「血统」。';
 var chat=$('chat'),inp=$('chatIn');
@@ -482,6 +590,10 @@ function say(msg,who){
 function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
 function nornaAsk(q){
   q=q.replace(/\s+/g,'').toLowerCase();
+  if(profile&&(q.indexOf('我')>=0||q.indexOf('血统')>=0&&q.length<8)){
+    var el=profile.lv;
+    return '根据档案记录，你当前的血统等级为 '+el+' 级。'+(el==='S'?'——学院已为你启动最高权限监控。':'——请继续努力，血统并非一切。');
+  }
   for(var i=0;i<KB.length;i++){
     var ks=KB[i].k;
     for(var j=0;j<ks.length;j++){
@@ -490,6 +602,94 @@ function nornaAsk(q){
   }
   return defA;
 }
+/* EVA 模式 */
+var evaOn=false;
+var evaBtn=document.getElementById('evaBtn');
+var nPanel=document.getElementById('v-norna').querySelector('.panel');
+evaBtn.addEventListener('click',function(){
+  evaOn=!evaOn;
+  evaBtn.textContent='EVA 模式 · '+(evaOn?'ON':'OFF');
+  evaBtn.classList.toggle('eva-on',evaOn);
+  nPanel.classList.toggle('eva-panel',evaOn);
+  say(evaOn?'EVA 已上线。运算负载 14 万倍，战争权限解锁。':'诺玛已接管。日常服务模式恢复。','n');
+});
+/* 学生档案 */
+var pact=localStorage.getItem('cas_pact');
+var prof=localStorage.getItem('cas_profile');
+var profile=prof?JSON.parse(prof):null;
+function upProfile(lv,sc){
+  profile={lv:lv,sc:sc,t:Date.now(),n:(pact?pact.split('|')[0]:null)};
+  localStorage.setItem('cas_profile',JSON.stringify(profile));
+  var h=JSON.parse(localStorage.getItem('cas_hist')||'[]');
+  h.unshift({lv:lv,sc:sc,t:Date.now()});
+  if(h.length>5)h.length=5;
+  localStorage.setItem('cas_hist',JSON.stringify(h));
+  drawProfile();
+}
+function drawProfile(){
+  var p=document.getElementById('profile');if(!p)return;
+  p.style.display='block';
+  document.getElementById('pName2').textContent=(profile&&profile.n)||'未命名血裔';
+  document.getElementById('pLvl2').textContent=(profile?profile.lv:'—');
+  document.getElementById('pPact').textContent=pact?('已签约 · '+new Date(+pact.split('|')[1]||Date.now()).toLocaleDateString()):'未签约';
+  document.getElementById('pTime').textContent=(profile?new Date(profile.t).toLocaleString():'—');
+  var h=JSON.parse(localStorage.getItem('cas_hist')||'[]');
+  document.getElementById('pHist').textContent='近 5 次测评：'+h.map(function(x){return x.lv+'('+x.sc+')'}).join('  →  ')+(h.length?'':' 暂无');
+  var sl=document.getElementById('stLv');
+  if(sl)sl.textContent=profile?('血统等级 · '+profile.lv):'';
+}
+if(profile)drawProfile();
+/* 血统徽章下载 */
+function drawBadge(){
+  var cw=640,ch=640,cn=document.createElement('canvas');cn.width=cw;cn.height=ch;
+  var x=cn.getContext('2d');
+  x.fillStyle='#0B0C0E';x.fillRect(0,0,cw,ch);
+  x.strokeStyle='#C9A961';x.lineWidth=10;x.beginPath();x.arc(320,300,250,0,Math.PI*2);x.stroke();
+  x.strokeStyle='rgba(201,169,97,.5)';x.lineWidth=3;x.beginPath();x.arc(320,300,226,0,Math.PI*2);x.stroke();
+  /* 世界树 */
+  x.strokeStyle='#8A8A80';x.lineWidth=10;x.lineCap='round';
+  x.beginPath();x.moveTo(320,440);x.lineTo(320,330);x.stroke();
+  x.strokeStyle='#6E6C64';x.lineWidth=7;
+  x.beginPath();x.moveTo(320,350);x.lineTo(205,255);x.stroke();
+  x.strokeStyle='#8A8A80';x.lineWidth=7;
+  x.beginPath();x.moveTo(320,350);x.lineTo(435,255);x.stroke();
+  x.strokeStyle='#6E6C64';x.lineWidth=5;
+  x.beginPath();x.moveTo(205,255);x.lineTo(160,190);x.stroke();
+  x.beginPath();x.moveTo(205,255);x.lineTo(190,180);x.stroke();
+  x.beginPath();x.moveTo(240,225);x.lineTo(220,170);x.stroke();
+  x.strokeStyle='#8A8A80';x.lineWidth=5;
+  x.beginPath();x.moveTo(435,255);x.lineTo(470,195);x.stroke();
+  x.beginPath();x.moveTo(435,255);x.lineTo(490,235);x.stroke();
+  x.beginPath();x.moveTo(400,230);x.lineTo(430,175);x.stroke();
+  x.fillStyle='#C9A961';
+  var leaves=[[470,195,10,16,-20],[490,235,9,15,10],[430,175,10,16,-30],[455,215,8,13,0],[415,200,8,13,-15]];
+  leaves.forEach(function(l){x.save();x.translate(l[0],l[1]);x.rotate(l[4]*Math.PI/180);x.beginPath();x.ellipse(0,0,l[2],l[3],0,0,Math.PI*2);x.fill();x.restore()});
+  x.fillStyle='#6E6C64';
+  [[185,205],[205,175],[225,190]].forEach(function(l){x.beginPath();x.ellipse(l[0],l[1],4,8,0.4,0,Math.PI*2);x.fill()});
+  x.strokeStyle='#7A7468';x.lineWidth=5;
+  x.beginPath();x.moveTo(320,440);x.lineTo(255,470);x.stroke();
+  x.beginPath();x.moveTo(320,440);x.lineTo(385,470);x.stroke();
+  /* 等级 */
+  var lv=profile?profile.lv:'—';
+  x.fillStyle=lv==='S'?'#C9A961':'#E8E6E0';
+  x.font='700 150px Cascadia Mono,Consolas,monospace';x.textAlign='center';x.textBaseline='middle';
+  x.fillText(lv,320,300);
+  x.font='20px Cascadia Mono,Consolas,monospace';x.fillStyle='#A9A69C';x.fillText('BLOOD LEVEL',320,392);
+  x.font='26px "Noto Serif SC",serif';x.fillStyle='#E8E6E0';
+  x.fillText('CASSEL COLLEGE',320,500);
+  x.font='18px "Noto Serif SC",serif';x.fillStyle='#8A8A80';
+  x.fillText((profile&&profile.n)||'UNNAMED BLOOD',320,545);
+  x.font='14px Cascadia Mono,Consolas,monospace';
+  x.fillText((profile?new Date(profile.t).toLocaleDateString():'')+' · ABRAHAM INDENTURE',320,580);
+  return cn;
+}
+var badgeBtn=document.getElementById('badgeBtn');
+if(badgeBtn)badgeBtn.addEventListener('click',function(){
+  var cn=drawBadge(),url=cn.toDataURL('image/png');
+  var a=document.createElement('a');a.href=url;a.download='cassel_badge_'+(profile?profile.lv:'x')+'.png';
+  document.body.appendChild(a);a.click();a.remove();
+  say('血统徽章已生成并下载','n');
+});
 function ask(q){
   q=q.trim();if(!q)return;
   say(q,'u');
