@@ -113,16 +113,40 @@ var S={api:'',user:null,img:'',tags:[]};
 var K_API='gb_api_url',K_SESS='gb_session';
 function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
 function say(m,ok){$('say').textContent=m||'';$('say').style.color=ok?'#5ce08a':'';if(m)setTimeout(function(){var e=$('say');if(e.textContent===m)e.textContent=''},3000)}
+function parseApis(raw){
+  var out=[];
+  String(raw||'').split(/[\n,;]+/).forEach(function(x){
+    var v=normalizeApi(x);
+    if(v && out.indexOf(v)<0) out.push(v);
+  });
+  return out;
+}
 function call(path,payload,method){
   var body=Object.assign({token:S.user?S.user.token:''},payload||{});
   if(!S.api) return Promise.reject(new Error('未连接云端'));
-  var url=S.api+path,opt={method:method||'POST',headers:{'Content-Type':'application/json'}};
-  if(opt.method!=='GET') opt.body=JSON.stringify(body);
-  return fetch(url,opt).then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
-    .catch(function(e){ var e2=new Error((e&&e.message?e.message:'网络请求失败')+' — '+url); e2.url=url; throw e2; });
+  var m=method||'POST',tried=[];
+  function attempt(api){
+    tried.push(api);
+    var url=api+path,opt={method:m,headers:{'Content-Type':'application/json'}};
+    if(m!=='GET') opt.body=JSON.stringify(body);
+    return fetch(url,opt).then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
+      .catch(function(err){
+        var cands=(S.apis&&S.apis.length)?S.apis:[S.api];
+        var next=null;
+        for(var i=0;i<cands.length;i++) if(tried.indexOf(cands[i])<0){next=cands[i];break}
+        if(next){
+          S.api=next;
+          try{ localStorage.setItem(K_API,S.apis.join('\n')); }catch(e){}
+          return attempt(next);
+        }
+        var e2=new Error((err&&err.message?err.message:'网络请求失败')+' — '+url); e2.url=url; throw e2;
+      });
+  }
+  return attempt(S.api);
 }
 function normalizeApi(v){ v=String(v||'').trim().replace(/\/+$/,''); return /^https?:\/\//i.test(v)?v:''; }
-try{ S.api=normalizeApi(localStorage.getItem(K_API)); }catch(e){}
+try{ S.apis=parseApis(localStorage.getItem(K_API)); }catch(e){ S.apis=[]; }
+S.api=(S.apis&&S.apis[0])||'';
 try{ var sv=JSON.parse(localStorage.getItem(K_SESS)||'null'); if(sv&&sv.token&&sv.username) S.user=sv; }catch(e){}
 function autoCloud(){
   $('st').textContent='连接云端中…';
@@ -131,11 +155,11 @@ function autoCloud(){
   fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){
     if(!r.ok) throw 0; return r.text();
   }).then(function(t){
-    var v=normalizeApi((t||'').replace(/^\s+|\s+$/g,''));
-    if(!v) return;
-    S.api=v;
-    try{ localStorage.setItem(K_API,v); }catch(e){}
-    $('st').textContent='云端 · '+v.replace(/^https?:\/\//,'');
+    var apis=parseApis(t||'');
+    if(!apis.length) return;
+    S.apis=apis; S.api=apis[0];
+    try{ localStorage.setItem(K_API,apis.join('\n')); }catch(e){}
+    $('st').textContent='云端 · '+S.api.replace(/^https?:\/\//,'');
     applyAuth();
     loadPosts();
   }).catch(function(){ $('st').textContent='云端不可达'; });
