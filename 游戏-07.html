@@ -484,11 +484,11 @@ var C=document.getElementById('typ'),X=C.getContext('2d'),SC=document.getElement
 var W=400,H=300,on=false,raf=0,last=0,hi=+(localStorage.getItem('wTyper')||0);HI.textContent=hi;
 var st='run',wds=[],inp='',lives=5,sc=0,tm=0;
 var WD=['cat','dog','sun','run','sky','fish','code','game','star','fast','moon','fire','wind','tree','rock','gold','king','wave','dark','blue'];
-function rs(){wds=[];inp='';lives=5;sc=0;tm=1;st='run';SC.textContent=0}
+function rs(){wds=[];inp='';lives=ch()?99:5;sc=0;tm=1;st='run';SC.textContent=0}
 function loop(t){if(!on){raf=0;return}raf=requestAnimationFrame(loop);var dt=Math.min(.05,(t-last)/1000);last=t;
 if(st!=='run'){draw();return}
 tm-=dt;if(tm<=0){wds.push({w:WD[Math.floor(Math.random()*WD.length)],x:20+Math.random()*(W-120),y:-24});tm=Math.max(.6,1.3-wds.length/30)}
-for(var i=wds.length-1;i>=0;i--){var w=wds[i];w.y+=52*dt;if(w.y>H-20){lives--;wds.splice(i,1);if(lives<=0){st='over'}}}
+for(var i=wds.length-1;i>=0;i--){var w=wds[i];w.y+=52*dt;if(w.y>H-20){if(ch()){sc++;SC.textContent=sc}else lives--;wds.splice(i,1);if(lives<=0){st='over'}}}
 draw()}
 function draw(){X.fillStyle='#0C0F12';X.fillRect(0,0,W,H);
 for(var i=0;i<wds.length;i++){var w=wds[i];X.fillStyle='#FFC24B';X.font='700 20px "Cascadia Mono",Consolas,monospace';X.textAlign='left';X.fillText(w.w,w.x,w.y)}

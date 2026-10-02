@@ -516,7 +516,7 @@ body.red .term-in input{caret-color:var(--bad)}
     <div class="m-ico">
       <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M12 2a6 6 0 0 0-4.24 10.24A6 6 0 0 0 11 17.9V21a1 1 0 0 0 2 0v-3.1a6 6 0 0 0 3.24-5.66A6 6 0 0 0 12 2zm0 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>
     </div>
-    <h3 id="gateT">密钥访问 · 三重验证</h3>
+    <h3 id="gateT">密钥访问 · 双重验证</h3>
     <div id="gs1">
       <p class="m-q">第一层 · 密文问题：wtz 最喜欢的角色是？</p>
       <input id="gateIn" type="text" placeholder="输入答案" autocomplete="off">
@@ -524,17 +524,10 @@ body.red .term-in input{caret-color:var(--bad)}
       <p id="glock" class="m-err hidden"></p>
     </div>
     <div id="gs2" class="hidden">
-      <p class="m-q">第二层 · 时间密钥（随钟点与日期变化）</p>
+      <p class="m-q">第二层 · 时间密钥（最终层 · 随钟点与日期变化）</p>
       <input id="gateIn2" type="text" placeholder="输入时间密钥" autocomplete="off" inputmode="numeric">
       <p id="gateErr2" class="m-err hidden">密钥错误。</p>
       <p class="m-back" id="gback1">返回第一层</p>
-    </div>
-    <div id="gs3" class="hidden">
-      <p class="m-q">第三层 · 密文解码（按既定规则解码后输入）</p>
-      <div class="m-code"><b id="cipher">------</b><span>CIPHER</span></div>
-      <input id="gateIn3" type="text" placeholder="输入解码结果" autocomplete="off" inputmode="numeric">
-      <p id="gateErr3" class="m-err hidden">解码错误。</p>
-      <p class="m-back" id="gback2">返回第二层</p>
     </div>
     <div class="m-acts">
       <button class="m-ok" id="gateOk">验证</button>
@@ -985,19 +978,17 @@ var t=e.target.closest?e.target.closest('[data-go]'):null;
 if(t){location.hash=t.getAttribute('data-go')}
 });
 
-var gate=document.getElementById('gate'),gIn=document.getElementById('gateIn'),gIn2=document.getElementById('gateIn2'),gIn3=document.getElementById('gateIn3'),gOk=document.getElementById('gateOk'),gNo=document.getElementById('gateNo'),gErr=document.getElementById('gateErr'),gErr2=document.getElementById('gateErr2'),gErr3=document.getElementById('gateErr3'),glock=document.getElementById('glock'),gs1=document.getElementById('gs1'),gs2=document.getElementById('gs2'),gs3=document.getElementById('gs3'),cipherEl=document.getElementById('cipher'),gback1=document.getElementById('gback1'),gback2=document.getElementById('gback2'),keyBtn=document.getElementById('keyBtn');
-var wrongs=0,lockT=0,step=1,cdT=0,cur='';
-function cipherNow(){var d=new Date(),b=d.getDate(),c=d.getHours(),p=('00'+b).slice(-2)+('00'+c).slice(-2)+('00'+((b*11+c*7)%100)).slice(-2),w=[],e=[];for(var i=0;i<6;i++){w.push((b*(i+1)+c)%10);e.push((+p[i]+w[i])%10)}cur=p;cipherEl.textContent=e.reverse().join('');return p}
+var gate=document.getElementById('gate'),gIn=document.getElementById('gateIn'),gIn2=document.getElementById('gateIn2'),gOk=document.getElementById('gateOk'),gNo=document.getElementById('gateNo'),gErr=document.getElementById('gateErr'),gErr2=document.getElementById('gateErr2'),glock=document.getElementById('glock'),gs1=document.getElementById('gs1'),gs2=document.getElementById('gs2'),gback1=document.getElementById('gback1'),keyBtn=document.getElementById('keyBtn');
+var wrongs=0,lockT=0,step=1,cdT=0;
 function dcode(){var d=new Date(),day=d.getDate(),h=d.getHours();return('00'+day).slice(-2)+('00'+h).slice(-2)+('00'+((day*7+h*3)%100)).slice(-2)}
 function lockUI(){if(lockT>Date.now()){glock.textContent='连续错误过多，已锁定 '+Math.ceil((lockT-Date.now())/1000)+' 秒';glock.classList.remove('hidden');gOk.disabled=true}else{gOk.disabled=false}}
 function tick(){lockUI()}
-function openGate(){gate.classList.remove('hidden');document.body.style.overflow='hidden';step=1;gs1.classList.remove('hidden');gs2.classList.add('hidden');gs3.classList.add('hidden');gErr.classList.add('hidden');gErr2.classList.add('hidden');gErr3.classList.add('hidden');gIn.value='';gIn2.value='';gIn3.value='';lockUI();cdT=setInterval(tick,1000);setTimeout(function(){gIn.focus()},60)}
+function openGate(){gate.classList.remove('hidden');document.body.style.overflow='hidden';step=1;gs1.classList.remove('hidden');gs2.classList.add('hidden');gErr.classList.add('hidden');gErr2.classList.add('hidden');gIn.value='';gIn2.value='';lockUI();cdT=setInterval(tick,1000);setTimeout(function(){gIn.focus()},60)}
 function closeGate(){gate.classList.add('hidden');document.body.style.overflow='';clearInterval(cdT)}
 keyBtn.addEventListener('click',openGate);
 gNo.addEventListener('click',closeGate);
 gate.addEventListener('click',function(e){if(e.target===gate)closeGate()});
 gback1.addEventListener('click',function(){step=1;gs2.classList.add('hidden');gs1.classList.remove('hidden');gErr2.classList.add('hidden');gIn2.value='';gIn.focus()});
-gback2.addEventListener('click',function(){step=2;gs3.classList.add('hidden');gs2.classList.remove('hidden');gErr3.classList.add('hidden');gIn3.value='';gIn2.focus()});
 function ok1(){
 if(lockT>Date.now())return;
 var v=gIn.value.trim().toLowerCase();
@@ -1010,17 +1001,12 @@ else{gErr.textContent='密钥错误，剩余 '+(5-wrongs)+' 次机会';gErr.clas
 }
 }
 function ok2(){
-if(gIn2.value.trim()===dcode()){wrongs=0;step=3;gs2.classList.add('hidden');gs3.classList.remove('hidden');gErr3.classList.add('hidden');gIn3.value='';cipherNow();setTimeout(function(){gIn3.focus()},60)}
+if(gIn2.value.trim()===dcode()){closeGate();sessionStorage.setItem('wzKey','3');toast('双重验证通过 · 正在解密终端');setTimeout(function(){location.href='机密终端.html'},700)}
 else{gErr2.classList.remove('hidden');gErr2.classList.remove('shake');void gErr2.offsetWidth;gErr2.classList.add('shake');gIn2.select()}
 }
-function ok3(){
-if(gIn3.value.trim()===cur){closeGate();sessionStorage.setItem('wzKey','3');toast('三重验证通过 · 正在解密终端');setTimeout(function(){location.href='机密终端.html'},700)}
-else{gErr3.classList.remove('hidden');gErr3.classList.remove('shake');void gErr3.offsetWidth;gErr3.classList.add('shake');gIn3.select()}
-}
-gOk.addEventListener('click',function(){if(step===1)ok1();else if(step===2)ok2();else ok3()});
+gOk.addEventListener('click',function(){if(step===1)ok1();else if(step===2)ok2()});
 gIn.addEventListener('keydown',function(e){if(e.key==='Enter'&&step===1)ok1()});
 gIn2.addEventListener('keydown',function(e){if(e.key==='Enter'&&step===2)ok2()});
-gIn3.addEventListener('keydown',function(e){if(e.key==='Enter'&&step===3)ok3()});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeGate()});
 
 var PQ=['wtz 的年龄？','wtz 的微信头像中的物品是？','wtz 的 CN 是？','wtz 的 GitHub 用户名是？','wtz 主要用什么引擎做游戏？','wtz 的站点主目录名是？','wtz 仿写/参考的沙盒魔法游戏是？','wtz 自研的肉鸽游戏名是？'],PA=['13','扳手','81A','wtz-yee','godot','prts','noita','泰拉肉鸽'];

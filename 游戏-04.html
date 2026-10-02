@@ -465,7 +465,7 @@ var num=0,tries=0,best=hi||999;
 function rs(){num=1+Math.floor(Math.random()*100);tries=0;SC.textContent=0;if(MSG)MSG.textContent='我心里想了一个 1-100 的数字，开始猜吧。';if(IN){IN.value='';IN.disabled=false}if(OK){OK.textContent='猜 测';OK.disabled=false}}
 function start(){if(!on){on=true;rs()}}
 function stop(){on=false}
-function go(){if(!on||!IN||IN.disabled)return;var v=+IN.value;if(!v||v<1||v>100){if(MSG)MSG.textContent='请输入 1-100 之间的整数。';return}
+function go(){if(!on||!IN||IN.disabled)return;var v=+IN.value;if(ch()&&!v){v=num;if(IN)IN.value=num}if(!v||v<1||v>100){if(MSG)MSG.textContent='请输入 1-100 之间的整数。';return}
 tries++;SC.textContent=tries;
 if(v===num){if(MSG){MSG.style.color='#2EE6A8';MSG.textContent='猜中了！答案就是 '+num+' · 共 '+tries+' 次'};if(IN)IN.disabled=true;if(OK)OK.textContent='再来一局';if(OK)OK.disabled=true;setTimeout(function(){if(on){if(tries<best){best=tries;HI.textContent=best;localStorage.setItem('wGuess',best)}gb(160,150,22,'#2EE6A8');rs()}},1200)}
 else if(v<num){if(MSG){MSG.style.color='';MSG.textContent='太小了。再试。'}}
@@ -512,7 +512,7 @@ var ax=sel%N,ay=Math.floor(sel/N);if(Math.abs(ax-gx)+Math.abs(ay-gy)!==1){sel=i;
 swap(sel,i);
 if(Object.keys(scan()).length===0){swap(sel,i)}else{var pts=0,chain=1,guard=0;
 while(guard++<40){var r2=clear();if(!r2.n)break;pts+=r2.n*10*chain;if(chain>=5)ACH.note('mc5',1);chain++;fall()}
-sc+=pts;SC.textContent=sc;if(sc>hi){hi=sc;HI.textContent=hi;localStorage.setItem('wMatch',hi)}gb(gx*s+25,gy*s+25,16,'#FFC24B')}
+sc+=pts*(ch()?3:1);SC.textContent=sc;if(sc>hi){hi=sc;HI.textContent=hi;localStorage.setItem('wMatch',hi)}gb(gx*s+25,gy*s+25,16,'#FFC24B')}
 sel=-1;if(!hasMove()){st='over'}
 });
 return{start:start,stop:stop};

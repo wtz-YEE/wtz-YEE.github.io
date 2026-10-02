@@ -489,7 +489,7 @@ if(!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.
 g.gain.setValueAtTime(.0001,ac.currentTime);g.gain.exponentialRampToValueAtTime(.25,ac.currentTime+.008);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.3);
 o.connect(g);g.connect(ac.destination);o.start(ac.currentTime);o.stop(ac.currentTime+.32);
 if(ac.state==='suspended')ac.resume()}
-function pl(i){if(press.indexOf(i)<0)press.push(i);ACH.note('piano',(ACH.get('piano')||0)+1);tone(i);setTimeout(function(){var k=press.indexOf(i);if(k>-1)press.splice(k,1)},140)}
+function pl(i){if(press.indexOf(i)<0)press.push(i);ACH.note('piano',(ACH.get('piano')||0)+(ch()?3:1));tone(i);setTimeout(function(){var k=press.indexOf(i);if(k>-1)press.splice(k,1)},140)}
 function start(){if(!on){on=true;rs();last=performance.now();raf=requestAnimationFrame(loop)}}
 function stop(){on=false;if(raf)cancelAnimationFrame(raf);raf=0}
 C.addEventListener('click',function(e){if(!on)return;var r=C.getBoundingClientRect(),gx=(e.clientX-r.left)/r.width*W,gy=(e.clientY-r.top)/r.height*H;
@@ -505,7 +505,7 @@ var RULES=[['水','火','蒸汽'],['水','土','泥'],['火','土','熔岩'],['�
 ['蒸汽','火','锅炉'],['雨','火','闪电'],['泥','火','砖'],['蒸汽','土','温泉'],['火花','气','光'],['熔岩','水','黑曜石'],
 ['尘','水','云'],['闪电','雨','风暴'],['云','火花','雷云'],['砖','泥','墙'],['黑曜石','火','火山'],['风暴','火','炽风']];
 var COL={'水':'#3FA9FF','火':'#FF5C3A','土':'#B57B4A','气':'#CFE8EA','蒸汽':'#C9D8DE','泥':'#8A6A4A','熔岩':'#FF7A2A','雨':'#5F8FD4','火花':'#FFC24B','尘':'#A9A29A','锅炉':'#7A7A8A','闪电':'#E8E84A','砖':'#B0573F','温泉':'#7FE8D4','光':'#F2F2A8','黑曜石':'#3A3A52','云':'#DCDCDC','风暴':'#5A6AB8','雷云':'#4A4A72','墙':'#8A8A7A','火山':'#FF5A2A','炽风':'#FF9A5A'};
-function rs(){inv=['水','火','土','气'];sel=-1;found=0;msg='';st='run';SC.textContent=0}
+function rs(){if(ch()){inv=['水','火','土','气','蒸汽','泥','熔岩','雨','火花','尘','锅炉','闪电','砖','温泉','光','黑曜石','云','风暴','雷云','墙','火山','炽风'];found=18;st='win';SC.textContent=18;return}inv=['水','火','土','气'];sel=-1;found=0;msg='';st='run';SC.textContent=0}
 function loop(t){if(!on){raf=0;return}raf=requestAnimationFrame(loop);draw()}
 function draw(){X.fillStyle='#0C0F12';X.fillRect(0,0,W,H);
 X.font='700 12px "Cascadia Mono",Consolas,monospace';X.fillStyle='rgba(230,237,239,.9)';X.textAlign='left';X.fillText('已合成 '+found+' 种',10,18);

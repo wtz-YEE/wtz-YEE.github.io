@@ -614,7 +614,7 @@ if(bit>=0&&!ch()){st='over';best()}
 else{
 s.unshift([nx,ny]);
 if(bit>=0){gb(nx*20+10,ny*20+10,20);s.splice(bit+1)}
-if(fd&&nx===fd[0]&&ny===fd[1]){sc+=10;SC.textContent=sc;gb(nx*20+10,ny*20+10,10,'#2EE6A8');spawn()}else if(bit<0)s.pop()}}
+if(fd&&nx===fd[0]&&ny===fd[1]){sc+=ch()?20:10;SC.textContent=sc;gb(nx*20+10,ny*20+10,10,'#2EE6A8');spawn()}else if(bit<0)s.pop()}}
 draw();}
 function draw(){X.fillStyle='#07090A';X.fillRect(0,0,C.width,C.height);X.fillStyle='rgba(63,224,200,.1)';for(var x=0;x<GW;x++)for(var y=0;y<GH;y++)X.fillRect(x*20+1,y*20+1,18,18);
 X.fillStyle='#3FE0C8';for(var i=0;i<s.length;i++)X.fillRect(s[i][0]*20+1,s[i][1]*20+1,18,18);

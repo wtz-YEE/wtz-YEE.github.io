@@ -417,6 +417,7 @@ function draw(){X.fillStyle='#0C0F12';X.fillRect(0,0,W,H);var s=W/(N+1);
 X.strokeStyle='rgba(63,224,200,.35)';X.lineWidth=1;for(var i=0;i<N;i++){X.beginPath();X.moveTo(s*(i+1),s);X.lineTo(s*(i+1),H-s);X.stroke();X.beginPath();X.moveTo(s,s*(i+1));X.lineTo(H-s,s*(i+1));X.stroke()}
 X.font='700 12px "Cascadia Mono",Consolas,monospace';X.textAlign='left';X.fillStyle='rgba(230,237,239,.9)';X.fillText(turn?'黑方执子 ●':'白方执子 ○',10,20);
 for(var i=0;i<N;i++)for(var j=0;j<N;j++){var v=bd[i][j];if(!v)continue;X.fillStyle=v===1?'#E6EDEF':'#3FE0C8';X.beginPath();X.arc(s*(i+1),s*(j+1),s*.36,0,6.283);X.fill()}
+if(ch()&&st==='run'){X.fillStyle='rgba(255,194,75,.5)';for(var px2=0;px2<N;px2++)for(var py2=0;py2<N;py2++)if(!bd[px2][py2]){bd[px2][py2]=turn+1;if(win(px2,py2,turn+1)){X.beginPath();X.arc(s*(px2+1),s*(py2+1),s*.2,0,6.283);X.fill()}bd[px2][py2]=0}}
 if(st!=='run'){X.textAlign='center';X.fillStyle='#FFC24B';X.font='700 22px "Cascadia Mono",Consolas,monospace';X.fillText(st==='win1'?'白方胜！':'黑方胜！',W/2,H/2-10);X.font='12px "Cascadia Mono",Consolas,monospace';X.fillStyle='rgba(230,237,239,.85)';X.fillText('点击棋盘 再来一局',W/2,H/2+20)}gs(X)}
 function start(){if(!on){on=true;rs();last=performance.now();raf=requestAnimationFrame(loop)}}
 function stop(){on=false;if(raf)cancelAnimationFrame(raf);raf=0}
@@ -501,7 +502,7 @@ var C=document.getElementById('sld'),X=C.getContext('2d'),SC=document.getElement
 var W=300,H=300,on=false,raf=0,hi=+(localStorage.getItem('wSlide')||0);HI.textContent=hi;
 var st='run',bd=[],moves=0,best=hi||999;
 function rs(){bd=[];for(var i=1;i<=8;i++)bd.push(i);bd.push(0);
-for(var k=0;k<160;k++){var z=bd.indexOf(0),zx=z%3,zy=Math.floor(z/3),c=[];if(zx>0)c.push(z-1);if(zx<2)c.push(z+1);if(zy>0)c.push(z-3);if(zy<2)c.push(z+3);var t=c[Math.floor(Math.random()*c.length)],v=bd[t];bd[t]=0;bd[z]=v}
+for(var k=0;k<(ch()?5:160);k++){var z=bd.indexOf(0),zx=z%3,zy=Math.floor(z/3),c=[];if(zx>0)c.push(z-1);if(zx<2)c.push(z+1);if(zy>0)c.push(z-3);if(zy<2)c.push(z+3);var t=c[Math.floor(Math.random()*c.length)],v=bd[t];bd[t]=0;bd[z]=v}
 moves=0;st='run';SC.textContent=0}
 function loop(t){if(!on){raf=0;return}raf=requestAnimationFrame(loop);draw()}
 function draw(){X.fillStyle='#0C0F12';X.fillRect(0,0,W,H);var s=W/3;
