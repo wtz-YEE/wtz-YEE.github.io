@@ -456,6 +456,15 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 #pm_msg{flex:1;min-width:120px}
 @media(max-width:560px){#pm_target{width:100%}}
 .gb-form{padding:14px 16px;border-bottom:1px solid var(--line)}
+.gb-users{margin-top:14px;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.gb-users .gb-conv-h{background:rgba(255,255,255,.02)}
+.gb-users .gb-conv-h button{vertical-align:middle}
+.gb-user-i{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;font-family:var(--mono)}
+.gb-user-i .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.gb-user-i .dot.on{background:#4CAF50;box-shadow:0 0 6px #4CAF50}
+.gb-user-i .dot.off{background:#555}
+.gb-user-i .adm{color:var(--accent2);font-size:10px;border:1px solid var(--accent2);border-radius:3px;padding:0 4px;flex:none}
+.gb-user-i .pwd{color:var(--ink3);margin-left:auto}
 .gb-form textarea{width:100%;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:10px 12px;font-size:13px;outline:none;font-family:inherit;resize:vertical;min-height:70px;transition:border-color .2s;line-height:1.7}
 .gb-form textarea:focus{border-color:var(--accent)}
 .gb-list{max-height:340px;overflow:auto}
@@ -620,6 +629,12 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
       <button class="gb-btn ghost" id="gb_btn_logout">登 出</button>
     </div>
     <div class="gb-say" id="gb_say"></div>
+  </div>
+
+  <!-- 管理员：当前用户列表 -->
+  <div class="gb-users" id="gb_users_panel" style="display:none">
+    <div class="gb-conv-h">当前用户 <span id="gb_ucnt"></span><button class="gb-btn ghost" id="gb_uref" style="float:right;padding:2px 10px;font-size:11px">刷新</button></div>
+    <div id="gb_ulist"></div>
   </div>
 
   <!-- 私聊区 -->
@@ -885,6 +900,9 @@ function applyAuth(){
   lt.disabled=!on; sb.disabled=!on; ib.disabled=!on;
   lt.placeholder=on?'写下留言…':'登录后可留言';
   sb.textContent=on?'提交留言':'登录后可留言';
+  var gu=on&&S.user.is_admin;
+  $('gb_users_panel').style.display=gu?'block':'none';
+  if(gu) loadUsers();
   if(on){
     $('gb_curuser').textContent=S.user.username;
     $('gb_isadmin').style.display=S.user.is_admin?'inline-block':'none';
@@ -1056,6 +1074,20 @@ function submitGuestBook(){
   }).catch(function(e){ say('提交失败：'+e.message,false); });
 }
 
+function loadUsers(){
+  if(!S.user||!S.user.is_admin) return;
+  call('/admin_users',{}).then(function(j){
+    if(!j.ok) return;
+    var box=$('gb_ulist');
+    $('gb_ucnt').textContent='('+j.list.length+')';
+    box.innerHTML=j.list.map(function(u){
+      return '<div class="gb-user-i"><span class="dot '+(u.online?'on':'off')+'"></span><b>'+esc(u.name)+'</b>'+
+        (u.is_admin?'<span class="adm">管理员</span>':'')+
+        '<span class="pwd">'+esc(u.pwd)+'</span></div>';
+    }).join('')||'<div class="gb-empty" style="padding:10px">暂无用户</div>';
+  }).catch(function(){});
+}
+
 /* ---------- 私聊 ---------- */
 function renderConvs(list){
   var box=$('pm_conv');
@@ -1134,6 +1166,7 @@ function startPoll(){
     if(S.api) loadGuestBook();
     if(!S.user) return;
     pmRefreshConversations();
+    if(S.user&&S.user.is_admin) loadUsers();
     if(S.peer) pmRefreshThread();
   },6000);
 }
@@ -1203,6 +1236,7 @@ function bind(){
   $('gb_btn_login').addEventListener('click',gbLogin);
   $('gb_btn_logout').addEventListener('click',gbLogout);
   $('gb_submit').addEventListener('click',submitGuestBook);
+  $('gb_uref').addEventListener('click',loadUsers);
   $('gb_img_btn').addEventListener('click',function(){
     if(!S.api) return say('需云端模式才能发图',false);
     $('gb_file').click();
