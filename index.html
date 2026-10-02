@@ -457,6 +457,14 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 @media(max-width:560px){#pm_target{width:100%}}
 .gb-form{padding:14px 16px;border-bottom:1px solid var(--line)}
 .gb-users{margin-top:14px;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.gb-notes{margin-top:14px;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.gb-notes .gb-conv-h{background:rgba(255,255,255,.02)}
+.gb-notes .gb-conv-h button{vertical-align:middle}
+.gb-note{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;font-family:var(--mono)}
+.gb-note .gb-note-m{color:var(--ink3);font-size:10px;margin-left:auto;flex:none}
+.gb-note .gb-del{flex:none}
+.gb-n-form{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05)}
+.gb-n-form input{flex:1}
 .gb-users .gb-conv-h{background:rgba(255,255,255,.02)}
 .gb-users .gb-conv-h button{vertical-align:middle}
 .gb-user-i{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;font-family:var(--mono)}
@@ -608,6 +616,30 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
           </span>
         </div>
       </a>
+      <a class="card" href="守夜人论坛.html">
+        <div class="spot" aria-hidden="true"></div>
+        <div class="thumb">
+          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <rect width="400" height="200" fill="#0A0A0A"/>
+            <rect x="70" y="52" width="260" height="96" rx="6" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+            <rect x="70" y="52" width="260" height="24" fill="rgba(255,255,255,.08)"/>
+            <circle cx="86" cy="64" r="4" fill="#D8D8D8"/><circle cx="102" cy="64" r="4" fill="#707070"/><circle cx="118" cy="64" r="4" fill="#3d3d3d"/>
+            <rect x="86" y="88" width="120" height="8" fill="#707070"/>
+            <rect x="86" y="104" width="160" height="8" fill="#4d4d4d"/>
+            <rect x="86" y="120" width="100" height="8" fill="#3d3d3d"/>
+            <rect x="300" y="94" width="20" height="14" rx="3" fill="#FF5C7A"/>
+            <text x="200" y="176" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">NIGHT WATCH FORUM</text>
+          </svg>
+        </div>
+        <div class="card-bd">
+          <div class="c-tag">FORUM · 社区广场</div>
+          <h3>守夜人论坛</h3>
+          <p>发帖 · 附图 · 标签 · 评论，深夜守夜人交流站。</p>
+          <span class="c-go">进入论坛
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
     </div>
 
 <!-- ============ GUESTBOOK / 私聊 ============ -->
@@ -617,6 +649,17 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
     <span>访客留言板 · 私聊频道</span>
     <span class="gb-mode" id="gb_status" title="点击配置云端接口">本地模式</span>
     <span class="gb-mode" id="gb_online" style="display:none"></span>
+  </div>
+
+  <!-- 公告区 -->
+  <div class="gb-notes" id="gb_notes" style="display:none">
+    <div class="gb-conv-h">公告<span id="gb_n_btns"></span></div>
+    <div id="gb_n_list"></div>
+    <div class="gb-n-form" id="gb_n_form" style="display:none">
+      <input id="gb_n_text" placeholder="发布公告…" maxlength="120">
+      <button class="gb-btn" id="gb_n_send">发布</button>
+      <button class="gb-btn ghost" id="gb_n_cancel">取消</button>
+    </div>
   </div>
 
   <!-- 账号区 -->
@@ -630,6 +673,8 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
     <div class="gb-row" id="gb_userinfo" style="display:none">
       <span class="gb-who">已登录 · <b id="gb_curuser"></b></span>
       <span class="gb-tag" id="gb_isadmin" style="display:none">管理员</span>
+      <button class="gb-btn ghost" id="gb_btn_ck">签到</button>
+      <span class="gb-tag" id="gb_ckinfo" style="display:none"></span>
       <button class="gb-btn ghost" id="gb_btn_pwd">改密</button>
       <button class="gb-btn ghost" id="gb_btn_logout">登 出</button>
     </div>
@@ -921,6 +966,7 @@ function applyAuth(){
   var gu=on&&S.user.is_admin;
   $('gb_users_panel').style.display=gu?'block':'none';
   if(gu) loadUsers();
+  checkinStatus();
   if(on){
     $('gb_curuser').textContent=S.user.username;
     $('gb_isadmin').style.display=S.user.is_admin?'inline-block':'none';
@@ -1099,6 +1145,68 @@ function submitGuestBook(){
   }).catch(function(e){ say('提交失败：'+e.message,false); });
 }
 
+function loadNotes(){
+  if(!S.api) return;
+  call('/notice_get',{}).then(function(j){
+    if(!j.ok) return;
+    var box=$('gb_notes'),lst=$('gb_n_list');
+    box.style.display='block';
+    var adm=S.user&&S.user.is_admin;
+    $('gb_n_btns').innerHTML=adm?'<button class="gb-btn ghost" id="gb_n_new" style="float:right;padding:2px 10px;font-size:11px">发布</button>':'';
+    var nb=$('gb_n_new');
+    if(nb) nb.addEventListener('click',function(){ $('gb_n_form').style.display='flex'; });
+    lst.innerHTML=j.list.slice(0,5).map(function(n){
+      return '<div class="gb-note">'+esc(n.text)+'<span class="gb-note-m">'+esc(n.time)+' · '+esc(n.author)+'</span>'+
+        (adm?'<button class="gb-del" data-nd="'+esc(n.id)+'">×</button>':'')+'</div>';
+    }).join('')||'<div class="gb-note" style="color:var(--ink3)">暂无公告</div>';
+  }).catch(function(){});
+}
+function noticeSend(){
+  var t=$('gb_n_text').value.trim();
+  if(!t) return say('请填写公告内容',false);
+  call('/notice_add',{text:t}).then(function(j){
+    say(j.msg||(j.ok?'公告已发布':'发布失败'),!!j.ok);
+    if(j.ok){ $('gb_n_text').value=''; $('gb_n_form').style.display='none'; loadNotes(); }
+  }).catch(function(e){ say('请求失败：'+e.message,false); });
+}
+function hitCloud(){
+  if(!S.api) return;
+  try{ if(sessionStorage.getItem('gb_hit')) return; }catch(e){}
+  var nm='访客';
+  try{ nm=localStorage.getItem('prts_vn')||'访客'; }catch(e){}
+  if(S.user) nm=S.user.username;
+  call('/hit',{name:nm}).then(function(j){
+    if(!j.ok) return;
+    try{ sessionStorage.setItem('gb_hit','1'); }catch(e){}
+    loadStats();
+  }).catch(function(){});
+}
+function loadStats(){
+  if(!S.api) return;
+  call('/stats_get',{}).then(function(j){
+    if(!j.ok) return;
+    var el=document.getElementsByClassName('site-stat');
+    for(var i=0;i<el.length;i++) el[i].innerHTML='SITE // 云端 '+ (j.visits||0) +' VIEWS · '+(j.visitors||0)+' VISITORS · 今日 '+(j.today||0);
+  }).catch(function(){});
+}
+function doCheckin(){
+  if(!S.user) return say('请先登录',false);
+  call('/checkin',{}).then(function(j){
+    if(!j.ok) return say(j.msg||'签到失败',false);
+    say(j.done?('今日已签到 · 连签 '+j.streak+' 天 · 共 '+j.total+' 天'):('签到成功 · 连签 '+j.streak+' 天 · 共 '+j.total+' 天'),true);
+    checkinStatus();
+  }).catch(function(e){ say('请求失败：'+e.message,false); });
+}
+function checkinStatus(){
+  var el=$('gb_ckinfo');
+  if(!el) return;
+  if(!S.user){ el.style.display='none'; return; }
+  call('/checkin_status',{}).then(function(j){
+    if(!j.ok) return;
+    el.textContent='签到：'+(j.done?'今日已签':'未签')+' · 连签 '+j.streak+' 天 · 共 '+j.total+' 天';
+    el.style.display='';
+  }).catch(function(){});
+}
 function loadUsers(){
   if(!S.user||!S.user.is_admin) return;
   call('/admin_users',{}).then(function(j){
@@ -1260,6 +1368,8 @@ function autoCloud(){
     updateModeLabel();
     say('已自动接入云端 · '+v,true);
     loadGuestBook();
+    loadNotes();
+    hitCloud();
     if(S.user) pmRefreshConversations();
   }).catch(function(){});
 }
@@ -1271,6 +1381,16 @@ function bind(){
   $('gb_btn_logout').addEventListener('click',gbLogout);
   $('gb_submit').addEventListener('click',submitGuestBook);
   $('gb_uref').addEventListener('click',loadUsers);
+  $('gb_btn_ck').addEventListener('click',doCheckin);
+  $('gb_n_send').addEventListener('click',noticeSend);
+  $('gb_n_cancel').addEventListener('click',function(){ $('gb_n_form').style.display='none'; });
+  $('gb_n_list').addEventListener('click',function(e){
+    var b=e.target.closest('[data-nd]'); if(!b) return;
+    call('/notice_del',{id:b.getAttribute('data-nd')}).then(function(j){
+      if(!j.ok) return say(j.msg||'删除失败',false);
+      loadNotes();
+    }).catch(function(e){ say('请求失败：'+e.message,false); });
+  });
   $('gb_btn_pwd').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='flex'; });
   $('gb_pwd_cancel').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='none'; });
   $('gb_pwd_save').addEventListener('click',function(){

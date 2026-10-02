@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>守夜人论坛 · PRTS</title>
+<style>
+:root{--bg:#0a0a0a;--panel:#121212;--panel2:#171717;--line:#262626;--line2:#333;--ink:#e8e8e8;--ink3:#8f8f8f;--acc:#ff5c7a;--mono:'Cascadia Mono',Consolas,'Courier New',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:14px;line-height:1.6}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:18px 4px 14px;border-bottom:1px solid var(--line)}
+header h1{font-size:20px;letter-spacing:.18em}
+header h1 b{color:var(--acc);font-weight:700}
+.mode{margin-left:auto;font-size:10.5px;letter-spacing:.16em;color:var(--ink3);cursor:pointer;border:1px solid var(--line2);padding:2px 10px}
+#us{font-size:11px;color:var(--ink3);letter-spacing:.1em}
+.auth{display:flex;gap:8px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.auth input{background:rgba(127,127,127,.08);border:1px solid rgba(127,127,127,.35);color:inherit;padding:5px 10px;font-family:inherit;font-size:12px;outline:none}
+.auth input:focus{border-color:var(--acc)}
+.auth .who{font-size:12px;letter-spacing:.1em}
+.btn{border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:5px 14px;font-family:inherit;font-size:12px;letter-spacing:.08em;cursor:pointer;transition:border-color .15s}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn.ghost{background:none}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.say{font-size:11px;letter-spacing:.08em;color:var(--acc)}
+.poster{margin-top:16px;border:1px solid var(--line2);border-radius:10px;overflow:hidden;background:var(--panel)}
+.poster .ph{padding:9px 14px;font-size:10.5px;letter-spacing:.2em;color:var(--ink3);border-bottom:1px solid var(--line);background:var(--panel2)}
+.poster textarea{width:100%;background:transparent;border:none;outline:none;color:inherit;font-family:inherit;font-size:14px;padding:12px 14px;resize:vertical;min-height:72px}
+.tags{display:flex;gap:8px;padding:0 14px 12px;flex-wrap:wrap}
+.tag{border:1px solid var(--line2);color:var(--ink3);padding:3px 12px;font-size:11px;letter-spacing:.1em;cursor:pointer;user-select:none}
+.tag.on{color:#fff;border-color:#fff}
+.tag[data-t="求助"].on{background:#b3583a;border-color:#b3583a}
+.tag[data-t="询问"].on{background:#3a5f8f;border-color:#3a5f8f}
+.tag[data-t="分享"].on{background:#3f7a4a;border-color:#3f7a4a}
+.prow{display:flex;align-items:center;gap:8px;padding:0 14px 14px;flex-wrap:wrap}
+.prow .imgbtn{border:1px dashed var(--line2);background:none;color:var(--ink3);padding:5px 12px;font-size:11px;cursor:pointer;letter-spacing:.08em}
+.prow .imgbtn:hover{border-color:var(--acc);color:var(--acc)}
+.prow .att{display:none;align-items:center;gap:8px;font-size:11px;color:var(--ink3)}
+.prow .att img{height:44px;border-radius:6px;border:1px solid var(--line2)}
+.prow .att button{border:none;background:none;color:var(--acc);font-size:11px;cursor:pointer;font-family:inherit}
+.prow .go{margin-left:auto}
+.plist{margin-top:16px;display:flex;flex-direction:column;gap:12px}
+.post{background:var(--panel);border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.post .ph{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink3);letter-spacing:.06em}
+.post .ph .nm{color:var(--ink);font-size:12px}
+.post .ph .tagsm{display:flex;gap:6px}
+.post .ph .tk{font-size:9px;padding:1px 7px;border:1px solid var(--line2);color:var(--ink3);letter-spacing:.12em}
+.post .ph .tk.t-求助{color:#e08a6a;border-color:#e08a6a}
+.post .ph .tk.t-询问{color:#7fa8d8;border-color:#7fa8d8}
+.post .ph .tk.t-分享{color:#7fc08a;border-color:#7fc08a}
+.post .ph .del{margin-left:auto;border:none;background:none;color:var(--acc);cursor:pointer;font-size:11px;font-family:inherit}
+.post .bd{padding:12px 14px;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.post .bd img{display:block;max-width:100%;border-radius:8px;margin-top:10px;cursor:zoom-in;border:1px solid var(--line)}
+.post .cm{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--ink3);cursor:pointer;letter-spacing:.1em}
+.post .cm:hover{color:var(--acc)}
+.cwrap{display:none;border-top:1px solid var(--line)}
+.cwrap.open{display:block}
+.clist{padding:8px 14px;background:rgba(255,255,255,.015)}
+.citem{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px}
+.citem .cmt{color:var(--ink3);font-size:10px;margin-bottom:2px}
+.cinput{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
+.cinput input{flex:1;background:rgba(127,127,127,.08);border:1px solid rgba(127,127,127,.35);color:inherit;padding:5px 10px;font-family:inherit;font-size:12px;outline:none}
+.empty{text-align:center;color:var(--ink3);font-size:12px;letter-spacing:.16em;padding:30px 0}
+.err{text-align:center;color:var(--acc);font-size:12px;padding:20px 0}
+.zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:99}
+.zoom img{max-width:92vw;max-height:92vh;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><b>守夜人</b>论坛</h1>
+    <span class="mode" id="st" title="点击重新连接云端">本地模式</span>
+    <span id="us"></span>
+  </header>
+
+  <div class="auth" id="authArea">
+    <span class="who" id="whoLine">未登录 · 发帖与评论需登录</span>
+    <input id="lu" placeholder="账号" maxlength="16" style="display:none">
+    <input id="lp" type="password" placeholder="密码" maxlength="32" style="display:none">
+    <button class="btn ghost" id="lg" style="display:none">登录</button>
+    <button class="btn" id="lo" style="display:none">登出</button>
+    <span class="say" id="say"></span>
+  </div>
+
+  <div class="poster">
+    <div class="ph">发帖</div>
+    <textarea id="pt" placeholder="写下你的话题…（可选图片）" maxlength="500"></textarea>
+    <div class="tags" id="tags">
+      <span class="tag" data-t="求助">求助</span>
+      <span class="tag" data-t="询问">询问</span>
+      <span class="tag" data-t="分享">分享</span>
+    </div>
+    <div class="prow">
+      <button class="imgbtn" id="pb">＋ 附图片</button>
+      <span class="att" id="att"><img id="attImg"><span>已附带 1 张图</span><button id="attRm">移除</button></span>
+      <button class="btn go" id="send">发布</button>
+      <input type="file" id="pf" accept="image/*" style="display:none">
+    </div>
+  </div>
+
+  <div class="plist" id="list"></div>
+  <div class="empty" id="empty" style="display:none">还没有帖子 · 来发第一帖吧</div>
+  <div class="err" id="err" style="display:none"></div>
+</div>
+<div class="zoom" id="zoom"><img id="zoomImg"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(i){return document.getElementById(i)};
+var S={api:'',user:null,img:'',tags:[]};
+var K_API='gb_api_url',K_SESS='gb_session';
+function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
+function say(m,ok){$('say').textContent=m||'';$('say').style.color=ok?'#5ce08a':'';if(m)setTimeout(function(){var e=$('say');if(e.textContent===m)e.textContent=''},3000)}
+function call(path,payload,method){
+  var body=Object.assign({token:S.user?S.user.token:''},payload||{});
+  if(!S.api) return Promise.reject(new Error('未连接云端'));
+  var url=S.api+path,opt={method:method||'POST',headers:{'Content-Type':'application/json'}};
+  if(opt.method!=='GET') opt.body=JSON.stringify(body);
+  return fetch(url,opt).then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
+    .catch(function(e){ var e2=new Error((e&&e.message?e.message:'网络请求失败')+' — '+url); e2.url=url; throw e2; });
+}
+function normalizeApi(v){ v=String(v||'').trim().replace(/\/+$/,''); return /^https?:\/\//i.test(v)?v:''; }
+try{ S.api=normalizeApi(localStorage.getItem(K_API)); }catch(e){}
+try{ var sv=JSON.parse(localStorage.getItem(K_SESS)||'null'); if(sv&&sv.token&&sv.username) S.user=sv; }catch(e){}
+function autoCloud(){
+  fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){
+    if(!r.ok) throw 0; return r.text();
+  }).then(function(t){
+    var v=normalizeApi((t||'').replace(/^\s+|\s+$/g,''));
+    if(!v) return;
+    S.api=v;
+    try{ localStorage.setItem(K_API,v); }catch(e){}
+    $('st').textContent='云端 · '+v.replace(/^https?:\/\//,'');
+    applyAuth();
+    loadPosts();
+  }).catch(function(){ $('st').textContent='云端不可达'; });
+}
+function applyAuth(){
+  var on=!!S.user;
+  $('whoLine').textContent=on?('已登录 · '+S.user.username+(S.user.is_admin?' · 管理员':'')):'未登录 · 发帖与评论需登录';
+  $('lu').style.display=on?'none':'';
+  $('lp').style.display=on?'none':'';
+  $('lg').style.display=on?'none':'';
+  $('lo').style.display=on?'':'none';
+  $('send').disabled=!on;
+}
+function doLogin(){
+  var u=$('lu').value.trim(),p=$('lp').value;
+  if(!u||!p) return say('请填写账号与密码',false);
+  call('/login',{username:u,password:p}).then(function(j){
+    if(!j.ok) return say(j.msg||'登录失败',false);
+    S.user={username:j.username,is_admin:!!j.is_admin,token:j.token};
+    try{ localStorage.setItem(K_SESS,JSON.stringify(S.user)); }catch(e){}
+    $('lu').value='';$('lp').value='';
+    applyAuth();
+    say('欢迎回来，'+j.username,true);
+  }).catch(function(e){ say('请求失败：'+e.message,false); });
+}
+function doLogout(){
+  var u=S.user; S.user=null;
+  try{ localStorage.removeItem(K_SESS); }catch(e){}
+  applyAuth();
+  if(u&&u.token) call('/logout',{}).then(function(){},function(){});
+  say('已登出',true);
+}
+/* 标签 */
+function tagHTML(){ return '<span class="tag" data-t="求助">求助</span><span class="tag" data-t="询问">询问</span><span class="tag" data-t="分享">分享</span>'; }
+function bindTags(){
+  $('tags').addEventListener('click',function(e){
+    var t=e.target.closest('.tag'); if(!t) return;
+    var v=t.getAttribute('data-t'),i=S.tags.indexOf(v);
+    if(i>=0) S.tags.splice(i,1); else { S.tags.push(v); }
+    var all=$('tags').querySelectorAll('.tag');
+    all.forEach(function(x){ x.classList.toggle('on',S.tags.indexOf(x.getAttribute('data-t'))>=0); });
+  });
+}
+/* 图片 */
+function compressImg(file,cb){
+  var r=new FileReader();r.onload=function(){
+    var im=new Image();im.onload=function(){
+      var w=im.width,h=im.height,m=1280,k=Math.min(1,m/Math.max(w,h));
+      var cv=document.createElement('canvas');cv.width=Math.round(w*k);cv.height=Math.round(h*k);
+      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      cb(cv.toDataURL('image/jpeg',0.82));
+    };im.onerror=function(){cb('')};im.src=r.result;
+  };r.onerror=function(){cb('')};r.readAsDataURL(file);
+}
+function pickImg(){
+  if(!S.user) return say('请先登录',false);
+  $('pf').click();
+}
+function upImg(){
+  var f=$('pf').files[0];
+  if(!f) return;
+  if(f.size>8*1024*1024) return say('图片超过 8MB',false);
+  say('正在压缩上传…',false);
+  compressImg(f,function(data){
+    if(!data) return say('图片读取失败',false);
+    call('/upload',{data:data}).then(function(j){
+      if(!j.ok) return say(j.msg||'上传失败',false);
+      S.img=j.url;
+      $('attImg').src=S.api+j.url;
+      $('att').style.display='inline-flex';
+      say('图片已就绪',true);
+    }).catch(function(e){ say('上传失败：'+e.message,false); });
+  });
+}
+/* 发帖 */
+function send(){
+  if(!S.user) return say('请先登录',false);
+  var t=$('pt').value.trim();
+  if(!t) return say('请写点内容',false);
+  call('/post_add',{text:t,tags:S.tags,image:S.img}).then(function(j){
+    if(!j.ok) return say(j.msg||'发布失败',false);
+    $('pt').value='';S.img='';S.tags=[];
+    $('att').style.display='none';$('pf').value='';
+    var all=$('tags').querySelectorAll('.tag');all.forEach(function(x){x.classList.remove('on')});
+    say('发布成功',true);
+    loadPosts();
+  }).catch(function(e){ say('发布失败：'+e.message,false); });
+}
+/* 列表 */
+function render(ps){
+  var box=$('list'),empty=$('empty');
+  if(!ps||!ps.length){ box.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  box.innerHTML=ps.map(function(p){
+    var tk=p.tags&&p.tags.length?p.tags.map(function(t){return '<span class="tk t-'+esc(t)+'">'+esc(t)+'</span>'}).join(''):'';
+    var del=(S.user&&(S.user.is_admin||p.user===S.user.username))?'<button class="del" data-pd="'+esc(p.id)+'">删除</button>':'';
+    var cm=p.comments||[];
+    return '<div class="post">'+
+      '<div class="ph"><span class="nm">'+esc(p.name)+'</span><span>'+esc(p.time)+'</span>'+
+      '<span class="tagsm">'+tk+'</span>'+del+'</div>'+
+      '<div class="bd">'+esc(p.text)+
+      (p.image&&S.api?'<img src="'+esc(S.api+p.image)+'">':'')+'</div>'+
+      '<div class="cm" data-cm="'+esc(p.id)+'">评论 '+(cm.length?cm.length:'0')+'</div>'+
+      '<div class="cwrap" data-cw="'+esc(p.id)+'">'+
+        '<div class="clist">'+ (cm.length?cm.map(function(c){return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.user)+'</div>'+esc(c.text)+'</div>'}).join(''):'<div class="citem" style="color:var(--ink3)">暂无评论</div>') +'</div>'+
+        '<div class="cinput"><input data-ci="'+esc(p.id)+'" placeholder="写下评论…" maxlength="200"><button class="btn" data-cs="'+esc(p.id)+'">发送</button></div>'+
+      '</div></div>';
+  }).join('');
+}
+function loadPosts(){
+  if(!S.api) return;
+  call('/post_get',{}).then(function(j){
+    if(!j.ok) return;
+    render(j.list||[]);
+  }).catch(function(e){
+    var er=$('err');er.style.display='block';er.textContent='加载失败 · '+e.message;
+  });
+}
+/* 列表事件 */
+function bindList(){
+  $('list').addEventListener('click',function(e){
+    var t=e.target;
+    var pb=t.closest('[data-pd]');
+    if(pb){
+      if(!S.user) return say('请先登录',false);
+      call('/post_del',{id:pb.getAttribute('data-pd')}).then(function(j){
+        if(!j.ok) return say(j.msg||'删除失败',false);
+        loadPosts(); say('已删除',true);
+      }).catch(function(e){ say('删除失败：'+e.message,false); });
+      return;
+    }
+    var cm=t.closest('[data-cm]');
+    if(cm){
+      var id=cm.getAttribute('data-cm'),cw=document.querySelector('[data-cw="'+id+'"]');
+      if(cw){ cw.classList.toggle('open'); return; }
+    }
+    var cs=t.closest('[data-cs]');
+    if(cs){
+      if(!S.user) return say('请先登录后再评论',false);
+      var id=cs.getAttribute('data-cs'),inp=document.querySelector('[data-ci="'+id+'"]');
+      var v=inp?inp.value.trim():'';
+      if(!v) return say('评论不能为空',false);
+      call('/comment_add',{pid:id,text:v}).then(function(j){
+        if(!j.ok) return say(j.msg||'评论失败',false);
+        say('评论成功',true); loadPosts();
+      }).catch(function(e){ say('评论失败：'+e.message,false); });
+      return;
+    }
+    var im=t.closest('.bd img');
+    if(im){ $('zoomImg').src=im.src; $('zoom').style.display='flex'; }
+  });
+}
+/* 绑定 */
+bindTags(); bindList();
+$('pb').addEventListener('click',pickImg);
+$('pf').addEventListener('change',upImg);
+$('attRm').addEventListener('click',function(){S.img='';$('att').style.display='none';$('pf').value=''});
+$('send').addEventListener('click',send);
+$('lg').addEventListener('click',doLogin);
+$('lo').addEventListener('click',doLogout);
+$('lp').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
+$('st').addEventListener('click',function(){ if(!S.api){ autoCloud(); } });
+$('zoom').addEventListener('click',function(){$('zoom').style.display='none'});
+applyAuth();
+if(S.api){ loadPosts(); }
+autoCloud();
+})();
+</script>
+</body>
+</html>
