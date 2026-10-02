@@ -410,6 +410,28 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 .toast{background:#171718;color:var(--accent2)}
 .dino-art{filter:drop-shadow(0 0 14px rgba(255,255,255,.22))}
 
+/* ===== 界面布局打磨 v1 ===== */
+.hero{padding-bottom:24px}
+.hero::after{content:"";display:block;height:1px;margin-top:26px;background:repeating-linear-gradient(90deg,var(--line) 0 5px,transparent 5px 11px)}
+.card{height:100%;display:flex;flex-direction:column;background:linear-gradient(165deg,#171718,#0F0F10)}
+.card-bd{flex:1;display:flex;flex-direction:column;padding:15px 18px 17px}
+.card-bd h3{margin:8px 0 6px}
+.c-tag{display:flex;align-items:center;gap:9px}
+.c-tag::after{content:"";flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 4px,transparent 4px 8px)}
+.c-go{margin-top:auto;padding-top:15px}
+.thumb{position:relative;background:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:19px 19px}
+.thumb::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 60%);z-index:1;pointer-events:none}
+.thumb svg{position:relative;z-index:2}
+.thumb::after{z-index:3}
+.gb{border-radius:10px;overflow:hidden}
+.gb-item{padding:13px 18px;transition:background .18s}
+.gb-item:hover{background:rgba(255,255,255,.025)}
+.gb-note,.gb-user-i{padding:10px 14px}
+.gb-head{padding:12px 18px}
+.gb-form{padding:15px 18px}
+@media(max-width:880px){.hero{padding-bottom:20px}.hero::after{margin-top:18px}}
+@media(max-width:640px){.card-bd{padding:14px 16px 16px}.gb-head{padding:10px 12px}}
+
 /* ===== 留言板 / 私聊 v3.0 ===== */
 .gb{max-width:1080px;margin:26px auto 0;border:1px solid var(--line2);background:linear-gradient(165deg,#151516,#0E0E0F);box-shadow:0 0 0 1px rgba(255,255,255,.05)}
 .gb-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink3)}
@@ -519,6 +541,15 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 #updBar .u-btn{margin-left:auto;border:1px solid var(--ink);color:var(--ink);padding:6px 16px;font-size:11.5px;letter-spacing:.18em;background:none;cursor:pointer;transition:background .2s,color .2s}
 #updBar .u-btn:hover{background:var(--ink);color:#0B0C0E}
 @keyframes updin{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+/* ===== 启动动效升级 ===== */
+.bt-art .al.st{opacity:.32;animation:none}
+.bl .st{display:inline-block;min-width:56px;color:var(--ink3);transition:color .25s,text-shadow .25s}
+.bl .st.ok{color:var(--ok);text-shadow:0 0 10px rgba(255,255,255,.3)}
+.bl .st.warn{color:var(--warn)}
+.bl .st.lk{color:var(--bad)}
+#boot.gl .bt{animation:glitch .18s steps(2) 1}
+@keyframes glitch{0%{transform:none}25%{transform:translate(-5px,2px) skewX(3deg)}50%{transform:translate(4px,-2px)}75%{transform:translate(-3px,1px) skewX(-2deg)}100%{transform:none}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
 </style>
 <body>
@@ -569,10 +600,14 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <path d="M200 30 L320 80 V140 L200 178 L80 140 V80 Z" fill="none" stroke="#FFFFFF" stroke-width="3"/>
-            <path d="M200 30 L200 178 M80 80 L320 140 M320 80 L80 140" stroke="#707070" stroke-width="2"/>
-            <rect x="164" y="62" width="72" height="72" rx="4" fill="none" stroke="#D8D8D8" stroke-width="2.5"/>
-            <text x="200" y="186" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">PRTS ARCHIVE</text>
+            <g stroke="#3d3d3d" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <path d="M200 26 L330 84 V144 L200 182 L70 144 V84 Z" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+            <path d="M200 26 L200 182 M70 84 L330 144 M330 84 L70 144" stroke="#909090" stroke-width="2"/>
+            <rect x="160" y="58" width="80" height="80" rx="4" fill="none" stroke="#E8E8E8" stroke-width="2.5"/>
+            <circle cx="200" cy="98" r="12" fill="none" stroke="#E8E8E8" stroke-width="2"/>
+            <circle cx="200" cy="98" r="4" fill="#E8E8E8"/>
+            <path d="M200 98 L226 74" stroke="#E8E8E8" stroke-width="2"/>
+            <text x="200" y="196" font-family="monospace" font-size="12" fill="#909090" text-anchor="middle">PRTS ARCHIVE</text>
           </svg>
         </div>
         <div class="card-bd">
@@ -589,14 +624,16 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <rect x="70" y="52" width="260" height="96" rx="6" fill="none" stroke="#FFFFFF" stroke-width="3"/>
-            <rect x="70" y="52" width="260" height="24" fill="rgba(255,255,255,.08)"/>
-            <circle cx="86" cy="64" r="4" fill="#D8D8D8"/><circle cx="102" cy="64" r="4" fill="#707070"/><circle cx="118" cy="64" r="4" fill="#3d3d3d"/>
-            <rect x="86" y="88" width="120" height="8" fill="#707070"/>
-            <rect x="86" y="104" width="160" height="8" fill="#4d4d4d"/>
-            <rect x="86" y="120" width="100" height="8" fill="#3d3d3d"/>
-            <rect x="300" y="94" width="20" height="14" rx="3" fill="#FF5C7A"/>
-            <text x="200" y="176" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">NIGHT WATCH FORUM</text>
+            <g stroke="#3d3d3d" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <rect x="64" y="46" width="272" height="104" rx="6" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+            <rect x="64" y="46" width="272" height="26" fill="rgba(255,255,255,.09)"/>
+            <circle cx="82" cy="59" r="4.5" fill="#E8E8E8"/><circle cx="100" cy="59" r="4.5" fill="#909090"/><circle cx="118" cy="59" r="4.5" fill="#555"/>
+            <rect x="82" y="84" width="150" height="9" fill="#808080"/>
+            <rect x="82" y="102" width="196" height="9" fill="#5a5a5a"/>
+            <rect x="82" y="120" width="124" height="9" fill="#454545"/>
+            <rect x="294" y="92" width="22" height="16" rx="3" fill="#FF5C7A"/>
+            <path d="M300 96 h10 M305 92 v8" stroke="#fff" stroke-width="2" fill="none"/>
+            <text x="200" y="178" font-family="monospace" font-size="12" fill="#909090" text-anchor="middle">NIGHT WATCH FORUM</text>
           </svg>
         </div>
         <div class="card-bd">
@@ -613,11 +650,14 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <path d="M200 36 L286 76 V124 L200 164 L114 124 V76 Z" fill="none" stroke="#C9A961" stroke-width="3"/>
-            <path d="M200 36 L200 164 M114 76 L286 124 M286 76 L114 124" stroke="#8A7448" stroke-width="1.6"/>
-            <path d="M200 66 L248 92 L232 140 L168 140 L152 92 Z" fill="rgba(201,169,97,.14)" stroke="#C9A961" stroke-width="1.6"/>
-            <path d="M200 86 L222 100 L216 116 L184 116 L178 100 Z" fill="#C9A961"/>
-            <text x="200" y="186" font-family="monospace" font-size="12" fill="#8A7448" text-anchor="middle">CASSEL COLLEGE</text>
+            <g stroke="#3d3d3d" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
+            <path d="M200 30 L292 72 V124 L200 168 L108 124 V72 Z" fill="none" stroke="#C9A961" stroke-width="3"/>
+            <path d="M200 30 L200 168 M108 72 L292 124 M292 72 L108 124" stroke="#8A7448" stroke-width="1.6"/>
+            <path d="M200 62 L252 90 L236 142 L164 142 L148 90 Z" fill="rgba(201,169,97,.16)" stroke="#C9A961" stroke-width="1.8"/>
+            <path d="M200 84 L224 100 L218 118 L182 118 L176 100 Z" fill="#C9A961"/>
+            <circle cx="200" cy="100" r="7" fill="none" stroke="#E8DCC0" stroke-width="1.6"/>
+            <circle cx="200" cy="100" r="2.5" fill="#E8DCC0"/>
+            <text x="200" y="188" font-family="monospace" font-size="12" fill="#8A7448" text-anchor="middle">CASSEL COLLEGE</text>
           </svg>
         </div>
         <div class="card-bd">
@@ -1586,46 +1626,73 @@ var lines=[
 {t:'密钥库',s:'lk'},
 {t:'启动渲染',s:'ok'}
 ];
-var t0=Date.now(),p=0,barIv;
-/* 1. ASCII 逐行绘制 */
-art.forEach(function(row,i){
-  setTimeout(function(){
-    var d=document.createElement('div');d.className='al';d.textContent=row;artEl.appendChild(d);
-  },180+i*95);
-});
-/* 2. 打字机标题 */
+var p=0,barIv,done=0;
+function rc(){var s='▓▒░█▄▀■□#@%&+=~';return s[Math.floor(Math.random()*s.length)]}
+/* 1. 字符风暴 */
+artEl.innerHTML='';
+var si=setInterval(function(){
+  var h='';
+  for(var i=0;i<6;i++){
+    var r='';
+    for(var j=0;j<46;j++)r+=Math.random()<.26?rc():' ';
+    h+='<div class="al st">'+r+'</div>';
+  }
+  artEl.innerHTML=h;
+},42);
+setTimeout(function(){
+  clearInterval(si);artEl.innerHTML='';
+  /* 2. ASCII 逐字 */
+  art.forEach(function(row,ri){
+    setTimeout(function(){
+      var d=document.createElement('div');d.className='al';artEl.appendChild(d);
+      var ci=0,iv=setInterval(function(){
+        d.textContent=row.slice(0,++ci);
+        if(ci>=row.length)clearInterval(iv);
+      },16);
+    },280+ri*85);
+  });
+},500);
+/* 3. 打字机标题 */
 var ty='WTZ // PERSONAL SITE',ti=0;
 setTimeout(function(){
   tyEl.innerHTML='';
   var iv=setInterval(function(){
     tyEl.textContent=ty.slice(0,++ti);
     if(ti>=ty.length){clearInterval(iv);tyEl.innerHTML=ty+'<span class="cu">▮</span>'}
-  },46);
+  },44);
 },1150);
-/* 3. 挂载日志 + 进度 */
-var done=0,LOG={ok:0,warn:0,lk:0};
+/* 4. 挂载日志：滑入 + 状态翻转 */
 lines.forEach(function(L,i){
   setTimeout(function(){
-    var d=document.createElement('div');
-    d.className='bl '+(L.s==='ok'?'ok':L.s==='warn'?'warn':'lk');
+    var d=document.createElement('div');d.className='bl';
     var dots=Array(Math.max(1,30-L.t.length-8)).join('.');
-    d.textContent='> '+L.t+' '+dots+' '+L.s;
-    lnEl.appendChild(d);done++;
-    if(done>=lines.length){p=100;bP.textContent='100%';bBar.style.width='100%';setTimeout(flip,420)}
-  },1650+i*280);
+    d.innerHTML='> '+L.t+' '+dots+' <span class="st">...</span>';
+    lnEl.appendChild(d);
+    var st=d.querySelector('.st');
+    setTimeout(function(){
+      st.textContent='[ '+L.s.toUpperCase()+' ]';
+      st.className='st '+(L.s==='ok'?'ok':L.s==='warn'?'warn':'lk');
+      d.classList.add('on');
+    },340);
+    done++;
+    if(done>=lines.length){p=100;bP.textContent='100%';bBar.style.width='100%';setTimeout(flip,480)}
+  },1650+i*250);
 });
-/* 4. 进度平滑 */
+/* 5. 进度分段跳跃 */
+var seg=[16,34,52,70,84,94,97],sc=0;
 barIv=setInterval(function(){
   if(p>=100){clearInterval(barIv);return}
-  p=Math.min(97,p+Math.max(1,Math.round((100-p)/14)));
+  if(p>=seg[sc])sc++;
+  p=seg[Math.min(sc,seg.length-1)]||97;
+  if(p===97&&done<lines.length)p=94;
   bP.textContent=p+'%';bBar.style.width=p+'%';
-},120);
-/* 5. 3D 翻转转场 */
+},200);
+/* 6. glitch + 3D 翻转转场 */
 function flip(){
   clearInterval(barIv);
-  var bt=document.querySelector('#boot .bt');
-  bt.classList.add('flip');
-  setTimeout(hideBoot,700);
+  document.getElementById('boot').classList.add('gl');
+  setTimeout(function(){document.querySelector('#boot .bt').classList.add('flip')},240);
+  setTimeout(hideBoot,940);
 }
 boot.addEventListener('click',flip);
 }
