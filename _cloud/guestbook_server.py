@@ -1311,5 +1311,102 @@ def _rate():
             return jsonify({"ok": False, "msg": "操作过快，请稍候"}), 429
         _RL[ip] = now
 
+import threading as _th
+_RISK_LOCK = _th.Lock()
+
+
+def _auto_risk_scan():
+    words = _load(RISK_FILE, [])
+    words = [w.strip().lower()[:20] for w in words if w and w.strip()]
+    if not words:
+        return
+    with _RISK_LOCK:
+        us = _load(USER_FILE, {})
+        g = _load(GUESTBOOK_FILE, [])
+        ps = _load(POST_FILE, [])
+        pm = _load(PM_FILE, {})
+        hit = []
+        for u in us:
+            if u == "__sessions" or u == ROOT:
+                continue
+            if us[u].get("is_admin"):
+                continue
+            m = any(w in u.lower() for w in words)
+            if not m:
+                for x in g:
+                    if (x.get("name") or "") == u and any(w in str(x.get("text") or "").lower() for w in words):
+                        m = True
+                        break
+            if not m:
+                for x in ps:
+                    if (x.get("user") or "") != u:
+                        continue
+                    if any(w in str(x.get("title") or "").lower() for w in words) or any(w in str(x.get("text") or "").lower() for w in words):
+                        m = True
+                        break
+                    for c in x.get("comments") or []:
+                        if (c.get("user") or "") == u and any(w in str(c.get("text") or "").lower() for w in words):
+                            m = True
+                            break
+                    if m:
+                        break
+            if not m:
+                pmc = pm.values() if isinstance(pm, dict) else pm
+                for cc in pmc:
+                    msgs = cc if isinstance(cc, list) else ([cc] if isinstance(cc, dict) else [])
+                    for m2 in msgs:
+                        if not isinstance(m2, dict):
+                            continue
+                        f = m2.get("from") or ""
+                        t = m2.get("to") or ""
+                        if (f == u or t == u) and any(w in str(m2.get("msg") or "").lower() for w in words):
+                            m = True
+                            break
+                    if m:
+                        break
+            if m:
+                hit.append(u)
+        if not hit:
+            return
+        for u in hit:
+            del us[u]
+        g = [x for x in g if (x.get("name") or "") not in hit]
+        ps = [x for x in ps if (x.get("user") or "") not in hit]
+        for x in ps:
+            x["comments"] = [c for c in (x.get("comments") or []) if (c.get("user") or "") not in hit]
+        if isinstance(pm, dict):
+            for k2 in list(pm.keys()):
+                pm[k2] = [m2 for m2 in (pm[k2] or []) if isinstance(m2, dict) and (m2.get("from") or "") not in hit and (m2.get("to") or "") not in hit]
+                if not pm[k2]:
+                    del pm[k2]
+        else:
+            pm = [m2 for m2 in pm if not isinstance(m2, dict) or ((m2.get("from") or "") not in hit and (m2.get("to") or "") not in hit)]
+        ses = us.get("__sessions", {})
+        for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) in hit]:
+            del ses[k]
+        _save(USER_FILE, us)
+        _save(GUESTBOOK_FILE, g)
+        _save(POST_FILE, ps)
+        _save(PM_FILE, pm)
+        try:
+            _audit(ROOT, "auto_risk", "关键词: " + ",".join(words), "自动风控删除 " + str(len(hit)) + " 人: " + ",".join(hit))
+        except Exception:
+            pass
+
+
+def _risk_loop():
+    while True:
+        try:
+            _auto_risk_scan()
+        except Exception as e:
+            try:
+                with open(os.path.join(_BASE, "auto_risk.log"), "a", encoding="utf-8") as _lf:
+                    _lf.write(str(e) + "\n")
+            except Exception:
+                pass
+        _th.Event().wait(10)
+
+
 if __name__ == "__main__":
+    _th.Thread(target=_risk_loop, daemon=True).start()
     app.run(host="0.0.0.0", port=8701, debug=False)
