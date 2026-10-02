@@ -535,6 +535,28 @@ body.ui-square .gb-bub,body.ui-square .gb-img,body.ui-square textarea{border-rad
 .u-paper{border-radius:10px}
 .u-term{border-radius:3px;background:repeating-linear-gradient(180deg,#111 0 3px,#2A2A2A 3px 5px)}
 .u-glass{border-radius:12px;background:rgba(255,255,255,.3)}
+/* ===== 手机/电脑界面模式 ===== */
+body.view-mobile .grid.two{grid-template-columns:1fr}
+body.view-mobile .grid3{grid-template-columns:1fr}
+body.view-mobile #status{gap:8px;padding:0 10px;font-size:10px}
+body.view-mobile #status .st-l{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.view-mobile #clock{display:none}
+body.view-mobile .th-btn{padding:1px 7px;font-size:9.5px;letter-spacing:.08em}
+body.view-mobile .hero{padding:34px 16px 22px}
+body.view-mobile .hero h1{font-size:clamp(32px,11.5vw,40px);gap:10px;letter-spacing:.1em}
+body.view-mobile .hero .h-sub{font-size:12px;letter-spacing:.08em;margin-top:10px}
+body.view-mobile .card-bd{padding:14px 16px 16px}
+body.view-mobile .card-bd h3{font-size:17px}
+body.view-mobile .card-bd p{font-size:12.5px;min-height:0}
+body.view-mobile .gb{padding:12px 14px}
+body.view-mobile .gb-head{padding:10px 12px;font-size:10px;gap:6px}
+body.view-mobile .gb-item{padding:11px 14px}
+body.view-mobile .gb-auth{padding:12px 14px}
+body.view-mobile .gb-form{padding:12px 14px}
+body.view-mobile .updBar{flex-wrap:wrap;gap:8px;padding:8px 12px;font-size:11px}
+body.view-mobile #thBox,body.view-mobile #uiBox{width:94vw;padding:16px 14px 18px}
+body.view-mobile .th-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+body.view-mobile .c-go{padding-top:12px;font-size:12px}
 
 /* ===== 留言板 / 私聊 v3.0 ===== */
 .gb{max-width:1080px;margin:26px auto 0;border:1px solid var(--line2);background:linear-gradient(165deg,#151516,#0E0E0F);box-shadow:0 0 0 1px rgba(255,255,255,.05);border-radius:var(--r)}
@@ -683,6 +705,7 @@ body.ui-square .gb-bub,body.ui-square .gb-img,body.ui-square textarea{border-rad
   <span class="pbadge" id="permBadge">LV 0</span>
   <button class="th-btn" id="thBtn" title="界面配色">◐ 配色</button>
   <button class="th-btn" id="uiBtn" title="界面主题">▣ 界面</button>
+  <button class="th-btn" id="vmBtn" title="切换手机/电脑界面">▦ 视图</button>
 </header>
 
 <main>
@@ -957,7 +980,43 @@ function loadUi(){
   var id='';try{id=localStorage.getItem(UIK)||''}catch(e){}
   applyUi(id);
 }
-loadUi();
+var VK='wz_view';
+function vToast(t){
+  var d=document.createElement('div');
+  d.textContent=t;
+  d.style.cssText='position:fixed;left:50%;top:58px;transform:translateX(-50%);z-index:200;background:var(--panel2);border:1px solid var(--line2);color:var(--accent2);font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:8px 16px;transition:.5s;opacity:0;white-space:nowrap';
+  document.body.appendChild(d);
+  requestAnimationFrame(function(){d.style.opacity='1'});
+  setTimeout(function(){d.style.opacity='0';setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},500)},1700);
+}
+function applyView(m){
+  var meta=document.querySelector('meta[name="viewport"]');
+  if(m==='pc'){
+    if(meta) meta.setAttribute('content','width=1280');
+    document.body.classList.remove('view-mobile');
+    vToast('已切换到电脑界面 · 可双指缩放');
+  }else{
+    if(meta) meta.setAttribute('content','width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover');
+    document.body.classList.add('view-mobile');
+    vToast('已切换到手机界面 · 单列自适应');
+  }
+  try{localStorage.setItem(VK,m)}catch(e){}
+  var b=document.getElementById('vmBtn');
+  if(b) b.textContent=(m==='pc')?'▦ 手机':'▦ 电脑';
+  b.title=(m==='pc')?'切换为手机界面':'切换为电脑界面';
+}
+function loadView(){
+  var m='';
+  try{m=localStorage.getItem(VK)||''}catch(e){}
+  if(m!=='pc'&&m!=='mobile') m=(window.innerWidth<=640)?'mobile':'pc';
+  var meta=document.querySelector('meta[name="viewport"]');
+  if(m==='pc'&&meta) meta.setAttribute('content','width=1280');
+  if(m==='mobile') document.body.classList.add('view-mobile');
+  try{localStorage.setItem(VK,m)}catch(e){}
+  var b=document.getElementById('vmBtn');
+  if(b){b.textContent=(m==='pc')?'▦ 手机':'▦ 电脑';b.title=(m==='pc')?'切换为手机界面':'切换为电脑界面'}
+}
+loadView();
 function renderUi(){
   var g=document.getElementById('uiGrid');if(!g)return;
   var cur='';try{cur=localStorage.getItem(UIK)||''}catch(e){}
@@ -988,6 +1047,13 @@ document.addEventListener('click',function(e){
     if(th){applyT(th);renderTh();thSay('已应用配色 · '+th.n);return}
   }
   if(t&&t.id==='uiBtn'){document.getElementById('uiMask').classList.remove('hidden');renderUi();return}
+  if(t&&t.id==='vmBtn'){
+    var cur='';
+    try{cur=localStorage.getItem(VK)||''}catch(e){}
+    if(cur!=='pc'&&cur!=='mobile') cur=(window.innerWidth<=640)?'mobile':'pc';
+    applyView(cur==='pc'?'mobile':'pc');
+    return;
+  }
   if(t&&t.id==='uiClose'){document.getElementById('uiMask').classList.add('hidden');return}
   var uc=t;
   while(uc&&uc.classList&&!uc.getAttribute('data-ui'))uc=uc.parentNode;
