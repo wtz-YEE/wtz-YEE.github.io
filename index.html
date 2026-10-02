@@ -1104,6 +1104,28 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
   </div>
 </div>
 
+
+<div id="srchM" style="display:none;position:fixed;inset:0;z-index:995;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px">
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input id="srchIn" style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px 10px;font-family:inherit;font-size:13px" placeholder="搜索留言 / 论坛帖子 / 私聊…">
+      <button class="gb-btn" id="srchGo" style="padding:8px 14px">搜索</button>
+    </div>
+    <div id="srchOut" style="max-height:52vh;overflow-y:auto;font-size:12px;line-height:1.7;color:var(--ink2)"></div>
+  </div>
+</div>
+
+<div id="ntPanel">
+  <h4>通知中心 <span id="ntClear" style="cursor:pointer;font-size:10.5px;color:var(--ink3);letter-spacing:.1em">全部已读</span></h4>
+  <div id="ntNotices" style="display:none;padding:8px 14px;border-bottom:1px dashed var(--line);font-size:11.5px;color:var(--ink2);line-height:1.7"></div>
+  <div id="ntList" style="font-size:12px;color:var(--ink3);padding:12px 14px">加载中…</div>
+</div>
+
+<div id="pfMask"><div id="pfBox">
+  <button class="pf-close" id="pfClose">✕</button>
+  <div id="pfBody"></div>
+</div></div>
+
 <script>
 (function(){
 'use strict';
@@ -2465,6 +2487,7 @@ if(rkAll)rkAll.onclick=function(){
 if(rkIn)rkIn.addEventListener('keydown',function(e){if(e.key==='Enter')riskRun()});
 call('/risk_words_get',{}).then(function(j){rkWShow(j.words||[])}).catch(function(){});
 })();
+window.$=$;window.esc=esc;window.call=call;window.go=go;window.S=S;
 })();
 </script>
   </div>
@@ -2714,27 +2737,6 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
     <div class="th-grid" id="uiGrid"></div>
   </div>
 </div>
-
-<div id="srchM" style="display:none;position:fixed;inset:0;z-index:995;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
-  <div style="width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px">
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <input id="srchIn" style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px 10px;font-family:inherit;font-size:13px" placeholder="搜索留言 / 论坛帖子 / 私聊…">
-      <button class="gb-btn" id="srchGo" style="padding:8px 14px">搜索</button>
-    </div>
-    <div id="srchOut" style="max-height:52vh;overflow-y:auto;font-size:12px;line-height:1.7;color:var(--ink2)"></div>
-  </div>
-</div>
-
-<div id="ntPanel">
-  <h4>通知中心 <span id="ntClear" style="cursor:pointer;font-size:10.5px;color:var(--ink3);letter-spacing:.1em">全部已读</span></h4>
-  <div id="ntNotices" style="display:none;padding:8px 14px;border-bottom:1px dashed var(--line);font-size:11.5px;color:var(--ink2);line-height:1.7"></div>
-  <div id="ntList" style="font-size:12px;color:var(--ink3);padding:12px 14px">加载中…</div>
-</div>
-
-<div id="pfMask"><div id="pfBox">
-  <button class="pf-close" id="pfClose">✕</button>
-  <div id="pfBody"></div>
-</div></div>
 
 <script>
 /* ==== v2.9 每日一言 ==== */
