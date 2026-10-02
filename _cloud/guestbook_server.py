@@ -275,6 +275,8 @@ def api_guest_add():
     cu = _cur_user(p.get("token"))
     if not cu:
         return jsonify({"ok": False, "msg": "请先登录后再留言"})
+    if (_load(USER_FILE, {}).get(cu) or {}).get("banned"):
+        return jsonify({"ok": False, "msg": "你已被拉黑，无法留言"})
     txt = str(p.get("text") or "").strip()[:500]
     if not txt:
         return jsonify({"ok": False, "msg": "内容不能为空"})
@@ -306,6 +308,8 @@ def api_post_add():
     cu = _cur_user(p.get("token"))
     if not cu:
         return jsonify({"ok": False, "msg": "请先登录后再发帖"})
+    if (_load(USER_FILE, {}).get(cu) or {}).get("banned"):
+        return jsonify({"ok": False, "msg": "你已被拉黑，无法发帖"})
     txt = str(p.get("text") or "").strip()[:500]
     if not txt:
         return jsonify({"ok": False, "msg": "内容不能为空"})
@@ -344,6 +348,8 @@ def api_comment_add():
     cu = _cur_user(p.get("token"))
     if not cu:
         return jsonify({"ok": False, "msg": "请先登录后再评论"})
+    if (_load(USER_FILE, {}).get(cu) or {}).get("banned"):
+        return jsonify({"ok": False, "msg": "你已被拉黑，无法评论"})
     txt = str(p.get("text") or "").strip()[:200]
     if not txt:
         return jsonify({"ok": False, "msg": "评论不能为空"})
@@ -563,11 +569,12 @@ def api_admin_users():
         ses = us.get("__sessions", {})
         now = _time.time()
         lst = [{"name": k, "pwd": v.get("pwd", ""), "is_admin": bool(v.get("is_admin")),
+                "banned": bool(v.get("banned")),
                 "online": any(isinstance(s, list) and s[0] == k and s[1] > now - 300 for s in ses.values())}
                for k, v in us.items() if k != "__sessions"]
         lst.sort(key=lambda a: -int(a["is_admin"]))
         return jsonify({"ok": True, "list": lst, "root": True})
-    lst = [{"name": k} for k in us if k != "__sessions"]
+    lst = [{"name": k, "banned": bool((us.get(k) or {}).get("banned"))} for k in us if k != "__sessions"]
     lst.sort(key=lambda a: a["name"])
     return jsonify({"ok": True, "list": lst, "root": False})
 
@@ -592,6 +599,56 @@ def api_admin_set_admin():
     us[tgt]["is_admin"] = adm
     _save(USER_FILE, us)
     return jsonify({"ok": True, "msg": ("已授予" if adm else "已取消") + "管理员：" + tgt})
+
+
+@app.route("/admin_del_user", methods=["POST"])
+def api_admin_del_user():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    tgt = str(p.get("target") or "").strip()
+    if not tgt or tgt == "__sessions" or tgt not in us:
+        return jsonify({"ok": False, "msg": "账号不存在"})
+    if tgt == cu:
+        return jsonify({"ok": False, "msg": "不能删除自己"})
+    if tgt == ROOT:
+        return jsonify({"ok": False, "msg": "不能删除最高管理员"})
+    if us[tgt].get("is_admin") and cu != ROOT:
+        return jsonify({"ok": False, "msg": "仅最高管理员可删除管理员"})
+    del us[tgt]
+    ses = us.get("__sessions", {})
+    for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) == tgt]:
+        del ses[k]
+    _save(USER_FILE, us)
+    return jsonify({"ok": True, "msg": "已删除用户：" + tgt})
+
+
+@app.route("/admin_ban_user", methods=["POST"])
+def api_admin_ban_user():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    tgt = str(p.get("target") or "").strip()
+    ban = bool(p.get("ban"))
+    if not tgt or tgt == "__sessions" or tgt not in us:
+        return jsonify({"ok": False, "msg": "账号不存在"})
+    if tgt == cu:
+        return jsonify({"ok": False, "msg": "不能拉黑自己"})
+    if tgt == ROOT:
+        return jsonify({"ok": False, "msg": "不能拉黑最高管理员"})
+    if us[tgt].get("is_admin") and cu != ROOT:
+        return jsonify({"ok": False, "msg": "仅最高管理员可拉黑管理员"})
+    us[tgt]["banned"] = ban
+    _save(USER_FILE, us)
+    return jsonify({"ok": True, "msg": (("已拉黑" if ban else "已解除拉黑") + "：" + tgt)})
 
 
 @app.route("/pm_conv", methods=["POST"])
@@ -643,7 +700,7 @@ POST_FILE = os.path.join(_BASE, "posts.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/upload")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/upload")
 
 @app.before_request
 def _rate():
