@@ -1246,7 +1246,7 @@ try{JB.push()}catch(e){}
 var B=document.getElementById('rankBtn'),M=document.getElementById('rankM'),SEL=document.getElementById('rankSel'),LS=document.getElementById('rankList');
 if(!B||!M||!SEL||!LS)return;
 var GM=[['2048','2048'],['dino','小恐龙'],['snake','贪吃蛇'],['tetris','俄罗斯方块'],['mine','扫雷'],['break','打砖块'],['flappy','Flappy鸟'],['strike','战机'],['gomoku','五子棋'],['tictactoe','井字棋'],['sudoku','数独'],['slide','滑块拼图'],['maze','迷宫'],['memory','记忆翻牌'],['guess','猜数字'],['match3','消消乐'],['whack','打地鼠'],['catch','接苹果'],['fruit','切水果'],['target','打靶'],['dodge','躲避弹幕'],['pong','乒乓球'],['runner','跑酷'],['collect','收集星'],['fish','大鱼吃小鱼'],['reflex','反应测试'],['simon','西蒙记忆'],['typer','打字'],['hangman','猜单词'],['blackjack','21点'],['piano','钢琴'],['alchemy','炼金']];
-function api(){try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0});return a[0]||''}catch(e){return''}}
+function api(){try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return a[0]||''}catch(e){return''}}
 function esc(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function load(g){
 LS.textContent='加载中…';
