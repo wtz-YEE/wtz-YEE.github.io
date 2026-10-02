@@ -399,6 +399,7 @@ body.red .term-in input{caret-color:var(--bad)}
 <div id="toast" class="toast"></div>
 <script>
 
+function submitS(g,sc){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');if(!s||!s.token)return;var u=localStorage.getItem('gb_api_url')||'',aps=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0}),a=aps[0]||'';if(!a)return;var k='wSubT'+g,n=Date.now(),t=+(localStorage.getItem(k)||0);if(n-t<4000)return;localStorage.setItem(k,n);function go(){fetch(a+'/score_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,game:g,score:Math.floor(sc)||0})}).then(function(r){if(r.status===429)setTimeout(go,3200)}).catch(function(){})}go()}catch(e){}}
 var toastEl=document.getElementById('toast'),toastT;
 function ch(){return sessionStorage.getItem('wzLv')==='9999'}
 var Gp=[];
@@ -428,7 +429,7 @@ X.fillStyle='#3FE0C8';X.fillRect(px*s+2,py*s+2,s-4,s-4);
 if(st==='win'){X.textAlign='center';X.fillStyle='#2EE6A8';X.font='700 18px "Cascadia Mono",Consolas,monospace';X.fillText('通关！',W/2,24)}gs(X)}
 function start(){if(!on){on=true;rs();last=performance.now();raf=requestAnimationFrame(loop)}}
 function stop(){on=false;if(raf)cancelAnimationFrame(raf);raf=0}
-function mv(dx,dy){var nx=px+dx,ny=py+dy;if(nx<1||ny<1||nx>N-2||ny>N-2||m[ny][nx])return;px=nx;py=ny;if(px===N-2&&py===N-2){st='win';wins++;SC.textContent=wins;if(wins>hi){hi=wins;HI.textContent=hi;localStorage.setItem('wMaze',hi)}gb(W/2,H/2,28,'#2EE6A8')}}
+function mv(dx,dy){var nx=px+dx,ny=py+dy;if(nx<1||ny<1||nx>N-2||ny>N-2||m[ny][nx])return;px=nx;py=ny;if(px===N-2&&py===N-2){st='win';wins++;SC.textContent=wins;submitS('maze',wins);if(wins>hi){hi=wins;HI.textContent=hi;localStorage.setItem('wMaze',hi)}gb(W/2,H/2,28,'#2EE6A8')}}
 document.addEventListener('keydown',function(e){if(!on||st!=='run')return;var k=e.key.toLowerCase();if(k==='arrowup'||k==='w'){e.preventDefault();mv(0,-1)}else if(k==='arrowdown'||k==='s'){e.preventDefault();mv(0,1)}else if(k==='arrowleft'||k==='a'){e.preventDefault();mv(-1,0)}else if(k==='arrowright'||k==='d'){e.preventDefault();mv(1,0)}});
 return{start:start,stop:stop};
 })();
@@ -454,7 +455,7 @@ var gx2=Math.floor((e.clientX-r.left)/r.width*W),gy2=Math.floor((e.clientY-r.top
 var i=-1;for(var k=0;k<16;k++){var cx=gx+(k%4)*(cw+10),cy=gy+12+Math.floor(k/4)*(ch+10);if(gx2>cx&&gx2<cx+cw&&gy2>cy&&gy2<cy+ch){i=k;break}}
 if(i<0||open.indexOf(i)>-1)return;
 open.push(i);moves++;SC.textContent=moves;
-if(open.length===2){if(cards[open[0]]===cards[open[1]]){pairs++;if(pairs===8){st='win';if(moves<best){best=moves;HI.textContent=best;localStorage.setItem('wMem',best)}gb(W/2,H/2,30,'#2EE6A8')}open=[]}else{lockT=900}}
+if(open.length===2){if(cards[open[0]]===cards[open[1]]){pairs++;if(pairs===8){st='win';submitS('memory',10000-moves);if(moves<best){best=moves;HI.textContent=best;localStorage.setItem('wMem',best)}gb(W/2,H/2,30,'#2EE6A8')}open=[]}else{lockT=900}}
 });
 return{start:start,stop:stop};
 })();
@@ -467,7 +468,7 @@ function start(){if(!on){on=true;rs()}}
 function stop(){on=false}
 function go(){if(!on||!IN||IN.disabled)return;var v=+IN.value;if(ch()&&!v){v=num;if(IN)IN.value=num}if(!v||v<1||v>100){if(MSG)MSG.textContent='请输入 1-100 之间的整数。';return}
 tries++;SC.textContent=tries;
-if(v===num){if(MSG){MSG.style.color='#2EE6A8';MSG.textContent='猜中了！答案就是 '+num+' · 共 '+tries+' 次'};if(IN)IN.disabled=true;if(OK)OK.textContent='再来一局';if(OK)OK.disabled=true;setTimeout(function(){if(on){if(tries<best){best=tries;HI.textContent=best;localStorage.setItem('wGuess',best)}gb(160,150,22,'#2EE6A8');rs()}},1200)}
+if(v===num){submitS('guess',1000-tries);if(MSG){MSG.style.color='#2EE6A8';MSG.textContent='猜中了！答案就是 '+num+' · 共 '+tries+' 次'};if(IN)IN.disabled=true;if(OK)OK.textContent='再来一局';if(OK)OK.disabled=true;setTimeout(function(){if(on){if(tries<best){best=tries;HI.textContent=best;localStorage.setItem('wGuess',best)}gb(160,150,22,'#2EE6A8');rs()}},1200)}
 else if(v<num){if(MSG){MSG.style.color='';MSG.textContent='太小了。再试。'}}
 else{if(MSG){MSG.style.color='';MSG.textContent='太大了。再试。'}}
 if(IN){IN.focus();IN.select()}}
@@ -513,7 +514,7 @@ swap(sel,i);
 if(Object.keys(scan()).length===0){swap(sel,i)}else{var pts=0,chain=1,guard=0;
 while(guard++<40){var r2=clear();if(!r2.n)break;pts+=r2.n*10*chain;if(chain>=5)ACH.note('mc5',1);chain++;fall()}
 sc+=pts*(ch()?3:1);SC.textContent=sc;if(sc>hi){hi=sc;HI.textContent=hi;localStorage.setItem('wMatch',hi)}gb(gx*s+25,gy*s+25,16,'#FFC24B')}
-sel=-1;if(!hasMove()){st='over'}
+sel=-1;if(!hasMove()){st='over';submitS('match3',sc)}
 });
 return{start:start,stop:stop};
 })();
