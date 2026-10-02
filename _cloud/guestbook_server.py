@@ -12,6 +12,7 @@ USER_FILE = os.path.join(_BASE, "users.json")
 PM_FILE = os.path.join(_BASE, "pm.json")
 CHANGELOG_FILE = os.path.join(_BASE, "changelog.json")
 SCORE_FILE = os.path.join(_BASE, "scores.json")
+RISK_FILE = os.path.join(_BASE, "risk_words.json")
 import time as _t
 DEL_LOG = []
 
@@ -675,6 +676,133 @@ def api_admin_del_user():
     return jsonify({"ok": True, "msg": "已删除用户：" + tgt})
 
 
+@app.route("/risk_words_get", methods=["GET", "POST"])
+def api_risk_words_get():
+    return jsonify({"ok": True, "words": _load(RISK_FILE, [])})
+
+
+@app.route("/risk_words_add", methods=["POST"])
+def api_risk_words_add():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    raw = p.get("words") or []
+    if isinstance(raw, str):
+        raw = [w for w in raw.replace("，", ",").split(",") if w.strip()]
+    ws = _load(RISK_FILE, [])
+    for w in raw:
+        w = str(w).strip()[:20]
+        if w and w not in ws:
+            ws.append(w)
+    _save(RISK_FILE, ws)
+    return jsonify({"ok": True, "words": ws, "msg": "已上传 " + str(len(raw)) + " 个关键词"})
+
+
+@app.route("/risk_words_del", methods=["POST"])
+def api_risk_words_del():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    w = str(p.get("word") or "").strip()
+    ws = _load(RISK_FILE, [])
+    if w in ws:
+        ws.remove(w)
+        _save(RISK_FILE, ws)
+    return jsonify({"ok": True, "words": ws, "msg": "已删除关键词：" + w})
+
+
+@app.route("/admin_scan", methods=["POST"])
+def api_admin_scan():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    kw = str(p.get("kw") or "").strip().lower()
+    words = _load(RISK_FILE, [])
+    if kw:
+        words = [kw]
+    elif not words:
+        return jsonify({"ok": True, "hits": [], "words": [], "msg": "未上传风控关键词"})
+    words = [w.strip().lower()[:20] for w in words if w and w.strip()]
+    g = _load(GUESTBOOK_FILE, [])
+    ps = _load(POST_FILE, [])
+    pm = _load(PM_FILE, {})
+    hit = []
+    for u in us:
+        if u == "__sessions" or u == ROOT or u == cu:
+            continue
+        if us[u].get("is_admin"):
+            continue
+        m = any(w in u.lower() for w in words)
+        if not m:
+            for x in g:
+                if (x.get("name") or "") == u and any(w in str(x.get("text") or "").lower() for w in words):
+                    m = True
+                    break
+        if not m:
+            for x in ps:
+                if (x.get("user") or "") != u:
+                    continue
+                if any(w in str(x.get("title") or "").lower() for w in words) or any(w in str(x.get("text") or "").lower() for w in words):
+                    m = True
+                    break
+                for c in x.get("comments") or []:
+                    if (c.get("user") or "") == u and any(w in str(c.get("text") or "").lower() for w in words):
+                        m = True
+                        break
+                if m:
+                    break
+        if not m:
+            pmc = pm.values() if isinstance(pm, dict) else pm
+            for cc in pmc:
+                msgs = cc if isinstance(cc, list) else ([cc] if isinstance(cc, dict) else [])
+                for m2 in msgs:
+                    if not isinstance(m2, dict):
+                        continue
+                    f = m2.get("from") or ""
+                    t = m2.get("to") or ""
+                    if (f == u or t == u) and any(w in str(m2.get("msg") or "").lower() for w in words):
+                        m = True
+                        break
+                if m:
+                    break
+        if m:
+            hit.append(u)
+    if not hit:
+        return jsonify({"ok": True, "hits": [], "words": words, "msg": "未发现匹配用户"})
+    for u in hit:
+        del us[u]
+    g = [x for x in g if (x.get("name") or "") not in hit]
+    ps = [x for x in ps if (x.get("user") or "") not in hit]
+    for x in ps:
+        x["comments"] = [c for c in (x.get("comments") or []) if (c.get("user") or "") not in hit]
+    if isinstance(pm, dict):
+        for k2 in list(pm.keys()):
+            pm[k2] = [m2 for m2 in (pm[k2] or []) if isinstance(m2, dict) and (m2.get("from") or "") not in hit and (m2.get("to") or "") not in hit]
+            if not pm[k2]:
+                del pm[k2]
+    else:
+        pm = [m2 for m2 in pm if not isinstance(m2, dict) or ((m2.get("from") or "") not in hit and (m2.get("to") or "") not in hit)]
+    ses = us.get("__sessions", {})
+    for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) in hit]:
+        del ses[k]
+    _save(USER_FILE, us)
+    _save(GUESTBOOK_FILE, g)
+    _save(POST_FILE, ps)
+    _save(PM_FILE, pm)
+    return jsonify({"ok": True, "hits": hit, "words": words, "msg": "已风控删除 " + str(len(hit)) + " 个用户"})
+
 @app.route("/admin_ban_user", methods=["POST"])
 def api_admin_ban_user():
     p = request.get_json() or {}
@@ -887,7 +1015,7 @@ POST_FILE = os.path.join(_BASE, "posts.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/changelog_add", "/changelog_del", "/score_add", "/upload")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload")
 
 @app.before_request
 def _rate():
