@@ -1520,18 +1520,29 @@ function loadUsers(){
     if(!j.ok) return;
     var box=$('gb_ulist');
     $('gb_ucnt').textContent='('+j.list.length+')';
+    var adminBtns=function(u){
+      if(!S.user||S.user.username===u.name) return '';
+      var b1=(S.user.is_admin?'<button class="gb-btn ghost" data-ua="'+esc(u.name)+'" data-uadm="'+(u.is_admin?'1':'0')+'" style="padding:1px 8px;font-size:10px">'+(u.is_admin?'撤销':'授予')+'</button>':'');
+      var b2=(S.user.is_admin?'<button class="gb-btn ghost" data-uban="'+esc(u.name)+'" data-ubanned="'+(u.banned?'1':'0')+'" style="padding:1px 8px;font-size:10px;'+(u.banned?'color:var(--bad);border-color:var(--bad)':'')+'">'+(u.banned?'解除拉黑':'拉黑')+'</button>':'');
+      var b3=(S.user.is_admin?'<button class="gb-btn ghost" data-udel="'+esc(u.name)+'" style="padding:1px 8px;font-size:10px;color:var(--bad);border-color:var(--bad)">删除</button>':'');
+      return b1+b2+b3;
+    };
     if(j.root){
       box.innerHTML=j.list.map(function(u){
         return '<div class="gb-user-i"><span class="dot '+(u.online?'on':'off')+'"></span><b>'+esc(u.name)+'</b>'+
           (u.is_admin?'<span class="adm">管理员</span>':'')+
+          (u.banned?'<span class="adm" style="color:var(--bad);border-color:var(--bad)">已拉黑</span>':'')+
           '<span class="pwd">'+esc(u.pwd)+'</span>'+
-          (S.user&&S.user.username!==u.name?'<button class="gb-btn ghost" data-ua="'+esc(u.name)+'" data-uadm="'+(u.is_admin?'1':'0')+'" style="padding:1px 8px;font-size:10px">'+(u.is_admin?'撤销':'授予')+'</button>':'')+
+          adminBtns(u)+
           '</div>';
       }).join('')||'<div class="gb-empty" style="padding:10px">暂无用户</div>';
     }else{
-      box.innerHTML='<div class="gb-user-i"><span class="adm" style="color:var(--ink3);border-color:var(--ink3)">受限视图 · 仅用户名</span></div>'+
+      box.innerHTML='<div class="gb-user-i"><span class="adm" style="color:var(--ink3);border-color:var(--ink3)">受限视图 · 用户名 + 拉黑</span></div>'+
         j.list.map(function(u){
-          return '<div class="gb-user-i"><b>'+esc(u.name)+'</b></div>';
+          return '<div class="gb-user-i"><b>'+esc(u.name)+'</b>'+
+            (u.banned?'<span class="adm" style="color:var(--bad);border-color:var(--bad)">已拉黑</span>':'')+
+            (S.user&&S.user.username!==u.name?'<button class="gb-btn ghost" data-uban="'+esc(u.name)+'" data-ubanned="'+(u.banned?'1':'0')+'" style="padding:1px 8px;font-size:10px;'+(u.banned?'color:var(--bad);border-color:var(--bad)':'')+'">'+(u.banned?'解除拉黑':'拉黑')+'</button>':'')+
+            '</div>';
         }).join('');
     }
   }).catch(function(){});
@@ -1742,12 +1753,34 @@ function bind(){
     }).catch(function(e){ say('点赞失败：'+e.message,false); });
   });
   $('gb_ulist').addEventListener('click',function(e){
-    var b=e.target.closest('[data-ua]'); if(!b) return;
-    var t=b.getAttribute('data-ua'),adm=b.getAttribute('data-uadm')==='1';
-    call('/admin_set_admin',{target:t,admin:!adm}).then(function(j){
-      say(j.msg||(j.ok?'已更新':'失败'),!!j.ok);
-      if(j.ok) loadUsers();
-    }).catch(function(e){ say('请求失败：'+e.message,false); });
+    var b=e.target.closest('[data-ua]');
+    if(b){
+      var t=b.getAttribute('data-ua'),adm=b.getAttribute('data-uadm')==='1';
+      call('/admin_set_admin',{target:t,admin:!adm}).then(function(j){
+        say(j.msg||(j.ok?'已更新':'失败'),!!j.ok);
+        if(j.ok) loadUsers();
+      }).catch(function(e){ say('请求失败：'+e.message,false); });
+      return;
+    }
+    b=e.target.closest('[data-uban]');
+    if(b){
+      var t2=b.getAttribute('data-uban'),ban=b.getAttribute('data-ubanned')==='1';
+      if(!confirm(ban?'确认解除拉黑 '+t2+' ？':'确认拉黑 '+t2+' ？（拉黑后无法留言/发帖/评论）')) return;
+      call('/admin_ban_user',{target:t2,ban:!ban}).then(function(j){
+        say(j.msg||(j.ok?'已操作':'失败'),!!j.ok);
+        if(j.ok) loadUsers();
+      }).catch(function(e){ say('请求失败：'+e.message,false); });
+      return;
+    }
+    b=e.target.closest('[data-udel]');
+    if(b){
+      var t3=b.getAttribute('data-udel');
+      if(!confirm('确认删除用户 '+t3+' ？此操作不可恢复')) return;
+      call('/admin_del_user',{target:t3}).then(function(j){
+        say(j.msg||(j.ok?'已删除':'失败'),!!j.ok);
+        if(j.ok) loadUsers();
+      }).catch(function(e){ say('请求失败：'+e.message,false); });
+    }
   });
   $('gb_img_btn').addEventListener('click',function(){
     if(!S.api) return say('需云端模式才能发图',false);
