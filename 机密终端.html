@@ -187,7 +187,7 @@ function k2(){var d=new Date(),b=d.getDate(),c=d.getHours();return('00'+b).slice
 function k3(){var d=new Date(),b=d.getDate(),c=d.getHours(),p=('00'+b).slice(-2)+('00'+c).slice(-2)+('00'+((b*11+c*7)%100)).slice(-2),w=[],e=[];for(var i=0;i<6;i++){w.push((b*(i+1)+c)%10);e.push((+p[i]+w[i])%10)}return{p:p,w:w.join('-'),e:e.reverse().join('')}}
 var HIST=[],hi=0,V=0;
 var ATOK='',ABASE='';
-try{ABASE=(localStorage.getItem('gb_api_url')||'').replace(/\/+$/,'')}catch(e){}
+try{ABASE=((localStorage.getItem('gb_api_url')||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0})[0]||'').replace(/\/+$/,'')}catch(e){}
 function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
 function api(p,b,cb){var x=new XMLHttpRequest();x.open('POST',ABASE+p);x.setRequestHeader('Content-Type','application/json');x.onload=function(){try{cb(JSON.parse(x.responseText))}catch(e){cb({ok:false,msg:'响应解析失败'})}};x.onerror=function(){cb({ok:false,msg:'无法连接云端，请检查 base 地址'})};x.send(JSON.stringify(b||{}))}
 function accounts(){

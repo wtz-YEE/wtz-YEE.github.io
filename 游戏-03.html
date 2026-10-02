@@ -398,7 +398,7 @@ body.red .term-in input{caret-color:var(--bad)}
 <div id="toast" class="toast"></div>
 <script>
 
-function submitS(g,sc){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');if(!s||!s.token)return;var u=localStorage.getItem('gb_api_url')||'',aps=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0}),a=aps[0]||'';if(!a)return;var k='wSubT'+g,n=Date.now(),t=+(localStorage.getItem(k)||0);if(n-t<4000)return;localStorage.setItem(k,n);function go(){fetch(a+'/score_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,game:g,score:Math.floor(sc)||0})}).then(function(r){if(r.status===429)setTimeout(go,3200)}).catch(function(){})}go()}catch(e){}}
+function submitS(g,sc){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');if(!s||!s.token)return;var u=localStorage.getItem('gb_api_url')||'',aps=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0}),a=aps[0]||'';if(!a)return;var k='wSubT'+g,n=Date.now(),t=+(localStorage.getItem(k)||0);if(n-t<4000)return;localStorage.setItem(k,n);function go(){fetch(a+'/score_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,game:g,score:Math.floor(sc)||0})}).then(function(r){if(r.status===429)setTimeout(go,3200)}).catch(function(){})}go()}catch(e){}}
 var toastEl=document.getElementById('toast'),toastT;
 function ch(){return sessionStorage.getItem('wzLv')==='9999'}
 var Gp=[];

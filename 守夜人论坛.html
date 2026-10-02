@@ -159,6 +159,7 @@ function call(path,payload,method){
 }
 function normalizeApi(v){ v=String(v||'').trim().replace(/\/+$/,''); return /^https?:\/\//i.test(v)?v:''; }
 try{ S.apis=parseApis(localStorage.getItem(K_API)); }catch(e){ S.apis=[]; }
+S.apis=(S.apis||[]).filter(function(x){return x.indexOf('36c3116e')<0});
 S.api=(S.apis&&S.apis[0])||'';
 try{ var sv=JSON.parse(localStorage.getItem(K_SESS)||'null'); if(sv&&sv.token&&sv.username) S.user=sv; }catch(e){}
 function autoCloud(){
@@ -168,7 +169,7 @@ function autoCloud(){
   fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){
     if(!r.ok) throw 0; return r.text();
   }).then(function(t){
-    var apis=parseApis(t||'');
+    var apis=parseApis(t||'').filter(function(x){return x.indexOf('36c3116e')<0});
     if(!apis.length) return;
     S.apis=apis; S.api=apis[0];
     try{ localStorage.setItem(K_API,apis.join('\n')); }catch(e){}
