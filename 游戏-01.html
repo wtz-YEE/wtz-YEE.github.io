@@ -408,6 +408,7 @@ body.red .term-in input{caret-color:var(--bad)}
 <div id="toast" class="toast"></div>
 <script>
 
+function submitS(g,sc){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');if(!s||!s.token)return;var u=localStorage.getItem('gb_api_url')||'',aps=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0}),a=aps[0]||'';if(!a)return;var k='wSubT'+g,n=Date.now(),t=+(localStorage.getItem(k)||0);if(n-t<4000)return;localStorage.setItem(k,n);function go(){fetch(a+'/score_add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,game:g,score:Math.floor(sc)||0})}).then(function(r){if(r.status===429)setTimeout(go,3200)}).catch(function(){})}go()}catch(e){}}
 var toastEl=document.getElementById('toast'),toastT;
 function ch(){return sessionStorage.getItem('wzLv')==='9999'}
 var Gp=[];
@@ -472,7 +473,7 @@ var t=g[r][c];
 if(c+1<N&&g[r][c+1]&&g[r][c+1].v===t.v){return}
 if(r+1<N&&g[r+1][c]&&g[r+1][c].v===t.v){return}
 }
-ov=true;
+ov=true;submitS('2048',sc);
 var o=document.createElement('div');o.className='ov';
 var h=document.createElement('h3');h.textContent='GAME OVER';
 var p=document.createElement('p');p.textContent='得分 '+sc+' ｜ 最高 '+best;
@@ -545,7 +546,7 @@ for(var i=obs.length-1;i>=0;i--){var o=obs[i];o.x-=sp*dt;if(o.x+o.w<-10)obs.spli
 var dxx=DX+12,dyy=dy-dh+10,dwB=dw-26,dhB=dh-16;
 for(var i=0;i<obs.length;i++){
 var o=obs[i],ox=o.x+6,oy=GY-o.h+6,ow=o.w-12,oh=o.h-12;
-if(dxx<ox+ow&&dxx+dwB>ox&&dyy<oy+oh&&dyy+dhB>oy){if(ch()){gb(o.x+o.w/2,GY-o.h/2,18);obs.splice(i,1);i--}else{st='over';if(sc>hi){hi=Math.floor(sc);HI.textContent=hi;localStorage.setItem('wDino',hi)}break}}
+if(dxx<ox+ow&&dxx+dwB>ox&&dyy<oy+oh&&dyy+dhB>oy){if(ch()){gb(o.x+o.w/2,GY-o.h/2,18);obs.splice(i,1);i--}else{st='over';submitS('dino',Math.floor(sc));if(sc>hi){hi=Math.floor(sc);HI.textContent=hi;localStorage.setItem('wDino',hi)}break}}
 }
 draw(t);
 }
@@ -608,9 +609,9 @@ function loop(t){if(!on){raf=0;return}raf=requestAnimationFrame(loop);if(st!=='r
 if(!(nd===(dir+2)%4))dir=nd;
 var hd=s[0],nx=hd[0]+(dir===1?1:dir===3?-1:0),ny=hd[1]+(dir===2?1:dir===0?-1:0),bit=-1,wall=false;
 if(ch()){var oxx=nx,oyy=ny;if(nx<0){wall=true;nx=GW-1}else if(nx>=GW){wall=true;nx=0}else if(ny<0){wall=true;ny=GH-1}else if(ny>=GH){wall=true;ny=0};if(wall)gb((oxx<0?0:oxx>=GW?GW-1:oxx)*20+10,(oyy<0?0:oyy>=GH?GH-1:oyy)*20+10,16)}
-if(!ch()&&(nx<0||ny<0||nx>=GW||ny>=GH)){st='over';best()}
+if(!ch()&&(nx<0||ny<0||nx>=GW||ny>=GH)){st='over';best();submitS('snake',sc)}
 else{for(var i=0;i<s.length;i++)if(s[i][0]===nx&&s[i][1]===ny){bit=i;break}
-if(bit>=0&&!ch()){st='over';best()}
+if(bit>=0&&!ch()){st='over';best();submitS('snake',sc)}
 else{
 s.unshift([nx,ny]);
 if(bit>=0){gb(nx*20+10,ny*20+10,20);s.splice(bit+1)}
@@ -646,7 +647,7 @@ function hit(p){for(var r=0;r<p.s.length;r++)for(var c=0;c<p.s[r].length;c++){if
 function fix(){for(var r=0;r<cur.s.length;r++)for(var c=0;c<cur.s[r].length;c++){if(!cur.s[r][c])continue;var y=cur.y+r;if(y>=0)b[y][cur.x+c]=cur.t+1}
 var full=[];for(var r=0;r<R;r++){var f=true;for(var c=0;c<CO;c++)if(!b[r][c]){f=false;break}if(f)full.push(r)}
 for(var i=full.length-1;i>=0;i--){gb(CO*CS/2,full[i]*CS+CS/2,16,'#8FF0E2');b.splice(full[i],1);var row=[];for(var c=0;c<CO;c++)row.push(0);b.unshift(row);sc+=ch()?200:100;SC.textContent=sc;if(sc>hi){hi=sc;HI.textContent=hi;localStorage.setItem('wTetris',hi)}}
-cur=newP();if(hit(cur)){st='over'}}
+cur=newP();if(hit(cur)){st='over';submitS('tetris',sc)}}
 function rot(){var p=cur.s,q=[];for(var c=0;c<p[0].length;c++){q[c]=[];for(var r=p.length-1;r>=0;r--)q[c].push(p[r][c])}var np={x:cur.x,y:cur.y,s:q,t:cur.t};if(!hit(np))cur=np}
 function loop(t){if(!on){raf=0;return}raf=requestAnimationFrame(loop);if(st!=='run'){draw();return}var dt=Math.min(.05,(t-last)/1000);last=t;drop+=dt;var iv=Math.max(.12,.5-sc/5000);
 while(drop>=iv){drop-=iv;var np={x:cur.x,y:cur.y+1,s:cur.s,t:cur.t};if(hit(np)){fix();break}else cur=np}
