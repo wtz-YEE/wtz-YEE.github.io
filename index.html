@@ -973,7 +973,16 @@ function normalizeApi(v){
   if(!/^https?:\/\//i.test(v)) return '';
   return v;
 }
-try{ S.api=normalizeApi(localStorage.getItem(K_API)); }catch(e){ S.api=''; }
+function parseApis(raw){
+  var out=[];
+  String(raw||'').split(/[\n,;]+/).forEach(function(x){
+    var v=normalizeApi(x);
+    if(v && out.indexOf(v)<0) out.push(v);
+  });
+  return out;
+}
+try{ S.apis=parseApis(localStorage.getItem(K_API)); }catch(e){ S.apis=[]; }
+S.api=(S.apis&&S.apis[0])||'';
 try{
   var sv=JSON.parse(localStorage.getItem(K_SESS)||'null');
   if(sv&&sv.token&&sv.username) S.user=sv;
@@ -1103,19 +1112,38 @@ function call(path,payload,method){
   /* 没有合法 API 地址 → 走本地模式，永不发网络请求 */
   if(!S.api) return localAsync(path,body);
 
-  var url=S.api+path;
-  var opt={method:method||'POST',headers:{'Content-Type':'application/json'}};
-  if(opt.method!=='GET') opt.body=JSON.stringify(body);
-  return fetch(url,opt).then(function(res){
-    if(!res.ok) throw new Error('HTTP '+res.status+' @ '+url);
-    return res.json();
-  }).catch(function(err){
-    /* 把具体 URL 带进错误信息，方便定位 */
-    var e2=new Error((err&&err.message?err.message:'网络请求失败')+' — '+url);
-    e2.url=url;
-    e2.isNetwork=true;
-    throw e2;
-  });
+  var m=method||'POST';
+  var tried=[];
+  function qs(o){
+    var a=[];
+    for(var k in o) if(o[k]!==undefined&&o[k]!==null) a.push(encodeURIComponent(k)+'='+encodeURIComponent(o[k]));
+    return a.join('&');
+  }
+  function attempt(api){
+    tried.push(api);
+    var url=api+path+(m==='GET'&&body&&qs(body)?'?'+qs(body):'');
+    var opt={method:m,headers:{'Content-Type':'application/json'}};
+    if(m!=='GET') opt.body=JSON.stringify(body);
+    return fetch(url,opt).then(function(res){
+      if(!res.ok) throw new Error('HTTP '+res.status+' @ '+url);
+      return res.json();
+    }).catch(function(err){
+      /* 多云端故障转移：当前主机失败自动尝试下一个候选地址 */
+      var cands=(S.apis&&S.apis.length)?S.apis:[S.api];
+      var next=null;
+      for(var i=0;i<cands.length;i++) if(tried.indexOf(cands[i])<0){next=cands[i];break}
+      if(next){
+        S.api=next;
+        try{ localStorage.setItem(K_API,S.apis.join('\n')); }catch(e){}
+        return attempt(next);
+      }
+      var e2=new Error((err&&err.message?err.message:'网络请求失败')+' — '+url);
+      e2.url=url;
+      e2.isNetwork=true;
+      throw e2;
+    });
+  }
+  return attempt(S.api);
 }
 
 /* ---------- 提示 ---------- */
@@ -1539,22 +1567,23 @@ function gbOpenConfig(){
 function gbCloseConfig(){ $('gb_config_dialog').style.display='none'; }
 function gbSaveConfig(){
   var raw=$('gb_api_input').value.trim();
-  var v=normalizeApi(raw);
+  var apis=parseApis(raw);
 
-  if(raw && !v){
-    say('地址必须以 http:// 或 https:// 开头',false);
+  if(raw && !apis.length){
+    say('地址必须以 http:// 或 https:// 开头（可多个，用逗号/换行分隔）',false);
     return;
   }
 
-  S.api=v;
+  S.apis=apis;
+  S.api=apis[0]||'';
   try{
-    if(v) localStorage.setItem(K_API,v);
+    if(apis.length) localStorage.setItem(K_API,apis.join('\n'));
     else localStorage.removeItem(K_API);
   }catch(e){}
 
   gbCloseConfig();
   updateModeLabel();
-  say(v?('已切换到云端 · '+v):'已切回本地模式',true);
+  say(apis.length?(apis.length>1?'已接入多云端 · '+apis.length+' 台主机':'已切换到云端 · '+apis[0]):'已切回本地模式',true);
   loadGuestBook();
   if(S.user) pmRefreshConversations();
 }
@@ -1567,12 +1596,13 @@ function autoCloud(){
     if(!r.ok) throw 0;
     return r.text();
   }).then(function(t){
-    var v=normalizeApi((t||'').replace(/^\s+|\s+$/g,''));
-    if(!v) return;
-    S.api=v;
-    try{ localStorage.setItem(K_API,v); }catch(e){}
+    var apis=parseApis(t||'');
+    if(!apis.length) return;
+    S.apis=apis;
+    S.api=apis[0];
+    try{ localStorage.setItem(K_API,apis.join('\n')); }catch(e){}
     updateModeLabel();
-    say('已自动接入云端 · '+v,true);
+    say(apis.length>1?('已接入多云端 · '+apis.length+' 台主机'):('已自动接入云端 · '+apis[0]),true);
     loadGuestBook();
     loadNotes();
     hitCloud();
