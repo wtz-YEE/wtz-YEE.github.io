@@ -881,6 +881,10 @@ function applyAuth(){
   $('gb_login_area').style.display=on?'none':'flex';
   $('gb_userinfo').style.display=on?'flex':'none';
   $('gb_pm_panel').classList.toggle('on',on);
+  var lt=$('gb_text'),sb=$('gb_submit'),ib=$('gb_img_btn');
+  lt.disabled=!on; sb.disabled=!on; ib.disabled=!on;
+  lt.placeholder=on?'写下留言…':'登录后可留言';
+  sb.textContent=on?'提交留言':'登录后可留言';
   if(on){
     $('gb_curuser').textContent=S.user.username;
     $('gb_isadmin').style.display=S.user.is_admin?'inline-block':'none';
@@ -981,6 +985,7 @@ function compressImg(file,cb){
   };r.onerror=function(){cb('')};r.readAsDataURL(file);
 }
 function uploadImg(){
+  if(!S.user) return say('请先登录后再留言',false);
   var f=$('gb_file').files[0];
   if(!f) return;
   if(f.size>8*1024*1024) return say('图片超过 8MB',false);
@@ -1020,6 +1025,7 @@ function compressAv(file,cb){
   };r.onerror=function(){cb('')};r.readAsDataURL(file);
 }
 function uploadAvatar(){
+  if(!S.user) return say('请先登录后再上传头像',false);
   var f=$('gb_av_file').files[0];
   if(!f) return;
   if(f.size>5*1024*1024) return say('图片超过 5MB',false);
@@ -1035,6 +1041,7 @@ function uploadAvatar(){
   });
 }
 function submitGuestBook(){
+  if(!S.user) return say('请先登录后再留言',false);
   var text=$('gb_text').value.trim();
   var name=$('gb_name').value.trim();
   if(!text) return say('请先写点内容',false);
