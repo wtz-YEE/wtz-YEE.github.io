@@ -470,17 +470,17 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 .gb-ava{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;color:#fff;font-size:13px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
 .gb-item-h .gb-ava{width:22px;height:22px;font-size:11px}
 .gb-pick{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.gb-pick .gp{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;cursor:pointer;border:2px solid transparent;transition:border-color .15s,box-shadow .15s}
-.gb-pick .gp:hover{border-color:rgba(255,255,255,.5)}
-.gb-pick .gp.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.gb-pick .gpick{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;cursor:pointer;border:2px solid transparent;transition:border-color .15s,box-shadow .15s}
+.gb-pick .gpick:hover{border-color:rgba(255,255,255,.5)}
+.gb-pick .gpick.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
 .gb-img{margin-top:8px;max-width:100%;max-height:220px;border:1px solid var(--line2);border-radius:3px;display:block;cursor:zoom-in;background:rgba(255,255,255,.03)}
 .gb-att{margin-top:8px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--ink3)}
 .gb-att img{width:44px;height:44px;object-fit:cover;border:1px solid var(--line2);border-radius:3px}
 .gb-att button{border:1px solid var(--line2);color:var(--ink3);font-family:var(--mono);font-size:10px;padding:2px 9px;cursor:pointer;transition:.2s}
 .gb-att button:hover{border-color:#FF5C7A;color:#FF5C7A}
 .gb-ava-img{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
-.gb-pick .gp.up{border-style:dashed;border-color:rgba(255,255,255,.4);background:none;font-size:15px;line-height:1}
-.gb-pick .gp.up img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.gb-pick .gpick.up{border-style:dashed;border-color:rgba(255,255,255,.4);background:none;font-size:11px;line-height:1;letter-spacing:.04em}
+.gb-pick .gpick.up img{width:100%;height:100%;border-radius:50%;object-fit:cover}
 .gb-empty{padding:26px 16px;text-align:center;color:var(--ink3);font-family:var(--mono);font-size:12px;letter-spacing:.18em}
 .gb-dlg{position:fixed;inset:0;z-index:9999;background:rgba(5,7,8,.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .gb-dlg-c{width:min(420px,90vw);background:#171718;border:1px solid var(--line2);padding:24px 22px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
@@ -1000,14 +1000,14 @@ function uploadImg(){
 function initAvatarPick(){
   var box=$('gb_pick');if(!box)return;
   box.innerHTML=AVATARS.map(function(a,i){
-    return '<span class="gp'+(i===S.avatar?' on':'')+'" data-i="'+i+'" style="background:'+a.c+'">'+a.s+'</span>';
-  }).join('')+'<span class="gp up'+(typeof S.avatar==='string'?' on':'')+'" id="gb_av_up">'+(typeof S.avatar==='string'?'<img src="'+esc(S.api+S.avatar)+'">':'＋')+'</span>';
-  box.addEventListener('click',function(e){
-    var t=e.target.closest('.gp');if(!t)return;
+    return '<span class="gpick'+(i===S.avatar?' on':'')+'" data-i="'+i+'" style="background:'+a.c+'">'+a.s+'</span>';
+  }).join('')+'<span class="gpick up'+(typeof S.avatar==='string'?' on':'')+'" id="gb_av_up" title="上传自定义头像">'+(typeof S.avatar==='string'?'<img src="'+esc(S.api+S.avatar)+'">':'上传')+'</span>';
+  box.onclick=function(e){
+    var t=e.target.closest('.gpick');if(!t)return;
     if(t.id==='gb_av_up'){ if(!S.api) return say('需云端模式才能上传头像',false); $('gb_av_file').click(); return; }
     S.avatar=+t.getAttribute('data-i');
-    var all=box.querySelectorAll('.gp');all.forEach(function(x){x.classList.toggle('on',x===t)});
-  });
+    var all=box.querySelectorAll('.gpick');all.forEach(function(x){x.classList.toggle('on',x===t)});
+  };
 }
 function compressAv(file,cb){
   var r=new FileReader();r.onload=function(){
