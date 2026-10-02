@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>PRTS · 指挥中心</title>
+<title>PRTS · 档案室</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -539,909 +539,86 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
   <section id="v-home" class="view on">
   <div id="heroMain" class="hero">
     <div class="h-grid"></div>
-    <div class="h-eyebrow">PRTS // COMMAND CENTER</div>
+    <div class="h-eyebrow">PRTS // THE ARCHIVE</div>
     <h1>
       <span class="h-badge"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8 L52 21 V43 L32 56 L12 43 V21 Z" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M32 20 L41 26 V38 L32 44 L23 38 V26 Z" fill="currentColor"/></svg></span>
-      <span class="h-char">指</span><span class="h-char">挥</span><span class="h-char">中</span><span class="h-char">心</span>
+      <span class="h-char">档</span><span class="h-char">案</span><span class="h-char">室</span>
     </h1>
-    <p class="h-sub">PRTS 档案室 ▸ 守夜人论坛 —— 双入口</p>
-    <p class="h-mono">档案 · 终端 · 技能 · 模组 —— 云端留言板在此</p>
-    <div class="h-file">FILE WTZ·ROOT &nbsp;|&nbsp; <b>2 入口</b> · 档案 + 论坛 · 云端联动</div>
+    <p class="h-sub" id="permMainLv">当前 LV 0 · 可提升至 LV 1</p>
+    <p class="h-mono">技能树 ▸ 终端接口 ▸ 模组开发 —— 仅此三门</p>
+    <div class="h-file">FILE WTZ·ROOT &nbsp;|&nbsp; <b>3 入口</b> · 3 领域档案 · 密级待核验</div>
   </div>
 
 <div class="block" style="padding-top:0">
     <div class="grid two" style="max-width:980px;margin:0 auto">
-      <a class="card" href="prts.html">
+      <a class="card" href="技能树.html">
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <path d="M200 30 L320 80 V140 L200 178 L80 140 V80 Z" fill="none" stroke="#FFFFFF" stroke-width="3"/>
-            <path d="M200 30 L200 178 M80 80 L320 140 M320 80 L80 140" stroke="#707070" stroke-width="2"/>
-            <rect x="164" y="62" width="72" height="72" rx="4" fill="none" stroke="#D8D8D8" stroke-width="2.5"/>
-            <text x="200" y="186" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">PRTS ARCHIVE</text>
+            <circle cx="200" cy="82" r="26" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+            <path d="M200 108 L150 152 M200 108 L262 148 M200 108 L196 168" stroke="#D8D8D8" stroke-width="2"/>
+            <circle cx="150" cy="152" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
+            <circle cx="262" cy="148" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
+            <circle cx="196" cy="168" r="14" fill="none" stroke="#A6A6A6" stroke-width="2.5"/>
+            <circle cx="200" cy="82" r="8" fill="#FFFFFF"/>
+            <text x="200" y="186" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">SKILL TREE</text>
           </svg>
         </div>
         <div class="card-bd">
-          <div class="c-tag">ARCHIVE · 主站</div>
-          <h3>PRTS 档案室</h3>
-          <p>技能树 · 终端接口 · 模组开发，三大领域档案入口。</p>
-          <span class="c-go">进入档案室
+          <div class="c-tag">PERSONAL FILE · 个人档案</div>
+          <h3>wtz 的技能树</h3>
+          <p>三大兴趣领域 · 已学会 / 前置 / 可继续学习，一图纵览。</p>
+          <span class="c-go">展开技能树
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
           </span>
         </div>
       </a>
-      <a class="card" href="守夜人论坛.html">
+      <a class="card" href="终端接口.html">
+        <div class="spot" aria-hidden="true"></div>
+        <div class="thumb">
+          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+            <rect width="400" height="200" fill="#0B0B0C"/>
+            <rect x="34" y="42" width="332" height="120" fill="#131315" stroke="rgba(232,226,212,.25)" stroke-width="2"/>
+            <circle cx="56" cy="58" r="4" fill="#F0F0F0"/><circle cx="72" cy="58" r="4" fill="#A6A6A6"/><circle cx="88" cy="58" r="4" fill="#707070"/>
+            <text x="56" y="96" font-family="monospace" font-size="15" fill="#B5AE9D">&gt; whoami</text>
+            <text x="56" y="122" font-family="monospace" font-size="15" fill="#D8D8D8">LV 0 · 待验证</text>
+            <text x="56" y="148" font-family="monospace" font-size="15" fill="#B5AE9D">&gt; <tspan class="tcur">_</tspan></text>
+          </svg>
+        </div>
+        <div class="card-bd">
+          <div class="c-tag">TERMINAL · 全功能终端</div>
+          <h3>终端接口</h3>
+          <p>命令终端 · 权限体系 · 八款小游戏 · 双重密钥，全部功能所在地。</p>
+          <span class="c-go">进入终端
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
+      <a class="card" href="模组开发.html">
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
           <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
             <rect width="400" height="200" fill="#0A0A0A"/>
-            <rect x="70" y="52" width="260" height="96" rx="6" fill="none" stroke="#FFFFFF" stroke-width="3"/>
-            <rect x="70" y="52" width="260" height="24" fill="rgba(255,255,255,.08)"/>
-            <circle cx="86" cy="64" r="4" fill="#D8D8D8"/><circle cx="102" cy="64" r="4" fill="#707070"/><circle cx="118" cy="64" r="4" fill="#3d3d3d"/>
-            <rect x="86" y="88" width="120" height="8" fill="#707070"/>
-            <rect x="86" y="104" width="160" height="8" fill="#4d4d4d"/>
-            <rect x="86" y="120" width="100" height="8" fill="#3d3d3d"/>
-            <rect x="300" y="94" width="20" height="14" rx="3" fill="#FF5C7A"/>
-            <text x="200" y="176" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">NIGHT WATCH FORUM</text>
+            <path d="M96 78 L200 38 L304 78 L304 128 L200 168 L96 128 Z" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+            <path d="M200 38 L200 168 M96 78 L304 128 M304 78 L96 128" stroke="#707070" stroke-width="2"/>
+            <path d="M286 132 a20 20 0 1 0 6 12" fill="none" stroke="#D8D8D8" stroke-width="4"/>
+            <circle cx="306" cy="156" r="7" fill="#FFFFFF"/>
+            <text x="200" y="186" font-family="monospace" font-size="12" fill="#707070" text-anchor="middle">MOD DEV</text>
           </svg>
         </div>
         <div class="card-bd">
-          <div class="c-tag">FORUM · 社区广场</div>
-          <h3>守夜人论坛</h3>
-          <p>发帖 · 附图 · 标签 · 评论，深夜守夜人交流站。</p>
-          <span class="c-go">进入论坛
+          <div class="c-tag">PROJECT · 模组工坊</div>
+          <h3>模组开发</h3>
+          <p>开发环境 · 功能清单 · 路线图，Mod 工程总览工作台。</p>
+          <span class="c-go">进入工坊
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
           </span>
         </div>
       </a>
-<!-- ============ GUESTBOOK / 私聊 ============ -->
-<div class="gb" id="gbRoot">
-  <div class="gb-head">
-    <b>GUESTBOOK</b>
-    <span>访客留言板 · 私聊频道</span>
-    <span class="gb-mode" id="gb_status" title="点击配置云端接口">本地模式</span>
-    <span class="gb-mode" id="gb_online" style="display:none"></span>
-  </div>
-
-  <!-- 公告区 -->
-  <div class="gb-notes" id="gb_notes" style="display:none">
-    <div class="gb-conv-h">公告<span id="gb_n_btns"></span></div>
-    <div id="gb_n_list"></div>
-    <div class="gb-n-form" id="gb_n_form" style="display:none">
-      <input id="gb_n_text" placeholder="发布公告…" maxlength="120">
-      <button class="gb-btn" id="gb_n_send">发布</button>
-      <button class="gb-btn ghost" id="gb_n_cancel">取消</button>
     </div>
-  </div>
 
-  <!-- 账号区 -->
-  <div class="gb-auth">
-    <div class="gb-row" id="gb_login_area">
-      <input id="gb_user" placeholder="账号" autocomplete="username" maxlength="16">
-      <input id="gb_pwd" type="password" placeholder="密码" autocomplete="current-password" maxlength="32">
-      <button class="gb-btn" id="gb_btn_login">登 录</button>
-      <button class="gb-btn ghost" id="gb_btn_reg">注 册</button>
-    </div>
-    <div class="gb-row" id="gb_userinfo" style="display:none">
-      <span class="gb-who">已登录 · <b id="gb_curuser"></b></span>
-      <span class="gb-tag" id="gb_isadmin" style="display:none">管理员</span>
-      <button class="gb-btn ghost" id="gb_btn_ck">签到</button>
-      <span class="gb-tag" id="gb_ckinfo" style="display:none"></span>
-      <button class="gb-btn ghost" id="gb_btn_pwd">改密</button>
-      <button class="gb-btn ghost" id="gb_btn_logout">登 出</button>
-    </div>
-    <div class="gb-say" id="gb_say"></div>
-  </div>
 
-  <!-- 管理员：当前用户列表 -->
-  <div class="gb-users" id="gb_users_panel" style="display:none">
-    <div class="gb-conv-h">当前用户 <span id="gb_ucnt"></span><button class="gb-btn ghost" id="gb_uref" style="float:right;padding:2px 10px;font-size:11px">刷新</button></div>
-    <div id="gb_ulist"></div>
-  </div>
-
-  <!-- 私聊区 -->
-  <div class="gb-pm" id="gb_pm_panel">
-    <div class="gb-conv">
-      <div class="gb-conv-h">会话列表</div>
-      <div id="pm_conv"></div>
-    </div>
-    <div class="gb-pm-main">
-      <div class="gb-conv-h" id="pm_title">选择会话，或直接输入对方账号</div>
-      <div class="gb-msgs" id="pm_box"></div>
-      <div class="gb-pm-input">
-        <input id="pm_target" placeholder="对方账号" maxlength="16">
-        <input id="pm_msg" placeholder="输入消息，回车发送" maxlength="500">
-        <button class="gb-btn" id="pm_send_btn">发送</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 留言输入 -->
-  <div class="gb-form">
-    <div class="gb-row" style="margin-bottom:8px">
-      <input id="gb_name" placeholder="昵称（访客）" maxlength="16">
-    </div>
-    <div class="gb-row" style="margin-bottom:8px">
-      <span class="gb-who" style="letter-spacing:.14em">头像</span>
-      <span class="gb-pick" id="gb_pick"></span>
-    </div>
-    <textarea id="gb_text" placeholder="写下留言…" maxlength="500"></textarea>
-    <div class="gb-row" style="margin-top:10px">
-      <button class="gb-btn" id="gb_img_btn">发图</button>
-      <button class="gb-btn" id="gb_submit">提交留言</button>
-      <span class="gb-say" id="gb_say2" style="margin:0"></span>
-    </div>
-    <div class="gb-att" id="gb_att" style="display:none"></div>
-    <input type="file" id="gb_file" accept="image/*" style="display:none">
-    <input type="file" id="gb_av_file" accept="image/*" style="display:none">
-  </div>
-
-  <!-- 留言列表 -->
-  <div class="gb-list" id="guestbookList"></div>
-</div>
-
-<!-- 云端配置弹窗 -->
-<div id="gb_config_dialog" class="gb-dlg" style="display:none">
-  <div class="gb-dlg-c">
-    <h4>云端接口配置</h4>
-    <p>填入后端地址（如 <code>http://127.0.0.1:8787</code>）即可启用云端账号 / 私聊；留空则使用本地模式，数据只保存在本机浏览器。</p>
-    <input id="gb_api_input" placeholder="https://example.com/api">
-    <div class="gb-row" style="margin-top:16px;justify-content:flex-end">
-      <button class="gb-btn ghost" id="gb_cfg_cancel">取消</button>
-      <button class="gb-btn" id="gb_cfg_save">保存</button>
-    </div>
-  </div>
-</div>
-
-<!-- 修改密码弹窗 -->
-<div id="gb_pwd_dialog" class="gb-dlg" style="display:none">
-  <div class="gb-dlg-c">
-    <h4>修改密码</h4>
-    <input id="gb_pwd_old" type="password" placeholder="旧密码" maxlength="32">
-    <input id="gb_pwd_new" type="password" placeholder="新密码（4-32 位）" maxlength="32">
-    <div class="gb-row" style="margin-top:16px;justify-content:flex-end">
-      <button class="gb-btn ghost" id="gb_pwd_cancel">取消</button>
-      <button class="gb-btn" id="gb_pwd_save">确认修改</button>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-'use strict';
-
-/* ---------- 常量 & 工具 ---------- */
-var K_API='gb_api_url', K_SESS='gb_session', K_DB='gb_db_v1';
-var AUTH_ERR={ok:false,msg:'登录已失效，请重新登录'};
-function $(id){return document.getElementById(id)}
-function esc(s){
-  return String(s==null?'':s).replace(/[&<>"']/g,function(c){
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-  });
-}
-function nowStr(){
-  var d=new Date(),p=function(n){return(n<10?'0':'')+n};
-  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
-}
-/* 仅用于本地模式的弱哈希，别拿它当生产安全 */
-function hash(s){
-  var h=5381,i;
-  s=String(s);
-  for(i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))|0;
-  return 'h'+(h>>>0).toString(16);
-}
-function rid(){
-  return Math.random().toString(36).slice(2,10)+Date.now().toString(36);
-}
-
-/* ---------- 状态 ---------- */
-var S={api:'',user:null,peer:null,timer:null,avatar:0,img:''};
-var AVATARS=[{c:'#3FE0C8',s:'◆'},{c:'#FF5C7A',s:'▲'},{c:'#FFD166',s:'★'},{c:'#6C8CFF',s:'●'},{c:'#B58CFF',s:'✦'},{c:'#5CE08A',s:'■'},{c:'#FF9F6B',s:'✿'},{c:'#4FD8EB',s:'☂'},{c:'#FFC36B',s:'⚡'},{c:'#8F9BB3',s:'☾'},{c:'#FF7AB8',s:'❖'},{c:'#7BFFB8',s:'☯'}];
-/* 只有 http(s):// 开头的地址才认，否则一律回落到本地模式 */
-function normalizeApi(v){
-  v=String(v||'').trim().replace(/\/+$/,'');
-  if(!v) return '';
-  if(!/^https?:\/\//i.test(v)) return '';
-  return v;
-}
-try{ S.api=normalizeApi(localStorage.getItem(K_API)); }catch(e){ S.api=''; }
-try{
-  var sv=JSON.parse(localStorage.getItem(K_SESS)||'null');
-  if(sv&&sv.token&&sv.username) S.user=sv;
-}catch(e){}
-
-/* ---------- 本地模式数据库 ---------- */
-function dbLoad(){
-  try{
-    var d=JSON.parse(localStorage.getItem(K_DB));
-    if(d&&d.users&&d.guests&&d.pms){
-      d.sessions=d.sessions||{};
-      if(typeof d.seq!=='number') d.seq=1;
-      return d;
-    }
-  }catch(e){}
-  return {users:{},guests:[],pms:[],sessions:{},seq:1};
-}
-function dbSave(d){ try{ localStorage.setItem(K_DB,JSON.stringify(d)); }catch(e){} }
-
-/* ---------- 本地模式路由（与后端接口完全一致） ---------- */
-function localCall(path,p){
-  var d=dbLoad();
-  function me(){
-    var n=d.sessions[p.token];
-    return (n&&d.users[n]) ? {name:n,is_admin:!!d.users[n].is_admin} : null;
-  }
-
-  switch(path){
-    case '/register':{
-      var ru=String(p.username||'').trim(), rp=String(p.password||'');
-      if(!/^[\w\u4e00-\u9fa5]{2,16}$/.test(ru)) return {ok:false,msg:'账号需 2–16 位字母/数字/汉字'};
-      if(rp.length<3) return {ok:false,msg:'密码至少 3 位'};
-      if(d.users[ru]) return {ok:false,msg:'该账号已存在'};
-      var first=Object.keys(d.users).length===0;
-      d.users[ru]={pw:hash(rp),is_admin:first};
-      dbSave(d);
-      return {ok:true,msg:first?'注册成功 · 你已成为管理员':'注册成功，请登录'};
-    }
-    case '/login':{
-      var lu=String(p.username||'').trim(), lp=String(p.password||'');
-      var rec=d.users[lu];
-      if(!rec||rec.pw!==hash(lp)) return {ok:false,msg:'账号或密码错误'};
-      var tk='tk'+rid();
-      d.sessions[tk]=lu; dbSave(d);
-      return {ok:true,username:lu,is_admin:!!rec.is_admin,token:tk};
-    }
-    case '/logout':{
-      if(p.token) delete d.sessions[p.token];
-      dbSave(d); return {ok:true};
-    }
-    case '/guests':
-      return {ok:true,list:d.guests.slice().sort(function(a,b){return b.id-a.id})};
-
-    case '/guest_add':{
-      var txt=String(p.text||'').trim().slice(0,500);
-      if(!txt) return {ok:false,msg:'内容不能为空'};
-      var cu=me();
-      var nm=(cu?cu.name:(String(p.name||'').trim()||'访客')).slice(0,16);
-      d.guests.push({id:d.seq++,user:cu?cu.name:null,name:nm,text:txt,time:nowStr(),avatar:(+p.avatar||0)%12});
-      dbSave(d);
-      return {ok:true};
-    }
-    case '/guest_del':{
-      var cd=me(); if(!cd) return AUTH_ERR;
-      var g=null,i;
-      for(i=0;i<d.guests.length;i++){ if(String(d.guests[i].id)===String(p.id)){ g=d.guests[i]; break; } }
-      if(!g) return {ok:false,msg:'留言不存在'};
-      if(!cd.is_admin&&g.user!==cd.name) return {ok:false,msg:'无权删除该留言'};
-      d.guests=d.guests.filter(function(x){return x!==g});
-      dbSave(d);
-      return {ok:true,msg:'已删除'};
-    }
-    case '/pm_send':{
-      var cs=me(); if(!cs) return AUTH_ERR;
-      var to=String(p.to||'').trim(), msg=String(p.msg||'').trim().slice(0,500);
-      if(!to||!msg) return {ok:false,msg:'请填写收件人与内容'};
-      if(to===cs.name) return {ok:false,msg:'不能给自己发私聊'};
-      if(!d.users[to]) return {ok:false,msg:'收件人不存在'};
-      d.pms.push({id:d.seq++,from:cs.name,to:to,msg:msg,time:nowStr(),read:false});
-      dbSave(d);
-      return {ok:true};
-    }
-    case '/pm_thread':{
-      var ct=me(); if(!ct) return AUTH_ERR;
-      var peer=String(p.peer||'').trim();
-      var list=d.pms.filter(function(m){
-        return (m.from===ct.name&&m.to===peer)||(m.from===peer&&m.to===ct.name);
-      });
-      var ch=false;
-      list.forEach(function(m){ if(m.to===ct.name&&!m.read){ m.read=true; ch=true; } });
-      if(ch) dbSave(d);
-      return {ok:true,list:list};
-    }
-    case '/pm_conv':{
-      var cc=me(); if(!cc) return AUTH_ERR;
-      var map={};
-      d.pms.forEach(function(m){
-        if(m.from!==cc.name&&m.to!==cc.name) return;
-        var peer=m.from===cc.name?m.to:m.from;
-        if(!map[peer]) map[peer]={peer:peer,last:'',time:'',unread:0};
-        map[peer].last=m.msg; map[peer].time=m.time;
-        if(m.to===cc.name&&!m.read) map[peer].unread++;
-      });
-      var arr=Object.keys(map).map(function(k){return map[k]});
-      arr.sort(function(a,b){ return a.time<b.time?1:-1; });
-      return {ok:true,list:arr};
-    }
-    default:
-      return {ok:false,msg:'未知接口 '+path};
-  }
-}
-
-/* ---------- 统一调用：云端 fetch / 本地 localCall ---------- */
-/* ---------- 统一调用：云端 fetch / 本地 localCall ---------- */
-function localAsync(path,body){
-  return new Promise(function(resolve,reject){
-    setTimeout(function(){
-      try{ resolve(localCall(path,body)); }
-      catch(e){ reject(e); }
-    },40);
-  });
-}
-
-function call(path,payload,method){
-  var body=Object.assign({token:S.user?S.user.token:''},payload||{});
-
-  /* 没有合法 API 地址 → 走本地模式，永不发网络请求 */
-  if(!S.api) return localAsync(path,body);
-
-  var url=S.api+path;
-  var opt={method:method||'POST',headers:{'Content-Type':'application/json'}};
-  if(opt.method!=='GET') opt.body=JSON.stringify(body);
-  return fetch(url,opt).then(function(res){
-    if(!res.ok) throw new Error('HTTP '+res.status+' @ '+url);
-    return res.json();
-  }).catch(function(err){
-    /* 把具体 URL 带进错误信息，方便定位 */
-    var e2=new Error((err&&err.message?err.message:'网络请求失败')+' — '+url);
-    e2.url=url;
-    e2.isNetwork=true;
-    throw e2;
-  });
-}
-
-/* ---------- 提示 ---------- */
-function say(msg,ok){
-  var el1=$('gb_say'), el2=$('gb_say2');
-  var cls='gb-say'+(ok===true?' ok':(ok===false?' bad':''));
-  [el1,el2].forEach(function(el){
-    if(!el) return;
-    el.className=cls;
-    el.textContent=msg||'';
-  });
-  if(msg) setTimeout(function(){
-    [el1,el2].forEach(function(el){
-      if(el&&el.textContent===msg) el.textContent='';
-    });
-  },4200);
-}
-
-/* ---------- 登录态 UI ---------- */
-function applyAuth(){
-  var on=!!S.user;
-  $('gb_login_area').style.display=on?'none':'flex';
-  $('gb_userinfo').style.display=on?'flex':'none';
-  $('gb_pm_panel').classList.toggle('on',on);
-  var lt=$('gb_text'),sb=$('gb_submit'),ib=$('gb_img_btn');
-  lt.disabled=!on; sb.disabled=!on; ib.disabled=!on;
-  lt.placeholder=on?'写下留言…':'登录后可留言';
-  sb.textContent=on?'提交留言':'登录后可留言';
-  var gu=on&&S.user.is_admin;
-  $('gb_users_panel').style.display=gu?'block':'none';
-  if(gu) loadUsers();
-  checkinStatus();
-  if(on){
-    $('gb_curuser').textContent=S.user.username;
-    $('gb_isadmin').style.display=S.user.is_admin?'inline-block':'none';
-    $('gb_name').value=S.user.username;
-    $('gb_name').disabled=true;
-    $('gb_name').placeholder='已登录账号';
-  }else{
-    $('gb_name').disabled=false;
-    $('gb_name').placeholder='昵称（访客）';
-  }
-}
-
-/* ---------- 注册 / 登录 / 登出 ---------- */
-function gbRegister(){
-  var u=$('gb_user').value.trim(), p=$('gb_pwd').value;
-  if(!u||!p) return say('请先填写账号与密码',false);
-  return call('/register',{username:u,password:p}).then(function(j){
-    say(j.msg||(j.ok?'注册成功':'注册失败'), !!j.ok);
-    if(j.ok) $('gb_pwd').value='';
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
-}
-
-function gbLogin(){
-  var u=$('gb_user').value.trim(), p=$('gb_pwd').value;
-  if(!u||!p) return say('请先填写账号与密码',false);
-  return call('/login',{username:u,password:p}).then(function(j){
-    if(!j.ok) return say(j.msg||'登录失败',false);
-    S.user={username:j.username,is_admin:!!j.is_admin,token:j.token};
-    try{ localStorage.setItem(K_SESS,JSON.stringify(S.user)); }catch(e){}
-    $('gb_pwd').value='';
-    applyAuth();
-    say('欢迎回来，'+j.username,true);
-    loadGuestBook();
-    pmRefreshConversations();
-    startPoll();
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
-}
-
-function gbLogout(){
-  var done=function(){
-    S.user=null; S.peer=null;
-    try{ localStorage.removeItem(K_SESS); }catch(e){}
-    stopPoll();
-    applyAuth();
-    $('pm_box').innerHTML='';
-    $('pm_conv').innerHTML='';
-    $('pm_target').value='';
-    $('pm_msg').value='';
-    say('已登出',true);
-    loadGuestBook();
-  };
-  call('/logout',{}).then(done,function(){ done(); });
-}
-
-/* ---------- 留言 ---------- */
-function likeBtn(g){
-  var ls=g.likes||[], liked=S.user&&ls.indexOf(S.user.username)>=0;
-  return '<div class="gb-like'+(liked?' on':'')+'" data-like="'+esc(g.id)+'">'+(liked?'♥':'♡')+' '+ls.length+'</div>';
-}
-function renderGuests(list){
-  var box=$('guestbookList');
-  if(!list||!list.length){
-    box.innerHTML='<div class="gb-empty">暂无留言 · 来做第一个吧</div>';
-    return;
-  }
-  box.innerHTML=list.map(function(g){
-    var mine = S.user && g.user===S.user.username;
-    var canDel = S.user && (S.user.is_admin || mine);
-    var av=g.avatar,avH;
-    if(typeof av==='string'&&av.indexOf('/uploads/')===0) avH='<img class="gb-ava-img" src="'+esc(S.api+av)+'">';
-    else{var av0=AVATARS[(+g.avatar||0)%AVATARS.length];avH='<span class="gb-ava" style="background:'+av0.c+'">'+av0.s+'</span>'}
-    return '<div class="gb-item">'+
-      '<div class="gb-item-h">'+
-        avH+
-        '<span class="gb-name">'+esc(g.name)+'</span>'+
-        (g.user?'<span class="gb-tag" style="font-size:9px;padding:1px 6px">已认证</span>':'')+
-        '<span class="gb-time">'+esc(g.time)+'</span>'+
-        (canDel?'<button class="gb-del" data-del="'+esc(g.id)+'">删除</button>':'')+
-      '</div>'+
-      '<div class="gb-text">'+esc(g.text)+'</div>'+
-      (g.image&&S.api?'<img class="gb-img" src="'+esc(S.api+g.image)+'" onclick="window.open(this.src)">':'')+
-      likeBtn(g)+
-    '</div>';
-  }).join('');
-}
-
-function loadGuestBook(){
-  return call('/guests',{},'GET').then(function(j){
-    var o=$('gb_online');
-    if(o&&j.online!==undefined){ o.textContent='在线 '+j.online; o.style.display=''; }
-    renderGuests(j.list||[]);
-  }).catch(function(e){
-    $('guestbookList').innerHTML='<div class="gb-empty">留言加载失败 · '+esc(e.message)+'</div>';
-  });
-}
-
-function compressImg(file,cb){
-  var r=new FileReader();r.onload=function(){
-    var im=new Image();im.onload=function(){
-      var w=im.width,h=im.height,m=1280,k=Math.min(1,m/Math.max(w,h));
-      var cv=document.createElement('canvas');cv.width=Math.round(w*k);cv.height=Math.round(h*k);
-      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
-      cb(cv.toDataURL('image/jpeg',0.82));
-    };im.onerror=function(){cb('')};im.src=r.result;
-  };r.onerror=function(){cb('')};r.readAsDataURL(file);
-}
-function uploadImg(){
-  if(!S.user) return say('请先登录后再留言',false);
-  var f=$('gb_file').files[0];
-  if(!f) return;
-  if(f.size>8*1024*1024) return say('图片超过 8MB',false);
-  say('正在压缩上传…',false);
-  compressImg(f,function(data){
-    if(!data) return say('图片读取失败',false);
-    call('/upload',{data:data}).then(function(j){
-      if(!j.ok) return say(j.msg||'上传失败',false);
-      S.img=j.url;
-      $('gb_att').innerHTML='<img src="'+esc(S.api+j.url)+'"><span>已附带 1 张图片</span><button id="gb_img_rm">移除</button>';
-      $('gb_att').style.display='flex';
-      $('gb_img_rm').addEventListener('click',function(){S.img='';$('gb_att').style.display='none';$('gb_file').value=''});
-      say('图片已就绪',true);
-    }).catch(function(e){ say('上传失败：'+e.message,false); });
-  });
-}
-function initAvatarPick(){
-  var box=$('gb_pick');if(!box)return;
-  box.innerHTML=AVATARS.map(function(a,i){
-    return '<span class="gpick'+(i===S.avatar?' on':'')+'" data-i="'+i+'" style="background:'+a.c+'">'+a.s+'</span>';
-  }).join('')+'<span class="gpick up'+(typeof S.avatar==='string'?' on':'')+'" id="gb_av_up" title="上传自定义头像">'+(typeof S.avatar==='string'?'<img src="'+esc(S.api+S.avatar)+'">':'上传')+'</span>';
-  box.onclick=function(e){
-    var t=e.target.closest('.gpick');if(!t)return;
-    if(t.id==='gb_av_up'){ if(!S.api) return say('需云端模式才能上传头像',false); $('gb_av_file').click(); return; }
-    S.avatar=+t.getAttribute('data-i');
-    var all=box.querySelectorAll('.gpick');all.forEach(function(x){x.classList.toggle('on',x===t)});
-  };
-}
-function compressAv(file,cb){
-  var r=new FileReader();r.onload=function(){
-    var im=new Image();im.onload=function(){
-      var s=Math.min(im.width,im.height),x=(im.width-s)/2,y=(im.height-s)/2;
-      var cv=document.createElement('canvas');cv.width=128;cv.height=128;
-      cv.getContext('2d').drawImage(im,x,y,s,s,0,0,128,128);
-      cb(cv.toDataURL('image/jpeg',0.85));
-    };im.onerror=function(){cb('')};im.src=r.result;
-  };r.onerror=function(){cb('')};r.readAsDataURL(file);
-}
-function uploadAvatar(){
-  if(!S.user) return say('请先登录后再上传头像',false);
-  var f=$('gb_av_file').files[0];
-  if(!f) return;
-  if(f.size>5*1024*1024) return say('图片超过 5MB',false);
-  say('正在上传头像…',false);
-  compressAv(f,function(data){
-    if(!data) return say('头像读取失败',false);
-    call('/upload',{data:data}).then(function(j){
-      if(!j.ok) return say(j.msg||'上传失败',false);
-      S.avatar=j.url;
-      initAvatarPick();
-      say('自定义头像已就绪',true);
-    }).catch(function(e){ say('上传失败：'+e.message,false); });
-  });
-}
-function submitGuestBook(){
-  if(!S.user) return say('请先登录后再留言',false);
-  var text=$('gb_text').value.trim();
-  var name=$('gb_name').value.trim();
-  if(!text) return say('请先写点内容',false);
-  var body={name:name,text:text,avatar:S.avatar};
-  if(S.img) body.image=S.img;
-  return call('/guest_add',body).then(function(j){
-    if(!j.ok) return say(j.msg||'提交失败',false);
-    $('gb_text').value='';$('gb_file').value='';
-    S.img='';$('gb_att').style.display='none';
-    say('留言已提交',true);
-    loadGuestBook();
-  }).catch(function(e){ say('提交失败：'+e.message,false); });
-}
-
-function loadNotes(){
-  if(!S.api) return;
-  call('/notice_get',{}).then(function(j){
-    if(!j.ok) return;
-    var box=$('gb_notes'),lst=$('gb_n_list');
-    box.style.display='block';
-    var adm=S.user&&S.user.is_admin;
-    $('gb_n_btns').innerHTML=adm?'<button class="gb-btn ghost" id="gb_n_new" style="float:right;padding:2px 10px;font-size:11px">发布</button>':'';
-    var nb=$('gb_n_new');
-    if(nb) nb.addEventListener('click',function(){ $('gb_n_form').style.display='flex'; });
-    lst.innerHTML=j.list.slice(0,5).map(function(n){
-      return '<div class="gb-note">'+esc(n.text)+'<span class="gb-note-m">'+esc(n.time)+' · '+esc(n.author)+'</span>'+
-        (adm?'<button class="gb-del" data-nd="'+esc(n.id)+'">×</button>':'')+'</div>';
-    }).join('')||'<div class="gb-note" style="color:var(--ink3)">暂无公告</div>';
-  }).catch(function(){});
-}
-function noticeSend(){
-  var t=$('gb_n_text').value.trim();
-  if(!t) return say('请填写公告内容',false);
-  call('/notice_add',{text:t}).then(function(j){
-    say(j.msg||(j.ok?'公告已发布':'发布失败'),!!j.ok);
-    if(j.ok){ $('gb_n_text').value=''; $('gb_n_form').style.display='none'; loadNotes(); }
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
-}
-function hitCloud(){
-  if(!S.api) return;
-  try{ if(sessionStorage.getItem('gb_hit')) return; }catch(e){}
-  var nm='访客';
-  try{ nm=localStorage.getItem('prts_vn')||'访客'; }catch(e){}
-  if(S.user) nm=S.user.username;
-  call('/hit',{name:nm}).then(function(j){
-    if(!j.ok) return;
-    try{ sessionStorage.setItem('gb_hit','1'); }catch(e){}
-    loadStats();
-  }).catch(function(){});
-}
-function loadStats(){
-  if(!S.api) return;
-  call('/stats_get',{}).then(function(j){
-    if(!j.ok) return;
-    var el=document.getElementsByClassName('site-stat');
-    for(var i=0;i<el.length;i++) el[i].innerHTML='SITE // 云端 '+ (j.visits||0) +' VIEWS · '+(j.visitors||0)+' VISITORS · 今日 '+(j.today||0);
-  }).catch(function(){});
-}
-function doCheckin(){
-  if(!S.user) return say('请先登录',false);
-  call('/checkin',{}).then(function(j){
-    if(!j.ok) return say(j.msg||'签到失败',false);
-    say(j.done?('今日已签到 · 连签 '+j.streak+' 天 · 共 '+j.total+' 天'):('签到成功 · 连签 '+j.streak+' 天 · 共 '+j.total+' 天'),true);
-    checkinStatus();
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
-}
-function checkinStatus(){
-  var el=$('gb_ckinfo');
-  if(!el) return;
-  if(!S.user){ el.style.display='none'; return; }
-  call('/checkin_status',{}).then(function(j){
-    if(!j.ok) return;
-    el.textContent='签到：'+(j.done?'今日已签':'未签')+' · 连签 '+j.streak+' 天 · 共 '+j.total+' 天';
-    el.style.display='';
-  }).catch(function(){});
-}
-function loadUsers(){
-  if(!S.user||!S.user.is_admin) return;
-  call('/admin_users',{}).then(function(j){
-    if(!j.ok) return;
-    var box=$('gb_ulist');
-    $('gb_ucnt').textContent='('+j.list.length+')';
-    if(j.root){
-      box.innerHTML=j.list.map(function(u){
-        return '<div class="gb-user-i"><span class="dot '+(u.online?'on':'off')+'"></span><b>'+esc(u.name)+'</b>'+
-          (u.is_admin?'<span class="adm">管理员</span>':'')+
-          '<span class="pwd">'+esc(u.pwd)+'</span>'+
-          (S.user&&S.user.username!==u.name?'<button class="gb-btn ghost" data-ua="'+esc(u.name)+'" data-uadm="'+(u.is_admin?'1':'0')+'" style="padding:1px 8px;font-size:10px">'+(u.is_admin?'撤销':'授予')+'</button>':'')+
-          '</div>';
-      }).join('')||'<div class="gb-empty" style="padding:10px">暂无用户</div>';
-    }else{
-      box.innerHTML='<div class="gb-user-i"><span class="adm" style="color:var(--ink3);border-color:var(--ink3)">受限视图 · 仅用户名</span></div>'+
-        j.list.map(function(u){
-          return '<div class="gb-user-i"><b>'+esc(u.name)+'</b></div>';
-        }).join('');
-    }
-  }).catch(function(){});
-}
-
-/* ---------- 私聊 ---------- */
-function renderConvs(list){
-  var box=$('pm_conv');
-  if(!list||!list.length){
-    box.innerHTML='<div class="gb-empty" style="padding:18px 10px">暂无会话</div>';
-    return;
-  }
-  box.innerHTML=list.map(function(c){
-    var on = S.peer===c.peer ? ' on' : '';
-    return '<div class="gb-conv-i'+on+'" data-peer="'+esc(c.peer)+'">'+
-      '<div class="p">'+esc(c.peer)+(c.unread?'<span class="u">'+c.unread+'</span>':'')+'</div>'+
-      '<div class="l">'+esc(c.last)+'</div>'+
-    '</div>';
-  }).join('');
-}
-
-function renderThread(list){
-  var box=$('pm_box');
-  if(!list||!list.length){
-    box.innerHTML='<div class="gb-empty">还没有消息 · 说点什么吧</div>';
-    return;
-  }
-  box.innerHTML=list.map(function(m){
-    var mine = S.user && m.from===S.user.username;
-    return '<div class="gb-bub '+(mine?'me':'you')+'">'+
-      '<div class="gb-bub-t">'+esc(m.time)+' · '+esc(m.from)+'</div>'+
-      '<div class="gb-bub-m">'+esc(m.msg)+'</div>'+
-    '</div>';
-  }).join('');
-  box.scrollTop=box.scrollHeight;
-}
-
-function pmRefreshConversations(){
-  if(!S.user) return Promise.resolve();
-  return call('/pm_conv',{}).then(function(j){
-    renderConvs(j.list||[]);
-  }).catch(function(){});
-}
-
-function pmOpen(peer){
-  if(!S.user||!peer) return;
-  S.peer=peer;
-  $('pm_target').value=peer;
-  $('pm_title').textContent='与 '+peer+' 的私聊';
-  return pmRefreshThread().then(pmRefreshConversations);
-}
-
-function pmRefreshThread(){
-  if(!S.user||!S.peer) return Promise.resolve();
-  return call('/pm_thread',{peer:S.peer}).then(function(j){
-    renderThread(j.list||[]);
-  }).catch(function(){});
-}
-
-function pmSend(){
-  if(!S.user) return say('请先登录',false);
-  var to=$('pm_target').value.trim();
-  var msg=$('pm_msg').value.trim();
-  if(!to) return say('请填写对方账号',false);
-  if(!msg) return say('消息不能为空',false);
-  return call('/pm_send',{to:to,msg:msg,token:S.user&&S.user.token}).then(function(j){
-    if(!j.ok) return say(j.msg||'发送失败',false);
-    $('pm_msg').value='';
-    say('已发送',true);
-    S.peer=to;
-    $('pm_title').textContent='与 '+to+' 的私聊';
-    return pmRefreshThread().then(pmRefreshConversations);
-  }).catch(function(e){ say('发送失败：'+e.message,false); });
-}
-
-/* ---------- 轮询 ---------- */
-function startPoll(){
-  stopPoll();
-  S.timer=setInterval(function(){
-    if(document.hidden) return;
-    if(S.api) loadGuestBook();
-    if(!S.user) return;
-    pmRefreshConversations();
-    if(S.user&&S.user.is_admin) loadUsers();
-    if(S.peer) pmRefreshThread();
-  },6000);
-}
-function stopPoll(){
-  if(S.timer){ clearInterval(S.timer); S.timer=null; }
-}
-
-/* ---------- 云端配置 ---------- */
-function updateModeLabel(){
-  var el=$('gb_status');
-  if(S.api){
-    el.textContent='云端 · '+S.api.replace(/^https?:\/\//,'');
-    el.title='点击修改后端地址';
-  }else{
-    el.textContent='本地模式';
-    el.title='点击配置云端接口';
-  }
-}
-function gbOpenConfig(){
-  $('gb_api_input').value=S.api;
-  $('gb_config_dialog').style.display='flex';
-  setTimeout(function(){ $('gb_api_input').focus(); },40);
-}
-function gbCloseConfig(){ $('gb_config_dialog').style.display='none'; }
-function gbSaveConfig(){
-  var raw=$('gb_api_input').value.trim();
-  var v=normalizeApi(raw);
-
-  if(raw && !v){
-    say('地址必须以 http:// 或 https:// 开头',false);
-    return;
-  }
-
-  S.api=v;
-  try{
-    if(v) localStorage.setItem(K_API,v);
-    else localStorage.removeItem(K_API);
-  }catch(e){}
-
-  gbCloseConfig();
-  updateModeLabel();
-  say(v?('已切换到云端 · '+v):'已切回本地模式',true);
-  loadGuestBook();
-  if(S.user) pmRefreshConversations();
-}
-
-/* 启动时自动从 GitHub 读取云端地址（由「一键启动云端.bat」推送） */
-function autoCloud(){
-  fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){
-    if(!r.ok) throw 0;
-    return r.text();
-  }).then(function(t){
-    var v=normalizeApi((t||'').replace(/^\s+|\s+$/g,''));
-    if(!v) return;
-    S.api=v;
-    try{ localStorage.setItem(K_API,v); }catch(e){}
-    updateModeLabel();
-    say('已自动接入云端 · '+v,true);
-    loadGuestBook();
-    loadNotes();
-    hitCloud();
-    if(S.user) pmRefreshConversations();
-  }).catch(function(){});
-}
-
-/* ---------- 事件绑定 ---------- */
-function bind(){
-  $('gb_btn_reg').addEventListener('click',gbRegister);
-  $('gb_btn_login').addEventListener('click',gbLogin);
-  $('gb_btn_logout').addEventListener('click',gbLogout);
-  $('gb_submit').addEventListener('click',submitGuestBook);
-  $('gb_uref').addEventListener('click',loadUsers);
-  $('gb_btn_ck').addEventListener('click',doCheckin);
-  $('gb_n_send').addEventListener('click',noticeSend);
-  $('gb_n_cancel').addEventListener('click',function(){ $('gb_n_form').style.display='none'; });
-  $('gb_n_list').addEventListener('click',function(e){
-    var b=e.target.closest('[data-nd]'); if(!b) return;
-    call('/notice_del',{id:b.getAttribute('data-nd')}).then(function(j){
-      if(!j.ok) return say(j.msg||'删除失败',false);
-      loadNotes();
-    }).catch(function(e){ say('请求失败：'+e.message,false); });
-  });
-  $('gb_btn_pwd').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='flex'; });
-  $('gb_pwd_cancel').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='none'; });
-  $('gb_pwd_save').addEventListener('click',function(){
-    var o=$('gb_pwd_old').value,n=$('gb_pwd_new').value;
-    if(!o||!n) return say('请填写完整',false);
-    call('/change_pwd',{old:o,new:n}).then(function(j){
-      say(j.msg||(j.ok?'密码已修改':'修改失败'),!!j.ok);
-      if(j.ok){ $('gb_pwd_dialog').style.display='none'; $('gb_pwd_old').value=''; $('gb_pwd_new').value=''; }
-    }).catch(function(e){ say('请求失败：'+e.message,false); });
-  });
-  $('guestbookList').addEventListener('click',function(e){
-    var b=e.target.closest('.gb-like'); if(!b) return;
-    if(!S.user) return say('请先登录后再点赞',false);
-    call('/guest_like',{id:b.getAttribute('data-like')}).then(function(j){
-      if(!j.ok) return say(j.msg||'点赞失败',false);
-      loadGuestBook();
-    }).catch(function(e){ say('点赞失败：'+e.message,false); });
-  });
-  $('gb_ulist').addEventListener('click',function(e){
-    var b=e.target.closest('[data-ua]'); if(!b) return;
-    var t=b.getAttribute('data-ua'),adm=b.getAttribute('data-uadm')==='1';
-    call('/admin_set_admin',{target:t,admin:!adm}).then(function(j){
-      say(j.msg||(j.ok?'已更新':'失败'),!!j.ok);
-      if(j.ok) loadUsers();
-    }).catch(function(e){ say('请求失败：'+e.message,false); });
-  });
-  $('gb_img_btn').addEventListener('click',function(){
-    if(!S.api) return say('需云端模式才能发图',false);
-    $('gb_file').click();
-  });
-  $('gb_file').addEventListener('change',uploadImg);
-  $('gb_av_file').addEventListener('change',uploadAvatar);
-  initAvatarPick();
-  $('pm_send_btn').addEventListener('click',pmSend);
-  $('gb_status').addEventListener('click',gbOpenConfig);
-  $('gb_cfg_save').addEventListener('click',gbSaveConfig);
-  $('gb_cfg_cancel').addEventListener('click',gbCloseConfig);
-  $('gb_config_dialog').addEventListener('click',function(e){
-    if(e.target===$('gb_config_dialog')) gbCloseConfig();
-  });
-
-  /* 密码框回车即登录 */
-  $('gb_pwd').addEventListener('keydown',function(e){
-    if(e.key==='Enter') gbLogin();
-  });
-
-  /* 留言删除（事件委托，管理员 / 本人可删） */
-  $('guestbookList').addEventListener('click',function(e){
-    var btn=e.target.closest('[data-del]');
-    if(!btn) return;
-    if(!confirm('确定删除这条留言？')) return;
-    call('/guest_del',{id:btn.getAttribute('data-del'),token:S.user&&S.user.token}).then(function(j){
-      say(j.msg||(j.ok?'已删除':'删除失败'),!!j.ok);
-      if(j.ok) loadGuestBook();
-    }).catch(function(err){ say('删除失败：'+err.message,false); });
-  });
-
-  /* 会话列表点击 */
-  $('pm_conv').addEventListener('click',function(e){
-    var it=e.target.closest('[data-peer]');
-    if(!it) return;
-    pmOpen(it.getAttribute('data-peer'));
-  });
-
-  /* 私聊回车发送 */
-  $('pm_msg').addEventListener('keydown',function(e){
-    if(e.key==='Enter'){ e.preventDefault(); pmSend(); }
-  });
-  $('pm_target').addEventListener('keydown',function(e){
-    if(e.key==='Enter'){ e.preventDefault(); $('pm_msg').focus(); }
-  });
-}
-
-/* ---------- 启动 ---------- */
-bind();
-updateModeLabel();
-applyAuth();
-loadGuestBook();
-autoCloud();
-if(S.user){
-  pmRefreshConversations();
-  startPoll();
-}
-
-/* 暴露到全局，兼容页面里可能存在的内联调用 */
-window.gbRegister=gbRegister;
-window.gbLogin=gbLogin;
-window.gbLogout=gbLogout;
-window.submitGuestBook=submitGuestBook;
-window.loadGuestBook=loadGuestBook;
-window.pmSend=pmSend;
-window.pmRefresh=pmRefreshThread;
-window.gbOpenConfig=gbOpenConfig;
-window.gbCloseConfig=gbCloseConfig;
-window.gbSaveConfig=gbSaveConfig;
-
-})();
-</script>
   </div>
 
 </section>
@@ -1449,8 +626,8 @@ window.gbSaveConfig=gbSaveConfig;
 </main>
 
 <footer class="foot">
-  <span>COMMAND v2.2 · 指挥中心 · 双入口 · 云端留言板</span>
-  <a class="f-switch" href="守夜人论坛.html">切换：论坛</a>
+  <span>ARCHIVE v2.1 · 档案室 已连接（黑白）</span>
+  <a class="f-switch" href="终端接口.html">切换：终端接口</a>
 </footer>
 
 <div class="crt" aria-hidden="true"></div>
