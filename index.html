@@ -1899,8 +1899,9 @@ function bind(){
     if(!btn) return;
     if(!confirm('确定删除这条留言？')) return;
     call('/guest_del',{id:btn.getAttribute('data-del'),token:S.user&&S.user.token}).then(function(j){
-      say(j.msg||(j.ok?'已删除':'删除失败'),!!j.ok);
-      if(j.ok){
+      var gone=!!(j&&(j.ok||(j.msg||'').indexOf('不存在')>=0));
+      say((j&&j.msg)||(gone?'已删除':'删除失败'),gone);
+      if(gone){
         var did=String(btn.getAttribute('data-del'));
         try{
           var cc=JSON.parse(localStorage.getItem(K_GB)||'null');
