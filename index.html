@@ -508,9 +508,26 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 .gb-dlg-c input{width:100%;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:10px 12px;font-size:13px;outline:none;font-family:var(--mono)}
 .gb-dlg-c input:focus{border-color:var(--accent)}
 @media(max-width:640px){.gb-head{flex-wrap:wrap}.gb-mode{margin-left:0}}
+/* 手动刷新 + 主机更新提示 */
+.gb-refresh{margin-left:10px;border:1px solid var(--line2);color:var(--ink2);padding:3px 12px;font-size:10.5px;letter-spacing:.12em;transition:border-color .2s,color .2s}
+.gb-refresh:hover{border-color:var(--ink);color:var(--ink)}
+.gb-refresh:active{transform:scale(.94)}
+#updBar{position:fixed;top:0;left:0;right:0;z-index:99;display:flex;align-items:center;gap:12px;padding:10px 20px;background:#0B0C0E;border-bottom:1px solid var(--ink);color:var(--ink);font-size:12.5px;animation:updin .4s cubic-bezier(.22,1,.36,1) both}
+#updBar.hidden{display:none}
+#updBar .u-ic{color:var(--bad);font-size:15px;animation:blink 1.4s steps(1) infinite}
+#updBar b{font-weight:700}
+#updBar .u-btn{margin-left:auto;border:1px solid var(--ink);color:var(--ink);padding:6px 16px;font-size:11.5px;letter-spacing:.18em;background:none;cursor:pointer;transition:background .2s,color .2s}
+#updBar .u-btn:hover{background:var(--ink);color:#0B0C0E}
+@keyframes updin{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
 
 </style>
 <body>
+
+<div id="updBar" class="hidden">
+  <span class="u-ic">◈</span>
+  <span>主机检测到更新发布 · <b>手动刷新以同步</b></span>
+  <button class="u-btn" id="updBtn">刷新</button>
+</div>
 
 <div id="boot" role="status" aria-label="系统启动中">
   <div class="bt">
@@ -619,6 +636,7 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
     <span>访客留言板 · 私聊频道</span>
     <span class="gb-mode" id="gb_status" title="点击配置云端接口">本地模式</span>
     <span class="gb-mode" id="gb_online" style="display:none"></span>
+    <button class="gb-refresh" id="gb_refresh">刷新留言</button>
   </div>
 
   <!-- 公告区 -->
@@ -1277,7 +1295,6 @@ function startPoll(){
   stopPoll();
   S.timer=setInterval(function(){
     if(document.hidden) return;
-    if(S.api) loadGuestBook();
     if(!S.user) return;
     pmRefreshConversations();
     if(S.user&&S.user.is_admin) loadUsers();
@@ -1348,6 +1365,28 @@ function autoCloud(){
   }).catch(function(){});
 }
 
+/* 主机版本检测（加载时一次 · 手动刷新，不轮询不自动刷新） */
+(function(){
+  var VK='wz_ver';
+  var bar=document.getElementById('updBar');
+  var btn=document.getElementById('updBtn');
+  btn.addEventListener('click',function(){location.reload()});
+  function chk(){
+    fetch('https://api.github.com/repos/wtz-YEE/wtz-YEE.github.io/commits/main').then(function(r){
+      if(!r.ok)throw 0;
+      return r.json();
+    }).then(function(j){
+      var sha=j.sha||'';
+      if(!sha)return;
+      var old='';
+      try{old=localStorage.getItem(VK)||''}catch(e){}
+      if(old&&old!==sha)bar.classList.remove('hidden');
+      try{localStorage.setItem(VK,sha)}catch(e){}
+    }).catch(function(){});
+  }
+  setTimeout(chk,1200);
+})();
+
 /* ---------- 事件绑定 ---------- */
 function bind(){
   $('gb_btn_reg').addEventListener('click',gbRegister);
@@ -1400,6 +1439,10 @@ function bind(){
   initAvatarPick();
   $('pm_send_btn').addEventListener('click',pmSend);
   $('gb_status').addEventListener('click',gbOpenConfig);
+  $('gb_refresh').addEventListener('click',function(){
+    loadGuestBook();
+    say('留言已手动刷新',true);
+  });
   $('gb_cfg_save').addEventListener('click',gbSaveConfig);
   $('gb_cfg_cancel').addEventListener('click',gbCloseConfig);
   $('gb_config_dialog').addEventListener('click',function(e){
