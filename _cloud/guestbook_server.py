@@ -47,6 +47,11 @@ if not os.path.exists(PM_FILE):
     with open(PM_FILE, "w", encoding="utf-8") as f:
         json.dump([], f, ensure_ascii=False)
 
+# 初始化通知存储
+if not os.path.exists(os.path.join(_BASE, "notifications.json")):
+    with open(os.path.join(_BASE, "notifications.json"), "w", encoding="utf-8") as f:
+        json.dump([], f, ensure_ascii=False)
+
 
 # 获取全部留言
 @app.route('/guestbook', methods=["GET"])
@@ -82,10 +87,87 @@ def register():
     if uname in users:
         return jsonify({"ok": False, "msg": "账号已存在"})
 
-    users[uname] = {"pwd": pwd, "is_admin": False}
+    q = (data.get("q") or "").strip()[:60]
+    a = (data.get("a") or "").strip()[:60]
+    users[uname] = {"pwd": pwd, "is_admin": False, "reg": _time.strftime("%Y-%m-%d %H:%M:%S")}
+    if q and a:
+        users[uname]["sec_q"] = q
+        users[uname]["sec_a"] = a
     with open(USER_FILE, "w", encoding="utf-8") as f:
         json.dump(users, f, ensure_ascii=False)
     return jsonify({"ok": True, "msg": "注册成功"})
+
+
+# 设置安全问题（登录态）
+@app.route("/sec_set", methods=["POST"])
+def sec_set():
+    data = request.get_json()
+    tk = data.get("token", "")
+    q = (data.get("q") or "").strip()[:60]
+    a = (data.get("a") or "").strip()[:60]
+    if not q or not a:
+        return jsonify({"ok": False, "msg": "请填写问题与答案"})
+    with open(USER_FILE, "r", encoding="utf-8") as f:
+        users = json.load(f)
+    ses = users.get("__sessions", {})
+    name = None
+    for k, v in ses.items():
+        if k == tk:
+            name = v[0] if isinstance(v, list) else v
+            break
+    if not name or not users.get(name):
+        return jsonify({"ok": False, "msg": "登录已失效"})
+    users[name]["sec_q"] = q
+    users[name]["sec_a"] = a
+    with open(USER_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False)
+    return jsonify({"ok": True, "msg": "安全问题已设置"})
+
+
+# 找回密码第一步：获取安全问题
+@app.route("/recover_q", methods=["POST"])
+def recover_q():
+    data = request.get_json()
+    uname = (data.get("username") or "").strip()
+    if not uname:
+        return jsonify({"ok": False, "msg": "请输入账号"})
+    with open(USER_FILE, "r", encoding="utf-8") as f:
+        users = json.load(f)
+    u = users.get(uname)
+    if not u:
+        return jsonify({"ok": False, "msg": "账号不存在"})
+    if not u.get("sec_q"):
+        return jsonify({"ok": False, "msg": "该账号未设置安全问题"})
+    return jsonify({"ok": True, "question": u["sec_q"]})
+
+
+# 找回密码第二步：验证答案并重置
+@app.route("/recover", methods=["POST"])
+def recover():
+    data = request.get_json()
+    uname = (data.get("username") or "").strip()
+    ans = (data.get("answer") or "").strip()
+    newpwd = data.get("newpwd") or ""
+    if not uname or not newpwd:
+        return jsonify({"ok": False, "msg": "请填写完整信息"})
+    if len(newpwd) < 1 or len(newpwd) > 32:
+        return jsonify({"ok": False, "msg": "密码长度需在 1-32 之间"})
+    with open(USER_FILE, "r", encoding="utf-8") as f:
+        users = json.load(f)
+    u = users.get(uname)
+    if not u:
+        return jsonify({"ok": False, "msg": "账号不存在"})
+    if not u.get("sec_a"):
+        return jsonify({"ok": False, "msg": "该账号未设置安全问题"})
+    if u["sec_a"] != ans:
+        return jsonify({"ok": False, "msg": "安全问题答案错误"})
+    u["pwd"] = newpwd
+    ses = users.setdefault("__sessions", {})
+    for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) == uname]:
+        del ses[k]
+    with open(USER_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False)
+    return jsonify({"ok": True, "msg": "密码已重置，请重新登录"})
 
 
 # 用户登录
@@ -245,6 +327,30 @@ def _add_exp(us, cu, n):
     rec["exp"] = exp
     _save(USER_FILE, us)
 
+def _push_notify(target, src, kind, text, ref=""):
+    if not target or target == src or target == "__sessions":
+        return
+    ns = _load(NOTIFY_FILE, [])
+    nid = 1
+    for x in ns:
+        nid = max(nid, int(x.get("id", 0) or 0) + 1)
+    ns.append({"id": nid, "user": target, "from": src, "type": kind,
+               "text": str(text or "")[:200], "ref": str(ref or "")[:80],
+               "time": _now(), "read": False})
+    if len(ns) > 500:
+        ns = ns[-400:]
+    _save(NOTIFY_FILE, ns)
+
+def _scan_at(txt, pid=""):
+    try:
+        us = _load(USER_FILE, {})
+    except Exception:
+        return
+    for m in re.finditer(r"@([\w\u4e00-\u9fa5]{1,16})", str(txt or "")):
+        t = m.group(1)
+        if t in us and t != "__sessions":
+            _push_notify(t, _cur_user(None) or "", "at", str(txt or "")[:80], pid)
+
 def _clean_sessions(u):
     ses = u.get("__sessions", {})
     if not ses:
@@ -255,6 +361,19 @@ def _clean_sessions(u):
         if t < cut:
             del ses[k]
     return u
+
+AUDIT_FILE = os.path.join(_BASE, "audit_log.json")
+
+def _audit(who, act, target, detail=""):
+    try:
+        al = _load(AUDIT_FILE, [])
+        al.append({"t": _now(), "who": who, "act": act, "target": str(target or "")[:40], "detail": str(detail or "")[:80]})
+        if len(al) > 500:
+            al = al[-500:]
+        _save(AUDIT_FILE, al)
+    except Exception:
+        pass
+
 
 @app.route("/health", methods=["GET"])
 def api_health():
@@ -364,6 +483,7 @@ def api_post_add():
                "image": im, "time": _now(), "comments": []})
     _save(POST_FILE, ps)
     _add_exp(_load(USER_FILE, {}), cu, 8)
+    _scan_at(txt, str(nid))
     return jsonify({"ok": True, "msg": "发布成功"})
 
 @app.route("/post_del", methods=["POST"])
@@ -382,6 +502,7 @@ def api_post_del():
         return jsonify({"ok": False, "msg": "无权删除该帖"})
     ps = [x for x in ps if str(x.get("id")) != str(p.get("id"))]
     _save(POST_FILE, ps)
+    _audit(cu, "del_post", str(tar[0].get("user") or "") + " 的帖 #" + str(tar[0].get("id") or ""), str(tar[0].get("title") or tar[0].get("text") or "")[:40])
     return jsonify({"ok": True, "msg": "已删除"})
 
 @app.route("/comment_add", methods=["POST"])
@@ -402,6 +523,10 @@ def api_comment_add():
             cs.append({"user": cu, "text": txt, "time": _now()})
             _save(POST_FILE, ps)
             _add_exp(_load(USER_FILE, {}), cu, 3)
+            _scan_at(txt, str(x.get("id")))
+            _au = x.get("user") or ""
+            if _au and _au != cu:
+                _push_notify(_au, cu, "reply", txt, str(x.get("id")))
             return jsonify({"ok": True, "msg": "评论成功"})
     return jsonify({"ok": False, "msg": "帖子不存在"})
 
@@ -557,6 +682,7 @@ def api_guest_del():
         return jsonify({"ok": False, "msg": "无权删除该留言"})
     n = [x for x in g if str(x.get("id")) != str(p.get("id"))]
     _save(GUESTBOOK_FILE, n)
+    _audit(cu, "del_guest", str(t.get("name") or "") + " 的留言 #" + str(t.get("id") or ""), str(t.get("text") or "")[:40])
     DEL_LOG.append({"id": int(t.get("id", 0)), "t": _t.time()})
     if len(DEL_LOG) > 200:
         del DEL_LOG[:100]
@@ -673,6 +799,7 @@ def api_admin_del_user():
     for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) == tgt]:
         del ses[k]
     _save(USER_FILE, us)
+    _audit(cu, "del_user", tgt, "删除账号")
     return jsonify({"ok": True, "msg": "已删除用户：" + tgt})
 
 
@@ -803,6 +930,7 @@ def api_admin_scan():
     _save(GUESTBOOK_FILE, g)
     _save(POST_FILE, ps)
     _save(PM_FILE, pm)
+    _audit(cu, "risk_scan", "关键词: " + ",".join(words), "风控删除 " + str(len(hit)) + " 人: " + ",".join(hit))
     return jsonify({"ok": True, "hits": hit, "words": words, "msg": "已风控删除 " + str(len(hit)) + " 个用户"})
 
 @app.route("/admin_ban_user", methods=["POST"])
@@ -826,6 +954,7 @@ def api_admin_ban_user():
         return jsonify({"ok": False, "msg": "仅最高管理员可拉黑管理员"})
     us[tgt]["banned"] = ban
     _save(USER_FILE, us)
+    _audit(cu, "ban_user" if ban else "unban_user", tgt, "拉黑" if ban else "解除拉黑")
     return jsonify({"ok": True, "msg": (("已拉黑" if ban else "已解除拉黑") + "：" + tgt)})
 
 
@@ -950,6 +1079,15 @@ def api_search():
         return jsonify({"ok": True, "list": []})
     ql = q.lower()
     out = []
+    try:
+        for un, ur in _load(USER_FILE, {}).items():
+            if un == "__sessions":
+                continue
+            if ql in un.lower():
+                out.append({"type": "用户", "text": un, "user": un,
+                            "time": ur.get("reg") or "", "ref": "账号库"})
+    except Exception:
+        pass
     for g in _load(GUESTBOOK_FILE, []):
         if ql in str(g.get("text") or "").lower():
             out.append({"type": "留言", "text": str(g.get("text") or "")[:120],
@@ -1009,15 +1147,158 @@ def api_pm_thread():
     return jsonify({"ok": True, "list": lst})
 
 
+@app.route("/notify_get", methods=["GET", "POST"])
+def api_notify_get():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    ns = _load(NOTIFY_FILE, [])
+    mine = [x for x in ns if x.get("user") == cu]
+    mine = sorted(mine, key=lambda a: -int(a.get("id", 0) or 0))[:30]
+    un = sum(1 for x in ns if x.get("user") == cu and not x.get("read"))
+    try:
+        ms = _load(PM_FILE, [])
+        p_un = sum(1 for x in ms if x.get("to") == cu and not x.get("read"))
+    except Exception:
+        p_un = 0
+    return jsonify({"ok": True, "list": mine, "unread": un + p_un, "pm_unread": p_un,
+                    "notices": sorted(_load(NOTICE_FILE, []), key=lambda a: -int(a.get("id", 0) or 0))[:5]})
+
+
+@app.route("/notify_read", methods=["POST"])
+def api_notify_read():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    ns = _load(NOTIFY_FILE, [])
+    ch = False
+    for x in ns:
+        if x.get("user") == cu and not x.get("read"):
+            x["read"] = True
+            ch = True
+    if ch:
+        _save(NOTIFY_FILE, ns)
+    return jsonify({"ok": True, "msg": "已读"})
+
+
+@app.route("/audit_get", methods=["GET", "POST"])
+def api_audit_get():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    al = sorted(_load(AUDIT_FILE, []), key=lambda a: str(a.get("t") or ""), reverse=True)
+    off = int(p.get("off") or 0)
+    return jsonify({"ok": True, "list": al[off:off + 50], "total": len(al)})
+
+
+@app.route("/audit_export", methods=["GET", "POST"])
+def api_audit_export():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    al = sorted(_load(AUDIT_FILE, []), key=lambda a: str(a.get("t") or ""))
+    if str(p.get("fmt") or "json") == "csv":
+        import io as _io
+        sio = _io.StringIO()
+        sio.write("time,who,act,target,detail\n")
+        for x in al:
+            sio.write(",".join('"' + str(x.get(k) or "").replace('"', '""') + '"' for k in ("t", "who", "act", "target", "detail")) + "\n")
+        return jsonify({"ok": True, "data": sio.getvalue(), "fmt": "csv"})
+    return jsonify({"ok": True, "data": al, "fmt": "json"})
+
+
+@app.route("/stats2", methods=["GET", "POST"])
+def api_stats2():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    g = _load(GUESTBOOK_FILE, [])
+    ps = _load(POST_FILE, [])
+    days = [_time.strftime("%Y-%m-%d", _time.localtime(_time.time() - 86400 * (6 - i))) for i in range(7)]
+    gday = [0] * 7
+    rday = [0] * 7
+    for x in g:
+        d = str(x.get("time") or "")[:10]
+        if d in days:
+            gday[days.index(d)] += 1
+    for k, v in us.items():
+        if k == "__sessions" or not isinstance(v, dict):
+            continue
+        d = str(v.get("reg") or "")[:10]
+        if d in days:
+            rday[days.index(d)] += 1
+    cum = []
+    for i in range(7):
+        cum.append(sum(1 for k, v in us.items() if k != "__sessions" and isinstance(v, dict) and str(v.get("reg") or "")[:10] <= days[i]))
+    hours = [0] * 24
+    for x in g:
+        try:
+            hh = int(str(x.get("time") or "")[11:13])
+            if 0 <= hh <= 23:
+                hours[hh] += 1
+        except Exception:
+            pass
+    n_user = sum(1 for k in us if k != "__sessions")
+    return jsonify({"ok": True, "days": days, "gday": gday, "rday": rday, "cum": cum,
+                    "hours": hours, "total": {"guests": len(g), "posts": len(ps),
+                    "users": n_user, "visits": int((_load(STAT_FILE, {})).get("visits") or 0)}})
+
+
+@app.route("/profile", methods=["GET", "POST"])
+def api_profile():
+    p = request.get_json() or {}
+    nm = str(p.get("name") or "").strip()[:24]
+    if not nm:
+        return jsonify({"ok": False, "msg": "缺少用户名"})
+    us = _load(USER_FILE, {})
+    rec = us.get(nm)
+    if not rec or nm == "__sessions":
+        return jsonify({"ok": False, "msg": "用户不存在"})
+    exp = int(rec.get("exp") or 0)
+    info = _lvl_info(exp)
+    ck = rec.get("checkin") or {}
+    g = [x for x in _load(GUESTBOOK_FILE, []) if (x.get("user") or x.get("name") or "") == nm]
+    g = sorted(g, key=lambda a: -int(a.get("id", 0) or 0))[:5]
+    ps = [x for x in _load(POST_FILE, []) if (x.get("user") or "") == nm]
+    ps = sorted(ps, key=lambda a: -int(a.get("id", 0) or 0))[:5]
+    cm = []
+    for x in _load(POST_FILE, []):
+        for c in x.get("comments") or []:
+            if (c.get("user") or "") == nm:
+                cm.append({"text": c.get("text") or "", "time": c.get("time") or "", "pid": x.get("id") or ""})
+    cm = sorted(cm, key=lambda a: str(a.get("time") or ""), reverse=True)[:5]
+    return jsonify({"ok": True, "profile": {
+        "name": nm, "is_admin": bool(rec.get("is_admin")), "banned": bool(rec.get("banned")),
+        "lv": info["lv"], "title": info["title"], "exp": exp,
+        "streak": ck.get("streak") or 0, "total": ck.get("total") or 0,
+        "reg": rec.get("reg") or "", "avatar": rec.get("avatar") or 0},
+        "guests": g, "posts": ps, "comments": cm})
+
+
 # ---------- 写接口限流 ----------
 import time as _rl_t
 _RL = {}
 
 POST_FILE = os.path.join(_BASE, "posts.json")
+NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/sec_set", "/recover_q", "/recover")
 
 @app.before_request
 def _rate():
