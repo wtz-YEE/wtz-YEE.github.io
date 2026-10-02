@@ -64,6 +64,17 @@ header h1 b{color:var(--acc);font-weight:700}
 .err{text-align:center;color:var(--acc);font-size:12px;padding:20px 0}
 .zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:99}
 .zoom img{max-width:92vw;max-height:92vh;border-radius:8px}
+/* ==== v2.8 Markdown ==== */
+.mdh{font-size:15px;font-weight:700;color:var(--ink);margin:6px 0 2px;letter-spacing:.06em}
+.mdli{padding:2px 0 2px 14px;position:relative}
+.mdli::before{content:'·';position:absolute;left:4px;color:var(--acc)}
+.mdq{border-left:3px solid var(--acc);background:rgba(255,92,122,.05);padding:6px 10px;margin:6px 0;color:var(--ink3);font-style:italic}
+.mdc{background:rgba(255,255,255,.08);border:1px solid var(--line);padding:1px 5px;font-size:12px;color:#8fd0ff}
+.mdcode{display:block;background:#0d0d0d;border:1px solid var(--line);padding:9px 12px;margin:6px 0;font-size:12px;line-height:1.5;white-space:pre;overflow-x:auto;color:#c8e6ff}
+.at{color:#8fd0ff;cursor:pointer}
+.at:hover{text-decoration:underline}
+#pv{display:none;padding:12px 14px;min-height:72px;font-size:14px;white-space:pre-wrap;word-break:break-word;border-top:1px dashed var(--line);background:rgba(255,255,255,.02)}
+#pv.on{display:block}
 </style>
 </head>
 <body>
@@ -85,7 +96,8 @@ header h1 b{color:var(--acc);font-weight:700}
 
   <div class="poster">
     <div class="ph">发帖</div>
-    <textarea id="pt" placeholder="写下你的话题…（可选图片）" maxlength="500"></textarea>
+    <textarea id="pt" placeholder="写下你的话题…（支持 Markdown：**粗体** `代码` ```代码块``` > 引用 @用户名）（可选图片）" maxlength="500"></textarea>
+    <div id="pv"></div>
     <div class="tags" id="tags">
       <span class="tag" data-t="求助">求助</span>
       <span class="tag" data-t="询问">询问</span>
@@ -94,6 +106,7 @@ header h1 b{color:var(--acc);font-weight:700}
     <div class="prow">
       <button class="imgbtn" id="pb">＋ 附图片</button>
       <span class="att" id="att"><img id="attImg"><span>已附带 1 张图</span><button id="attRm">移除</button></span>
+      <button class="btn ghost" id="pvBtn">预览</button>
       <button class="btn go" id="send">发布</button>
       <input type="file" id="pf" accept="image/*" style="display:none">
     </div>
@@ -234,6 +247,31 @@ function upImg(){
     }).catch(function(e){ say('上传失败：'+e.message,false); });
   });
 }
+/* ---------- v2.8 Markdown ---------- */
+function mdIn(s){
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  s=s.replace(/`([^`]+)`/g,'<code class="mdc">$1</code>');
+  s=s.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s=s.replace(/@([\w\u4e00-\u9fa5]{1,16})/g,'<span class="at" data-at="$1">@$1</span>');
+  return s;
+}
+function md(s){
+  s=String(s==null?'':s);
+  s=esc(s);
+  var ls=s.split('\n'),inCode=false,out=[];
+  for(var i=0;i<ls.length;i++){
+    var line=ls[i];
+    if(/^```/.test(line)){ inCode=!inCode; if(inCode) out.push('<pre class="mdcode">'); else out.push('</pre>'); continue; }
+    if(inCode){ out.push(line); continue; }
+    if(/^&gt; /.test(line)){ out.push('<blockquote class="mdq">'+mdIn(line.replace(/^&gt; /,''))+'</blockquote>'); continue; }
+    if(/^#{1,4} /.test(line)){ out.push('<div class="mdh">'+mdIn(line.replace(/^#{1,4} /,''))+'</div>'); continue; }
+    if(/^[-*] /.test(line)){ out.push('<div class="mdli">'+mdIn(line.replace(/^[-*] /,''))+'</div>'); continue; }
+    out.push('<p>'+mdIn(line)+'</p>');
+  }
+  var r=out.join('');
+  if(inCode) r+='</pre>';
+  return r;
+}
 /* 发帖 */
 function send(){
   if(!S.user) return say('请先登录',false);
@@ -260,11 +298,11 @@ function render(ps){
     return '<div class="post">'+
       '<div class="ph"><span class="nm">'+esc(p.name)+'</span><span>'+esc(p.time)+'</span>'+
       '<span class="tagsm">'+tk+'</span>'+del+'</div>'+
-      '<div class="bd">'+esc(p.text)+
+      '<div class="bd">'+md(p.text)+
       (p.image&&S.api?'<img src="'+esc(S.api+p.image)+'">':'')+'</div>'+
       '<div class="cm" data-cm="'+esc(p.id)+'">评论 '+(cm.length?cm.length:'0')+'</div>'+
       '<div class="cwrap" data-cw="'+esc(p.id)+'">'+
-        '<div class="clist">'+ (cm.length?cm.map(function(c){return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.user)+'</div>'+esc(c.text)+'</div>'}).join(''):'<div class="citem" style="color:var(--ink3)">暂无评论</div>') +'</div>'+
+        '<div class="clist">'+ (cm.length?cm.map(function(c){return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.user)+'</div>'+md(c.text)+'</div>'}).join(''):'<div class="citem" style="color:var(--ink3)">暂无评论</div>') +'</div>'+
         '<div class="cinput"><input data-ci="'+esc(p.id)+'" placeholder="写下评论…" maxlength="200"><button class="btn" data-cs="'+esc(p.id)+'">发送</button></div>'+
       '</div></div>';
   }).join('');
@@ -317,6 +355,24 @@ function bindList(){
 /* 绑定 */
 bindTags(); bindList();
 $('pb').addEventListener('click',pickImg);
+(function(){
+  var pv=$('pv'),pb2=$('pb2'),pt=$('pt'),pvB=$('pvBtn');
+  if(pvB&&pv&&pt) pvB.addEventListener('click',function(){
+    var t=pt.value.trim();
+    if(!t){ pv.innerHTML='<span style="color:var(--ink3)">内容为空 · 无法预览</span>'; pv.classList.add('on'); return; }
+    pv.innerHTML=md(t);
+    pv.classList.toggle('on');
+    pvB.textContent=pv.classList.contains('on')?'返回编辑':'预览';
+  });
+  if(pvB&&pt) pt.addEventListener('input',function(){ if(pv&&pv.classList.contains('on')) pv.innerHTML=md(pt.value); });
+  var ls=$('list');
+  if(ls) ls.addEventListener('click',function(e){
+    var a=e.target.closest('.at');
+    if(!a) return;
+    var nm=a.getAttribute('data-at');
+    if(nm&&window.open) window.open('守夜人论坛.html#@'+nm);
+  });
+})();
 $('pf').addEventListener('change',upImg);
 $('attRm').addEventListener('click',function(){S.img='';$('att').style.display='none';$('pf').value=''});
 $('send').addEventListener('click',send);
