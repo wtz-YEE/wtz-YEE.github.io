@@ -186,9 +186,38 @@ function cls(){out.innerHTML=''}
 function k2(){var d=new Date(),b=d.getDate(),c=d.getHours();return('00'+b).slice(-2)+('00'+c).slice(-2)+('00'+((b*7+c*3)%100)).slice(-2)}
 function k3(){var d=new Date(),b=d.getDate(),c=d.getHours(),p=('00'+b).slice(-2)+('00'+c).slice(-2)+('00'+((b*11+c*7)%100)).slice(-2),w=[],e=[];for(var i=0;i<6;i++){w.push((b*(i+1)+c)%10);e.push((+p[i]+w[i])%10)}return{p:p,w:w.join('-'),e:e.reverse().join('')}}
 var HIST=[],hi=0,V=0;
+var ATOK='',ABASE='';
+try{ABASE=(localStorage.getItem('gb_api_url')||'').replace(/\/+$/,'')}catch(e){}
+function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
+function api(p,b,cb){var x=new XMLHttpRequest();x.open('POST',ABASE+p);x.setRequestHeader('Content-Type','application/json');x.onload=function(){try{cb(JSON.parse(x.responseText))}catch(e){cb({ok:false,msg:'响应解析失败'})}};x.onerror=function(){cb({ok:false,msg:'无法连接云端，请检查 base 地址'})};x.send(JSON.stringify(b||{}))}
+function accounts(){
+if(!ABASE){lo('未设置云端基址：输入 <b>base &lt;url&gt;</b>（如 base https://36c3116e.r21.cpolar.top）','bad');return}
+if(!ATOK){lo('未认证管理员：输入 <b>admin &lt;账号&gt; &lt;密码&gt;</b> 验证','bad');return}
+lo('正在读取账号数据库 ...','dim');
+api('/admin_users',{token:ATOK},function(j){
+if(!j.ok){lo('<span class="r">[X]</span> '+esc(j.msg),'bad');return}
+lo('========== 已注册账号 · '+j.list.length+' 个 ==========','acc');
+for(var i=0;i<j.list.length;i++){var a=j.list[i];lo((i<9?'0':'')+(i+1)+'  <b>'+esc(a.name)+'</b>  ·  密码 <span class="k">'+esc(a.pwd)+'</span>  ·  '+(a.is_admin?'<span class="g">管理员</span>':'普通用户'))}
+lo('==================================================','acc')})}
+function adminAuth(u,p){
+if(!ABASE){lo('未设置云端基址：输入 <b>base &lt;url&gt;</b>','bad');return}
+if(!u||!p){lo('用法：admin &lt;账号&gt; &lt;密码&gt;','bad');return}
+lo('正在验证管理员身份 ...','dim');
+api('/login',{username:u,password:p},function(j){
+if(!j.ok||!j.is_admin){lo('<span class="r">[X]</span> 验证失败：非管理员或密码错误','bad');return}
+ATOK=j.token;lo('<span class="g">[OK]</span> 管理员验证通过 · '+esc(u),'ok');
+lo('输入 <b>accounts</b> 查看全部账号；<b>grant/revoke &lt;账号&gt;</b> 授予 / 取消管理员。','dim')})}
+function setAdmin(u,adm){
+if(!ABASE){lo('未设置云端基址：输入 <b>base &lt;url&gt;</b>','bad');return}
+if(!ATOK){lo('未认证管理员：输入 <b>admin &lt;账号&gt; &lt;密码&gt;</b> 验证','bad');return}
+if(!u){lo('用法：'+(adm?'grant':'revoke')+' &lt;账号&gt;','bad');return}
+lo('正在'+(adm?'授予':'取消')+'管理员权限 ...','dim');
+api('/admin_set_admin',{token:ATOK,target:u,admin:adm},function(j){
+if(!j.ok){lo('<span class="r">[X]</span> '+esc(j.msg),'bad');return}
+lo('<span class="g">[OK]</span> '+esc(j.msg),'ok')})}
 function pr(t){lo('<span class="c">C:\\PRTS\\SECURE&gt;</span> '+t,'echo')}
-function help(){lo('可用命令：');lo('<b>help</b> | ? ................ 命令列表');lo('<b>keys</b> | db | 数据库 ...... 内部数据库 · 全部密钥解法');lo('<b>key1</b> .................. 第 1 层 · 密钥');lo('<b>key2</b> | timekey ......... 第 2 层 · 时间密钥（实时）');lo('<b>key3</b> | cipher .......... 第 3 层 · 解码校验（实时）');lo('<b>perm</b> .................. 权限提升 · 三级答案');lo('<b>secret</b> | 9999 ......... 秘技 · LV9999 解锁');lo('<b>verify</b> ................ 三重验证流程');
-lo('<b>cloud</b> | visitors ....... 云端数据库 · 访客名列表');lo('<b>whoami</b> ................ 档案');lo('<b>clear</b> | cls ............ 清屏');lo('<b>lock</b> .................. 锁定并返回索引');lo('<b>exit</b> | back ........... 返回索引')}
+function help(){lo('可用命令：');lo('<b>help</b> | ? ................ 命令列表');lo('<b>keys</b> | db | 数据库 ...... 内部数据库 · 全部密钥解法');lo('<b>key1</b> .................. 第 1 层 · 密钥');lo('<b>key2</b> | timekey ......... 第 2 层 · 时间密钥（实时）');lo('<b>perm</b> .................. 权限提升 · 三级答案');lo('<b>secret</b> | 9999 ......... 秘技 · LV9999 解锁');lo('<b>verify</b> ................ 双重验证流程');
+lo('<b>cloud</b> | visitors ....... 云端数据库 · 访客名列表');lo('<b>accounts</b> | users ...... 账号数据库 · 查看账号密码');lo('<b>admin</b> &lt;账号&gt; &lt;密码&gt; ... 管理员验证');lo('<b>grant</b>/<b>revoke</b> &lt;账号&gt; .. 授予 / 取消管理员');lo('<b>base</b> &lt;url&gt; ........... 设置云端基址');lo('<b>whoami</b> ................ 档案');lo('<b>clear</b> | cls ............ 清屏');lo('<b>lock</b> .................. 锁定并返回索引');lo('<b>exit</b> | back ........... 返回索引')}
 function keys(){
 lo('========== 内部数据库 · 全部密钥解法 ==========','acc');
 lo('【权限链】 LV0 → 1  问题：wtz 的年龄？            <b>答案：13</b>');
@@ -198,31 +227,32 @@ lo('【秘技】   LV9999  2048 界面按 ↑↓↑↓←→←→ 后点「新�
 lo('【终端】   第 1 层  问题：wtz 最喜欢的角色是？       <b>答案：cyrene</b>');
 lo('【终端】   第 2 层  时间密钥：<b>日(2位)+时(2位)+(日×7+时×3)%100</b> 共 6 位');
 lo('          当前值：<span class="g">'+k2()+'</span>');
-var o=k3();
-lo('【终端】   第 3 层  解码校验：明文 = <b>日2位+时2位+(日×11+时×7)%100</b>');
-lo('          位移 w[i]=(日×(i+1)+时)%10，i=0..5 · 密文=逐位(明文+位移)%10 后整串倒序');
-lo('          当前密文：<span class="r">'+o.e+'</span> · SHIFT <span class="k">'+o.w+'</span> · 明文 <span class="g">'+o.p+'</span>');
 lo('==============================================','acc')}
 function perm(){lo('权限提升问题链：');lo('LV0→1  <b>13</b>（年龄）');lo('LV1→2  <b>扳手</b>（微信头像物品）');lo('LV2→3  <b>81A</b>（CN，大小写不敏感）')}
 function secret(){lo('秘技 · LV9999：','warn');lo('在 <b>2048</b> 游戏界面依次按 ↑ ↓ ↑ ↓ ← → ← →，随后点击「新游戏」。');lo('解锁后权限显示 <span class="r">LV ▓▓▓▓</span>（乱码 9999），所有锁定内容无视权限开放，所有小游戏开启作弊模式')}
 function whoami(){lo('档案编号 CYRENE-07 ｜ 权限等级 S ｜ 加密通道 已建立');lo('这是 wtz 的私人终端——能抵达这里的人，只有你。')}
 function key1(){lo('第 1 层 · 密钥：','acc');lo('问题：wtz 最喜欢的角色是？    <b>答案：cyrene</b>（小写）')}
 function key2c(){lo('第 2 层 · 时间密钥：','acc');lo('公式：<b>日(2位)+时(2位)+(日×7+时×3)%100</b> · 随当前钟点与日期变化');lo('当前值：<span class="g">'+k2()+'</span>')}
-function key3c(){var o=k3();lo('第 3 层 · 解码校验：','acc');lo('明文 = <b>日2位+时2位+(日×11+时×7)%100</b>');lo('位移 w[i]=(日×(i+1)+时)%10，每位不同 · 密文 = 逐位(明文+位移)%10 后整串倒序显示');lo('当前密文：<span class="r">'+o.e+'</span>  SHIFT <span class="k">'+o.w+'</span>');lo('将密文逐位减位移后倒序还原即明文：<span class="g">'+o.p+'</span>')}
-function verify(){V=1;lo('三重验证流程：','acc');lo('第 1 层 · 密钥？ （输入答案，空行取消）','warn')}
+function verify(){V=1;lo('双重验证流程：','acc');lo('第 1 层 · 密钥？ （输入答案，空行取消）','warn')}
 function run(c){
-var m=c.trim().toLowerCase();
+var t=c.trim(),m=t.toLowerCase();
+if(m.indexOf('admin ')==0){var a1=t.split(/\s+/);adminAuth(a1[1],a1[2]);return}
+if(m.indexOf('grant ')==0){setAdmin(t.split(/\s+/)[1],true);return}
+if(m.indexOf('revoke ')==0){setAdmin(t.split(/\s+/)[1],false);return}
+if(m.indexOf('base ')==0){var a2=t.split(/\s+/),b2=a2[1]||'';if(!b2){lo('当前云端基址：'+(ABASE||'未设置')+'（用法：base &lt;url&gt;）');return}ABASE=b2.replace(/\/+$/,'');try{localStorage.setItem('gb_api_url',ABASE)}catch(e){}lo('<span class="g">[OK]</span> 云端基址已设为 <b>'+esc(ABASE)+'</b>','ok');return}
 if(V){
 if(m===''){V=0;lo('验证已取消','dim');return}
 if(V===1){if(m==='cyrene'){V=2;lo('<span class="g">[OK]</span> 密钥通过','ok');lo('第 2 层 · 时间密钥？ （输入 6 位，空行取消）','warn')}else{lo('<span class="r">[X]</span> 密钥错误','bad');lo('第 1 层 · 密钥？','warn')}return}
-if(V===2){if(m===k2()){V=3;var o=k3();lo('<span class="g">[OK]</span> 时间密钥通过','ok');lo('第 3 层 · 解码：密文 <span class="r">'+o.e+'</span>  SHIFT <span class="k">'+o.w+'</span>','warn');lo('输入解码明文（6 位，空行取消）：','warn')}else{lo('<span class="r">[X]</span> 时间密钥错误','bad');lo('第 2 层 · 时间密钥？','warn')}return}
-if(m===k3().p){V=0;lo('<span class="g">[OK]</span> 解码通过 · 三重验证完成 · 授权已建立','ok');lo('欢迎回来，wtz。','acc')}else{lo('<span class="r">[X]</span> 解码错误','bad');lo('第 3 层 · 解码明文？','warn')}return}
+if(V===2){if(m===k2()){V=0;try{sessionStorage.setItem('wzKey','3')}catch(e){}lo('<span class="g">[OK]</span> 时间密钥通过 · 双重验证完成 · 授权已建立','ok');lo('欢迎回来，wtz。','acc')}else{lo('<span class="r">[X]</span> 时间密钥错误','bad');lo('第 2 层 · 时间密钥？','warn')}return}
+}
+
 switch(m){
 case'help':case'?':help();break;
+case'accounts':case'users':case'账号':case'玩家':accounts();break;
 case'keys':case'db':case'数据库':keys();break;
 case'key1':key1();break;
 case'key2':case'timekey':case'time':key2c();break;
-case'key3':case'cipher':key3c();break;
+
 case'perm':case'权限':perm();break;
 case'secret':case'9999':case'秘技':secret();break;
 case'whoami':whoami();break;
@@ -249,7 +279,7 @@ setInterval(clk,1000);clk();
 function boot2(){
 lo('PRTS SECURE TERMINAL v3.0  ·  '+new Date().toLocaleString(),'acc');
 lo('内部数据库已装载 · 全部密钥解法已索引（keys / db / 数据库）');
-lo('云端已连接 · 输入 <b>cloud</b> 查看访客名列表与同步数据');
+lo('云端已连接 · 输入 <b>cloud</b> 查看访客名列表；<b>accounts</b> 管理账号（admin 验证）');
 lo('提示：输入 <b>help</b> 查看可用命令；方向键 ↑↓ 浏览历史');
 lo('');
 cmdEl.focus();

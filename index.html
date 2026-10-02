@@ -467,6 +467,17 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
 .gb-del{border:1px solid var(--line2);color:var(--ink3);font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 9px;cursor:pointer;transition:.2s}
 .gb-del:hover{border-color:#FF5C7A;color:#FF5C7A}
 .gb-text{margin-top:6px;color:var(--ink2);font-size:13.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+.gb-ava{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;color:#fff;font-size:13px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
+.gb-item-h .gb-ava{width:22px;height:22px;font-size:11px}
+.gb-pick{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.gb-pick .gp{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;cursor:pointer;border:2px solid transparent;transition:border-color .15s,box-shadow .15s}
+.gb-pick .gp:hover{border-color:rgba(255,255,255,.5)}
+.gb-pick .gp.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.gb-img{margin-top:8px;max-width:100%;max-height:220px;border:1px solid var(--line2);border-radius:3px;display:block;cursor:zoom-in;background:rgba(255,255,255,.03)}
+.gb-att{margin-top:8px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.gb-att img{width:44px;height:44px;object-fit:cover;border:1px solid var(--line2);border-radius:3px}
+.gb-att button{border:1px solid var(--line2);color:var(--ink3);font-family:var(--mono);font-size:10px;padding:2px 9px;cursor:pointer;transition:.2s}
+.gb-att button:hover{border-color:#FF5C7A;color:#FF5C7A}
 .gb-empty{padding:26px 16px;text-align:center;color:var(--ink3);font-family:var(--mono);font-size:12px;letter-spacing:.18em}
 .gb-dlg{position:fixed;inset:0;z-index:9999;background:rgba(5,7,8,.78);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .gb-dlg-c{width:min(420px,90vw);background:#171718;border:1px solid var(--line2);padding:24px 22px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
@@ -555,7 +566,7 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
         <div class="card-bd">
           <div class="c-tag">TERMINAL · 全功能终端</div>
           <h3>终端接口</h3>
-          <p>命令终端 · 权限体系 · 八款小游戏 · 三重密钥，全部功能所在地。</p>
+          <p>命令终端 · 权限体系 · 八款小游戏 · 双重密钥，全部功能所在地。</p>
           <span class="c-go">进入终端
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
           </span>
@@ -630,11 +641,18 @@ body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.04)
     <div class="gb-row" style="margin-bottom:8px">
       <input id="gb_name" placeholder="昵称（访客）" maxlength="16">
     </div>
+    <div class="gb-row" style="margin-bottom:8px">
+      <span class="gb-who" style="letter-spacing:.14em">头像</span>
+      <span class="gb-pick" id="gb_pick"></span>
+    </div>
     <textarea id="gb_text" placeholder="写下留言…" maxlength="500"></textarea>
     <div class="gb-row" style="margin-top:10px">
+      <button class="gb-btn" id="gb_img_btn">发图</button>
       <button class="gb-btn" id="gb_submit">提交留言</button>
       <span class="gb-say" id="gb_say2" style="margin:0"></span>
     </div>
+    <div class="gb-att" id="gb_att" style="display:none"></div>
+    <input type="file" id="gb_file" accept="image/*" style="display:none">
   </div>
 
   <!-- 留言列表 -->
@@ -683,7 +701,8 @@ function rid(){
 }
 
 /* ---------- 状态 ---------- */
-var S={api:'',user:null,peer:null,timer:null};
+var S={api:'',user:null,peer:null,timer:null,avatar:0,img:''};
+var AVATARS=[{c:'#3FE0C8',s:'◆'},{c:'#FF5C7A',s:'▲'},{c:'#FFD166',s:'★'},{c:'#6C8CFF',s:'●'},{c:'#B58CFF',s:'✦'},{c:'#5CE08A',s:'■'},{c:'#FF9F6B',s:'✿'},{c:'#4FD8EB',s:'☂'},{c:'#FFC36B',s:'⚡'},{c:'#8F9BB3',s:'☾'},{c:'#FF7AB8',s:'❖'},{c:'#7BFFB8',s:'☯'}];
 /* 只有 http(s):// 开头的地址才认，否则一律回落到本地模式 */
 function normalizeApi(v){
   v=String(v||'').trim().replace(/\/+$/,'');
@@ -750,7 +769,7 @@ function localCall(path,p){
       if(!txt) return {ok:false,msg:'内容不能为空'};
       var cu=me();
       var nm=(cu?cu.name:(String(p.name||'').trim()||'访客')).slice(0,16);
-      d.guests.push({id:d.seq++,user:cu?cu.name:null,name:nm,text:txt,time:nowStr()});
+      d.guests.push({id:d.seq++,user:cu?cu.name:null,name:nm,text:txt,time:nowStr(),avatar:(+p.avatar||0)%12});
       dbSave(d);
       return {ok:true};
     }
@@ -815,18 +834,16 @@ function localAsync(path,body){
   });
 }
 
-function call(path,payload){
+function call(path,payload,method){
   var body=Object.assign({token:S.user?S.user.token:''},payload||{});
 
   /* 没有合法 API 地址 → 走本地模式，永不发网络请求 */
   if(!S.api) return localAsync(path,body);
 
   var url=S.api+path;
-  return fetch(url,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(body)
-  }).then(function(res){
+  var opt={method:method||'POST',headers:{'Content-Type':'application/json'}};
+  if(opt.method!=='GET') opt.body=JSON.stringify(body);
+  return fetch(url,opt).then(function(res){
     if(!res.ok) throw new Error('HTTP '+res.status+' @ '+url);
     return res.json();
   }).catch(function(err){
@@ -924,33 +941,77 @@ function renderGuests(list){
   box.innerHTML=list.map(function(g){
     var mine = S.user && g.user===S.user.username;
     var canDel = S.user && (S.user.is_admin || mine);
+    var av=AVATARS[(+g.avatar||0)%AVATARS.length];
     return '<div class="gb-item">'+
       '<div class="gb-item-h">'+
+        '<span class="gb-ava" style="background:'+av.c+'">'+av.s+'</span>'+
         '<span class="gb-name">'+esc(g.name)+'</span>'+
         (g.user?'<span class="gb-tag" style="font-size:9px;padding:1px 6px">已认证</span>':'')+
         '<span class="gb-time">'+esc(g.time)+'</span>'+
         (canDel?'<button class="gb-del" data-del="'+esc(g.id)+'">删除</button>':'')+
       '</div>'+
       '<div class="gb-text">'+esc(g.text)+'</div>'+
+      (g.image&&S.api?'<img class="gb-img" src="'+esc(S.api+g.image)+'" onclick="window.open(this.src)">':'')+
     '</div>';
   }).join('');
 }
 
 function loadGuestBook(){
-  return call('/guests',{}).then(function(j){
+  return call('/guests',{},'GET').then(function(j){
     renderGuests(j.list||[]);
   }).catch(function(e){
     $('guestbookList').innerHTML='<div class="gb-empty">留言加载失败 · '+esc(e.message)+'</div>';
   });
 }
 
+function compressImg(file,cb){
+  var r=new FileReader();r.onload=function(){
+    var im=new Image();im.onload=function(){
+      var w=im.width,h=im.height,m=1280,k=Math.min(1,m/Math.max(w,h));
+      var cv=document.createElement('canvas');cv.width=Math.round(w*k);cv.height=Math.round(h*k);
+      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      cb(cv.toDataURL('image/jpeg',0.82));
+    };im.onerror=function(){cb('')};im.src=r.result;
+  };r.onerror=function(){cb('')};r.readAsDataURL(file);
+}
+function uploadImg(){
+  var f=$('gb_file').files[0];
+  if(!f) return;
+  if(f.size>8*1024*1024) return say('图片超过 8MB',false);
+  say('正在压缩上传…',false);
+  compressImg(f,function(data){
+    if(!data) return say('图片读取失败',false);
+    call('/upload',{data:data}).then(function(j){
+      if(!j.ok) return say(j.msg||'上传失败',false);
+      S.img=j.url;
+      $('gb_att').innerHTML='<img src="'+esc(S.api+j.url)+'"><span>已附带 1 张图片</span><button id="gb_img_rm">移除</button>';
+      $('gb_att').style.display='flex';
+      $('gb_img_rm').addEventListener('click',function(){S.img='';$('gb_att').style.display='none';$('gb_file').value=''});
+      say('图片已就绪',true);
+    }).catch(function(e){ say('上传失败：'+e.message,false); });
+  });
+}
+function initAvatarPick(){
+  var box=$('gb_pick');if(!box)return;
+  box.innerHTML=AVATARS.map(function(a,i){
+    return '<span class="gp'+(i===S.avatar?' on':'')+'" data-i="'+i+'" style="background:'+a.c+'">'+a.s+'</span>';
+  }).join('');
+  box.addEventListener('click',function(e){
+    var t=e.target.closest('.gp');if(!t)return;
+    S.avatar=+t.getAttribute('data-i');
+    box.querySelectorAll('.gp').forEach(function(x){x.classList.toggle('on',x===t)});
+  });
+}
 function submitGuestBook(){
   var text=$('gb_text').value.trim();
   var name=$('gb_name').value.trim();
   if(!text) return say('请先写点内容',false);
-  return call('/guest_add',{name:name,text:text}).then(function(j){
+  var body={name:name,text:text,avatar:S.avatar};
+  if(S.img) body.image=S.img;
+  return call('/guest_add',body).then(function(j){
     if(!j.ok) return say(j.msg||'提交失败',false);
-    $('gb_text').value='';
+    $('gb_text').value='';$('gb_file').value='';
+    S.img='';$('gb_att').style.display='none';
     say('留言已提交',true);
     loadGuestBook();
   }).catch(function(e){ say('提交失败：'+e.message,false); });
@@ -1103,6 +1164,12 @@ function bind(){
   $('gb_btn_login').addEventListener('click',gbLogin);
   $('gb_btn_logout').addEventListener('click',gbLogout);
   $('gb_submit').addEventListener('click',submitGuestBook);
+  $('gb_img_btn').addEventListener('click',function(){
+    if(!S.api) return say('需云端模式才能发图',false);
+    $('gb_file').click();
+  });
+  $('gb_file').addEventListener('change',uploadImg);
+  initAvatarPick();
   $('pm_send_btn').addEventListener('click',pmSend);
   $('gb_status').addEventListener('click',gbOpenConfig);
   $('gb_cfg_save').addEventListener('click',gbSaveConfig);
