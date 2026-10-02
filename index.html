@@ -875,6 +875,14 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
   <!-- 管理员：当前用户列表 -->
   <div class="gb-users" id="gb_users_panel" style="display:none">
     <div class="gb-conv-h">当前用户 <span id="gb_ucnt"></span><button class="gb-btn ghost" id="gb_uref" style="float:right;padding:2px 10px;font-size:11px">刷新</button></div>
+    <div style="padding:6px 2px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;gap:6px">
+        <input id="gb_risk_kw" placeholder="多个关键词用逗号分隔" style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:6px 8px;font-size:12px">
+        <button class="gb-btn" id="gb_risk_btn" style="padding:6px 12px;border-color:var(--bad);color:var(--bad)">上传关键词</button>
+        <button class="gb-btn" id="gb_risk_all" style="padding:6px 12px;border-color:var(--bad);color:var(--bad)">扫描全部</button>
+      </div>
+      <div id="gb_risk_words" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
     <div id="gb_ulist"></div>
   </div>
 
@@ -2091,6 +2099,62 @@ function doSearch(){
 if(srchB)srchB.onclick=function(){if(srchM){srchM.style.display='flex';setTimeout(function(){if(srchIn)srchIn.focus()},60)}};
 if(srchGo)srchGo.onclick=doSearch;
 if(srchIn)srchIn.addEventListener('keydown',function(e){if(e.key==='Enter')doSearch()});
+var rkB=document.getElementById('gb_risk_btn');
+var rkIn=document.getElementById('gb_risk_kw');
+var rkAll=document.getElementById('gb_risk_all');
+var rkW=document.getElementById('gb_risk_words');
+function rkWShow(l){
+  if(!rkW)return;
+  rkW.textContent='';
+  (l||[]).forEach(function(w){
+    var s=document.createElement('span');
+    s.style.cssText='display:inline-flex;align-items:center;gap:5px;border:1px solid var(--bad);padding:2px 8px;font-size:12px;color:var(--bad)';
+    var t=document.createElement('span');
+    t.textContent=w;
+    var d=document.createElement('b');
+    d.textContent='×';
+    d.style.cssText='cursor:pointer;color:var(--bad);font-weight:bold';
+    d.onclick=function(){
+      call('/risk_words_del',{word:w}).then(function(j){
+        if(typeof say==='function')say(j.msg||'',true);
+        rkWShow(j.words||[]);
+      }).catch(function(e){if(typeof say==='function')say('失败：'+e.message,false)});
+    };
+    s.appendChild(t);
+    s.appendChild(d);
+    rkW.appendChild(s);
+  });
+}
+function riskRun(){
+  var kw=(rkIn.value||'').trim();
+  if(!kw){if(typeof say==='function')say('请输入风控关键词',false);return}
+  if(typeof say==='function')say('上传云端扫描中…',true);
+  call('/admin_scan',{kw:kw}).then(function(j){
+    if(!j.ok){if(typeof say==='function')say(j.msg||'风控失败',false);return}
+    if(typeof say==='function')say((j.msg||'')+'：'+(j.hits||[]).join('、'),true);
+    if(typeof loadUsers==='function')loadUsers();
+    rkWShow(j.words||[]);
+  }).catch(function(e){if(typeof say==='function')say('请求失败：'+e.message,false)});
+}
+if(rkB)rkB.onclick=function(){
+  var kw=(rkIn.value||'').trim();
+  if(!kw){if(typeof say==='function')say('请输入风控关键词',false);return}
+  call('/risk_words_add',{words:kw}).then(function(j){
+    if(typeof say==='function')say(j.msg||'',true);
+    rkWShow(j.words||[]);
+    rkIn.value='';
+  }).catch(function(e){if(typeof say==='function')say('失败：'+e.message,false)});
+};
+if(rkAll)rkAll.onclick=function(){
+  if(typeof say==='function')say('云端扫描全部关键词…',true);
+  call('/admin_scan',{}).then(function(j){
+    if(!j.ok){if(typeof say==='function')say(j.msg||'风控失败',false);return}
+    if(typeof say==='function')say((j.msg||'')+'：'+(j.hits||[]).join('、'),true);
+    if(typeof loadUsers==='function')loadUsers();
+  }).catch(function(e){if(typeof say==='function')say('请求失败：'+e.message,false)});
+};
+if(rkIn)rkIn.addEventListener('keydown',function(e){if(e.key==='Enter')riskRun()});
+call('/risk_words_get',{}).then(function(j){rkWShow(j.words||[])}).catch(function(){});
 })();
 })();
 </script>
