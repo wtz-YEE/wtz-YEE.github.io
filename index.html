@@ -745,6 +745,16 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
 .srch-tab{border:1px solid var(--line);padding:2px 10px;font-size:11px;cursor:pointer;color:var(--ink2);background:none}
 .srch-tab.on{border-color:var(--accent);color:var(--accent)}
 @media(prefers-reduced-motion:reduce){#tvLayer.on .tv-scan,#tvLayer.on .tv-bar i,.gb-item-new,.nt-badge.on .nt-dot{animation:none}}
+
+#status{transition:background .35s ease,border-color .35s ease}
+#status.scrl{background:rgba(4,5,6,.97);border-bottom-color:var(--accent)}
+#status .st-l{position:relative}
+#status .st-l::after{content:"";position:absolute;left:0;right:0;bottom:-5px;height:1px;background:linear-gradient(90deg,transparent 0%,var(--accent) 50%,transparent 100%);background-size:200% 100%;opacity:0;transition:opacity .3s}
+#status.scrl .st-l::after{opacity:.9;animation:scan 2.6s linear infinite}
+@keyframes scan{0%{background-position:120% 0}100%{background-position:-120% 0}}
+#status .st-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:breath 2.2s ease-in-out infinite;flex:none}
+@keyframes breath{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@media(prefers-reduced-motion:reduce){#status.scrl .st-l::after,.st-dot{animation:none}}
 </style>
 <body>
 
@@ -767,8 +777,9 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
   </div>
 </div>
 
+<canvas id="fx" style="position:fixed;inset:0;z-index:6;pointer-events:none;display:none"></canvas>
 <header id="status">
-  <span class="st-l">WTZ // 个人网站 · 黑白</span>
+  <span class="st-dot"></span><span class="st-l">WTZ // 个人网站 · 黑白</span>
   <span class="st-c" id="clock">--:--:--</span>
   <span class="pbadge" id="permBadge">LV 0</span>
   <button class="th-btn" id="lvBtn" title="签到 · 经验等级" style="display:none">LV 1</button>
@@ -991,6 +1002,7 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
       <input id="gb_pwd" type="password" placeholder="密码" autocomplete="current-password" maxlength="32">
       <button class="gb-btn" id="gb_btn_login">登 录</button>
       <button class="gb-btn ghost" id="gb_btn_reg">注 册</button>
+      <button class="gb-btn ghost" id="gb_btn_recover" style="font-size:11px">忘记密码</button>
     </div>
     <div class="gb-row" id="gb_userinfo" style="display:none">
       <span class="gb-who">已登录 · <b id="gb_curuser"></b></span>
@@ -998,6 +1010,7 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
       <button class="gb-btn ghost" id="gb_btn_ck">签到</button>
       <span class="gb-tag" id="gb_ckinfo" style="display:none"></span>
       <button class="gb-btn ghost" id="gb_btn_pwd">改密</button>
+      <button class="gb-btn ghost" id="gb_btn_sec">安全问题</button>
       <button class="gb-btn ghost" id="gb_btn_logout">登 出</button>
     </div>
     <div class="gb-say" id="gb_say"></div>
@@ -1105,6 +1118,35 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
 </div>
 
 
+<div id="gbRecMask" style="display:none;position:fixed;inset:0;z-index:990;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px;font-size:12px;font-family:var(--mono)">
+    <div style="font-size:13px;margin-bottom:10px;letter-spacing:.1em">找回密码 · RECOVER</div>
+    <div style="color:var(--ink2);margin-bottom:8px;line-height:1.6">输入账号获取安全问题，验证通过后即可重置密码。</div>
+    <input id="gb_rc_user" placeholder="账号" maxlength="16" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px">
+    <div id="gb_rc_q" style="color:var(--ok);margin-bottom:8px;min-height:16px;display:none;line-height:1.5"></div>
+    <input id="gb_rc_ans" placeholder="安全问题答案" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px;display:none">
+    <input id="gb_rc_pwd" type="password" placeholder="新密码" maxlength="32" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:10px;font-size:12px;display:none">
+    <div style="display:flex;gap:8px">
+      <button class="gb-btn" id="gb_rc_go" style="flex:1">获取问题</button>
+      <button class="gb-btn ghost" id="gb_rc_ok" style="flex:1;display:none">重置密码</button>
+      <button class="gb-btn ghost" id="gb_rc_x" style="flex:1">关闭</button>
+    </div>
+    <div class="gb-say" id="gb_rc_say" style="margin-top:8px;min-height:14px"></div>
+  </div>
+</div>
+<div id="gbSecMask" style="display:none;position:fixed;inset:0;z-index:990;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px;font-size:12px;font-family:var(--mono)">
+    <div style="font-size:13px;margin-bottom:10px;letter-spacing:.1em">设置安全问题 · SECURITY</div>
+    <div style="color:var(--ink2);margin-bottom:8px;line-height:1.6">设置后可用它找回密码。请牢记问题与答案。</div>
+    <input id="gb_sec_q" placeholder="问题（如：你的第一个网名是？）" maxlength="60" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px">
+    <input id="gb_sec_a" placeholder="答案" maxlength="60" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:10px;font-size:12px">
+    <div style="display:flex;gap:8px">
+      <button class="gb-btn" id="gb_sec_ok" style="flex:1">保存</button>
+      <button class="gb-btn ghost" id="gb_sec_x" style="flex:1">关闭</button>
+    </div>
+    <div class="gb-say" id="gb_sec_say" style="margin-top:8px;min-height:14px"></div>
+  </div>
+</div>
 <div id="srchM" style="display:none;position:fixed;inset:0;z-index:995;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
   <div style="width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px">
     <div style="display:flex;gap:8px;margin-bottom:10px">
@@ -1584,6 +1626,46 @@ function gbLogin(){
   }).catch(function(e){ say('请求失败：'+e.message,false); });
 }
 
+/* 找回密码 + 安全问题 */
+function gbRcShow(){
+  $('gbRecMask').style.display='flex';
+  $('gb_rc_user').value=''; $('gb_rc_q').textContent=''; $('gb_rc_q').style.display='none';
+  $('gb_rc_ans').value=''; $('gb_rc_ans').style.display='none';
+  $('gb_rc_pwd').value=''; $('gb_rc_pwd').style.display='none';
+  $('gb_rc_go').style.display=''; $('gb_rc_ok').style.display='none';
+  $('gb_rc_say').textContent='';
+}
+function gbRcQ(){
+  var u=$('gb_rc_user').value.trim();
+  if(!u) return $('gb_rc_say').textContent='请输入账号';
+  call('/recover_q',{username:u}).then(function(j){
+    if(!j.ok) return $('gb_rc_say').textContent=j.msg||'获取失败';
+    $('gb_rc_q').textContent='问题：'+j.question; $('gb_rc_q').style.display='';
+    $('gb_rc_ans').style.display=''; $('gb_rc_pwd').style.display='';
+    $('gb_rc_go').style.display='none'; $('gb_rc_ok').style.display='';
+    $('gb_rc_say').textContent='';
+  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+e.message; });
+}
+function gbRcGo(){
+  var u=$('gb_rc_user').value.trim(), a=$('gb_rc_ans').value.trim(), p=$('gb_rc_pwd').value;
+  if(!a||!p) return $('gb_rc_say').textContent='请填写答案与新密码';
+  call('/recover',{username:u,answer:a,newpwd:p}).then(function(j){
+    $('gb_rc_say').textContent=j.msg||(j.ok?'已重置':'失败');
+    if(j.ok){ setTimeout(function(){ $('gbRecMask').style.display='none'; },1300); }
+  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+e.message; });
+}
+function gbSecShow(){
+  $('gbSecMask').style.display='flex';
+  $('gb_sec_q').value=''; $('gb_sec_a').value=''; $('gb_sec_say').textContent='';
+}
+function gbSecSave(){
+  var q=$('gb_sec_q').value.trim(), a=$('gb_sec_a').value.trim();
+  if(!q||!a) return $('gb_sec_say').textContent='请填写问题与答案';
+  if(!S.user) return $('gb_sec_say').textContent='请先登录';
+  call('/sec_set',{token:S.user.token,q:q,a:a}).then(function(j){
+    $('gb_sec_say').textContent=j.msg||(j.ok?'已设置':'失败');
+  }).catch(function(e){ $('gb_sec_say').textContent='请求失败：'+e.message; });
+}
 function gbLogout(){
   var done=function(){
     S.user=null; S.peer=null;
@@ -2161,6 +2243,86 @@ function autoCloud(){
   setTimeout(chk,1200);
 })();
 
+/* ---------- 顶栏动态 ---------- */
+(function(){
+  var st=document.getElementById('status');
+  if(!st) return;
+  var on=function(){ st.classList.toggle('scrl',(window.scrollY||document.documentElement.scrollTop)>40); };
+  window.addEventListener('scroll',on,{passive:true}); on();
+})();
+
+/* ---------- 节日彩蛋 ---------- */
+(function(){
+  var fxmap={
+    '01-01':{t:'fire',n:'元旦'},'02-14':{t:'heart',n:'情人节'},'03-08':{t:'balloon',n:'妇女节'},
+    '04-01':{t:'confetti',n:'愚人节'},'05-01':{t:'confetti',n:'劳动节'},'06-01':{t:'confetti',n:'儿童节'},
+    '10-01':{t:'fire',n:'国庆节'},'10-31':{t:'ghost',n:'万圣节'},'12-24':{t:'snow',n:'平安夜'},'12-25':{t:'snow',n:'圣诞节'}
+  };
+  var q=(location.search.match(/[?&]fx=([\w-]+)/)||[])[1];
+  var d=new Date(), k=('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  var ev=q?{t:q,n:'彩蛋预览'}:(fxmap[k]||null);
+  if(!ev) return;
+  var cv=document.getElementById('fx'); if(!cv) return;
+  cv.style.display='block';
+  var ctx=cv.getContext('2d'),W=0,H=0,ps=[],TY=ev.t;
+  function rs(){ W=cv.width=innerWidth; H=cv.height=innerHeight; }
+  rs(); addEventListener('resize',rs);
+  var C={snow:'#FFFFFF',heart:'#FF5C7A',confetti:'#FFC24B',balloon:'#E6EDEF',ghost:'#9BA9AD',fire:'#FFC24B'}[TY]||'#FFFFFF';
+  var star=[];
+  function mkTop(){ return {x:40+Math.random()*W*.6,y:H+10,vy:-3-Math.random()*4,vx:(Math.random()-.5)*2,s:2}; }
+  function mkPart(p){
+    var a2=[];
+    for(var i=0;i<60;i++){ var a=Math.random()*6.283,sp=1+Math.random()*3.5;
+      a2.push({x:p.x,y:p.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,s:1+Math.random()*2.5,life:28+Math.random()*22,b:1}); }
+    return a2;
+  }
+  function frame(){
+    requestAnimationFrame(frame);
+    ctx.clearRect(0,0,W,H);
+    if(TY==='fire'){
+      if(star.length<2&&Math.random()<.06) star.push(mkTop());
+      for(var i=star.length-1;i>=0;i--){
+        var s=star[i]; s.x+=s.vx; s.y+=s.vy; s.vy+=.06;
+        ctx.fillStyle=C; ctx.globalAlpha=.95;
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.s,0,6.283); ctx.fill();
+        if(s.vy>-1){ ps=ps.concat(mkPart(s)); star.splice(i,1); }
+      }
+    }
+    if(ps.length<120&&Math.random()<.35){
+      var p={x:Math.random()*W,y:TY==='balloon'?H+30:-30,vx:(Math.random()-.5)*.8,vy:1+Math.random()*2,s:TY==='balloon'?9+Math.random()*11:2+Math.random()*4,b:0};
+      if(TY==='snow'){p.vy=.5+Math.random()*1.1;p.vx=(Math.random()-.5)*.5;}
+      if(TY==='confetti'){p.vy=1.5+Math.random()*2.5;p.vx=(Math.random()-.5)*2;}
+      if(TY==='heart'){p.vy=.8+Math.random()*1.1;p.vx=(Math.random()-.5)*.9;p.s=5+Math.random()*7;}
+      if(TY==='ghost'){p.vy=.5+Math.random()*1.1;p.vx=(Math.random()-.5)*1.5;p.s=7+Math.random()*9;}
+      if(TY==='balloon'){p.vy=-(.5+Math.random()*.7);p.vx=(Math.random()-.5)*.8;}
+      ps.push(p);
+    }
+    for(var j=ps.length-1;j>=0;j--){
+      var q2=ps[j];
+      if(q2.b){ q2.x+=q2.vx; q2.y+=q2.vy; q2.vy+=.035; q2.life--; if(q2.life<=0){ps.splice(j,1);continue} }
+      else { q2.x+=q2.vx; q2.y+=q2.vy; }
+      ctx.globalAlpha=q2.b?Math.min(1,q2.life/20)*.9:.75;
+      ctx.fillStyle=q2.b?C:'#E6EDEF';
+      if(TY==='heart'){
+        ctx.save(); ctx.translate(q2.x,q2.y); ctx.scale(q2.s/10,q2.s/10);
+        ctx.beginPath(); ctx.moveTo(0,3);
+        ctx.bezierCurveTo(-6,-3,-2,-8,0,-4); ctx.bezierCurveTo(2,-8,6,-3,0,3);
+        ctx.fill(); ctx.restore();
+      } else if(TY==='ghost'){
+        ctx.beginPath(); ctx.arc(q2.x,q2.y,q2.s,Math.PI,0); ctx.rect(q2.x-q2.s,q2.y,q2.s*2,q2.s*.8); ctx.fill();
+      } else if(TY==='balloon'){
+        ctx.beginPath(); ctx.ellipse(q2.x,q2.y,q2.s,q2.s*1.3,0,0,6.283); ctx.fill();
+        ctx.strokeStyle=C; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(q2.x,q2.y+q2.s*1.3); ctx.lineTo(q2.x,q2.y+q2.s*2.2); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(q2.x,q2.y,q2.s,0,6.283); ctx.fill();
+      }
+      if(q2.y>H+40||q2.y<-80||q2.x<-60||q2.x>W+60) ps.splice(j,1);
+    }
+    ctx.globalAlpha=1;
+  }
+  frame();
+})();
+
 /* ---------- 事件绑定 ---------- */
 function bind(){
   $('gb_btn_reg').addEventListener('click',gbRegister);
@@ -2178,6 +2340,13 @@ function bind(){
       loadNotes();
     }).catch(function(e){ say('请求失败：'+e.message,false); });
   });
+  $('gb_btn_recover').addEventListener('click',gbRcShow);
+  $('gb_rc_go').addEventListener('click',gbRcQ);
+  $('gb_rc_ok').addEventListener('click',gbRcGo);
+  $('gb_rc_x').addEventListener('click',function(){ $('gbRecMask').style.display='none'; });
+  $('gb_btn_sec').addEventListener('click',gbSecShow);
+  $('gb_sec_ok').addEventListener('click',gbSecSave);
+  $('gb_sec_x').addEventListener('click',function(){ $('gbSecMask').style.display='none'; });
   $('gb_btn_pwd').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='flex'; });
   $('gb_pwd_cancel').addEventListener('click',function(){ $('gb_pwd_dialog').style.display='none'; });
   $('gb_pwd_save').addEventListener('click',function(){

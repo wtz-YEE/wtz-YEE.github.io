@@ -87,10 +87,87 @@ def register():
     if uname in users:
         return jsonify({"ok": False, "msg": "账号已存在"})
 
+    q = (data.get("q") or "").strip()[:60]
+    a = (data.get("a") or "").strip()[:60]
     users[uname] = {"pwd": pwd, "is_admin": False, "reg": _time.strftime("%Y-%m-%d %H:%M:%S")}
+    if q and a:
+        users[uname]["sec_q"] = q
+        users[uname]["sec_a"] = a
     with open(USER_FILE, "w", encoding="utf-8") as f:
         json.dump(users, f, ensure_ascii=False)
     return jsonify({"ok": True, "msg": "注册成功"})
+
+
+# 设置安全问题（登录态）
+@app.route("/sec_set", methods=["POST"])
+def sec_set():
+    data = request.get_json()
+    tk = data.get("token", "")
+    q = (data.get("q") or "").strip()[:60]
+    a = (data.get("a") or "").strip()[:60]
+    if not q or not a:
+        return jsonify({"ok": False, "msg": "请填写问题与答案"})
+    with open(USER_FILE, "r", encoding="utf-8") as f:
+        users = json.load(f)
+    ses = users.get("__sessions", {})
+    name = None
+    for k, v in ses.items():
+        if k == tk:
+            name = v[0] if isinstance(v, list) else v
+            break
+    if not name or not users.get(name):
+        return jsonify({"ok": False, "msg": "登录已失效"})
+    users[name]["sec_q"] = q
+    users[name]["sec_a"] = a
+    with open(USER_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False)
+    return jsonify({"ok": True, "msg": "安全问题已设置"})
+
+
+# 找回密码第一步：获取安全问题
+@app.route("/recover_q", methods=["POST"])
+def recover_q():
+    data = request.get_json()
+    uname = (data.get("username") or "").strip()
+    if not uname:
+        return jsonify({"ok": False, "msg": "请输入账号"})
+    with open(USER_FILE, "r", encoding="utf-8") as f:
+        users = json.load(f)
+    u = users.get(uname)
+    if not u:
+        return jsonify({"ok": False, "msg": "账号不存在"})
+    if not u.get("sec_q"):
+        return jsonify({"ok": False, "msg": "该账号未设置安全问题"})
+    return jsonify({"ok": True, "question": u["sec_q"]})
+
+
+# 找回密码第二步：验证答案并重置
+@app.route("/recover", methods=["POST"])
+def recover():
+    data = request.get_json()
+    uname = (data.get("username") or "").strip()
+    ans = (data.get("answer") or "").strip()
+    newpwd = data.get("newpwd") or ""
+    if not uname or not newpwd:
+        return jsonify({"ok": False, "msg": "请填写完整信息"})
+    if len(newpwd) < 1 or len(newpwd) > 32:
+        return jsonify({"ok": False, "msg": "密码长度需在 1-32 之间"})
+    with open(USER_FILE, "r", encoding="utf-8") as f:
+        users = json.load(f)
+    u = users.get(uname)
+    if not u:
+        return jsonify({"ok": False, "msg": "账号不存在"})
+    if not u.get("sec_a"):
+        return jsonify({"ok": False, "msg": "该账号未设置安全问题"})
+    if u["sec_a"] != ans:
+        return jsonify({"ok": False, "msg": "安全问题答案错误"})
+    u["pwd"] = newpwd
+    ses = users.setdefault("__sessions", {})
+    for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) == uname]:
+        del ses[k]
+    with open(USER_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False)
+    return jsonify({"ok": True, "msg": "密码已重置，请重新登录"})
 
 
 # 用户登录
@@ -1221,7 +1298,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/sec_set", "/recover_q", "/recover")
 
 @app.before_request
 def _rate():

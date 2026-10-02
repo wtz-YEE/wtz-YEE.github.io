@@ -90,6 +90,7 @@ header h1 b{color:var(--acc);font-weight:700}
     <input id="lu" placeholder="账号" maxlength="16" style="display:none">
     <input id="lp" type="password" placeholder="密码" maxlength="32" style="display:none">
     <button class="btn ghost" id="lg" style="display:none">登录</button>
+    <button class="btn ghost" id="lr" style="display:none;font-size:11px">忘记密码</button>
     <button class="btn" id="lo" style="display:none">登出</button>
     <span class="say" id="say"></span>
   </div>
@@ -205,6 +206,20 @@ function doLogout(){
   applyAuth();
   if(u&&u.token) call('/logout',{}).then(function(){},function(){});
   say('已登出',true);
+}
+function doRecover(){
+  var u=prompt('输入账号以获取安全问题：');
+  if(!u||!u.trim()) return;
+  call('/recover_q',{username:u.trim()}).then(function(j){
+    if(!j.ok) return say(j.msg||'获取失败',false);
+    var a=prompt('安全问题：'+j.question+'\n\n输入答案：');
+    if(!a) return;
+    var p=prompt('输入新密码（1-32位）：');
+    if(!p) return;
+    call('/recover',{username:u.trim(),answer:a.trim(),newpwd:p}).then(function(k){
+      say(k.msg||(k.ok?'密码已重置':'重置失败'),!!k.ok);
+    }).catch(function(e){ say('请求失败：'+e.message,false); });
+  }).catch(function(e){ say('请求失败：'+e.message,false); });
 }
 /* 标签 */
 function tagHTML(){ return '<span class="tag" data-t="求助">求助</span><span class="tag" data-t="询问">询问</span><span class="tag" data-t="分享">分享</span>'; }
@@ -378,6 +393,7 @@ $('pf').addEventListener('change',upImg);
 $('attRm').addEventListener('click',function(){S.img='';$('att').style.display='none';$('pf').value=''});
 $('send').addEventListener('click',send);
 $('lg').addEventListener('click',doLogin);
+$('lr').addEventListener('click',doRecover);
 $('lo').addEventListener('click',doLogout);
 $('lp').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
 $('st').addEventListener('click',function(){ if(!S.api){ autoCloud(); } });
