@@ -258,6 +258,7 @@ function ferr(msg){
 </script>
 </head>
 <body>
+<div id="fixMask" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#0a0a0a;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:Consolas,monospace;text-align:center"><div style="font-size:min(9vw,110px);letter-spacing:.35em;color:#ff5c7a;text-shadow:0 0 34px rgba(255,92,122,.45);font-weight:bold">维修中</div><div style="width:56px;height:2px;background:#ff5c7a;opacity:.5"></div><div style="font-size:min(1.6vw,16px);color:#8a8a8a;letter-spacing:.22em">系统维护 · 请稍后刷新页面</div></div><script>(function(){var m=document.getElementById('fixMask');if(!m)return;fetch('https://wtz-YEE.github.io/cloud_fixing.txt?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){if(t&&t.trim().toLowerCase()==='t'){m.style.display='flex';document.documentElement.style.overflow='hidden'}}).catch(function(){});})();</script>
 
 <header id="status">
   <span class="st-l">CASSEL COLLEGE // 卡塞尔学院</span>
