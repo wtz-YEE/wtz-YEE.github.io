@@ -767,6 +767,21 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
 .rcShake{animation:rcShake .4s ease}
 @media(prefers-reduced-motion:reduce){#status.scrl .st-l::after,.st-dot{animation:none}}
 </style>
+
+<script>
+function ferr(msg){
+  msg=String(msg||'');
+  if(/Failed to fetch|ERR_CONNECTION|NetworkError|fetch failed/i.test(msg)) return '网络连接失败，请检查网络或稍后重试';
+  if(/429/.test(msg)) return '操作太频繁，请稍候几秒再试';
+  if(/5\d\d/.test(msg)) return '服务器开小差了，请稍后重试';
+  if(/404/.test(msg)) return '接口或云端地址失效，请检查云端配置';
+  if(/403/.test(msg)) return '没有权限执行该操作';
+  if(/401/.test(msg)) return '登录已失效，请重新登录';
+  if(/timeout/i.test(msg)) return '连接超时，请检查云端服务是否在线';
+  if(/load failed|ERR_FAILED/i.test(msg)) return '资源加载失败，请刷新重试';
+  return msg;
+}
+</script>
 <body>
 
 <div id="updBar" class="hidden">
@@ -1627,7 +1642,7 @@ function gbRegister(){
   return call('/register',{username:u,password:p}).then(function(j){
     say(j.msg||(j.ok?'注册成功':'注册失败'), !!j.ok);
     if(j.ok) $('gb_pwd').value='';
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
+  }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
 }
 
 function gbLogin(){
@@ -1644,7 +1659,7 @@ function gbLogin(){
     loadGuestBook();
     pmRefreshConversations();
     startPoll();
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
+  }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
 }
 
 /* 找回密码 + 安全问题 */
@@ -1665,7 +1680,7 @@ function gbRcQ(){
     $('gb_rc_ans').style.display=''; $('gb_rc_pwd').style.display='';
     $('gb_rc_go').style.display='none'; $('gb_rc_ok').style.display='';
     $('gb_rc_say').textContent='';
-  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+e.message; });
+  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+ferr(e.message); });
 }
 function gbRcShake(){
   var m=document.getElementById('gbRecMask').querySelector('div');
@@ -1678,7 +1693,7 @@ function gbRcGo(){
     $('gb_rc_say').textContent=j.msg||(j.ok?'已重置':'失败');
     if(j.ok){ setTimeout(function(){ $('gbRecMask').style.display='none'; },1300); }
     else gbRcShake();
-  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+e.message; gbRcShake(); });
+  }).catch(function(e){ $('gb_rc_say').textContent='请求失败：'+ferr(e.message); gbRcShake(); });
 }
 function gbSecShow(){
   $('gbSecMask').style.display='flex';
@@ -1690,7 +1705,7 @@ function gbSecSave(){
   if(!S.user) return $('gb_sec_say').textContent='请先登录';
   call('/sec_set',{token:S.user.token,q:q,a:a}).then(function(j){
     $('gb_sec_say').textContent=j.msg||(j.ok?'已设置':'失败');
-  }).catch(function(e){ $('gb_sec_say').textContent='请求失败：'+e.message; });
+  }).catch(function(e){ $('gb_sec_say').textContent='请求失败：'+ferr(e.message); });
 }
 function gbLogout(){
   var done=function(){
@@ -1820,7 +1835,7 @@ function loadGuestBook(){
       renderGuests([]);
     }
   }).catch(function(e){
-    if(lb&&(!cache||!cache.list||!cache.list.length)) lb.innerHTML='<div class="gb-empty">留言加载失败 · '+esc(e.message)+'</div>';
+    if(lb&&(!cache||!cache.list||!cache.list.length)) lb.innerHTML='<div class="gb-empty">留言加载失败 · '+esc(ferr(e.message))+'</div>';
   });
 }
 
@@ -1848,7 +1863,7 @@ function uploadFile(f){
       $('gb_att').style.display='flex';
       $('gb_img_rm').addEventListener('click',function(){S.img='';$('gb_att').style.display='none';$('gb_file').value=''});
       say('图片已就绪',true);
-    }).catch(function(e){ say('上传失败：'+e.message,false); });
+    }).catch(function(e){ say('上传失败：'+ferr(e.message),false); });
   });
 }
 function uploadImg(){
@@ -1890,7 +1905,7 @@ function uploadAvatar(){
       S.avatar=j.url;
       initAvatarPick();
       say('自定义头像已就绪',true);
-    }).catch(function(e){ say('上传失败：'+e.message,false); });
+    }).catch(function(e){ say('上传失败：'+ferr(e.message),false); });
   });
 }
 function submitGuestBook(){
@@ -1922,7 +1937,7 @@ function submitGuestBook(){
     }
     say('留言已提交',true);
     setTimeout(loadGuestBook,2600);
-  }).catch(function(e){ say('提交失败：'+e.message,false); });
+  }).catch(function(e){ say('提交失败：'+ferr(e.message),false); });
 }
 
 function loadNotes(){
@@ -1947,7 +1962,7 @@ function noticeSend(){
   call('/notice_add',{text:t}).then(function(j){
     say(j.msg||(j.ok?'公告已发布':'发布失败'),!!j.ok);
     if(j.ok){ $('gb_n_text').value=''; $('gb_n_form').style.display='none'; loadNotes(); }
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
+  }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
 }
 function hitCloud(){
   if(!S.api) return;
@@ -1975,7 +1990,7 @@ function doCheckin(){
     if(!j.ok) return say(j.msg||'签到失败',false);
     say(j.done?('今日已签到 · 连签 '+j.streak+' 天 · 共 '+j.total+' 天'):('签到成功 · 连签 '+j.streak+' 天 · 共 '+j.total+' 天'),true);
     checkinStatus();
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
+  }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
 }
 function checkinStatus(){
   var el=$('gb_ckinfo');
@@ -2206,7 +2221,7 @@ function pmSend(){
     S.peer=to;
     $('pm_title').textContent='与 '+to+' 的私聊';
     return pmRefreshThread().then(pmRefreshConversations);
-  }).catch(function(e){ say('发送失败：'+e.message,false); });
+  }).catch(function(e){ say('发送失败：'+ferr(e.message),false); });
 }
 
 /* ---------- 轮询 ---------- */
@@ -2410,7 +2425,7 @@ function bind(){
     call('/notice_del',{id:b.getAttribute('data-nd')}).then(function(j){
       if(!j.ok) return say(j.msg||'删除失败',false);
       loadNotes();
-    }).catch(function(e){ say('请求失败：'+e.message,false); });
+    }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
   });
   $('gb_btn_recover').addEventListener('click',gbRcShow);
   $('gb_rc_user').addEventListener('keydown',function(e){ if(e.key==='Enter') gbRcQ(); });
@@ -2430,7 +2445,7 @@ function bind(){
     call('/change_pwd',{old:o,new:n}).then(function(j){
       say(j.msg||(j.ok?'密码已修改':'修改失败'),!!j.ok);
       if(j.ok){ $('gb_pwd_dialog').style.display='none'; $('gb_pwd_old').value=''; $('gb_pwd_new').value=''; }
-    }).catch(function(e){ say('请求失败：'+e.message,false); });
+    }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
   });
   $('guestbookList').addEventListener('click',function(e){
     var rb=e.target.closest('[data-reply]');
@@ -2468,7 +2483,7 @@ function bind(){
         }
       }catch(e){}
       setTimeout(loadGuestBook,2600);
-    }).catch(function(e){ say('点赞失败：'+e.message+ (e.message.indexOf('429')>=0?' · 操作过快请稍候':''),false); });
+    }).catch(function(e){ say('点赞失败：'+ferr(e.message)+ (ferr(e.message).indexOf('429')>=0?' · 操作过快请稍候':''),false); });
   });
   $('gb_ulist').addEventListener('click',function(e){
     var b=e.target.closest('[data-ua]');
@@ -2477,7 +2492,7 @@ function bind(){
       call('/admin_set_admin',{target:t,admin:!adm}).then(function(j){
         say(j.msg||(j.ok?'已更新':'失败'),!!j.ok);
         if(j.ok) loadUsers();
-      }).catch(function(e){ say('请求失败：'+e.message,false); });
+      }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
       return;
     }
     b=e.target.closest('[data-uban]');
@@ -2487,7 +2502,7 @@ function bind(){
       call('/admin_ban_user',{target:t2,ban:!ban}).then(function(j){
         say(j.msg||(j.ok?'已操作':'失败'),!!j.ok);
         if(j.ok) loadUsers();
-      }).catch(function(e){ say('请求失败：'+e.message,false); });
+      }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
       return;
     }
     b=e.target.closest('[data-udel]');
@@ -2497,7 +2512,7 @@ function bind(){
       call('/admin_del_user',{target:t3}).then(function(j){
         say(j.msg||(j.ok?'已删除':'失败'),!!j.ok);
         if(j.ok) loadUsers();
-      }).catch(function(e){ say('请求失败：'+e.message,false); });
+      }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
       return;
     }
     b=e.target.closest('[data-ukick]');
@@ -2507,7 +2522,7 @@ function bind(){
       call('/admin_del_session',{user:t4}).then(function(j){
         say(j.msg||(j.ok?'已操作':'失败'),!!j.ok);
         if(j.ok) loadUsers();
-      }).catch(function(e){ say('请求失败：'+e.message,false); });
+      }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
     }
   });
   $('gb_img_btn').addEventListener('click',function(){
@@ -2568,7 +2583,7 @@ function bind(){
         '</div>';
       }).join('');
       box.style.display='';
-    }).catch(function(e){ say('请求失败：'+e.message,false); });
+    }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
   });
   $('gb_ban_list').addEventListener('click',function(e){
     var b=e.target.closest('[data-bc]');
@@ -2773,7 +2788,7 @@ function rkWShow(l){
       call('/risk_words_del',{word:w}).then(function(j){
         if(typeof say==='function')say(j.msg||'',true);
         rkWShow(j.words||[]);
-      }).catch(function(e){if(typeof say==='function')say('失败：'+e.message,false)});
+      }).catch(function(e){if(typeof say==='function')say('失败：'+ferr(e.message),false)});
     };
     s.appendChild(t);
     s.appendChild(d);
@@ -2797,7 +2812,7 @@ function riskRun(){
     if(typeof say==='function')say((j.msg||'')+'：'+(j.hits||[]).join('、'),true);
     if(typeof loadUsers==='function')loadUsers();
     rkWShow(j.words||[]);
-  }).catch(function(e){rkBusy(false,rkAll);if(typeof say==='function')say('请求失败：'+e.message,false)});
+  }).catch(function(e){rkBusy(false,rkAll);if(typeof say==='function')say('请求失败：'+ferr(e.message),false)});
 }
 if(rkB)rkB.onclick=function(){
   var kw=(rkIn.value||'').trim();
@@ -2808,7 +2823,7 @@ if(rkB)rkB.onclick=function(){
     if(typeof say==='function')say(j.msg||'',true);
     rkWShow(j.words||[]);
     if(j.ok)rkIn.value='';
-  }).catch(function(e){rkBusy(false,rkB);if(typeof say==='function')say('失败：'+e.message,false)});
+  }).catch(function(e){rkBusy(false,rkB);if(typeof say==='function')say('失败：'+ferr(e.message),false)});
 };
 if(rkAll)rkAll.onclick=function(){
   if(typeof say==='function')say('云端扫描全部关键词…',true);
@@ -2818,7 +2833,7 @@ if(rkAll)rkAll.onclick=function(){
     if(!j.ok){if(typeof say==='function')say(j.msg||'风控失败',false);return}
     if(typeof say==='function')say((j.msg||'')+'：'+(j.hits||[]).join('、'),true);
     if(typeof loadUsers==='function')loadUsers();
-  }).catch(function(e){rkBusy(false,rkAll);if(typeof say==='function')say('请求失败：'+e.message,false)});
+  }).catch(function(e){rkBusy(false,rkAll);if(typeof say==='function')say('请求失败：'+ferr(e.message),false)});
 };
 if(rkIn)rkIn.addEventListener('keydown',function(e){if(e.key==='Enter')riskRun()});
 call('/risk_words_get',{}).then(function(j){rkWShow(j.words||[])}).catch(function(){});
@@ -3186,7 +3201,7 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
       L.innerHTML=arr.map(function(x){
         return '<div style="border-bottom:1px dashed var(--line);padding:3px 0"><span style="color:var(--accent)">'+esc(x.who||'')+'</span> <span style="color:var(--ink2)">'+esc(x.act||'')+'</span> → '+esc(x.target||'')+'<div style="color:var(--ink3);font-size:10px">'+esc(x.t||'')+' · '+esc(x.detail||'')+'</div></div>';
       }).join('');
-    }).catch(function(e){ L.innerHTML='加载失败 · '+esc(e.message); });
+    }).catch(function(e){ L.innerHTML='加载失败 · '+esc(ferr(e.message)); });
   }
   var aj=$('gb_aud_json'),ac=$('gb_aud_csv');
   if(aj) aj.addEventListener('click',function(){
@@ -3224,7 +3239,7 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
         hb+='<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1"><div style="height:'+hh+'px;width:7px;background:'+(hh?'var(--accent)':'#262626')+';opacity:'+(hh?'.9':'.5')+'"></div><span style="font-size:8px;color:var(--ink3)">'+i+'</span></div>';
       }
       H2.innerHTML='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:4px">留言活跃时段（24h）</div><div style="display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid var(--line);padding-bottom:2px">'+hb+'</div>';
-    }).catch(function(e){ T.innerHTML='加载失败 · '+esc(e.message); });
+    }).catch(function(e){ T.innerHTML='加载失败 · '+esc(ferr(e.message)); });
   }
   window.audRefresh=audRefresh; window.staRefresh=staRefresh;
 })();

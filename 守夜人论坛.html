@@ -87,6 +87,21 @@ header h1 b{color:var(--acc);font-weight:700}
 #pv{display:none;padding:12px 14px;min-height:72px;font-size:14px;white-space:pre-wrap;word-break:break-word;border-top:1px dashed var(--line);background:rgba(255,255,255,.02)}
 #pv.on{display:block}
 </style>
+
+<script>
+function ferr(msg){
+  msg=String(msg||'');
+  if(/Failed to fetch|ERR_CONNECTION|NetworkError|fetch failed/i.test(msg)) return '网络连接失败，请检查网络或稍后重试';
+  if(/429/.test(msg)) return '操作太频繁，请稍候几秒再试';
+  if(/5\d\d/.test(msg)) return '服务器开小差了，请稍后重试';
+  if(/404/.test(msg)) return '接口或云端地址失效，请检查云端配置';
+  if(/403/.test(msg)) return '没有权限执行该操作';
+  if(/401/.test(msg)) return '登录已失效，请重新登录';
+  if(/timeout/i.test(msg)) return '连接超时，请检查云端服务是否在线';
+  if(/load failed|ERR_FAILED/i.test(msg)) return '资源加载失败，请刷新重试';
+  return msg;
+}
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -209,7 +224,7 @@ function doLogin(){
     $('lu').value='';$('lp').value='';
     applyAuth();
     say('欢迎回来，'+j.username,true);
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
+  }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
 }
 function doLogout(){
   var u=S.user; S.user=null;
@@ -229,8 +244,8 @@ function doRecover(){
     if(!p) return;
     call('/recover',{username:u.trim(),answer:a.trim(),newpwd:p}).then(function(k){
       say(k.msg||(k.ok?'密码已重置':'重置失败'),!!k.ok);
-    }).catch(function(e){ say('请求失败：'+e.message,false); });
-  }).catch(function(e){ say('请求失败：'+e.message,false); });
+    }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
+  }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
 }
 /* 标签 */
 function tagHTML(){ return '<span class="tag" data-t="求助">求助</span><span class="tag" data-t="询问">询问</span><span class="tag" data-t="分享">分享</span>'; }
@@ -271,7 +286,7 @@ function upImg(){
       $('attImg').src=S.api+j.url;
       $('att').style.display='inline-flex';
       say('图片已就绪',true);
-    }).catch(function(e){ say('上传失败：'+e.message,false); });
+    }).catch(function(e){ say('上传失败：'+ferr(e.message),false); });
   });
 }
 /* ---------- v2.8 Markdown ---------- */
@@ -311,7 +326,7 @@ function send(){
     var all=$('tags').querySelectorAll('.tag');all.forEach(function(x){x.classList.remove('on')});
     say('发布成功',true);
     loadPosts();
-  }).catch(function(e){ say('发布失败：'+e.message,false); });
+  }).catch(function(e){ say('发布失败：'+ferr(e.message),false); });
 }
 /* 列表 */
 function render(ps){
@@ -351,7 +366,7 @@ function loadPosts(){
     if(!j.ok) return;
     render(j.list||[]);
   }).catch(function(e){
-    var er=$('err');er.style.display='block';er.textContent='加载失败 · '+e.message;
+    var er=$('err');er.style.display='block';er.textContent='加载失败 · '+ferr(e.message);
   });
 }
 /* 列表事件 */
@@ -365,7 +380,7 @@ function bindList(){
       call('/post_vote',{pid:pv.getAttribute('data-pv'),vote:v}).then(function(j){
         if(!j.ok) return say(j.msg||'操作失败',false);
         loadPosts();
-      }).catch(function(e){ say('操作失败：'+e.message,false); });
+      }).catch(function(e){ say('操作失败：'+ferr(e.message),false); });
       return;
     }
     var cvb=t.closest('[data-cv]');
@@ -374,7 +389,7 @@ function bindList(){
       call('/comment_vote',{pid:cvb.getAttribute('data-cv'),cid:cvb.getAttribute('data-cvi'),vote:cvb.getAttribute('data-cvv')}).then(function(j){
         if(!j.ok) return say(j.msg||'操作失败',false);
         loadPosts();
-      }).catch(function(e){ say('操作失败：'+e.message,false); });
+      }).catch(function(e){ say('操作失败：'+ferr(e.message),false); });
       return;
     }
     var pb=t.closest('[data-pd]');
@@ -383,7 +398,7 @@ function bindList(){
       call('/post_del',{id:pb.getAttribute('data-pd')}).then(function(j){
         if(!j.ok) return say(j.msg||'删除失败',false);
         loadPosts(); say('已删除',true);
-      }).catch(function(e){ say('删除失败：'+e.message,false); });
+      }).catch(function(e){ say('删除失败：'+ferr(e.message),false); });
       return;
     }
     var cm=t.closest('[data-cm]');
@@ -399,7 +414,7 @@ function bindList(){
       call('/admin_del_comment',{pid:pid,idx:idx}).then(function(j){
         if(!j.ok) return say(j.msg||'删除失败',false);
         loadPosts(); say('评论已删除',true);
-      }).catch(function(e){ say('删除失败：'+e.message,false); });
+      }).catch(function(e){ say('删除失败：'+ferr(e.message),false); });
       return;
     }
     var cs=t.closest('[data-cs]');
@@ -411,7 +426,7 @@ function bindList(){
       call('/comment_add',{pid:id,text:v}).then(function(j){
         if(!j.ok) return say(j.msg||'评论失败',false);
         say('评论成功',true); loadPosts();
-      }).catch(function(e){ say('评论失败：'+e.message,false); });
+      }).catch(function(e){ say('评论失败：'+ferr(e.message),false); });
       return;
     }
     var im=t.closest('.bd img');

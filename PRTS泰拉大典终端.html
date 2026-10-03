@@ -612,6 +612,21 @@ input[type=range].mb-slider:hover::-webkit-slider-thumb{box-shadow:0 0 12px var(
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 </style>
+
+<script>
+function ferr(msg){
+  msg=String(msg||'');
+  if(/Failed to fetch|ERR_CONNECTION|NetworkError|fetch failed/i.test(msg)) return '网络连接失败，请检查网络或稍后重试';
+  if(/429/.test(msg)) return '操作太频繁，请稍候几秒再试';
+  if(/5\d\d/.test(msg)) return '服务器开小差了，请稍后重试';
+  if(/404/.test(msg)) return '接口或云端地址失效，请检查云端配置';
+  if(/403/.test(msg)) return '没有权限执行该操作';
+  if(/401/.test(msg)) return '登录已失效，请重新登录';
+  if(/timeout/i.test(msg)) return '连接超时，请检查云端服务是否在线';
+  if(/load failed|ERR_FAILED/i.test(msg)) return '资源加载失败，请刷新重试';
+  return msg;
+}
+</script>
 </head>
 <body>
 <div id="app">
