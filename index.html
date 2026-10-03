@@ -1608,11 +1608,11 @@ function applyAuth(){
 function gbRegister(){
   var u=$('gb_user').value.trim(), p=$('gb_pwd').value;
   if(!u||!p) return say('请先填写账号与密码',false);
-  var dn={}; try{dn=JSON.parse(localStorage.getItem('wtz_danger_names')||'{}')}catch(e){}
-  var dt=dn[u]||0;
+  var dt=0; try{dt=parseInt(localStorage.getItem('wtz_danger_ts')||'0',10)}catch(e){}
+  try{ localStorage.removeItem('wtz_danger_names'); }catch(e){}
   if(dt&&Date.now()-dt<86400000){
     var rh=Math.max(1,Math.ceil((86400000-(Date.now()-dt))/3600000));
-    return say('该账号为危险账号，本机 '+rh+' 小时内禁止注册',false);
+    return say('本机被标记为危险来源，'+rh+' 小时内禁止注册任何账号',false);
   }
   return call('/register',{username:u,password:p}).then(function(j){
     say(j.msg||(j.ok?'注册成功':'注册失败'), !!j.ok);
@@ -1698,11 +1698,7 @@ function gbLogout(){
   call('/logout',{}).then(done,function(){ done(); });
 }
 function markDanger(name){
-  try{
-    var dn={}; try{dn=JSON.parse(localStorage.getItem('wtz_danger_names')||'{}')}catch(e){}
-    dn[name]=Date.now();
-    localStorage.setItem('wtz_danger_names',JSON.stringify(dn));
-  }catch(e){}
+  try{ localStorage.setItem('wtz_danger_ts',String(Date.now())); }catch(e){}
 }
 function tokenPulse(){
   if(!S.api||!S.user||!S.user.token) return;
@@ -2473,14 +2469,14 @@ function bind(){
     if(box.style.display!=='none'){ box.style.display='none'; return; }
     call('/admin_banned_get',{}).then(function(j){
       if(!j.ok) return say(j.msg||'获取失败',false);
-      if(!j.list||!j.list.length){ box.innerHTML='<div style="color:var(--ok)">暂无危险账号</div>'; box.style.display=''; return; }
+      if(!j.list||!j.list.length){ box.innerHTML='<div style="color:var(--ok)">暂无危险 IP</div>'; box.style.display=''; return; }
       box.innerHTML=j.list.map(function(b){
         var hh=Math.max(1,Math.ceil(b.remain/3600));
         return '<div style="display:flex;gap:8px;align-items:center;padding:3px 0;border-bottom:1px solid var(--line)">'+
-          '<b style="color:var(--bad)">'+esc(b.name)+'</b>'+
-          '<span style="color:var(--ink3)">'+esc(b.time)+'</span>'+
-          '<span style="color:var(--ink3)">由 '+esc(b.by)+' 标记 · 剩 '+hh+'h</span>'+
-          '<button class="gb-btn ghost" data-bc="'+esc(b.name)+'" style="padding:1px 8px;font-size:10px">解除</button>'+
+          '<b style="color:var(--bad)">'+esc(b.ip)+'</b>'+
+          '<span style="color:var(--ink3)">原账号 '+esc(b.name||'-')+'</span>'+
+          '<span style="color:var(--ink3)">'+esc(b.time)+' · 由 '+esc(b.by)+' · 剩 '+hh+'h</span>'+
+          '<button class="gb-btn ghost" data-bc="'+esc(b.ip)+'" style="padding:1px 8px;font-size:10px">解除</button>'+
         '</div>';
       }).join('');
       box.style.display='';
@@ -2489,7 +2485,7 @@ function bind(){
   $('gb_ban_list').addEventListener('click',function(e){
     var b=e.target.closest('[data-bc]');
     if(!b) return;
-    call('/admin_banned_clear',{name:b.getAttribute('data-bc')}).then(function(j){
+    call('/admin_banned_clear',{ip:b.getAttribute('data-bc')}).then(function(j){
       say(j.msg||(j.ok?'已解除':'失败'),!!j.ok);
       if(j.ok) $('gb_ban_btn').click();
     }).catch(function(e2){ say('请求失败：'+e2.message,false); });

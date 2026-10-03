@@ -14,7 +14,7 @@ PM_FILE = os.path.join(_BASE, "pm.json")
 CHANGELOG_FILE = os.path.join(_BASE, "changelog.json")
 SCORE_FILE = os.path.join(_BASE, "scores.json")
 RISK_FILE = os.path.join(_BASE, "risk_words.json")
-BANNED_FILE = os.path.join(_BASE, "banned_names.json")
+BANNED_IP_FILE = os.path.join(_BASE, "banned_ips.json")
 
 import time as _t
 DEL_LOG = []
@@ -89,15 +89,16 @@ def register():
 
     if uname in users:
         return jsonify({"ok": False, "msg": "账号已存在"})
-    bn = _load(BANNED_FILE, {})
-    b = bn.get(uname)
+    rip = (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip() or (request.remote_addr or "")
+    bi = _load(BANNED_IP_FILE, {})
+    b = bi.get(rip)
     if b and _time.time() - float(b.get("t") or 0) < 86400:
         rem = int(86400 - (_time.time() - float(b.get("t") or 0)))
-        return jsonify({"ok": False, "msg": "该账号为危险账号，禁止注册 · " + str(max(1, rem // 3600)) + " 小时后解除"})
+        return jsonify({"ok": False, "msg": "该设备/IP 为危险来源，禁止注册任何账号 · " + str(max(1, rem // 3600)) + " 小时后解除"})
 
     q = (data.get("q") or "").strip()[:60]
     a = (data.get("a") or "").strip()[:60]
-    users[uname] = {"pwd": pwd, "is_admin": False, "reg": _time.strftime("%Y-%m-%d %H:%M:%S")}
+    users[uname] = {"pwd": pwd, "is_admin": False, "reg": _time.strftime("%Y-%m-%d %H:%M:%S"), "ip": rip}
     if q and a:
         users[uname]["sec_q"] = q
         users[uname]["sec_a"] = a
@@ -802,15 +803,18 @@ def api_admin_del_user():
         return jsonify({"ok": False, "msg": "不能删除最高管理员"})
     if us[tgt].get("is_admin") and cu != ROOT:
         return jsonify({"ok": False, "msg": "仅最高管理员可删除管理员"})
+    us_old = dict(us)
     del us[tgt]
     ses = us.get("__sessions", {})
     for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) == tgt]:
         del ses[k]
     _save(USER_FILE, us)
-    bn = _load(BANNED_FILE, {})
-    bn[tgt] = {"t": _time.time(), "by": cu}
-    _save(BANNED_FILE, bn)
-    _audit(cu, "del_user", tgt, "删除账号并标记危险账号(24h禁注册)")
+    uip = (us_old.get(tgt) or {}).get("ip") or ""
+    if uip:
+        bi = _load(BANNED_IP_FILE, {})
+        bi[uip] = {"t": _time.time(), "by": cu, "name": tgt}
+        _save(BANNED_IP_FILE, bi)
+    _audit(cu, "del_user", tgt, "删除账号" + ("并标记危险IP(24h禁注册)" if uip else ""))
     return jsonify({"ok": True, "msg": "已删除用户：" + tgt})
 
 
@@ -824,14 +828,14 @@ def api_admin_banned_get():
     us = _load(USER_FILE, {})
     if not us.get(cu, {}).get("is_admin"):
         return jsonify({"ok": False, "msg": "无管理员权限"})
-    bn = _load(BANNED_FILE, {})
+    bi = _load(BANNED_IP_FILE, {})
     now = _time.time()
     out = []
-    for name, b in bn.items():
+    for ip, b in bi.items():
         t = float(b.get("t") or 0)
         if now - t >= 86400:
             continue
-        out.append({"name": name, "time": _time.strftime("%Y-%m-%d %H:%M:%S", _time.localtime(t)),
+        out.append({"ip": ip, "name": b.get("name") or "", "time": _time.strftime("%Y-%m-%d %H:%M:%S", _time.localtime(t)),
                     "by": b.get("by") or "", "remain": int(86400 - (now - t))})
     return jsonify({"ok": True, "list": sorted(out, key=lambda x: x["remain"])})
 
@@ -845,14 +849,14 @@ def api_admin_banned_clear():
     us = _load(USER_FILE, {})
     if not us.get(cu, {}).get("is_admin"):
         return jsonify({"ok": False, "msg": "无管理员权限"})
-    name = str(p.get("name") or "").strip()
-    bn = _load(BANNED_FILE, {})
-    if name in bn:
-        del bn[name]
-        _save(BANNED_FILE, bn)
-        _audit(cu, "banned_clear", name, "解除危险账号禁注册")
-        return jsonify({"ok": True, "msg": "已解除 " + name + " 的禁注册限制"})
-    return jsonify({"ok": False, "msg": "该账号不在禁注册名单"})
+    ip = str(p.get("ip") or "").strip()
+    bi = _load(BANNED_IP_FILE, {})
+    if ip in bi:
+        del bi[ip]
+        _save(BANNED_IP_FILE, bi)
+        _audit(cu, "banned_clear", ip, "解除危险IP禁注册")
+        return jsonify({"ok": True, "msg": "已解除 " + ip + " 的禁注册限制"})
+    return jsonify({"ok": False, "msg": "该 IP 不在禁注册名单"})
 
 
 @app.route("/token_state", methods=["GET", "POST"])
