@@ -1153,6 +1153,9 @@ function ferr(msg){
     <span>访客留言板 · 私聊频道</span>
     <span class="gb-mode" id="gb_status" title="点击配置云端接口">本地模式</span>
     <span class="gb-mode" id="gb_online" style="display:none"></span>
+    <select id="gb_sort" title="留言排序" style="background:var(--bg2);color:var(--ink2);border:1px solid var(--line);font-size:10.5px;padding:2px 4px;border-radius:3px;font-family:var(--mono)">
+      <option value="new">最新</option><option value="old">最早</option><option value="hot">赞最多</option>
+    </select>
     <button class="gb-refresh" id="gb_refresh">刷新留言</button>
   </div>
 
@@ -1211,6 +1214,9 @@ function ferr(msg){
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
         <span style="font-size:11px;color:var(--ink3);letter-spacing:.12em">操作日志 · 删帖/删用户/拉黑/风控留痕</span>
         <span id="gb_aud_total" style="font-size:10.5px;color:var(--dim)"></span>
+        <select id="gb_aud_date" style="background:var(--bg2);color:var(--ink2);border:1px solid var(--line);font-size:10.5px;padding:2px 4px;border-radius:3px;font-family:var(--mono)">
+          <option value="">今天</option>
+        </select>
         <button class="gb-btn ghost" id="gb_aud_json" style="margin-left:auto;padding:3px 10px;font-size:10.5px">导出 JSON</button>
         <button class="gb-btn ghost" id="gb_aud_csv" style="padding:3px 10px;font-size:10.5px">导出 CSV</button>
       </div>
@@ -1930,8 +1936,19 @@ function likeBtn(g){
   var ls=g.likes||[], liked=S.user&&ls.indexOf(S.user.username)>=0;
   return '<div class="gb-like'+(liked?' on':'')+'" data-like="'+esc(g.id)+'">'+(liked?'♥':'♡')+' '+ls.length+'</div>';
 }
+var GB_ALL=null;
+function sortGB(list){
+  var k=$('gb_sort')?$('gb_sort').value:'new';
+  var a=list.slice();
+  if(k==='old') a.sort(function(x,y){return (x.id||0)-(y.id||0)});
+  else if(k==='hot') a.sort(function(x,y){return ((y.likes||[]).length-(x.likes||[]).length)||((y.id||0)-(x.id||0))});
+  else a.sort(function(x,y){return (y.id||0)-(x.id||0)});
+  return a;
+}
 function renderGuests(list, fresh){
   var box=$('guestbookList');
+  GB_ALL=list;
+  if(list) list=sortGB(list);
   if(!list||!list.length){
     box.innerHTML='<div class="gb-empty">暂无留言 · 来做第一个吧</div>';
     return;
@@ -1980,6 +1997,10 @@ function renderGuests(list, fresh){
   })(tys[i]);
 }
 
+(function(){
+  var gs=$('gb_sort');
+  if(gs) gs.addEventListener('change',function(){ if(GB_ALL) renderGuests(GB_ALL); });
+})();
 function loadGuestBook(){
   var lb=$('guestbookList');
   var cache=null;
@@ -3715,12 +3736,18 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
     audCls.style.display='none';
   });
   function audRefresh(){
-    var L=$('gb_aud_list'),T=$('gb_aud_total');
+    var L=$('gb_aud_list'),T=$('gb_aud_total'),D=$('gb_aud_date');
     if(!L) return;
     L.innerHTML='加载中…';
-    call('/audit_get',{}).then(function(j){
+    var curD=D?D.value:'';
+    call('/audit_get',{date:curD}).then(function(j){
       if(!j||!j.ok){ L.innerHTML='无权限或加载失败'; return; }
-      T.textContent='共 '+j.total+' 条';
+      T.textContent='共 '+j.total+' 条'+(curD?' · 归档 '+curD:' · 今天');
+      if(D){
+        var cur=D.value;
+        D.innerHTML='<option value="">今天</option>'+((j.archives||[]).map(function(d){return '<option value="'+d+'"'+(d===cur?' selected':'')+'>'+d+'</option>';}).join(''));
+        D.value=cur;
+      }
       var arr=j.list||[];
       if(!arr.length){ L.innerHTML='<div style="color:var(--ink3)">暂无操作记录</div>'; return; }
       L.innerHTML=arr.map(function(x){
@@ -3728,12 +3755,16 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
       }).join('');
     }).catch(function(e){ L.innerHTML='加载失败 · '+esc(ferr(e.message)); });
   }
+  var ad=$('gb_aud_date');
+  if(ad) ad.addEventListener('change',function(){ audRefresh(); });
   var aj=$('gb_aud_json'),ac=$('gb_aud_csv');
   if(aj) aj.addEventListener('click',function(){
-    call('/audit_export',{fmt:'json'}).then(function(j){ if(j&&j.ok) dl('audit_log.json',JSON.stringify(j.data,null,1)); });
+    var cd=ad?ad.value:'';
+    call('/audit_export',{fmt:'json',date:cd}).then(function(j){ if(j&&j.ok) dl(cd?('audit_'+cd+'.json'):'audit_log.json',JSON.stringify(j.data,null,1)); });
   });
   if(ac) ac.addEventListener('click',function(){
-    call('/audit_export',{fmt:'csv'}).then(function(j){ if(j&&j.ok) dl('audit_log.csv',j.data); });
+    var cd=ad?ad.value:'';
+    call('/audit_export',{fmt:'csv',date:cd}).then(function(j){ if(j&&j.ok) dl(cd?('audit_'+cd+'.csv'):'audit_log.csv',j.data); });
   });
   function svgLine(vals,labels,W,H,opt){
     var mx=Math.max.apply(null,vals.concat([1])),pts=[],st=W/(vals.length-1||1);
