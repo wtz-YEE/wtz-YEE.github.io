@@ -52,6 +52,16 @@ header h1 b{color:var(--acc);font-weight:700}
 .post .bd{padding:12px 14px;font-size:14px;white-space:pre-wrap;word-break:break-word}
 .post .bd img{display:block;max-width:100%;border-radius:8px;margin-top:10px;cursor:zoom-in;border:1px solid var(--line)}
 .post .cm{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--ink3);cursor:pointer;letter-spacing:.1em}
+.votes{display:flex;align-items:center;gap:14px;margin-top:8px;font-family:var(--mono);font-size:11.5px}
+.vbtn{display:inline-flex;align-items:center;gap:4px;color:var(--ink3);cursor:pointer;user-select:none;transition:.18s;letter-spacing:.04em}
+.vbtn:hover{color:var(--ink)}
+.vbtn.up.on{color:var(--ok)}
+.vbtn.dn.on{color:var(--bad)}
+.vbtn .cnt{font-weight:700}
+.cvotes{display:inline-flex;align-items:center;gap:10px;margin-top:4px;font-family:var(--mono);font-size:10.5px}
+.cvbtn{color:var(--ink3);cursor:pointer;user-select:none;transition:.18s}
+.cvbtn.up.on{color:var(--ok)}
+.cvbtn.dn.on{color:var(--bad)}
 .post .cm:hover{color:var(--acc)}
 .cwrap{display:none;border-top:1px solid var(--line)}
 .cwrap.open{display:block}
@@ -317,9 +327,18 @@ function render(ps){
       '<span class="tagsm">'+tk+'</span>'+del+'</div>'+
       '<div class="bd">'+md(p.text)+
       (p.image&&S.api?'<img src="'+esc(S.api+p.image)+'">':'')+'</div>'+
+      '<div class="votes">'+
+        '<span class="vbtn up'+(S.user&&(p.likes||[]).indexOf(S.user.username)>=0?' on':'')+'" data-pv="'+esc(p.id)+'" data-pvv="1">▲ <span class="cnt">'+(p.likes||[]).length+'</span></span>'+
+        '<span class="vbtn dn'+(S.user&&(p.dislikes||[]).indexOf(S.user.username)>=0?' on':'')+'" data-pv="'+esc(p.id)+'" data-pvv="-1">▼ <span class="cnt">'+(p.dislikes||[]).length+'</span></span>'+
+      '</div>'+
       '<div class="cm" data-cm="'+esc(p.id)+'">评论 '+(cm.length?cm.length:'0')+'</div>'+
       '<div class="cwrap" data-cw="'+esc(p.id)+'">'+
-        '<div class="clist">'+ (cm.length?cm.map(function(c,ci){var cdel=(S.user&&(S.user.is_admin||p.user===S.user.username||c.user===S.user.username))?'<button class="del cdel" data-cd="'+esc(p.id)+'" data-cdi="'+ci+'">删除</button>':'';return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.user)+cdel+'</div>'+md(c.text)+'</div>'}).join(''):'<div class="citem" style="color:var(--ink3)">暂无评论</div>') +'</div>'+
+        '<div class="clist">'+ (cm.length?cm.map(function(c,ci){var cdel=(S.user&&(S.user.is_admin||p.user===S.user.username||c.user===S.user.username))?'<button class="del cdel" data-cd="'+esc(p.id)+'" data-cdi="'+ci+'">删除</button>':'';var cv='';
+if(c.id!==undefined&&c.id!==null){
+  var clk=(c.likes||[]).indexOf(S.user?S.user.username:'')>=0,cld=(c.dislikes||[]).indexOf(S.user?S.user.username:'')>=0;
+  cv='<div class="cvotes"><span class="cvbtn up'+(clk?' on':'')+'" data-cv="'+esc(p.id)+'" data-cvi="'+esc(c.id)+'" data-cvv="1">▲ '+(c.likes||[]).length+'</span><span class="cvbtn dn'+(cld?' on':'')+'" data-cv="'+esc(p.id)+'" data-cvi="'+esc(c.id)+'" data-cvv="-1">▼ '+(c.dislikes||[]).length+'</span></div>';
+}
+return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.user)+cdel+'</div>'+md(c.text)+cv+'</div>'}).join(''):'<div class="citem" style="color:var(--ink3)">暂无评论</div>') +'</div>'+
         '<div class="cinput"><input data-ci="'+esc(p.id)+'" placeholder="写下评论…" maxlength="200"><button class="btn" data-cs="'+esc(p.id)+'">发送</button></div>'+
       '</div></div>';
   }).join('');
@@ -339,6 +358,25 @@ function loadPosts(){
 function bindList(){
   $('list').addEventListener('click',function(e){
     var t=e.target;
+    var pv=t.closest('[data-pv]');
+    if(pv){
+      if(!S.user) return say('请先登录后再投票',false);
+      var v=pv.getAttribute('data-pvv');
+      call('/post_vote',{pid:pv.getAttribute('data-pv'),vote:v}).then(function(j){
+        if(!j.ok) return say(j.msg||'操作失败',false);
+        loadPosts();
+      }).catch(function(e){ say('操作失败：'+e.message,false); });
+      return;
+    }
+    var cvb=t.closest('[data-cv]');
+    if(cvb){
+      if(!S.user) return say('请先登录后再投票',false);
+      call('/comment_vote',{pid:cvb.getAttribute('data-cv'),cid:cvb.getAttribute('data-cvi'),vote:cvb.getAttribute('data-cvv')}).then(function(j){
+        if(!j.ok) return say(j.msg||'操作失败',false);
+        loadPosts();
+      }).catch(function(e){ say('操作失败：'+e.message,false); });
+      return;
+    }
     var pb=t.closest('[data-pd]');
     if(pb){
       if(!S.user) return say('请先登录',false);
@@ -413,6 +451,30 @@ $('zoom').addEventListener('click',function(){$('zoom').style.display='none'});
 applyAuth();
 if(S.api){ loadPosts(); }
 autoCloud();
+})();
+</script>
+
+<div id="wNav" class="w-nav"><a href="index.html" data-w="index">◈ 指挥中心</a><a href="守夜人论坛.html" data-w="forum">守夜人论坛</a><a href="卡塞尔学院官网.html" data-w="cassel">卡塞尔学院</a><a href="changelog.html" data-w="chg">更新日志</a><span id="wNavDot" class="w-dot off" title="云端状态未检测">●</span></div>
+<style>
+.w-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:2147483000;display:flex;align-items:center;gap:2px;padding:4px 8px;background:rgba(10,12,14,.86);border:1px solid rgba(255,255,255,.16);border-radius:20px;font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:11px;letter-spacing:.05em;backdrop-filter:blur(4px);box-shadow:0 6px 22px rgba(0,0,0,.45)}
+.w-nav a{color:#C9D2D6;text-decoration:none;padding:3px 9px;border-radius:14px;transition:background .18s,color .18s;white-space:nowrap}
+.w-nav a:hover{background:rgba(255,255,255,.08);color:#FFF}
+.w-nav a.cur{background:rgba(255,255,255,.1);color:#FFC24B}
+.w-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:8px;margin-right:6px;cursor:pointer;flex:none}
+.w-dot.on{background:#2EE6A8;box-shadow:0 0 8px #2EE6A8}
+.w-dot.bad{background:#FF5C7A;box-shadow:0 0 8px #FF5C7A}
+.w-dot.off{background:#6E7681;box-shadow:0 0 6px #6E7681}
+@media(max-width:640px){.w-nav{font-size:10px;bottom:8px}.w-nav a{padding:3px 6px}}
+</style>
+<script>
+(function(){
+function ga(){try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return a[0]||''}catch(e){return''}}
+function norm(s){try{var m=location.pathname.split('/').pop().split('?')[0];return m}catch(e){return''}}
+(function(){var m=norm(),a=document.querySelectorAll('#wNav a[data-w]');for(var i=0;i<a.length;i++){var t=a[i].getAttribute('data-w'),hit=false;if(t==='index'&&(m==='index.html'||m===''||m==='wtz-YEE.github.io'))hit=true;else if(t==='forum'&&m.indexOf('守夜人论坛')===0)hit=true;else if(t==='cassel'&&m.indexOf('卡塞尔学院')===0)hit=true;else if(t==='chg'&&m.indexOf('changelog')===0)hit=true;if(hit)a[i].classList.add('cur')}})();
+var dot=document.getElementById('wNavDot');if(!dot)return;
+function chk(){var a=ga();if(!a){dot.className='w-dot off';dot.title='未配置云端 · 点击检测';return}
+fetch(a+'/health',{mode:'cors',cache:'no-store'}).then(function(r){dot.className=r.ok?'w-dot on':'w-dot bad';dot.title='云端在线 · '+a}).catch(function(){dot.className='w-dot bad';dot.title='云端离线 · '+a})}
+dot.addEventListener('click',chk);chk();setInterval(chk,30000);
 })();
 </script>
 </body>
