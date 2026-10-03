@@ -2238,7 +2238,7 @@ function loadUsers(){
     if(j.root){
       box.innerHTML=j.list.map(function(u){
         return '<div class="gb-user-i"><span class="dot '+(u.online?'on':'off')+'"></span><b>'+esc(u.name)+'</b>'+
-          (u.is_admin?'<span class="adm">管理员</span>':'')+
+          (u.is_root?'<span class="adm" style="color:#d9a441;border-color:#d9a441">站长</span>':(u.is_admin?'<span class="adm">管理员</span>':''))+
           (u.banned?'<span class="adm" style="color:var(--bad);border-color:var(--bad)">已拉黑</span>':'')+
           '<span class="pwd">'+esc(u.pwd)+'</span>'+
           adminBtns(u)+
