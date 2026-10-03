@@ -1,5 +1,4 @@
 @echo off
-chcp 65001 >nul
 title WTZ Cloud One-Click (multi-host)
 echo [1/3] guestbook service...
 netstat -ano | findstr ":8701" >nul 2>&1
@@ -15,20 +14,12 @@ netstat -ano | findstr ":4040" >nul 2>&1
 if %errorlevel%==0 (
   echo   running
 ) else (
-  echo   NOT running - please start cpolar first
-  echo   (cpolar start guestbook)
+  echo   NOT running - please start cpolar first (cpolar start guestbook)
+  echo   or run ÔÆ¶ËÊØ»¤.bat for auto-restart
 )
 echo [3/3] fetch public url (multi-host merge)...
 powershell -ExecutionPolicy Bypass -File "D:\WTZ\prts\_cloud\get_url.ps1"
-echo push url to github...
-cd /d D:\WTZ\prts
-git add cloud.txt
-git commit -m "cloud" >nul 2>&1
-git push origin main >nul 2>&1
-if %errorlevel%==0 (
-  echo   pushed OK
-) else (
-  echo   push failed - check network / git login
-)
+echo push url to github via api (dedup)...
+powershell -ExecutionPolicy Bypass -File "D:\WTZ\prts\_cloud\push_cloud.ps1"
 echo.
 pause
