@@ -831,12 +831,6 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
 .memo-step button{width:18px;height:18px;line-height:1;border:1px solid var(--line2);background:var(--bg2);color:var(--ink2);border-radius:4px;cursor:pointer;font-size:12px;padding:0;font-family:var(--mono)}
 .memo-step button:hover{border-color:var(--ok);color:var(--ok)}
 .memo-step .cur{min-width:20px;text-align:center;font-family:var(--mono);color:var(--ok);font-size:12px}
-.mdtask{list-style:none!important}
-.mdtask label{display:flex;align-items:flex-start;gap:8px;cursor:pointer;padding:2px 0}
-.mdtask input{width:14px;height:14px;margin-top:3px;flex:none;accent-color:var(--accent);cursor:pointer}
-.mdtask.done span{color:var(--ink3);text-decoration:line-through}
-.mdtask.done input{accent-color:#4CAF50}
-
 .pf-close{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--ink3);font-size:15px;cursor:pointer;padding:4px}
 #tvLayer{position:fixed;inset:0;z-index:998;pointer-events:none;opacity:0;visibility:hidden}
 #tvLayer.on{opacity:1;visibility:visible;pointer-events:auto}
@@ -1364,13 +1358,6 @@ function ferr(msg){
     <div class="memo-h">备忘录 <span class="memo-st" id="memoStat"></span>
       <span class="memo-act">
         <button class="gb-btn ghost" id="memoMode" style="padding:3px 12px;font-size:11px;color:var(--ok);border-color:var(--ok)">代码</button>
-        <button class="gb-btn ghost" id="memoClear" style="padding:3px 10px;font-size:11px">清空</button>
-        <button class="gb-btn ghost" id="memoExport" style="padding:3px 10px;font-size:11px">导出 .md</button>
-        <button class="gb-btn ghost" id="memoClose" style="padding:3px 10px;font-size:11px">×</button>
-      </span>
-    </div>
-    <div class="memo-bd">
-      <textarea id="memoSrc" spellcheck="false" placeholder="用 Markdown 写备忘…&#10;任务打勾：- [ ] 待办  /  - [x] 已完成&#10;倒计时：[倒计时 10-05]&#10;次数进度：[进度 3/10]&#10;目标：[目标 10]，点 +/- 调整完成次数&#10;其他语法：**粗体** *斜体* ~~删除线~~ `代码` 代码块 表格 引用 标题 等"></textarea>
       <div class="memo-pv" id="memoPv"></div>
     </div>
   </div>
@@ -3402,38 +3389,6 @@ function memoClose(){ var m=$('memoMask'); if(m) m.classList.remove('on'); }
   var mmb=$('memoMode');
   if(mmb) mmb.addEventListener('click',function(){ memoSetMode(memoMode==='code'?'view':'code'); });
   memoSetMode('view');
-  var mc=$('memoClose'); if(mc) mc.addEventListener('click',memoClose);
-  var mm=$('memoMask');
-  if(mm) mm.addEventListener('click',function(e){ if(e.target===mm) memoClose(); });
-  var ex=$('memoExport');
-  if(ex) ex.addEventListener('click',function(){
-    var v=$('memoSrc').value;
-    var b=new Blob([v],{type:'text/plain;charset=utf-8'});
-    var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='备忘录.md'; a.click();
-    URL.revokeObjectURL(a.href);
-  });
-  var cl=$('memoClear');
-  if(cl) cl.addEventListener('click',function(){
-    if(!window.confirm('确定清空备忘录？此操作不可恢复')) return;
-    localStorage.setItem(K_MEMO,''); memoRender();
-  });
-  var ta=$('memoSrc'),timer=null;
-  if(ta) ta.addEventListener('input',function(){
-    localStorage.setItem(K_MEMO,ta.value);
-    clearTimeout(timer);
-    timer=setTimeout(function(){ memoRender(); },400);
-  });
-  var pv=$('memoPv');
-  if(pv) pv.addEventListener('click',function(e){
-    var b=e.target.closest('button[data-mi]'); if(!b) return;
-    var li=+b.getAttribute('data-mi'),mk=b.getAttribute('data-mk');
-    var cur=+b.getAttribute('data-cur'),mb=+b.getAttribute('data-mb');
-    cur=Math.max(0,cur+((b.getAttribute('data-s')==='+')?1:-1));
-    var src=memoLoad(),lines=src.split('\n'),line=lines[li]||'';
-    if(mk==='p'){ line=line.replace(/\[进度\s*\d+\s*\/\s*\d+\]/,'[进度 '+cur+'/'+mb+']'); }
-    else { line=line.replace(/\[目标\s*\d+(?:\s*\/\s*\d+)?\]/,'[目标 '+mb+'/'+cur+']'); }
-    lines[li]=line; localStorage.setItem(K_MEMO,lines.join('\n')); memoRender();
-  });
   if(pv) pv.addEventListener('change',function(e){
     var c=e.target.closest('input[data-ti]'); if(!c) return;
     var src=memoLoad();
