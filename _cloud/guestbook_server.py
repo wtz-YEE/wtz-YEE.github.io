@@ -234,27 +234,56 @@ def del_guest():
 # 发送私聊
 @app.route("/pm_send", methods=["POST"])
 def pm_send():
-    data = request.get_json()
+    data = request.get_json() or {}
     from_u = data.get("from") or _cur_user(data.get("token"))
     to_u = data.get("to")
-    msg = data.get("msg", "").strip()
-    time_str = data.get("time", "")
-
-    if not from_u or not to_u or not msg:
+    msg = (data.get("msg") or "").strip()
+    img = data.get("img") or ""
+    time_str = data.get("time") or _now()
+    if not from_u or not to_u or (not msg and not img):
         return jsonify({"ok": False})
+    ms = _load(PM_FILE, [])
+    nid = 1
+    for x in ms:
+        nid = max(nid, int(x.get("id", 0) or 0) + 1)
+    ms.append({"id": nid, "from": from_u, "to": to_u, "msg": msg, "img": img,
+               "time": time_str, "read": False})
+    _save(PM_FILE, ms)
+    try:
+        _push_notify(to_u, from_u, "pm", (msg or "[图片]")[:80])
+    except Exception:
+        pass
+    return jsonify({"ok": True, "id": nid})
 
-    with open(PM_FILE, "r", encoding="utf-8") as f:
-        pmlist = json.load(f)
 
-    pmlist.append({
-        "from": from_u,
-        "to": to_u,
-        "msg": msg,
-        "time": time_str
-    })
-    with open(PM_FILE, "w", encoding="utf-8") as f:
-        json.dump(pmlist, f, ensure_ascii=False)
+@app.route("/pm_del", methods=["POST"])
+def api_pm_del():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    mid = str(p.get("id") or "")
+    ms = _load(PM_FILE, [])
+    n = len(ms)
+    ms = [x for x in ms if not (str(x.get("id")) == mid and x.get("from") == cu)]
+    if len(ms) == n:
+        return jsonify({"ok": False, "msg": "消息不存在或无权删除"})
+    _save(PM_FILE, ms)
     return jsonify({"ok": True})
+
+
+@app.route("/pm_delconv", methods=["POST"])
+def api_pm_delconv():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    peer = str(p.get("peer") or "").strip()
+    ms = _load(PM_FILE, [])
+    n = len(ms)
+    ms = [x for x in ms if not ((x.get("from") == cu and x.get("to") == peer) or (x.get("from") == peer and x.get("to") == cu))]
+    _save(PM_FILE, ms)
+    return jsonify({"ok": True, "deleted": n - len(ms)})
 
 
 # 获取当前用户私聊记录

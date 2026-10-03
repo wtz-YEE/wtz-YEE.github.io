@@ -618,6 +618,14 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
 .gb-pm-input input{background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:8px 11px;font-size:12.5px;outline:none;font-family:var(--mono);transition:border-color .2s}
 .gb-pm-input input:focus{border-color:var(--accent)}
 #pm_target{width:120px;flex:none}
+.gb-bub-img{max-width:220px;max-height:220px;border-radius:8px;margin:4px 0;display:block}
+.gb-bub-del{float:right;cursor:pointer;opacity:0;transition:opacity .15s;color:#FF5C7A;margin-left:6px;font-size:11px}
+.gb-bub:hover .gb-bub-del{opacity:1}
+.gb-conv-x{float:right;cursor:pointer;opacity:0;color:#FF5C7A;margin-left:6px;font-size:11px}
+.gb-conv-i:hover .gb-conv-x{opacity:1}
+#pm_att{display:none;align-items:center;gap:8px;padding:6px 10px;border-top:1px dashed var(--line,#333)}
+#pm_att img{max-width:120px;max-height:80px;border-radius:6px}
+#pm_att button{background:none;border:1px solid var(--line,#444);color:var(--ink3,#999);border-radius:6px;padding:2px 8px;cursor:pointer}
 #pm_msg{flex:1;min-width:120px}
 @media(max-width:560px){#pm_target{width:100%}}
 .gb-form{padding:14px 16px;border-bottom:1px solid var(--line)}
@@ -1091,8 +1099,11 @@ function ferr(msg){
       <div class="gb-pm-input">
         <input id="pm_target" placeholder="对方账号" maxlength="16">
         <input id="pm_msg" placeholder="输入消息，回车发送" maxlength="500">
+        <button class="gb-btn" id="pm_img_btn" title="附带图片">图</button>
+        <input type="file" id="pm_file" accept="image/*" style="display:none">
         <button class="gb-btn" id="pm_send_btn">发送</button>
       </div>
+      <div id="pm_att" style="display:none"></div>
     </div>
   </div>
 
@@ -2048,8 +2059,8 @@ function renderConvs(list){
   box.innerHTML=list.map(function(c){
     var on = S.peer===c.peer ? ' on' : '';
     return '<div class="gb-conv-i'+on+'" data-peer="'+esc(c.peer)+'">'+
-      '<div class="p">'+esc(c.peer)+(c.unread?'<span class="u">'+c.unread+'</span>':'')+'</div>'+
-      '<div class="l">'+esc(c.last)+'</div>'+
+      '<div class="p">'+esc(c.peer)+(c.unread?'<span class="u">'+c.unread+'</span>':'')+'<span class="gb-conv-x" data-pcd="'+esc(c.peer)+'" title="删除会话">✕</span></div>'+
+      '<div class="l">'+esc((c.last||'')+(c.img?' [图片]':''))+'</div>'+
     '</div>';
   }).join('');
   var pmB=document.getElementById('pmBadge'),nn=0;
@@ -2071,8 +2082,11 @@ function renderThread(list){
   }
   box.innerHTML=list.map(function(m){
     var mine = S.user && m.from===S.user.username;
+    var imgH = m.img ? '<img class="gb-bub-img" src="'+esc(S.api+m.img)+'">' : '';
+    var delH = mine ? '<span class="gb-bub-del" data-pmd="'+esc(m.id)+'" title="删除消息">✕</span>' : '';
     return '<div class="gb-bub '+(mine?'me':'you')+'">'+
-      '<div class="gb-bub-t">'+esc(m.time)+' · '+esc(m.from)+'</div>'+
+      '<div class="gb-bub-t">'+esc(m.time)+' · '+esc(m.from)+delH+'</div>'+
+      imgH+
       '<div class="gb-bub-m">'+esc(m.msg)+'</div>'+
     '</div>';
   }).join('');
@@ -2193,6 +2207,8 @@ function go(u){
   });
 })();
 
+function clearPmImg(){ S.pmImg=''; var a=$('pm_att'); if(a){ a.style.display='none'; a.innerHTML=''; } var f=$('pm_file'); if(f) f.value=''; }
+
 function pmOpen(peer){
   if(!S.user||!peer) return;
   S.peer=peer;
@@ -2204,7 +2220,8 @@ function pmOpen(peer){
 function pmRefreshThread(){
   if(!S.user||!S.peer) return Promise.resolve();
   return call('/pm_thread',{peer:S.peer}).then(function(j){
-    renderThread(j.list||[]);
+    S.thread=j.list||[];
+    renderThread(S.thread);
   }).catch(function(){});
 }
 
@@ -2212,15 +2229,24 @@ function pmSend(){
   if(!S.user) return say('请先登录',false);
   var to=$('pm_target').value.trim();
   var msg=$('pm_msg').value.trim();
+  var img=S.pmImg||'';
   if(!to) return say('请填写对方账号',false);
-  if(!msg) return say('消息不能为空',false);
-  return call('/pm_send',{to:to,msg:msg,token:S.user&&S.user.token}).then(function(j){
+  if(!msg&&!img) return say('消息不能为空',false);
+  var body={to:to,msg:msg,token:S.user&&S.user.token};
+  if(img) body.img=img;
+  return call('/pm_send',body).then(function(j){
     if(!j.ok) return say(j.msg||'发送失败',false);
-    $('pm_msg').value='';
+    $('pm_msg').value=''; clearPmImg();
     say('已发送',true);
     S.peer=to;
     $('pm_title').textContent='与 '+to+' 的私聊';
-    return pmRefreshThread().then(pmRefreshConversations);
+    var d=new Date(),hh=(d.getHours()<10?'0':'')+d.getHours(),mm=(d.getMinutes()<10?'0':'')+d.getMinutes();
+    var fake={id:j.id||('t'+Date.now()),from:S.user.username,to:to,msg:msg,img:img,time:hh+':'+mm};
+    if(!S.thread) S.thread=[];
+    S.thread.push(fake);
+    renderThread(S.thread);
+    setTimeout(pmRefreshThread,2600);
+    pmRefreshConversations();
   }).catch(function(e){ say('发送失败：'+ferr(e.message),false); });
 }
 
@@ -2624,9 +2650,53 @@ function bind(){
 
   /* 会话列表点击 */
   $('pm_conv').addEventListener('click',function(e){
+    var d=e.target.closest('[data-pcd]');
+    if(d){
+      e.stopPropagation();
+      var peer=d.getAttribute('data-pcd');
+      if(!confirm('删除与 '+peer+' 的整个会话？')) return;
+      call('/pm_delconv',{peer:peer}).then(function(j){
+        if(!j.ok) return say(j.msg||'删除失败',false);
+        if(S.peer===peer){ S.peer=''; S.thread=[]; $('pm_title').textContent='选择会话，或直接输入对方账号'; $('pm_box').innerHTML=''; }
+        pmRefreshConversations();
+      }).catch(function(e){ say('删除失败：'+ferr(e.message),false); });
+      return;
+    }
     var it=e.target.closest('[data-peer]');
     if(!it) return;
     pmOpen(it.getAttribute('data-peer'));
+  });
+  var pb=$('pm_box');
+  if(pb) pb.addEventListener('click',function(e){
+    var d=e.target.closest('[data-pmd]');
+    if(!d) return;
+    e.stopPropagation();
+    var id=d.getAttribute('data-pmd');
+    if(!confirm('删除这条消息？')) return;
+    call('/pm_del',{id:id}).then(function(j){
+      if(!j.ok) return say(j.msg||'删除失败',false);
+      if(S.thread) S.thread=S.thread.filter(function(x){return String(x.id)!==String(id)});
+      renderThread(S.thread||[]);
+      setTimeout(pmRefreshThread,2600);
+    }).catch(function(e){ say('删除失败：'+ferr(e.message),false); });
+  });
+  var ib=$('pm_img_btn');
+  if(ib) ib.addEventListener('click',function(){ if(!S.api) return say('需云端模式才能发图',false); $('pm_file').click(); });
+  var pf=$('pm_file');
+  if(pf) pf.addEventListener('change',function(){
+    var f=pf.files[0]; if(!f) return;
+    if(f.size>8*1024*1024) return say('图片超过 8MB',false);
+    compressImg(f,function(data){
+      if(!data) return say('图片读取失败',false);
+      call('/upload',{data:data}).then(function(j){
+        if(!j.ok) return say(j.msg||'上传失败',false);
+        S.pmImg=j.url;
+        var a=$('pm_att');
+        if(a){ a.innerHTML='<img src="'+esc(S.api+j.url)+'"><button id="pm_img_rm">移除</button>'; a.style.display='flex';
+          var rm=$('pm_img_rm'); if(rm) rm.addEventListener('click',clearPmImg); }
+        say('图片已就绪',true);
+      }).catch(function(e){ say('上传失败：'+ferr(e.message),false); });
+    });
   });
 
   /* 私聊回车发送 */
