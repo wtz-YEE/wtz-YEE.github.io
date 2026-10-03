@@ -2188,7 +2188,9 @@ function checkinStatus(){
 function loadUsers(){
   if(!S.user||!S.user.is_admin) return;
   call('/admin_users',{}).then(function(j){
-    if(!j.ok) return;
+    if(!j.ok){ say((j&&j.msg)||'扫描失败',false); return; }
+    var on=j.list.filter(function(u){return u.online}).length;
+    say('已扫描用户列表 · 在线 '+on+' / 共 '+j.list.length+' 人',true);
     var box=$('gb_ulist');
     $('gb_ucnt').textContent='('+j.list.length+')';
     var adminBtns=function(u){
@@ -2217,7 +2219,7 @@ function loadUsers(){
             '</div>';
         }).join('');
     }
-  }).catch(function(){});
+  }).catch(function(e){ say('扫描失败：'+ferr(e.message),false); });
 }
 
 /* ---------- 私聊 ---------- */
@@ -2342,7 +2344,7 @@ function openProfile(nm){
     var pf=j.profile,avH;
     if(pf.avatar&&String(pf.avatar).indexOf('/uploads/')===0) avH='<div class="pf-ava"><img src="'+esc(S.api+pf.avatar)+'"></div>';
     else{ var av0=AVATARS[(+pf.avatar||0)%AVATARS.length]; avH='<div class="pf-ava" style="background:'+av0.c+'">'+av0.s+'</div>'; }
-    var lv=+pf.lv||1,lvE=lv*100+(lv-1)*50,pct=Math.min(100,Math.round(((+pf.exp||0)/Math.max(1,lvE))*100));
+    var lv=+pf.lv||1,base=50*lv*(lv-1),need=100*lv,pct=Math.min(100,Math.round((Math.max(0,(+pf.exp||0)-base)/Math.max(1,need))*100));
     var ach=pfAch(),achN=ach.length;
     var bioH=pf.bio?'<div class="pf-bio">「'+esc(pf.bio)+'」</div>':'';
     var bioEdit=pf.self_?'<div class="pf-bioe"><input id="pfBioIn" maxlength="120" placeholder="写点什么…（签名）" value="'+esc(pf.bio||'')+'"><button id="pfBioSave" class="gb-btn">保存签名</button></div>':'';
@@ -2701,6 +2703,9 @@ function bind(){
   if(cur) cur.addEventListener('click',function(){ if(S.user) openProfile(S.user.username); });
   $('gb_submit').addEventListener('click',submitGuestBook);
   $('gb_uref').addEventListener('click',loadUsers);
+  setInterval(function(){
+    if(S.user&&S.user.token) call('/ping',{}).catch(function(){});
+  },60000);
   $('gb_btn_ck').addEventListener('click',doCheckin);
   $('gb_n_send').addEventListener('click',noticeSend);
   $('gb_n_cancel').addEventListener('click',function(){ $('gb_n_form').style.display='none'; });
@@ -3231,7 +3236,16 @@ for(var i=0;i<cs.length;i++)cs[i].addEventListener('click',function(e){
 });})();
 
 /* ===== 备忘录（Markdown + 任务打勾） ===== */
+var _CS={红:'#e5484d',橙:'#d97b29',黄:'#d9a441',绿:'#46a758',青:'#12a594',蓝:'#3b82f6',紫:'#8e4ec6',粉:'#d6409f',灰:'#8b8b8b',白:'#ffffff',黑:'#111111',金:'#d4a017',银:'#c0c0c0'};
+function _cc(c){
+  c=String(c||'').trim().toLowerCase();
+  if(_CS[c]) return _CS[c];
+  if(/^#[0-9a-f]{3,8}$/.test(c)) return c;
+  return null;
+}
 function mdIn(s){
+  s=s.replace(/\[c=([#\w\u4e00-\u9fa5]+)\]((?:[^\[\]]|\[(?!\/c\]))*?)\[\/c\]/g,function(m,co,t){var cv=_cc(co);return cv?('<span style="color:'+cv+'">'+mdIn(t)+'</span>'):m;});
+  s=s.replace(/\[q=([#\w\u4e00-\u9fa5]+)\]((?:[^\[\]]|\[(?!\/q\]))*?)\[\/q\]/g,function(m,co,t){var cv=_cc(co);return cv?('<blockquote class="mdq" style="border-left-color:'+cv+'">'+mdIn(t)+'<br></blockquote>'):m;});
   s=s.replace(/`([^`]+)`/g,'<code class="mdc">$1</code>');
   s=s.replace(/\*\*([^*]+)\*\*/g,'<b class="md-b">$1</b>');
   s=s.replace(/(?<!\*)\*([^*\s][^*]*)\*(?!\*)/g,'<em class="md-i">$1</em>');
