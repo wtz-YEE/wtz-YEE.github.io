@@ -167,6 +167,12 @@ function ferr(msg){
     </div>
   </div>
 
+  <div class="psort-bar" style="display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid var(--line);margin-bottom:8px">
+    <span style="font-size:11px;color:var(--ink3);letter-spacing:.12em">帖子排序</span>
+    <select id="psort" style="background:var(--bg2);color:var(--ink2);border:1px solid var(--line);font-size:11px;padding:2px 6px;border-radius:3px;font-family:var(--mono)">
+      <option value="new">最新</option><option value="hot">最热</option><option value="old">最早</option>
+    </select>
+  </div>
   <div class="plist" id="list"></div>
   <div class="empty" id="empty" style="display:none">还没有帖子 · 来发第一帖吧</div>
   <div class="err" id="err" style="display:none"></div>
@@ -415,8 +421,23 @@ function send(){
     loadPosts();
   }).catch(function(e){ say('发布失败：'+ferr(e.message),false); });
 }
+var POST_ALL=null;
+function sortPosts(ps){
+  var k=$('psort')?$('psort').value:'new';
+  var a=(ps||[]).slice();
+  if(k==='old') a.sort(function(x,y){return (x.id||0)-(y.id||0)});
+  else if(k==='hot') a.sort(function(x,y){
+    var hx=(x.likes||[]).length-(x.dislikes||[]).length+(x.comments||[]).length;
+    var hy=(y.likes||[]).length-(y.dislikes||[]).length+(y.comments||[]).length;
+    return (hy-hx)||((y.id||0)-(x.id||0));
+  });
+  else a.sort(function(x,y){return (y.id||0)-(x.id||0)});
+  return a;
+}
 /* 列表 */
 function render(ps){
+  POST_ALL=ps;
+  ps=sortPosts(ps);
   var box=$('list'),empty=$('empty');
   if(!ps||!ps.length){ box.innerHTML=''; empty.style.display='block'; empty.textContent='还没有帖子 · 来发第一帖吧'; return; }
   empty.style.display='none';
@@ -445,6 +466,10 @@ return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.user)+cde
       '</div></div>';
   }).join('');
 }
+(function(){
+  var ps2=$('psort');
+  if(ps2) ps2.addEventListener('change',function(){ if(POST_ALL) render(POST_ALL); });
+})();
 function loadPosts(){
   if(!S.api) return;
   var er=$('err');if(er)er.style.display='none';
