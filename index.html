@@ -3372,6 +3372,10 @@ function memoMd(v){
     return memoTag('目标 '+B+' 次','')
       +'<span class="memo-step"><span class="cur">'+cur+'</span><button type="button" data-mi="'+li+'" data-mk="g" data-cur="'+cur+'" data-mb="'+B+'" data-s="+">+</button><button type="button" data-mi="'+li+'" data-mk="g" data-cur="'+cur+'" data-mb="'+B+'" data-s="-">-</button></span>';
   });
+<<<<<<< HEAD
+=======
+  h=h.replace(/\[目标\s*(\d+)\]/g,function(m,a){ return memoTag('目标 '+a+' 次',''); });
+>>>>>>> b919fe2 (备忘录关键词统一格式[内容]：[倒计时 日期]、[进度 n/m]、[目标 n]，徽章纯文字去表情，旧表情格式不再触发渲染)
   return h;
 }
 var memoMode='view';
