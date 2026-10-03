@@ -1389,10 +1389,17 @@ def api_notify_read():
         return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
     ns = _load(NOTIFY_FILE, [])
     ch = False
-    for x in ns:
-        if x.get("user") == cu and not x.get("read"):
-            x["read"] = True
-            ch = True
+    pid = str(p.get("id") or "")
+    if pid:
+        for x in ns:
+            if x.get("user") == cu and str(x.get("id")) == pid and not x.get("read"):
+                x["read"] = True
+                ch = True
+    else:
+        for x in ns:
+            if x.get("user") == cu and not x.get("read"):
+                x["read"] = True
+                ch = True
     if ch:
         _save(NOTIFY_FILE, ns)
     return jsonify({"ok": True, "msg": "已读"})
@@ -1522,12 +1529,44 @@ def api_profile():
             if (c.get("user") or "") == nm:
                 cm.append({"text": c.get("text") or "", "time": c.get("time") or "", "pid": x.get("id") or ""})
     cm = sorted(cm, key=lambda a: str(a.get("time") or ""), reverse=True)[:5]
+    cu2 = _cur_user(p.get("token"))
+    self_ = bool(cu2) and cu2 == nm
+    days = 0
+    try:
+        _r = str(rec.get("reg") or "")
+        if len(_r) >= 10:
+            _d0 = _time.strptime(_r[:10], "%Y-%m-%d")
+            _d1 = _time.strptime(_time.strftime("%Y-%m-%d"), "%Y-%m-%d")
+            days = max(0, int((_time.mktime(_d1) - _time.mktime(_d0)) / 86400))
+    except Exception:
+        days = 0
+    likes = 0
+    for x in _load(GUESTBOOK_FILE, []):
+        if (x.get("user") or x.get("name") or "") == nm:
+            likes += len(x.get("likes") or [])
+    for x in _load(POST_FILE, []):
+        if (x.get("user") or "") == nm:
+            likes += len(x.get("likes") or [])
+        for c in x.get("comments") or []:
+            if (c.get("user") or "") == nm:
+                likes += len(c.get("likes") or [])
     return jsonify({"ok": True, "profile": {
         "name": nm, "is_admin": bool(rec.get("is_admin")), "banned": bool(rec.get("banned")),
         "lv": info["lv"], "title": info["title"], "exp": exp,
         "streak": ck.get("streak") or 0, "total": ck.get("total") or 0,
-        "reg": rec.get("reg") or "", "avatar": rec.get("avatar") or 0},
+        "reg": rec.get("reg") or "", "avatar": rec.get("avatar") or 0,
+        "self_": self_, "days": days, "likes": likes, "bio": str(rec.get("bio") or "")},
         "guests": g, "posts": ps, "comments": cm})
+@app.route("/profile_edit", methods=["POST"])
+def api_profile_edit():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    us[cu]["bio"] = str(p.get("bio") or "").strip()[:120]
+    _save(USER_FILE, us)
+    return jsonify({"ok": True, "msg": "已保存"})
 
 
 # ---------- 写接口限流 ----------
@@ -1539,7 +1578,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/sec_set", "/recover_q", "/recover")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/sec_set", "/recover_q", "/recover")
 
 @app.before_request
 def _rate():
