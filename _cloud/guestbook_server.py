@@ -1468,9 +1468,35 @@ def api_stats2():
         except Exception:
             pass
     n_user = sum(1 for k in us if k != "__sessions")
+    comments = sum(len(x.get("comments") or []) for x in ps)
+    g_likes = sum(len(x.get("likes") or []) for x in g)
+    pms = len(_load(PM_FILE, []))
+    today = _time.strftime("%Y-%m-%d", _time.localtime())
+    tG = sum(1 for x in g if str(x.get("time") or "")[:10] == today)
+    tR = sum(1 for k, v in us.items() if k != "__sessions" and isinstance(v, dict) and str(v.get("reg") or "")[:10] == today)
+    tP = sum(1 for x in ps if str(x.get("time") or "")[:10] == today)
+    um = {}
+    for x in g:
+        d = str(x.get("time") or "")[:10]
+        if d in days:
+            u = str(x.get("user") or x.get("name") or "?")
+            um[u] = um.get(u, 0) + 1
+    topUsers = sorted([{"name": k, "n": v} for k, v in um.items()], key=lambda a: -a["n"])[:5]
+    tg2 = sorted([x for x in g if str(x.get("text") or "").strip()], key=lambda a: -len(a.get("likes") or []))[:5]
+    topGuests = [{"text": str(x.get("text") or "")[:40], "likes": len(x.get("likes") or []),
+                  "user": str(x.get("user") or x.get("name") or "?")} for x in tg2]
+    online = 0
+    try:
+        now = _time.time()
+        online = len(set(v[0] for v in (us.get("__sessions") or {}).values() if isinstance(v, list) and len(v) > 1 and now - v[1] < 300))
+    except Exception:
+        online = 0
     return jsonify({"ok": True, "days": days, "gday": gday, "rday": rday, "cum": cum,
-                    "hours": hours, "total": {"guests": len(g), "posts": len(ps),
-                    "users": n_user, "visits": int((_load(STAT_FILE, {})).get("visits") or 0)}})
+                    "hours": hours, "online": online, "topUsers": topUsers, "topGuests": topGuests,
+                    "total": {"guests": len(g), "posts": len(ps), "users": n_user,
+                              "visits": int((_load(STAT_FILE, {})).get("visits") or 0),
+                              "comments": comments, "likes": g_likes, "pms": pms,
+                              "todayG": tG, "todayR": tR, "todayP": tP}})
 
 
 @app.route("/profile", methods=["GET", "POST"])

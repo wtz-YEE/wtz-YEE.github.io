@@ -626,6 +626,19 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
 #pm_att{display:none;align-items:center;gap:8px;padding:6px 10px;border-top:1px dashed var(--line,#333)}
 #pm_att img{max-width:120px;max-height:80px;border-radius:6px}
 #pm_att button{background:none;border:1px solid var(--line,#444);color:var(--ink3,#999);border-radius:6px;padding:2px 8px;cursor:pointer}
+.gb-sta-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.gb-sta-card{background:rgba(255,255,255,.03);border:1px solid var(--line,#333);border-radius:8px;padding:8px 6px;text-align:center}
+.gb-sta-card b{display:block;font-size:18px;color:var(--ink,#E8E8E8);font-family:"Cascadia Mono",Consolas,monospace}
+.gb-sta-card span{font-size:10px;color:var(--ink3,#888);letter-spacing:.08em}
+.gb-sta-today{font-size:11px;color:var(--ink3);letter-spacing:.06em;margin-bottom:8px}
+.gb-sta-today b{color:var(--accent,#FFC24B)}
+.gb-sta-row{display:flex;align-items:center;gap:8px;margin:3px 0;font-size:11px}
+.gb-sta-row span{flex:0 0 84px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--ink2,#C9D2D6)}
+.gb-sta-bar{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.gb-sta-bar i{display:block;height:100%;background:var(--accent,#FFC24B);border-radius:4px;transition:width .3s}
+.gb-sta-bar.g i{background:#2EE6A8}
+.gb-sta-row b{font-size:11px;min-width:34px;text-align:right;color:var(--ink,#E8E8E8);font-family:"Cascadia Mono",Consolas,monospace}
+@media(max-width:520px){.gb-sta-cards{grid-template-columns:repeat(2,1fr)}.gb-sta-row span{flex-basis:64px}}
 #pm_msg{flex:1;min-width:120px}
 @media(max-width:560px){#pm_target{width:100%}}
 .gb-form{padding:14px 16px;border-bottom:1px solid var(--line)}
@@ -1080,7 +1093,11 @@ function ferr(msg){
       <div id="gb_aud_list" style="font-size:11px;line-height:1.8;max-height:240px;overflow-y:auto;color:var(--ink2)"></div>
     </div>
     <div id="gb_sta" style="display:none;padding:8px 0;border-bottom:1px solid var(--line)">
-      <div id="gb_sta_tot" style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--ink3);letter-spacing:.06em;margin-bottom:8px"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--ink3);letter-spacing:.12em">站点数据 · 仅管理员可见</span>
+        <button class="gb-btn ghost" id="gb_sta_ref" style="margin-left:auto;padding:3px 10px;font-size:10.5px">↻ 刷新</button>
+      </div>
+      <div id="gb_sta_tot" style="font-size:11px;color:var(--ink3);letter-spacing:.06em;margin-bottom:8px"></div>
       <div id="gb_sta_trend" style="margin-bottom:10px"></div>
       <div id="gb_sta_hours"></div>
     </div>
@@ -3254,6 +3271,8 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
     if(A) A.style.display='none';
     if(S2.style.display==='block') staRefresh();
   });
+  var staRef=$('gb_sta_ref');
+  if(staRef) staRef.addEventListener('click',function(){ staRefresh(); });
   if(audCls) audCls.addEventListener('click',function(){
     var A=$('gb_aud'),S2=$('gb_sta');
     if(A) A.style.display='none'; if(S2) S2.style.display='none';
@@ -3285,7 +3304,9 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
     for(var i=0;i<vals.length;i++) pts.push((4+i*st).toFixed(1)+','+(H-10-(vals[i]/mx)*(H-24)).toFixed(1));
     var grid='',G=opt||{},ga=G.grid==null?4:G.grid;
     for(var i2=1;i2<ga;i2++){ var yy=(H-10-(i2/ga)*(H-24)).toFixed(1); grid+='<line x1="0" y1="'+yy+'" x2="'+W+'" y2="'+yy+'" stroke="#222" stroke-width="1"/>'; }
+    var area='0,'+(H-10)+' '+pts.join(' ')+' '+W+','+(H-10);
     return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block">'+grid+
+      '<polygon points="'+area+'" fill="'+esc(G.c||'#E8E8E8')+'" opacity=".07"/>'+
       '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+(G.c||'#E8E8E8')+'" stroke-width="1.8"/>'+
       pts.map(function(pt,i3){ var c=pt.split(','); return '<circle cx="'+c[0]+'" cy="'+c[1]+'" r="2.4" fill="'+(G.c||'#E8E8E8')+'"/>'; }).join('')+
       '<g font-size="8" fill="#66767A">'+labels.map(function(lb,i4){ return '<text x="'+(4+i4*st-8).toFixed(0)+'" y="'+(H-2)+'">'+esc(String(lb).slice(5))+'</text>'; }).join('')+'</g></svg>';
@@ -3293,23 +3314,36 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
   function staRefresh(){
     var T=$('gb_sta_tot'),D=$('gb_sta_trend'),H2=$('gb_sta_hours');
     if(!D) return;
-    T.innerHTML='载入中…'; D.innerHTML=''; H2.innerHTML='';
+    T.innerHTML='<div style="color:var(--ink3)">载入中…</div>'; D.innerHTML=''; H2.innerHTML='';
     call('/stats2',{}).then(function(j){
-      if(!j||!j.ok){ T.innerHTML='无权限或加载失败'; return; }
+      if(!j||!j.ok){ T.innerHTML='<div style="color:var(--bad)">无权限或加载失败</div>'; return; }
       var t=j.total||{};
-      T.innerHTML='<span style="color:var(--accent)">用户 '+t.users+'</span> · 留言 '+t.guests+' · 帖子 '+t.posts+' · 累计访问 '+t.visits;
-      D.innerHTML='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:4px">近 7 天 · 留言 ─ 注册 ─</div>'+
+      var cards=[['用户',t.users],['留言',t.guests],['帖子',t.posts],['评论',t.comments||0],['点赞',t.likes||0],['私信',t.pms||0],['访问',t.visits],['在线',j.online||0]];
+      T.innerHTML='<div class="gb-sta-cards">'+cards.map(function(c){ return '<div class="gb-sta-card"><b>'+c[1]+'</b><span>'+c[0]+'</span></div>'; }).join('')+'</div>'+
+        '<div class="gb-sta-today">今日 · 留言 <b>'+t.todayG+'</b> · 注册 <b>'+t.todayR+'</b> · 帖子 <b>'+t.todayP+'</b> · 累计访问 <b>'+t.visits+'</b></div>';
+      D.innerHTML='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:4px">近 7 天 · <span style="color:#E8E8E8">■ 留言</span> · <span style="color:#FFC24B">■ 注册</span></div>'+
         svgLine(j.gday,j.days,320,84,{c:'#E8E8E8'})+
         svgLine(j.rday,j.days,320,84,{c:'#FFC24B',grid:3})+
-        '<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin:10px 0 4px">用户增长（累计）</div>'+
+        '<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin:10px 0 4px">用户增长（累计） · <span style="color:#2EE6A8">■</span></div>'+
         svgLine(j.cum,j.days,320,84,{c:'#2EE6A8',grid:4});
       var mx=Math.max.apply(null,j.hours.concat([1])),hb='';
       for(var i=0;i<24;i++){
         var hh=Math.round((j.hours[i]/mx)*56);
-        hb+='<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1"><div style="height:'+hh+'px;width:7px;background:'+(hh?'var(--accent)':'#262626')+';opacity:'+(hh?'.9':'.5')+'"></div><span style="font-size:8px;color:var(--ink3)">'+i+'</span></div>';
+        hb+='<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1" title="'+i+' 时 · '+j.hours[i]+' 条"><div style="height:'+hh+'px;width:7px;background:'+(hh?'var(--accent)':'#262626')+';opacity:'+(hh?'.9':'.5')+'"></div><span style="font-size:8px;color:var(--ink3)">'+i+'</span></div>';
       }
-      H2.innerHTML='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:4px">留言活跃时段（24h）</div><div style="display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid var(--line);padding-bottom:2px">'+hb+'</div>';
-    }).catch(function(e){ T.innerHTML='加载失败 · '+esc(ferr(e.message)); });
+      H2.innerHTML='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:4px">留言活跃时段（24h · 悬停看数值）</div><div style="display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid var(--line);padding-bottom:2px">'+hb+'</div>';
+      var tu=j.topUsers||[],tg=j.topGuests||[];
+      var topU=tu.map(function(x,i){
+        var w=tu[0]&&tu[0].n?Math.round((x.n/tu[0].n)*100):0;
+        return '<div class="gb-sta-row"><span>'+esc(x.name)+'</span><div class="gb-sta-bar"><i style="width:'+w+'%"></i></div><b>'+x.n+'</b></div>';
+      }).join('')||'<div style="color:var(--ink3);font-size:11px">暂无</div>';
+      var topG=tg.map(function(x,i){
+        var m0=tg[0]?tg[0].likes:1,w=Math.min(100,Math.round((x.likes/m0)*100));
+        return '<div class="gb-sta-row" title="'+esc(x.user)+'"><span>'+esc((x.text.length>14?x.text.slice(0,14)+'…':x.text))+'</span><div class="gb-sta-bar g"><i style="width:'+w+'%"></i></div><b>'+x.likes+' ♥</b></div>';
+      }).join('')||'<div style="color:var(--ink3);font-size:11px">暂无</div>';
+      H2.innerHTML+='<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin:10px 0 4px">近 7 天活跃用户 Top</div>'+topU+
+        '<div style="font-size:11px;color:var(--ink3);letter-spacing:.12em;margin:10px 0 4px">最热留言 Top</div>'+topG;
+    }).catch(function(e){ T.innerHTML='<div style="color:var(--bad)">加载失败 · '+esc(ferr(e.message))+'</div>'; });
   }
   window.audRefresh=audRefresh; window.staRefresh=staRefresh;
 })();
