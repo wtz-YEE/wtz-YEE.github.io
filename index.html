@@ -831,6 +831,7 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
 .memo-step button{width:18px;height:18px;line-height:1;border:1px solid var(--line2);background:var(--bg2);color:var(--ink2);border-radius:4px;cursor:pointer;font-size:12px;padding:0;font-family:var(--mono)}
 .memo-step button:hover{border-color:var(--ok);color:var(--ok)}
 .memo-step .cur{min-width:20px;text-align:center;font-family:var(--mono);color:var(--ok);font-size:12px}
+
 .pf-close{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--ink3);font-size:15px;cursor:pointer;padding:4px}
 #tvLayer{position:fixed;inset:0;z-index:998;pointer-events:none;opacity:0;visibility:hidden}
 #tvLayer.on{opacity:1;visibility:visible;pointer-events:auto}
@@ -1358,15 +1359,6 @@ function ferr(msg){
     <div class="memo-h">备忘录 <span class="memo-st" id="memoStat"></span>
       <span class="memo-act">
         <button class="gb-btn ghost" id="memoMode" style="padding:3px 12px;font-size:11px;color:var(--ok);border-color:var(--ok)">代码</button>
-=======
-        <button class="gb-btn ghost" id="memoClear" style="padding:3px 10px;font-size:11px">清空</button>
-        <button class="gb-btn ghost" id="memoExport" style="padding:3px 10px;font-size:11px">导出 .md</button>
-        <button class="gb-btn ghost" id="memoClose" style="padding:3px 10px;font-size:11px">×</button>
-      </span>
-    </div>
-    <div class="memo-bd">
-      <textarea id="memoSrc" spellcheck="false" placeholder="用 Markdown 写备忘…&#10;任务打勾：- [ ] 待办  /  - [x] 已完成&#10;倒计时：⏰10-05（日期）&#10;次数进度：🔁3/10&#10;目标：🎯10&#10;其他语法：**粗体** *斜体* ~~删除线~~ `代码` 代码块 表格 引用 标题 等"></textarea>
->>>>>>> 7f678c2 (备忘录完善：单按钮切换代码/查看模式+关键词渲染（⏰倒计时徽章实时计算、🔁次数进度条、🎯目标次数，可与Markdown/颜色叠加）)
       <div class="memo-pv" id="memoPv"></div>
     </div>
   </div>
@@ -3372,10 +3364,7 @@ function memoMd(v){
     return memoTag('目标 '+B+' 次','')
       +'<span class="memo-step"><span class="cur">'+cur+'</span><button type="button" data-mi="'+li+'" data-mk="g" data-cur="'+cur+'" data-mb="'+B+'" data-s="+">+</button><button type="button" data-mi="'+li+'" data-mk="g" data-cur="'+cur+'" data-mb="'+B+'" data-s="-">-</button></span>';
   });
-<<<<<<< HEAD
-=======
-  h=h.replace(/\[目标\s*(\d+)\]/g,function(m,a){ return memoTag('目标 '+a+' 次',''); });
->>>>>>> b919fe2 (备忘录关键词统一格式[内容]：[倒计时 日期]、[进度 n/m]、[目标 n]，徽章纯文字去表情，旧表情格式不再触发渲染)
+
   return h;
 }
 var memoMode='view';
