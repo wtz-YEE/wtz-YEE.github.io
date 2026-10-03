@@ -824,10 +824,6 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
 .pf-ckcal{display:flex;gap:3px;flex-wrap:wrap;padding:4px 0 12px}
 .pf-ckcal i{width:9px;height:9px;border:1px solid var(--line2);background:transparent;border-radius:1px}
 .pf-ckcal i.on{background:var(--accent);border-color:var(--accent)}
-.pz-box{display:flex;gap:6px;margin-top:6px}
-.pz-box input{flex:1;min-width:0;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:5px 8px;font-size:12px;font-family:var(--mono)}
-.pz-box input:focus{outline:none;border-color:var(--accent)}
-.pz-st{font-size:10.5px;color:var(--ink3);letter-spacing:.05em;margin-top:5px;min-height:14px}
 .wall-tot{font-size:10.5px;color:var(--ink3);letter-spacing:.08em;margin-top:6px}
 .wall-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .wall-it{border:1px solid var(--line);padding:2px 7px;font-size:10.5px;color:var(--ink2)}
@@ -839,10 +835,6 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
 .map-node.on:before{content:"▣ ";opacity:.9}
 .map-node:hover{color:var(--ink);border-color:var(--ink2)}
 .wall-it .fp-t{display:block;font-size:9px;color:var(--ink3);margin-top:1px}
-.bcast-list{margin-top:6px}
-.bcast-it{display:block;font-size:10.5px;color:var(--ink2);padding:2px 0;letter-spacing:.03em;text-decoration:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.bcast-it b{color:var(--accent);font-weight:700;margin-right:6px}
-.bcast-it:hover{color:var(--ink)}
 .memo-mask{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;z-index:98}
 .memo-mask.on{display:flex}
 .memo-box{background:var(--bg,#0d0f12);border:1px solid var(--line2);width:94%;max-width:1000px;height:88vh;display:flex;flex-direction:column;border-radius:6px;box-shadow:0 14px 50px rgba(0,0,0,.55)}
@@ -1175,41 +1167,6 @@ function ferr(msg){
     </span>
   </div>
 </div>
-<div class="card pz-card">
-  <div class="spot" aria-hidden="true"></div>
-  <div class="thumb">
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-      <defs><linearGradient id="sg6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-      <rect width="400" height="200" fill="#0A0A0A"/>
-      <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-      <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-      <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg6)" opacity="0"/>
-      <g class="t-drift">
-        <rect x="132" y="40" width="136" height="118" rx="5" fill="none" stroke="#E8E8E8" stroke-width="2.2"/>
-        <circle cx="200" cy="80" r="24" fill="none" stroke="#E8E8E8" stroke-width="1.6"/>
-        <path d="M200 80 L200 104 M200 104 L188 116 M200 104 L212 116" stroke="#E8E8E8" stroke-width="1.6" fill="none"/>
-        <g font-family="monospace" font-size="13" fill="#888" text-anchor="middle">
-          <text x="200" y="158">03 00 21</text>
-        </g>
-        <circle class="t-pulse" cx="200" cy="80" r="34" fill="none" stroke="#E8E8E8" stroke-width=".7" opacity=".5"/>
-      </g>
-      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-        <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
-        <text x="200" y="190" letter-spacing="7">DAILY PUZZLE</text>
-      </g>
-    </svg>
-  </div>
-  <div class="card-bd">
-    <div class="c-tag">DAILY · 每日口令</div>
-    <h3>每日谜题</h3>
-    <p>每天一个口令，答对得积分。</p>
-    <div class="pz-box">
-      <input id="pz_in" placeholder="输入 8 位口令" maxlength="8" autocomplete="off">
-      <button class="gb-btn" id="pz_btn" style="padding:5px 12px">破解</button>
-    </div>
-    <div class="pz-st" id="pz_status">加载中…</div>
-    <a href="解码器.html" style="font-size:10.5px;color:var(--accent);letter-spacing:.05em;text-decoration:none;display:inline-block;margin-top:5px">◈ 打开密文解码器</a>
-  </div>
 </div>
 <div class="card">
   <div class="spot" aria-hidden="true"></div>
@@ -1276,35 +1233,7 @@ function ferr(msg){
     <div class="map-grid" id="map_grid"></div>
   </div>
 </div>
-<a class="card" href="changelog.html">
-  <div class="spot" aria-hidden="true"></div>
-  <div class="thumb">
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-      <defs><linearGradient id="sg8" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-      <rect width="400" height="200" fill="#0A0A0A"/>
-      <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-      <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-      <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg8)" opacity="0"/>
-      <g class="t-drift">
-        <path d="M200 30 L228 52 L212 52 L212 170 L188 170 L188 52 L172 52 Z" fill="rgba(255,255,255,.05)" stroke="#E8E8E8" stroke-width="1.6"/>
-        <path d="M140 78 H168 M140 94 H168 M140 110 H168" stroke="#666" stroke-width="1.2"/>
-        <path d="M260 78 H232 M260 94 H232 M260 110 H232" stroke="#666" stroke-width="1.2"/>
-        <circle class="t-pulse" cx="200" cy="120" r="8" fill="none" stroke="#E8E8E8" stroke-width="1.5"/>
-        <circle cx="200" cy="120" r="2.4" fill="#E8E8E8"/>
-      </g>
-      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-        <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
-        <text x="200" y="190" letter-spacing="6">RHODES COMMS</text>
-      </g>
-    </svg>
-  </div>
-  <div class="card-bd">
-    <div class="c-tag">BROADCAST · 罗德岛通讯</div>
-    <h3>罗德岛通讯</h3>
-    <p>站务公告 · 版本播报，一键收听。</p>
-    <div class="bcast-list" id="bcast_list">加载中…</div>
-  </div>
-</a>
+
 <!-- ============ GUESTBOOK / 私聊 ============ -->
 <div class="gb" id="gbRoot">
   <div class="gb-head">
@@ -1805,25 +1734,6 @@ function cloudApply(){
   }).catch(function(){});
 }
 
-/* ---------- 第一批·探索闭环：谜题/访客墙/通讯 ---------- */
-function puzzleLoad(){
-  var el=$('pz_status'); if(!el) return;
-  if(!S.user){ el.textContent='登录后即可参与每日口令'; return; }
-  call('/daily_puzzle',{}).then(function(j){
-    if(!j||!j.ok) return;
-    el.textContent=j.done?'今日已破解 · 明日再来（+30 积分）':'今日口令待破解 · 可得 30 积分';
-  }).catch(function(){ el.textContent='谜题加载失败'; });
-}
-function puzzleSubmit(){
-  var el=$('pz_in');
-  if(!el||!S.user) return say('请先登录',false);
-  var v=el.value.trim();
-  if(!v) return say('请输入口令',false);
-  call('/puzzle_answer',{answer:v}).then(function(j){
-    if(j&&j.ok){ say(j.msg||'口令正确',true); el.value=''; puzzleLoad(); checkinStatus(); }
-    else say((j&&j.msg)||'验证失败',false);
-  }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
-}
 function wallLoad(){
   call('/visitors_get',{}).then(function(j){
     if(!j||!j.ok) return;
@@ -1878,21 +1788,8 @@ function mapLoad(){
     return '<a class="map-node'+(on?' on':'')+'" href="'+n[1]+'" data-map="'+n[2]+'">'+n[0]+'</a>';
   }).join('');
 }
-function bcastLoad(){
-  call('/changelog_get',{}).then(function(j){
-    var el=$('bcast_list'); if(!el) return;
-    var arr=(j&&j.list)||[];
-    el.innerHTML=arr.slice(0,3).map(function(x){
-      return '<span class="bcast-it" title="'+esc(x.title||'')+'"><b>'+esc((x.time||'').slice(5,10))+'</b>'+esc(x.title||'')+'</span>';
-    }).join('')||'<span style="color:var(--ink3);font-size:10.5px">暂无播报</span>';
-  }).catch(function(){});
-}
 (function(){
-  var pzb=$('pz_btn'); if(pzb) pzb.addEventListener('click',puzzleSubmit);
-  var pzi=$('pz_in'); if(pzi) pzi.addEventListener('keydown',function(e){ if(e.key==='Enter') puzzleSubmit(); });
-  puzzleLoad();
   setTimeout(wallLoad, 400);
-  setTimeout(bcastLoad, 800);
   setTimeout(mapLoad, 900);
 })();
 (function(){
