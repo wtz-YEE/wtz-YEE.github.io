@@ -279,6 +279,15 @@ body.red .term-in input{caret-color:var(--bad)}
 .ach-card.on b{color:var(--accent2)}
 .ach-card.on .t{color:var(--accent)}
 .ach-card.off{opacity:.5;filter:grayscale(1)}
+.ach-bar{height:7px;background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:2px;margin:12px 0 4px;overflow:hidden}
+.ach-bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .8s cubic-bezier(.22,1,.36,1)}
+.ach-pct{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.12em}
+.ach-sec{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink2);border-bottom:1px solid var(--line);padding:10px 0 6px;margin:6px 0 10px;text-align:left}
+.ach-sec:first-child{margin-top:2px}
+.ach-card.on{animation:achIn .55s cubic-bezier(.22,1,.36,1)}
+.ach-card.off.q{opacity:.42;border-style:dashed}
+.ach-card.off.q b{letter-spacing:.2em}
+@keyframes achIn{0%{transform:scale(.92);box-shadow:0 0 0 rgba(255,255,255,0)}40%{transform:scale(1.02);box-shadow:0 0 26px var(--accent-soft)}100%{transform:scale(1)}}
 @media(max-width:640px){.ach-g{grid-template-columns:repeat(2,1fr)}}
 #wzw{max-width:100%;height:auto}
 .glitch{position:fixed;inset:0;z-index:130;pointer-events:none;mix-blend-mode:screen;background:repeating-linear-gradient(0deg,rgba(255,0,80,.14) 0 2px,transparent 2px 5px,rgba(0,255,200,.12) 5px 7px,transparent 7px 10px);animation:glitchA .12s steps(2) infinite}
@@ -942,13 +951,15 @@ var wb=document.getElementById('wzwBtn');
 if(wb){var open2=done.length>=30||sessionStorage.getItem('wzLv')==='9999';wb.classList.toggle('hidden',!open2)}
 return done.length}
 function render(){var g=document.getElementById('achGrid');if(!g)return;var cnt=0;g.innerHTML='';
-for(var i=0;i<A.length;i++){var a=A[i],on=has(i);
-if(a.h&&!on)continue;
-cnt+=on?1:0;
-var d=document.createElement('div');d.className='ach-card '+(on?'on':'off');
-d.innerHTML='<span class="t">'+(a.h?'HIDDEN':'BASE')+'</span><b>'+a.n+'</b><i>'+(on||!a.h?a.d:'已隐藏')+'</i>';
-g.appendChild(d)}
-var c=document.getElementById('achCnt');if(c)c.textContent=cnt}
+var base='<div class="ach-sec">◈ BASE · 基础成就</div>',hid='<div class="ach-sec">◈ HIDDEN · 隐藏成就</div>',bc='',hc='';
+for(var i=0;i<A.length;i++){var a=A[i],on=has(i);cnt+=on?1:0;
+var d='<div class="ach-card '+(on?'on':(a.h?'off q':'off'))+'"><span class="t">'+(a.h?'HIDDEN':'BASE')+'</span><b>'+(on||!a.h?a.n:'？？？')+'</b><i>'+(on||!a.h?a.d:(a.h?'达成条件未知':'未解锁'))+'</i></div>';
+if(a.h)hc+=d;else bc+=d}
+g.innerHTML=base+bc+(hc?hid+hc:'');
+var c=document.getElementById('achCnt');if(c)c.textContent=cnt;
+var bar=document.getElementById('achBar'),pt=document.getElementById('achPct');
+if(bar)bar.style.width=Math.round(cnt/A.length*100)+'%';
+if(pt)pt.textContent=Math.round(cnt/A.length*100)+'% · '+cnt+' / '+A.length}
 function open(){scan();render();var p=document.getElementById('achPan');if(p){p.classList.remove('hidden');document.body.style.overflow='hidden'}}
 function close(){var p=document.getElementById('achPan');if(p){p.classList.add('hidden');document.body.style.overflow=''}}
 (function(){var b=document.getElementById('achBtn'),c2=document.getElementById('achClose'),p=document.getElementById('achPan');
@@ -1211,6 +1222,8 @@ try{JB.push()}catch(e){}
       <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M12 2l2.6 5.4 5.9.7-4.4 4 1.2 5.8-5.3-2.9-5.3 2.9 1.2-5.8-4.4-4 5.9-.7z"/><path fill="none" stroke="currentColor" stroke-width="1.4" d="M12 6.5v11M7.5 9l9 6M16.5 9l-9 6"/></svg>
     </div>
     <h3>成就系统 · <b id="achCnt">0</b> / 50</h3>
+    <div class="ach-bar"><i id="achBar"></i></div>
+    <div class="ach-pct" id="achPct">0%</div>
     <div id="achGrid" class="ach-g"></div>
     <button class="m-no" id="achClose">关 闭</button>
   </div>
@@ -1261,6 +1274,30 @@ B.onclick=function(){SEL.innerHTML='';GM.forEach(function(g){var o=document.crea
 var X=document.getElementById('rankX');if(X)X.onclick=function(){M.style.display='none'};
 SEL.onchange=function(){load(SEL.value)};
 M.addEventListener('click',function(e){if(e.target===M)M.style.display='none'});
+})();
+</script>
+
+<div id="wNav" class="w-nav"><a href="index.html" data-w="index">◈ 指挥中心</a><a href="守夜人论坛.html" data-w="forum">守夜人论坛</a><a href="卡塞尔学院官网.html" data-w="cassel">卡塞尔学院</a><a href="changelog.html" data-w="chg">更新日志</a><span id="wNavDot" class="w-dot off" title="云端状态未检测">●</span></div>
+<style>
+.w-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:2147483000;display:flex;align-items:center;gap:2px;padding:4px 8px;background:rgba(10,12,14,.86);border:1px solid rgba(255,255,255,.16);border-radius:20px;font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:11px;letter-spacing:.05em;backdrop-filter:blur(4px);box-shadow:0 6px 22px rgba(0,0,0,.45)}
+.w-nav a{color:#C9D2D6;text-decoration:none;padding:3px 9px;border-radius:14px;transition:background .18s,color .18s;white-space:nowrap}
+.w-nav a:hover{background:rgba(255,255,255,.08);color:#FFF}
+.w-nav a.cur{background:rgba(255,255,255,.1);color:#FFC24B}
+.w-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:8px;margin-right:6px;cursor:pointer;flex:none}
+.w-dot.on{background:#2EE6A8;box-shadow:0 0 8px #2EE6A8}
+.w-dot.bad{background:#FF5C7A;box-shadow:0 0 8px #FF5C7A}
+.w-dot.off{background:#6E7681;box-shadow:0 0 6px #6E7681}
+@media(max-width:640px){.w-nav{font-size:10px;bottom:8px}.w-nav a{padding:3px 6px}}
+</style>
+<script>
+(function(){
+function ga(){try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return a[0]||''}catch(e){return''}}
+function norm(s){try{var m=location.pathname.split('/').pop().split('?')[0];return m}catch(e){return''}}
+(function(){var m=norm(),a=document.querySelectorAll('#wNav a[data-w]');for(var i=0;i<a.length;i++){var t=a[i].getAttribute('data-w'),hit=false;if(t==='index'&&(m==='index.html'||m===''||m==='wtz-YEE.github.io'))hit=true;else if(t==='forum'&&m.indexOf('守夜人论坛')===0)hit=true;else if(t==='cassel'&&m.indexOf('卡塞尔学院')===0)hit=true;else if(t==='chg'&&m.indexOf('changelog')===0)hit=true;if(hit)a[i].classList.add('cur')}})();
+var dot=document.getElementById('wNavDot');if(!dot)return;
+function chk(){var a=ga();if(!a){dot.className='w-dot off';dot.title='未配置云端 · 点击检测';return}
+fetch(a+'/health',{mode:'cors',cache:'no-store'}).then(function(r){dot.className=r.ok?'w-dot on':'w-dot bad';dot.title='云端在线 · '+a}).catch(function(){dot.className='w-dot bad';dot.title='云端离线 · '+a})}
+dot.addEventListener('click',chk);chk();setInterval(chk,30000);
 })();
 </script>
 </body>
