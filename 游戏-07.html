@@ -568,6 +568,7 @@ perm();
 (function(){
 function ga(){try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return a[0]||''}catch(e){return''}}
 function norm(s){try{var m=location.pathname.split('/').pop().split('?')[0];return m}catch(e){return''}}
+(function(){try{var m=location.pathname.split('/').pop().split('?')[0]||'',MAP={'index.html':'index','守夜人论坛.html':'forum','卡塞尔学院官网.html':'cassel','changelog.html':'chg','终端接口.html':'term','PRTS泰拉大典终端.html':'prts','prts.html':'prts','莱茵生命终端.html':'rhine','技能树.html':'skill','模组开发.html':'mod','解码器.html':'dec'};if(m===''||m==='wtz-YEE.github.io')m='index.html';var k=MAP[m];if(k)localStorage.setItem('wz_map_'+k,'1')}catch(e){}})();
 (function(){var m=norm(),a=document.querySelectorAll('#wNav a[data-w]');for(var i=0;i<a.length;i++){var t=a[i].getAttribute('data-w'),hit=false;if(t==='index'&&(m==='index.html'||m===''||m==='wtz-YEE.github.io'))hit=true;else if(t==='forum'&&m.indexOf('守夜人论坛')===0)hit=true;else if(t==='cassel'&&m.indexOf('卡塞尔学院')===0)hit=true;else if(t==='chg'&&m.indexOf('changelog')===0)hit=true;if(hit)a[i].classList.add('cur')}})();
 var upd=document.getElementById('wNavUpd');
 if(upd)upd.addEventListener('click',function(){
