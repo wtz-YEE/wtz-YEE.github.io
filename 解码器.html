@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>密文解码器 · Cipher Decoder</title>
+<style>
+:root{--bg:#0A0A0A;--bg2:#101214;--ink:#E8E8E8;--ink2:#C9D2D6;--ink3:#6E7681;--line:#24292E;--accent:#7EE7FF;--bad:#FF5C7A;--ok:#2EE6A8;--mono:"Cascadia Mono",Consolas,"Courier New",monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);min-height:100vh;padding:28px 16px 80px}
+.wrap{max-width:860px;margin:0 auto}
+.head{border:1px solid var(--line);background:var(--bg2);padding:22px 24px;margin-bottom:18px;position:relative;overflow:hidden}
+.head::after{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.head h1{font-size:22px;letter-spacing:.14em;font-weight:700;color:var(--ink)}
+.head .sub{font-size:11px;color:var(--ink3);letter-spacing:.22em;margin-top:6px}
+.head .hint{font-size:11.5px;color:var(--ink2);margin-top:12px;line-height:1.9}
+.tool{border:1px solid var(--line);background:var(--bg2);margin-bottom:16px;overflow:hidden}
+.tool-h{padding:10px 16px;border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.16em;color:var(--accent);display:flex;align-items:center;gap:10px}
+.tool-h .no{color:var(--ink3);border:1px solid var(--line);width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px}
+.tool-b{padding:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.lbl{font-size:11px;color:var(--ink3);letter-spacing:.1em;width:72px;flex:none}
+.inp{background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px 10px;font-size:14px;font-family:var(--mono);letter-spacing:.12em;width:120px;text-align:center}
+.inp:focus{outline:none;border-color:var(--accent)}
+.inp.wide{width:200px;letter-spacing:.28em}
+.btn{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:8px 18px;font-size:12px;font-family:var(--mono);cursor:pointer;letter-spacing:.1em;transition:all .18s}
+.btn:hover{background:rgba(126,231,255,.12)}
+.btn.alt{border-color:var(--ok);color:var(--ok)}
+.btn.alt:hover{background:rgba(46,230,168,.12)}
+.out{margin-top:6px;border:1px dashed var(--line);padding:14px 16px;font-size:16px;letter-spacing:.3em;color:var(--ok);min-height:52px;display:flex;align-items:center;word-break:break-all}
+.out.dim{color:var(--ink3);letter-spacing:.1em;font-size:11.5px}
+.out.bad{color:var(--bad)}
+.steps{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.steps b{color:var(--ink2);font-size:11px;letter-spacing:.1em}
+.steps code{display:block;font-size:11.5px;color:var(--ink3);line-height:2;margin-top:6px;white-space:pre-wrap}
+.demo{font-size:11px;color:var(--ink3);line-height:1.9;margin-top:10px;border:1px solid var(--line);padding:10px 12px}
+.demo b{color:var(--ink2)}
+.tag{display:inline-block;border:1px solid var(--line);color:var(--ink3);font-size:10px;padding:2px 8px;letter-spacing:.12em;margin-right:6px}
+.w-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:999;display:flex;align-items:center;gap:2px;padding:4px 8px;background:rgba(10,12,14,.86);border:1px solid rgba(255,255,255,.16);border-radius:20px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;backdrop-filter:blur(4px);box-shadow:0 6px 22px rgba(0,0,0,.45)}
+.w-nav a{color:#C9D2D6;text-decoration:none;padding:3px 9px;border-radius:14px;transition:background .18s,color .18s;white-space:nowrap}
+.w-nav a:hover{background:rgba(255,255,255,.08);color:#FFF}
+.w-nav a.cur{background:rgba(255,255,255,.1);color:#FFC24B}
+.w-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:8px;margin-right:6px;cursor:pointer;flex:none}
+.w-dot.off{background:#6E7681;box-shadow:0 0 6px #6E7681}
+@media(max-width:640px){.w-nav{font-size:10px;bottom:8px}.w-nav a{padding:3px 6px}.inp{width:96px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>密文解码器</h1>
+    <div class="sub">CIPHER DECODER · 罗德岛每日口令推算工具</div>
+    <div class="hint">本站所有密钥均由「日期 + 钟点」按固定加权运算生成。<br>每日谜题的口令即「第二层密钥」，可用下方工具自行推算；第三层密文可用解码器还原明文。</div>
+  </div>
+
+  <div class="tool">
+    <div class="tool-h"><span class="no">01</span>第二层密钥生成器 <span class="tag">用于每日谜题</span></div>
+    <div class="tool-b">
+      <div class="row">
+        <span class="lbl">日期</span>
+        <input class="inp" id="d1" type="number" min="1" max="31" placeholder="DD">
+        <span class="lbl">钟点</span>
+        <input class="inp" id="c1" type="number" min="0" max="23" placeholder="HH">
+        <button class="btn" id="b1">推算密钥</button>
+        <button class="btn alt" id="b1n">填入今天</button>
+      </div>
+      <div class="out dim" id="o1">等待输入…</div>
+      <div class="steps"><b>算法</b>
+        <code>第二层密钥 = 日期(2位) + 钟点(2位) + (日×7 + 时×3) 后两位
+例：3 日 0 时 → 03 00 (3×7+0×3)%100=21 → 密钥 030021</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool">
+    <div class="tool-h"><span class="no">02</span>第三层密文解码器 <span class="tag">加权 + 逆序</span></div>
+    <div class="tool-b">
+      <div class="row">
+        <span class="lbl">日期</span>
+        <input class="inp" id="d2" type="number" min="1" max="31" placeholder="DD">
+        <span class="lbl">钟点</span>
+        <input class="inp" id="c2" type="number" min="0" max="23" placeholder="HH">
+      </div>
+      <div class="row">
+        <span class="lbl">密文</span>
+        <input class="inp wide" id="e2" type="text" maxlength="6" placeholder="6 位密文">
+        <button class="btn alt" id="b2">解码</button>
+      </div>
+      <div class="out dim" id="o2">等待输入…</div>
+      <div class="steps"><b>算法</b>
+        <code>明文 = 日期(2位) + 钟点(2位) + (日×11 + 时×7) 后两位
+权重第 i 位 = (日×(i+1) + 时) % 10
+密文 = 逐位(明文位 + 权重位) % 10，再整体倒序
+解码 = 密文倒序回正序，逐位减权重 % 10 → 明文
+例：3 日 0 时 → 明文 030033 → 权重 3,6,9,2,5,8 → 逐位相加 399281 → 倒序得密文 182993</code>
+      </div>
+      <div class="demo"><b>自测</b> 3 日 0 时，明文 030033，权重 3 6 9 2 5 8，逐位加密 3 9 9 2 8 1，倒序得密文 <b>182993</b>。输入 182993 应解出 <b>030033</b>。</div>
+    </div>
+  </div>
+</div>
+
+<div id="wNav" class="w-nav"><a href="index.html" data-w="index">◈ 指挥中心</a><a href="守夜人论坛.html" data-w="forum">守夜人论坛</a><a href="卡塞尔学院官网.html" data-w="cassel">卡塞尔学院</a><a href="changelog.html" data-w="chg">更新日志</a><span id="wNavDot" class="w-dot off" title="云端状态未检测">●</span></div>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+function pad(n){return ('0'+n).slice(-2)}
+function p2(b,c){
+  var k=pad(b)+pad(c)+pad((b*7+c*3)%100);
+  return k;
+}
+function p3(b,c){
+  var m=pad(b)+pad(c)+pad((b*11+c*7)%100);
+  var w=[];
+  for(var i=0;i<6;i++)w.push((b*(i+1)+c)%10);
+  return {m:m,w:w};
+}
+function enc(b,c){
+  var t=p3(b,c),e='';
+  for(var i=0;i<6;i++)e+=String((parseInt(t.m[i])+t.w[i])%10);
+  return e.split('').reverse().join('');
+}
+function dec(b,c,cipher){
+  var t=p3(b,c),r=cipher.split('').reverse().join(''),m='';
+  for(var i=0;i<6;i++){
+    var v=(parseInt(r[i])-t.w[i])%10;
+    if(v<0)v+=10;
+    m+=String(v);
+  }
+  return m;
+}
+function val(id){return parseInt($(id).value,10)}
+function today(){var n=new Date();return {b:n.getDate(),c:n.getHours()}}
+function setToday(){
+  var t=today();
+  if(!$('d1').value)$('d1').value=t.b;
+  if(!$('c1').value)$('c1').value=t.c;
+  if(!$('d2').value)$('d2').value=t.b;
+  if(!$('c2').value)$('c2').value=t.c;
+}
+$('b1').addEventListener('click',function(){
+  var b=val('d1'),c=val('c1'),o=$('o1');
+  if(!b||b<1||b>31||isNaN(c)||c<0||c>23){o.textContent='请输入有效日期(1-31)与钟点(0-23)';o.className='out bad';return}
+  o.textContent=p2(b,c);o.className='out';
+});
+$('b1n').addEventListener('click',function(){
+  var t=today();$('d1').value=t.b;$('c1').value=t.c;
+  var b=val('d1'),c=val('c1');
+  var o=$('o1');o.textContent=p2(b,c);o.className='out';
+});
+$('b2').addEventListener('click',function(){
+  var b=val('d2'),c=val('c2'),e=$('e2').value.trim(),o=$('o2');
+  if(!b||b<1||b>31||isNaN(c)||c<0||c>23){o.textContent='请输入有效日期(1-31)与钟点(0-23)';o.className='out bad';return}
+  if(!/^\d{6}$/.test(e)){o.textContent='请输入 6 位数字密文';o.className='out bad';return}
+  o.textContent=dec(b,c,e);o.className='out';
+});
+$('e2').addEventListener('keydown',function(ev){if(ev.key==='Enter')$('b2').click()});
+$('d1').addEventListener('keydown',function(ev){if(ev.key==='Enter')$('b1').click()});
+$('c1').addEventListener('keydown',function(ev){if(ev.key==='Enter')$('b1').click()});
+setToday();
+(function(){var m=location.pathname.split('/').pop().split('?')[0],a=document.querySelectorAll('#wNav a[data-w]');for(var i=0;i<a.length;i++){var t=a[i].getAttribute('data-w');if(t==='index'&&(m==='index.html'||m===''||m==='wtz-YEE.github.io'))a[i].classList.add('cur');else if(t==='forum'&&m.indexOf('守夜人论坛')===0)a[i].classList.add('cur');else if(t==='cassel'&&m.indexOf('卡塞尔学院')===0)a[i].classList.add('cur');else if(t==='chg'&&m.indexOf('changelog')===0)a[i].classList.add('cur')}})();
+})();
+</script>
+</body>
+</html>

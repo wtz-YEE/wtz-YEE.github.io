@@ -702,6 +702,9 @@ def api_hit():
     st["today_visits"] = int(st.get("today_visits") or 0) + 1
     nm = str(p.get("name") or "").strip()[:16] or "访客"
     st.setdefault("visitors", {})[nm] = int(st["visitors"].get(nm) or 0) + 1
+    fp = st.setdefault("footprint", [])
+    fp.insert(0, {"name": nm, "time": _time.strftime("%Y-%m-%d %H:%M")})
+    st["footprint"] = fp[:200]
     _save(STAT_FILE, st)
     return jsonify({"ok": True, "visits": st["visits"], "today": st["today_visits"]})
 
@@ -712,6 +715,40 @@ def api_stats_get():
                     "today": st.get("today_visits") or 0,
                     "visitors": len(st.get("visitors") or {})})
 
+@app.route("/daily_puzzle", methods=["GET", "POST"])
+def api_daily_puzzle():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    us = _load(USER_FILE, {})
+    today = _time.strftime("%Y-%m-%d")
+    done = bool(cu and (us.get(cu) or {}).get("puz") == today)
+    return jsonify({"ok": True, "date": today, "done": done,
+                    "hint": "8 位数字口令：今日日期(2位)+00+(日×7 后两位)，可用解码器自行推算",
+                    "pts": 30})
+
+@app.route("/puzzle_answer", methods=["POST"])
+def api_puzzle_answer():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    today = _time.strftime("%Y-%m-%d")
+    b = int(_time.strftime("%d"))
+    key = "%02d00%02d" % (b, (b * 7) % 100)
+    us = _load(USER_FILE, {})
+    rec = us.setdefault(cu, {})
+    if rec.get("puz") == today:
+        return jsonify({"ok": True, "done": True, "msg": "今日口令已答过"})
+    ans = str(p.get("answer") or "").strip()
+    if ans != key:
+        return jsonify({"ok": False, "msg": "口令错误，再用解码器试试"})
+    rec["puz"] = today
+    rec["pts"] = int(rec.get("pts") or 0) + 30
+    _save(USER_FILE, us)
+    _add_exp(_load(USER_FILE, {}), cu, 20)
+    return jsonify({"ok": True, "done": True, "pts": int(rec.get("pts") or 0),
+                    "exp": int((us.get(cu) or {}).get("exp") or 0), "msg": "口令正确，+30 积分"})
+
 @app.route("/checkin_status", methods=["GET", "POST"])
 def api_checkin_status():
     p = request.get_json() or {}
@@ -721,8 +758,13 @@ def api_checkin_status():
     us = _load(USER_FILE, {})
     ck = (us.get(cu) or {}).get("checkin") or {}
     today = _time.strftime("%Y-%m-%d")
+    stk = ck.get("streak") or 0
+    badge = "30" if stk >= 30 else ("7" if stk >= 7 else ("3" if stk >= 3 else ""))
     return jsonify({"ok": True, "done": ck.get("date") == today,
-                    "streak": ck.get("streak") or 0, "total": ck.get("total") or 0,
+                    "streak": stk, "total": ck.get("total") or 0,
+                    "badge": badge,
+                    "ckdays": (ck.get("days") or [])[-60:],
+                    "pts": int((us.get(cu) or {}).get("pts") or 0),
                     "exp": int((us.get(cu) or {}).get("exp") or 0)})
 
 @app.route("/checkin", methods=["POST"])
@@ -741,10 +783,29 @@ def api_checkin():
     y = _time.strftime("%Y-%m-%d", _time.localtime(_time.time() - 86400))
     streak = (ck.get("streak") or 0) + 1 if ck.get("date") == y else 1
     total = (ck.get("total") or 0) + 1
-    rec["checkin"] = {"date": today, "streak": streak, "total": total}
+    days = ck.get("days") or []
+    days.append(today)
+    if len(days) > 400:
+        days = days[-400:]
+    rec["checkin"] = {"date": today, "streak": streak, "total": total, "days": days}
+    bonus = 5 if streak >= 3 else 0
+    bonus = bonus + 10 if streak >= 7 else bonus
+    bonus = bonus + 50 if streak >= 30 else bonus
+    rec["pts"] = int(rec.get("pts") or 0) + 10 + bonus
     _save(USER_FILE, us)
     _add_exp(_load(USER_FILE, {}), cu, 10)
-    return jsonify({"ok": True, "done": False, "streak": streak, "total": total})
+    badge = "30" if streak >= 30 else ("7" if streak >= 7 else ("3" if streak >= 3 else ""))
+    return jsonify({"ok": True, "done": False, "streak": streak, "total": total,
+                    "badge": badge, "pts": int(rec.get("pts") or 0)})
+
+@app.route("/visitors_get", methods=["GET", "POST"])
+def api_visitors_get():
+    st = _load(STAT_FILE, {})
+    vs = st.get("visitors") or {}
+    arr = sorted(vs.items(), key=lambda kv: -kv[1])[:20]
+    return jsonify({"ok": True, "visits": st.get("visits") or 0,
+                    "today": st.get("today_visits") or 0,
+                    "list": [{"name": k, "n": v} for k, v in arr]})
 
 @app.route("/guest_like", methods=["POST"])
 def api_guest_like():
@@ -1556,8 +1617,27 @@ def api_stats2():
                               "todayG": tG, "todayR": tR, "todayP": tP}})
 
 
+
+@app.route("/visitors_detail", methods=["GET", "POST"])
+def api_visitors_detail():
+    st = _load(STAT_FILE, {})
+    fp = st.get("footprint") or []
+    vs = st.get("visitors") or {}
+    arr = []
+    seen = {}
+    for x in fp:
+        nm = str(x.get("name") or "访客")
+        t = str(x.get("time") or "")
+        if nm not in seen:
+            seen[nm] = 1
+            arr.append({"name": nm, "time": t, "n": int(vs.get(nm) or 0)})
+        if len(arr) >= 30:
+            break
+    return jsonify({"ok": True, "list": arr})
+
 @app.route("/profile", methods=["GET", "POST"])
 def api_profile():
+
     p = request.get_json() or {}
     nm = str(p.get("name") or "").strip()[:24]
     if not nm:
@@ -1600,10 +1680,16 @@ def api_profile():
         for c in x.get("comments") or []:
             if (c.get("user") or "") == nm:
                 likes += len(c.get("likes") or [])
+    ach = rec.get("ach") or (rec.get("pref") or {}).get("ach") or []
+    _stk = ck.get("streak") or 0
+    _badge = "30" if _stk >= 30 else ("7" if _stk >= 7 else ("3" if _stk >= 3 else ""))
     return jsonify({"ok": True, "profile": {
         "name": nm, "is_admin": bool(rec.get("is_admin")), "banned": bool(rec.get("banned")),
         "lv": info["lv"], "title": info["title"], "exp": exp,
+        "base": info["base"], "next": info["next"], "need": info["need"],
         "streak": ck.get("streak") or 0, "total": ck.get("total") or 0,
+        "badge": _badge, "pts": int(rec.get("pts") or 0),
+        "ckdays": (ck.get("days") or [])[-60:], "ach": ach,
         "reg": rec.get("reg") or "", "avatar": rec.get("avatar") or 0,
         "self_": self_, "days": days, "likes": likes, "bio": str(rec.get("bio") or "")},
         "guests": g, "posts": ps, "comments": cm})
@@ -1619,6 +1705,90 @@ def api_profile_edit():
     return jsonify({"ok": True, "msg": "已保存"})
 
 
+@app.route("/pref_get", methods=["GET", "POST"])
+def api_pref_get():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    return jsonify({"ok": True, "pref": (us.get(cu) or {}).get("pref") or {}})
+
+
+@app.route("/pref_set", methods=["POST"])
+def api_pref_set():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    d = p.get("pref") or {}
+    us = _load(USER_FILE, {})
+    rec = us.setdefault(cu, {})
+    pf = rec.setdefault("pref", {})
+    if isinstance(d, dict):
+        for k in ("color", "ui", "memo", "ach", "avatar"):
+            if k in d:
+                pf[k] = d[k]
+    _save(USER_FILE, us)
+    return jsonify({"ok": True, "msg": "已保存"})
+
+
+@app.route("/backup", methods=["POST"])
+def api_backup():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    import zipfile
+    import base64 as _b64
+    import io as _io
+    buf = _io.BytesIO()
+    n = 0
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for fn in sorted(os.listdir(_BASE)):
+            if fn.endswith(".json"):
+                try:
+                    z.writestr(fn, _io.open(os.path.join(_BASE, fn), encoding="utf-8").read())
+                    n += 1
+                except Exception:
+                    pass
+    b = buf.getvalue()
+    return jsonify({"ok": True, "data": _b64.b64encode(b).decode(), "size": len(b), "files": n})
+
+
+@app.route("/export_me", methods=["POST"])
+def api_export_me():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    rec = us.get(cu) or {}
+    g = [x for x in _load(GUESTBOOK_FILE, []) if (x.get("user") or x.get("name") or "") == cu]
+    ps = [x for x in _load(POST_FILE, []) if (x.get("user") or "") == cu]
+    cm = []
+    for x in _load(POST_FILE, []):
+        for c in x.get("comments") or []:
+            if (c.get("user") or "") == cu:
+                cm.append({"pid": x.get("id"), "text": c.get("text") or "", "time": c.get("time") or ""})
+    pmall = _load(PM_FILE, {})
+    pm = []
+    if isinstance(pmall, dict):
+        for k2, cc in pmall.items():
+            for m2 in cc or []:
+                if isinstance(m2, dict) and ((m2.get("from") or "") == cu or (m2.get("to") or "") == cu):
+                    pm.append(m2)
+    return jsonify({"ok": True, "data": {
+        "name": cu, "exp": rec.get("exp") or 0, "checkin": rec.get("checkin") or {},
+        "bio": rec.get("bio") or "", "reg": rec.get("reg") or "",
+        "ach": rec.get("ach") or (rec.get("pref") or {}).get("ach") or [],
+        "pref": rec.get("pref") or {}, "export_at": _now(),
+        "guests": g, "posts": ps, "comments": cm, "pms": pm}})
+
+
 # ---------- 写接口限流 ----------
 import time as _rl_t
 _RL = {}
@@ -1628,7 +1798,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/sec_set", "/recover_q", "/recover")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer")
 
 @app.before_request
 def _rate():
