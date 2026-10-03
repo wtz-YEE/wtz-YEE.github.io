@@ -18,6 +18,9 @@ BANNED_IP_FILE = os.path.join(_BASE, "banned_ips.json")
 
 import time as _t
 DEL_LOG = []
+SYNC_KEY_FILE = os.path.join(_BASE, "sync_key.txt")
+SYNC_LOG = os.path.join(_BASE, "sync.log")
+CLOUD_TXT = os.path.join(_BASE, "..", "cloud.txt")
 
 # 初始化排行榜
 if not os.path.exists(SCORE_FILE):
@@ -1698,8 +1701,200 @@ def _risk_loop():
         _th.Event().wait(10)
 
 
+SYNC_FILES = {
+    "users": USER_FILE, "guestbook": GUESTBOOK_FILE, "posts": POST_FILE,
+    "pm": PM_FILE, "notifications": NOTIFY_FILE, "notices": NOTICE_FILE,
+    "audit": AUDIT_FILE, "scores": SCORE_FILE, "changelog": CHANGELOG_FILE,
+    "stats": STAT_FILE, "risk_words": RISK_FILE, "banned_ips": BANNED_IP_FILE
+}
+
+def _sync_key():
+    try:
+        if not os.path.exists(SYNC_KEY_FILE):
+            import secrets
+            with open(SYNC_KEY_FILE, "w", encoding="utf-8") as f:
+                f.write(secrets.token_hex(16))
+        with open(SYNC_KEY_FILE, "r", encoding="utf-8") as f:
+            k = f.read().strip()
+        return k or "wtz-sync"
+    except Exception:
+        return "wtz-sync"
+
+def _sync_export():
+    out = {}
+    for k, p in SYNC_FILES.items():
+        try:
+            out[k] = json.load(open(p, "r", encoding="utf-8"))
+        except Exception:
+            out[k] = {} if k in ("users", "scores", "stats", "banned_ips", "risk_words") else []
+    return out
+
+def _merge_list(a, b):
+    try:
+        have = set()
+        for x in a:
+            if isinstance(x, dict) and "id" in x:
+                have.add(x["id"])
+        for x in b or []:
+            if not isinstance(x, dict):
+                continue
+            i = x.get("id")
+            if i is not None:
+                if i in have:
+                    continue
+                have.add(i)
+            a.append(x)
+        try:
+            a.sort(key=lambda x: (x.get("id") if isinstance(x, dict) else 0) or 0)
+        except Exception:
+            pass
+    except Exception:
+        pass
+    return a
+
+def _merge_users(a, b):
+    for name, rec in (b or {}).items():
+        if name == "__sessions":
+            continue
+        if name not in a:
+            a[name] = rec
+            continue
+        x = a[name]
+        try:
+            x["exp"] = max(x.get("exp", 0) or 0, rec.get("exp", 0) or 0)
+        except Exception:
+            pass
+        if rec.get("is_root"):
+            x["is_root"] = True
+        if rec.get("is_admin"):
+            x["is_admin"] = True
+        if rec.get("checkin") and not x.get("checkin"):
+            x["checkin"] = rec["checkin"]
+        if rec.get("bio") and not x.get("bio"):
+            x["bio"] = rec["bio"]
+        if rec.get("ach") and not x.get("ach"):
+            x["ach"] = rec["ach"]
+        if rec.get("avatar") and not x.get("avatar"):
+            x["avatar"] = rec["avatar"]
+    return a
+
+def _merge_scores(a, b):
+    for g, rows in (b or {}).items():
+        if not isinstance(rows, dict):
+            continue
+        cur = a.setdefault(g, {})
+        for u, s in rows.items():
+            try:
+                if u not in cur or float(s) > float(cur[u]):
+                    cur[u] = s
+            except Exception:
+                pass
+    return a
+
+def _sync_import(d):
+    if not isinstance(d, dict):
+        return 0
+    n = 0
+    try:
+        us = _load(USER_FILE, {})
+        _merge_users(us, d.get("users"))
+        _save(USER_FILE, us)
+        n += 1
+    except Exception:
+        pass
+    for key in ("guestbook", "posts", "pm", "notifications", "notices", "audit", "changelog"):
+        try:
+            cur = _load(SYNC_FILES[key], [])
+            _merge_list(cur, d.get(key) or [])
+            _save(SYNC_FILES[key], cur)
+            n += 1
+        except Exception:
+            pass
+    try:
+        sc = _load(SCORE_FILE, {})
+        _merge_scores(sc, d.get("scores"))
+        _save(SCORE_FILE, sc)
+        n += 1
+    except Exception:
+        pass
+    try:
+        st = _load(STAT_FILE, {})
+        for k2, v in (d.get("stats") or {}).items():
+            if k2 not in st and isinstance(v, (int, float, str)):
+                st[k2] = v
+        _save(STAT_FILE, st)
+    except Exception:
+        pass
+    return n
+
+def _sync_log(msg):
+    try:
+        with open(SYNC_LOG, "a", encoding="utf-8") as f:
+            f.write(_now() + " " + msg + "\n")
+    except Exception:
+        pass
+
+def _do_sync():
+    urls = []
+    try:
+        txt = open(CLOUD_TXT, "r", encoding="utf-8").read()
+        urls = [x.strip().lstrip("\ufeff") for x in txt.splitlines() if x.strip()]
+    except Exception:
+        urls = []
+    if not urls:
+        _sync_log("no cloud addresses")
+        return
+    key = _sync_key()
+    import urllib.request as _ur
+    for u in urls:
+        try:
+            req = _ur.Request(u + "/sync_data?key=" + key)
+            j = json.loads(_ur.urlopen(req, timeout=8).read().decode("utf-8", "replace"))
+            if j.get("ok"):
+                n = _sync_import(j.get("data"))
+                _sync_log("PULL " + u + " merged=" + str(n))
+                try:
+                    body = json.dumps({"data": _sync_export()}).encode("utf-8")
+                    req2 = _ur.Request(u + "/sync_import?key=" + key, data=body,
+                                       headers={"Content-Type": "application/json"}, method="POST")
+                    _ur.urlopen(req2, timeout=8).read()
+                    _sync_log("PUSH " + u + " ok")
+                except Exception as e:
+                    _sync_log("PUSH " + u + " err " + str(e))
+            else:
+                _sync_log("PULL " + u + " bad key")
+        except Exception as e:
+            _sync_log("PULL " + u + " err " + str(e))
+
+def _sync_loop():
+    try:
+        _do_sync()
+    except Exception as e:
+        _sync_log("sync err " + str(e))
+
+@app.route("/sync_data", methods=["GET"])
+def sync_data():
+    if request.args.get("key") != _sync_key():
+        return jsonify({"ok": False, "msg": "bad key"}), 403
+    return jsonify({"ok": True, "data": _sync_export()})
+
+@app.route("/sync_import", methods=["POST"])
+def sync_import():
+    if request.args.get("key") != _sync_key():
+        return jsonify({"ok": False, "msg": "bad key"}), 403
+    d = (request.get_json() or {}).get("data")
+    return jsonify({"ok": True, "merged": _sync_import(d)})
+
+@app.route("/sync_now", methods=["POST"])
+def sync_now():
+    if request.args.get("key") != _sync_key():
+        return jsonify({"ok": False, "msg": "bad key"}), 403
+    _th.Thread(target=_sync_loop, daemon=True).start()
+    return jsonify({"ok": True, "msg": "sync started"})
+
 if __name__ == "__main__":
     _th.Thread(target=_risk_loop, daemon=True).start()
+    _th.Thread(target=_sync_loop, daemon=True).start()
 
 
 # ============ 诺玛 AI 引擎（主机提供） ============
