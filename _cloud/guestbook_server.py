@@ -327,6 +327,9 @@ def _cur_user(tok):
     except Exception:
         return None
 
+def _is_root(cu, us):
+    return cu == ROOT or bool((us.get(cu) or {}).get("is_root"))
+
 def _load(p, d):
     try:
         with open(p, "r", encoding="utf-8") as f:
@@ -846,7 +849,7 @@ def api_admin_users():
     us = _load(USER_FILE, {})
     if not us.get(cu, {}).get("is_admin"):
         return jsonify({"ok": False, "msg": "无管理员权限"})
-    if cu == ROOT:
+    if _is_root(cu, us):
         us = _clean_sessions(us)
         ses = us.get("__sessions", {})
         now = _time.time()
@@ -870,7 +873,7 @@ def api_admin_set_admin():
     us = _load(USER_FILE, {})
     if not us.get(cu, {}).get("is_admin"):
         return jsonify({"ok": False, "msg": "无管理员权限"})
-    if cu != ROOT:
+    if not _is_root(cu, us):
         return jsonify({"ok": False, "msg": "仅最高管理员可授予或撤销"})
     tgt = str(p.get("target") or "").strip()
     adm = bool(p.get("admin"))
@@ -897,9 +900,9 @@ def api_admin_del_user():
         return jsonify({"ok": False, "msg": "账号不存在"})
     if tgt == cu:
         return jsonify({"ok": False, "msg": "不能删除自己"})
-    if tgt == ROOT:
+    if _is_root(tgt, us):
         return jsonify({"ok": False, "msg": "不能删除最高管理员"})
-    if us[tgt].get("is_admin") and cu != ROOT:
+    if us[tgt].get("is_admin") and not _is_root(cu, us):
         return jsonify({"ok": False, "msg": "仅最高管理员可删除管理员"})
     us_old = dict(us)
     del us[tgt]
@@ -1038,7 +1041,7 @@ def api_admin_scan():
     pm = _load(PM_FILE, {})
     hit = []
     for u in us:
-        if u == "__sessions" or u == ROOT or u == cu:
+        if u == "__sessions" or _is_root(u, us) or u == cu:
             continue
         if us[u].get("is_admin"):
             continue
@@ -1171,9 +1174,9 @@ def api_admin_ban_user():
         return jsonify({"ok": False, "msg": "账号不存在"})
     if tgt == cu:
         return jsonify({"ok": False, "msg": "不能拉黑自己"})
-    if tgt == ROOT:
+    if _is_root(tgt, us):
         return jsonify({"ok": False, "msg": "不能拉黑最高管理员"})
-    if us[tgt].get("is_admin") and cu != ROOT:
+    if us[tgt].get("is_admin") and not _is_root(cu, us):
         return jsonify({"ok": False, "msg": "仅最高管理员可拉黑管理员"})
     us[tgt]["banned"] = ban
     _save(USER_FILE, us)
@@ -1615,7 +1618,7 @@ def _auto_risk_scan():
         pm = _load(PM_FILE, {})
         hit = []
         for u in us:
-            if u == "__sessions" or u == ROOT:
+            if u == "__sessions" or _is_root(u, us):
                 continue
             if us[u].get("is_admin"):
                 continue
