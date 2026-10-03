@@ -820,6 +820,17 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
 .memo-pv{flex:1;overflow-y:auto;padding:14px 18px;font-size:13.5px;line-height:1.75;word-break:break-word}
 .memo-pv .mdi{max-width:100%}
 .memo-empty{color:var(--ink3);font-size:12px;letter-spacing:.1em}
+.memo-tag{display:inline-block;padding:1px 9px;border:1px solid var(--line2);border-radius:10px;font-size:11px;letter-spacing:.05em;color:var(--ink2);margin:0 2px;white-space:nowrap}
+.memo-tag.cd-ok{color:var(--ok);border-color:var(--ok)}
+.memo-tag.cd-today{color:var(--warn);border-color:var(--warn)}
+.memo-tag.cd-over{color:var(--bad);border-color:var(--bad)}
+.memo-prog{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;height:16px;padding:0 8px;font-size:11px;min-width:110px;vertical-align:middle}
+.memo-bar{height:6px;border-radius:3px;background:var(--ok);flex:1;display:inline-block}
+.memo-prog b{color:var(--ink2);font-weight:600;font-family:var(--mono)}
+.memo-step{display:inline-flex;align-items:center;gap:2px;margin-left:4px;vertical-align:middle}
+.memo-step button{width:18px;height:18px;line-height:1;border:1px solid var(--line2);background:var(--bg2);color:var(--ink2);border-radius:4px;cursor:pointer;font-size:12px;padding:0;font-family:var(--mono)}
+.memo-step button:hover{border-color:var(--ok);color:var(--ok)}
+.memo-step .cur{min-width:20px;text-align:center;font-family:var(--mono);color:var(--ok);font-size:12px}
 .mdtask{list-style:none!important}
 .mdtask label{display:flex;align-items:flex-start;gap:8px;cursor:pointer;padding:2px 0}
 .mdtask input{width:14px;height:14px;margin-top:3px;flex:none;accent-color:var(--accent);cursor:pointer}
@@ -877,7 +888,7 @@ function ferr(msg){
 }
 </script>
 <body>
-<div id="fixMask" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#0a0a0a;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:Consolas,monospace;text-align:center"><div style="font-size:min(9vw,110px);letter-spacing:.35em;color:#ff5c7a;text-shadow:0 0 34px rgba(255,92,122,.45);font-weight:bold">维修中</div><div style="width:56px;height:2px;background:#ff5c7a;opacity:.5"></div><div style="font-size:min(1.6vw,16px);color:#8a8a8a;letter-spacing:.22em">系统维护 · 请稍后刷新页面</div></div><script>(function(){var m=document.getElementById('fixMask');if(!m)return;fetch('https://wtz-YEE.github.io/cloud_fixing.txt?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){if(t&&t.trim().toLowerCase()==='t'){m.style.display='flex';document.documentElement.style.overflow='hidden'}}).catch(function(){});})();</script>
+<div id="fixMask" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#0a0a0a;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:Consolas,monospace;text-align:center"><div style="font-size:min(9vw,110px);letter-spacing:.35em;color:#ff5c7a;text-shadow:0 0 34px rgba(255,92,122,.45);font-weight:bold">维修中</div><div style="width:56px;height:2px;background:#ff5c7a;opacity:.5"></div><div id="fixReason" style="font-size:min(1.6vw,16px);color:#8a8a8a;letter-spacing:.22em">系统维护 · 请稍后刷新页面</div><div id="fixEta" style="font-size:min(1.3vw,13px);color:#5a5a5a;letter-spacing:.18em"></div></div><script>(function(){var m=document.getElementById('fixMask');if(!m)return;fetch('https://wtz-YEE.github.io/cloud_fixing.txt?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var ls=String(t||'').split(/\r?\n/);if((ls[0]||'').trim().toLowerCase()==='t'){var rr=document.getElementById('fixReason'),ee=document.getElementById('fixEta');var rs=(ls[1]||'').trim(),es=(ls[2]||'').trim();if(rr) rr.textContent=rs||'系统维护 · 请稍后刷新页面';if(ee) ee.textContent=es?('预计恢复：'+es):'';m.style.display='flex';document.documentElement.style.overflow='hidden';}}).catch(function(){});})();</script>
 
 <div id="updBar" class="hidden">
   <span class="u-ic">◈</span>
@@ -1346,13 +1357,14 @@ function ferr(msg){
   <div class="memo-box">
     <div class="memo-h">备忘录 <span class="memo-st" id="memoStat"></span>
       <span class="memo-act">
+        <button class="gb-btn ghost" id="memoMode" style="padding:3px 12px;font-size:11px;color:var(--ok);border-color:var(--ok)">代码</button>
         <button class="gb-btn ghost" id="memoClear" style="padding:3px 10px;font-size:11px">清空</button>
         <button class="gb-btn ghost" id="memoExport" style="padding:3px 10px;font-size:11px">导出 .md</button>
         <button class="gb-btn ghost" id="memoClose" style="padding:3px 10px;font-size:11px">×</button>
       </span>
     </div>
     <div class="memo-bd">
-      <textarea id="memoSrc" spellcheck="false" placeholder="用 Markdown 写备忘…&#10;任务打勾：- [ ] 待办  /  - [x] 已完成&#10;其他语法：**粗体** *斜体* ~~删除线~~ `代码` 代码块 表格 引用 标题 等"></textarea>
+      <textarea id="memoSrc" spellcheck="false" placeholder="用 Markdown 写备忘…&#10;任务打勾：- [ ] 待办  /  - [x] 已完成&#10;倒计时：[倒计时 10-05]&#10;次数进度：[进度 3/10]&#10;目标：[目标 10]，点 +/- 调整完成次数&#10;其他语法：**粗体** *斜体* ~~删除线~~ `代码` 代码块 表格 引用 标题 等"></textarea>
       <div class="memo-pv" id="memoPv"></div>
     </div>
   </div>
@@ -3316,12 +3328,48 @@ function md(s){
 }
 var K_MEMO='wMemo';
 function memoLoad(){ try{ return localStorage.getItem(K_MEMO)||''; }catch(e){ return ''; } }
+function memoTag(t,c){ return '<span class="memo-tag '+c+'">'+t+'</span>'; }
+function memoCd(m,d){
+  var p=d.split(/[-/.]/),y,mo,da;
+  if(p.length===3){ y=+p[0]; mo=+p[1]; da=+p[2]; } else { var n=new Date(); y=n.getFullYear(); mo=+p[0]; da=+p[1]; }
+  if(!mo||!da) return m;
+  var t=new Date(y,mo-1,da); t.setHours(23,59,59,999);
+  var diff=Math.ceil((t-Date.now())/86400000);
+  if(diff>0) return memoTag('剩 '+diff+' 天','cd-ok');
+  if(diff===0) return memoTag('今天到期','cd-today');
+  return memoTag('已过期 '+(-diff)+' 天','cd-over');
+}
+function memoMd(v){
+  var h=md(v);
+  var idx=0,map=[],sl=String(v).split('\n');
+  for(var i=0;i<sl.length;i++){ var n=(sl[i].match(/\[(?:进度|目标)\s*\d+/g)||[]).length; for(var k=0;k<n;k++) map.push(i); }
+  h=h.replace(/\[倒计时\s*([^\]]+)\]/g,memoCd);
+  h=h.replace(/\[进度\s*(\d+)\s*\/\s*(\d+)\]/g,function(m,a,b){
+    var li=map[idx++],A=+a,B=+b; if(!B) return m;
+    var pct=Math.min(100,Math.round(A/B*100));
+    return '<span class="memo-prog"><span class="memo-bar" style="width:'+pct+'%"></span><b>'+A+'/'+B+'</b></span>'
+      +'<span class="memo-step"><button type="button" data-mi="'+li+'" data-mk="p" data-cur="'+A+'" data-mb="'+B+'" data-s="+">+</button><button type="button" data-mi="'+li+'" data-mk="p" data-cur="'+A+'" data-mb="'+B+'" data-s="-">-</button></span>';
+  });
+  h=h.replace(/\[目标\s*(\d+)(?:\s*\/\s*(\d+))?\]/g,function(m,b,c){
+    var li=map[idx++],B=+b,cur=(c===undefined?0:+c);
+    return memoTag('目标 '+B+' 次','')
+      +'<span class="memo-step"><span class="cur">'+cur+'</span><button type="button" data-mi="'+li+'" data-mk="g" data-cur="'+cur+'" data-mb="'+B+'" data-s="+">+</button><button type="button" data-mi="'+li+'" data-mk="g" data-cur="'+cur+'" data-mb="'+B+'" data-s="-">-</button></span>';
+  });
+  return h;
+}
+var memoMode='view';
+function memoSetMode(m){
+  memoMode=m;
+  var ta=$('memoSrc'),pv=$('memoPv'),btn=$('memoMode');
+  if(m==='code'){ if(ta) ta.style.display=''; if(pv) pv.style.display='none'; if(btn) btn.textContent='查看'; }
+  else { if(ta) ta.style.display='none'; if(pv) pv.style.display=''; if(btn) btn.textContent='代码'; }
+}
 function memoRender(){
   var v=memoLoad();
   var ta=$('memoSrc');
-  if(ta) ta.value=v;
+  if(ta && document.activeElement!==ta) ta.value=v;
   var pv=$('memoPv');
-  if(pv) pv.innerHTML=md(v)||'<div class="memo-empty">空备忘录 · 在左侧写下内容</div>';
+  if(pv) pv.innerHTML=memoMd(v)||'<div class="memo-empty">空备忘录 · 点击右上「代码」开始书写</div>';
   var st=$('memoStat');
   if(st){ var n=(v.match(/\[ \]/g)||[]).length,d=(v.match(/\[x\]/g)||[]).length; st.textContent=n+' 待办 · '+d+' 完成'; }
 }
@@ -3330,6 +3378,9 @@ function memoClose(){ var m=$('memoMask'); if(m) m.classList.remove('on'); }
 (function(){
   var cs=document.querySelectorAll('.card[data-memo]');
   for(var i=0;i<cs.length;i++) cs[i].addEventListener('click',memoOpen);
+  var mmb=$('memoMode');
+  if(mmb) mmb.addEventListener('click',function(){ memoSetMode(memoMode==='code'?'view':'code'); });
+  memoSetMode('view');
   var mc=$('memoClose'); if(mc) mc.addEventListener('click',memoClose);
   var mm=$('memoMask');
   if(mm) mm.addEventListener('click',function(e){ if(e.target===mm) memoClose(); });
@@ -3352,6 +3403,16 @@ function memoClose(){ var m=$('memoMask'); if(m) m.classList.remove('on'); }
     timer=setTimeout(function(){ memoRender(); },400);
   });
   var pv=$('memoPv');
+  if(pv) pv.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-mi]'); if(!b) return;
+    var li=+b.getAttribute('data-mi'),mk=b.getAttribute('data-mk');
+    var cur=+b.getAttribute('data-cur'),mb=+b.getAttribute('data-mb');
+    cur=Math.max(0,cur+((b.getAttribute('data-s')==='+')?1:-1));
+    var src=memoLoad(),lines=src.split('\n'),line=lines[li]||'';
+    if(mk==='p'){ line=line.replace(/\[进度\s*\d+\s*\/\s*\d+\]/,'[进度 '+cur+'/'+mb+']'); }
+    else { line=line.replace(/\[目标\s*\d+(?:\s*\/\s*\d+)?\]/,'[目标 '+mb+'/'+cur+']'); }
+    lines[li]=line; localStorage.setItem(K_MEMO,lines.join('\n')); memoRender();
+  });
   if(pv) pv.addEventListener('change',function(e){
     var c=e.target.closest('input[data-ti]'); if(!c) return;
     var src=memoLoad();
