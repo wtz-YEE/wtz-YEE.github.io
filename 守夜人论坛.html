@@ -83,6 +83,33 @@ header h1 b{color:var(--acc);font-weight:700}
 .md-b{font-weight:800;font-size:1.07em;color:#fff}
 .mdcode{display:block;background:#0d0d0d;border:1px solid var(--line);padding:9px 12px;margin:6px 0;font-size:12px;line-height:1.5;white-space:pre;overflow-x:auto;color:#c8e6ff}
 .at{color:#8fd0ff;cursor:pointer}
+.md-i{font-style:italic;color:#ffd9a0}
+.md-d{text-decoration:line-through;color:var(--ink3)}
+.mdh1{font-size:22px;margin:10px 0 4px}
+.mdh2{font-size:19px;margin:8px 0 3px}
+.mdh3{font-size:16px;margin:7px 0 3px}
+.mdh4{font-size:14px;margin:6px 0 2px}
+.mdul{margin:6px 0;padding-left:22px}
+.mdul li{padding:2px 0;list-style:disc}
+.mdol{margin:6px 0;padding-left:22px}
+.mdol li{padding:2px 0;list-style:decimal}
+.mdt{border-collapse:collapse;margin:8px 0;width:100%;font-size:13px}
+.mdt th,.mdt td{border:1px solid var(--line);padding:5px 9px;text-align:left}
+.mdt th{background:rgba(255,255,255,.06);color:#fff}
+.mdt tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+.mdhr{border:none;border-top:1px dashed var(--line);margin:10px 0}
+.mdi{max-width:100%;border:1px solid var(--line);border-radius:4px;margin:6px 0}
+.mdg-mask{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:99}
+.mdg-mask.on{display:flex}
+.mdg-box{background:var(--bg,#0d0f12);border:1px solid var(--line,#333);max-width:760px;width:94%;max-height:86vh;display:flex;flex-direction:column;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.mdg-h{padding:12px 16px;border-bottom:1px solid var(--line,#333);font-size:14px;letter-spacing:.14em;display:flex;justify-content:space-between;align-items:center}
+.mdg-body{padding:14px 16px;overflow-y:auto;font-size:13px}
+.mdg-row{display:grid;grid-template-columns:84px 1fr 1.2fr;gap:8px;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.06);align-items:start}
+.mdg-name{color:var(--acc,#ff5c7a);font-size:11px;letter-spacing:.08em;padding-top:4px}
+.mdg-src{background:#0a0a0a;border:1px solid var(--line,#333);padding:5px 8px;font-size:12px;white-space:pre-wrap;word-break:break-all;color:#9ad;font-family:Consolas,monospace}
+.mdg-demo{min-height:20px;line-height:1.7;word-break:break-word}
+.mdg-demo .mdi{max-height:130px;object-fit:cover}
+.mdg-tip{padding:9px 0 3px;color:var(--ink3,#999);font-size:11.5px;letter-spacing:.05em;line-height:1.8}
 .at:hover{text-decoration:underline}
 #pv{display:none;padding:12px 14px;min-height:72px;font-size:14px;white-space:pre-wrap;word-break:break-word;border-top:1px dashed var(--line);background:rgba(255,255,255,.02)}
 #pv.on{display:block}
@@ -122,7 +149,7 @@ function ferr(msg){
   </div>
 
   <div class="poster">
-    <div class="ph">发帖</div>
+    <div class="ph">发帖 <button class="btn ghost" id="mdBtn" style="font-size:10px;float:right;padding:2px 8px">Markdown 指南</button></div>
     <textarea id="pt" placeholder="写下你的话题…（支持 Markdown：**粗体** `代码` ```代码块``` > 引用 @用户名）（可选图片）" maxlength="500"></textarea>
     <div id="pv"></div>
     <div class="tags" id="tags">
@@ -144,6 +171,12 @@ function ferr(msg){
   <div class="err" id="err" style="display:none"></div>
 </div>
 <div class="zoom" id="zoom"><img id="zoomImg"></div>
+<div class="mdg-mask" id="mdgMask">
+  <div class="mdg-box">
+    <div class="mdg-h">Markdown 使用指南 <button class="btn ghost" id="mdgClose" style="padding:2px 9px">×</button></div>
+    <div class="mdg-body" id="mdgBody"></div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -291,25 +324,69 @@ function upImg(){
 }
 /* ---------- v2.8 Markdown ---------- */
 function mdIn(s){
-  s=s.replace(/\*\*([^*]+)\*\*/g,'<b class="md-b">$1</b>');
   s=s.replace(/`([^`]+)`/g,'<code class="mdc">$1</code>');
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<b class="md-b">$1</b>');
+  s=s.replace(/(?<!\*)\*([^*\s][^*]*)\*(?!\*)/g,'<em class="md-i">$1</em>');
+  s=s.replace(/~~([^~]+)~~/g,'<del class="md-d">$1</del>');
+  s=s.replace(/!\[([^\]]*)\]\((https?:[^)]+)\)/g,'<img class="mdi" src="$2" alt="$1" loading="lazy">');
   s=s.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s=s.replace(/(?<!=")(https?:\/\/[^\s<&]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
   s=s.replace(/@([\w\u4e00-\u9fa5]{1,16})/g,'<span class="at" data-at="$1">@$1</span>');
   return s;
 }
 function md(s){
   s=String(s==null?'':s);
   s=esc(s);
-  var ls=s.split('\n'),inCode=false,out=[];
-  for(var i=0;i<ls.length;i++){
+  var ls=s.split('\n'),inCode=false,out=[],i,ul=0,ol=0,q=0;
+  function closeL(){ if(ul){out.push('</ul>');ul=0} if(ol){out.push('</ol>');ol=0} if(q){out.push('</blockquote>');q=0} }
+  for(i=0;i<ls.length;i++){
     var line=ls[i];
-    if(/^```/.test(line)){ inCode=!inCode; if(inCode) out.push('<pre class="mdcode">'); else out.push('</pre>'); continue; }
+    if(/^```/.test(line)){ closeL(); inCode=!inCode; if(inCode) out.push('<pre class="mdcode">'); else out.push('</pre>'); continue; }
     if(inCode){ out.push(line+'\n'); continue; }
-    if(/^&gt; /.test(line)){ out.push('<blockquote class="mdq">'+mdIn(line.replace(/^&gt; /,''))+'</blockquote>'); continue; }
-    if(/^#{1,4} /.test(line)){ out.push('<div class="mdh">'+mdIn(line.replace(/^#{1,4} /,''))+'</div>'); continue; }
-    if(/^[-*] /.test(line)){ out.push('<div class="mdli">'+mdIn(line.replace(/^[-*] /,''))+'</div>'); continue; }
-    out.push('<p>'+mdIn(line)+'</p>');
+    if(/^\|.*\|$/.test(line.trim())&&/^\|[\s:|-]+\|[\s:|-]+/.test((ls[i+1]||'').trim())){
+      closeL();
+      var rows=[];
+      while(i<ls.length&&/^\|.*\|$/.test(ls[i].trim())){ rows.push(ls[i].trim()); i++; }
+      i--;
+      var hh='<table class="mdt">',fi=0;
+      for(var ri=0;ri<rows.length;ri++){
+        var cells=rows[ri].replace(/^\||\|$/g,'').split('|').map(function(c){return c.trim()});
+        var isSep=cells.length>0&&cells.every(function(c){return /^:?-+:?$/.test(c)&&c.indexOf('-')>=0});
+        if(isSep) continue;
+        if(fi===0){ hh+='<tr>'+cells.map(function(c){return '<th>'+mdIn(c)+'</th>'}).join('')+'</tr>'; fi=1; }
+        else { hh+='<tr>'+cells.map(function(c){return '<td>'+mdIn(c)+'</td>'}).join('')+'</tr>'; }
+      }
+      out.push(hh+'</table>');
+      continue;
+    }
+    if(/^(-{3,}|\*{3,})$/.test(line.trim())){ closeL(); out.push('<hr class="mdhr">'); continue; }
+    if(/^#{1,4} /.test(line)){
+      closeL();
+      var lv=line.match(/^#{1,4}/)[0].length;
+      out.push('<div class="mdh mdh'+lv+'">'+mdIn(line.replace(/^#{1,4} /,''))+'</div>');
+      continue;
+    }
+    if(/^&gt; /.test(line)){
+      if(!q){ out.push('<blockquote class="mdq">'); q=1; }
+      out.push(mdIn(line.replace(/^&gt; /,''))+'<br>');
+      continue;
+    }
+    if(/^[-*] /.test(line)){
+      if(q){ out.push('</blockquote>'); q=0; }
+      if(!ul){ out.push('<ul class="mdul">'); ul=1; }
+      out.push('<li>'+mdIn(line.replace(/^[-*] /,''))+'</li>');
+      continue;
+    }
+    if(/^\d+\. /.test(line)){
+      if(q){ out.push('</blockquote>'); q=0; }
+      if(!ol){ out.push('<ol class="mdol">'); ol=1; }
+      out.push('<li>'+mdIn(line.replace(/^\d+\. /,''))+'</li>');
+      continue;
+    }
+    closeL();
+    if(!/^\s*$/.test(line)) out.push('<p>'+mdIn(line)+'</p>');
   }
+  closeL();
   var r=out.join('');
   if(inCode) r+='</pre>';
   return r;
@@ -468,7 +545,36 @@ $('pb').addEventListener('click',pickImg);
 })();
 $('pf').addEventListener('change',upImg);
 $('attRm').addEventListener('click',function(){S.img='';$('att').style.display='none';$('pf').value=''});
-$('send').addEventListener('click',send);
+  $('send').addEventListener('click',send);
+  /* Markdown 指南 */
+  var MDG=[
+    ['粗体','**粗体文字**'],
+    ['斜体','*斜体文字*'],
+    ['删除线','~~删除线~~'],
+    ['行内代码','`代码片段`'],
+    ['叠加','***`当然`*** ~~也可以叠加~~'],
+    ['代码块','```\n代码块\n可换行\n```'],
+    ['标题','# 一级标题\n## 二级标题\n### 三级标题\n#### 四级标题'],
+    ['引用','> 引用文本\n> 连续多行自动合并'],
+    ['无序列表','- 第一项\n- 第二项'],
+    ['有序列表','1. 第一项\n2. 第二项'],
+    ['链接','[点击访问](https://wtz-YEE.github.io)'],
+    ['图片','![示例图](https://ts3.tc.mm.bing.net/th/id/OIP-C.PRQmyJBkAMmB6HnWgZxtdAAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3)'],
+    ['表格','| 列一 | 列二 |\n| --- | --- |\n| 甲 | 乙 |'],
+    ['分割线','---'],
+    ['提醒','@用户名 提到某人'],
+  ];
+  $('mdBtn').addEventListener('click',function(){
+    var b=$('mdgBody');
+    if(!b.querySelector('.mdg-row')){
+      b.innerHTML=MDG.map(function(r){
+        return '<div class="mdg-row"><div class="mdg-name">'+esc(r[0])+'</div><div class="mdg-src">'+esc(r[1])+'</div><div class="mdg-demo">'+md(r[1])+'</div></div>';
+      }).join('')+'<div class="mdg-tip">注：`@用户名` 会触发提醒；图片支持外链或本地上传；以上语法在发帖与评论中通用。源码列可直接复制粘贴使用。</div>';
+    }
+    $('mdgMask').classList.add('on');
+  });
+  $('mdgClose').addEventListener('click',function(){ $('mdgMask').classList.remove('on'); });
+  $('mdgMask').addEventListener('click',function(e){ if(e.target===this) this.classList.remove('on'); });
 $('lg').addEventListener('click',doLogin);
 $('lr').addEventListener('click',doRecover);
 $('lo').addEventListener('click',doLogout);
