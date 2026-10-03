@@ -323,7 +323,16 @@ function upImg(){
   });
 }
 /* ---------- v2.8 Markdown ---------- */
+var _CS={红:'#e5484d',橙:'#d97b29',黄:'#d9a441',绿:'#46a758',青:'#12a594',蓝:'#3b82f6',紫:'#8e4ec6',粉:'#d6409f',灰:'#8b8b8b',白:'#ffffff',黑:'#111111',金:'#d4a017',银:'#c0c0c0'};
+function _cc(c){
+  c=String(c||'').trim().toLowerCase();
+  if(_CS[c]) return _CS[c];
+  if(/^#[0-9a-f]{3,8}$/.test(c)) return c;
+  return null;
+}
 function mdIn(s){
+  s=s.replace(/\[c=([#\w\u4e00-\u9fa5]+)\]((?:[^\[\]]|\[(?!\/c\]))*?)\[\/c\]/g,function(m,co,t){var cv=_cc(co);return cv?('<span style="color:'+cv+'">'+mdIn(t)+'</span>'):m;});
+  s=s.replace(/\[q=([#\w\u4e00-\u9fa5]+)\]((?:[^\[\]]|\[(?!\/q\]))*?)\[\/q\]/g,function(m,co,t){var cv=_cc(co);return cv?('<blockquote class="mdq" style="border-left-color:'+cv+'">'+mdIn(t)+'<br></blockquote>'):m;});
   s=s.replace(/`([^`]+)`/g,'<code class="mdc">$1</code>');
   s=s.replace(/\*\*([^*]+)\*\*/g,'<b class="md-b">$1</b>');
   s=s.replace(/(?<!\*)\*([^*\s][^*]*)\*(?!\*)/g,'<em class="md-i">$1</em>');
@@ -563,6 +572,8 @@ $('attRm').addEventListener('click',function(){S.img='';$('att').style.display='
     ['表格','| 列一 | 列二 |\n| --- | --- |\n| 甲 | 乙 |'],
     ['分割线','---'],
     ['提醒','@用户名 提到某人'],
+    ['文字颜色','[c=红]红色文字[/c]\n[c=#3b82f6]自定义蓝色[/c]'],
+    ['带色引用','[q=绿]带绿色左边线的引用[/q]'],
   ];
   $('mdBtn').addEventListener('click',function(){
     var b=$('mdgBody');
