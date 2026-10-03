@@ -1395,7 +1395,8 @@ document.addEventListener('click',function(e){
 });
 
 /* ---------- 常量 & 工具 ---------- */
-var K_API='gb_api_url', K_SESS='gb_session', K_DB='gb_db_v1', K_GB='gb_cache_v1';
+(function(){var o=['gb_cache_v1','gb_db_v1','gb_cache','gb_db'];for(var i=0;i<o.length;i++){try{localStorage.removeItem(o[i])}catch(e){}}})();
+var K_API='gb_api_url', K_SESS='gb_session', K_DB='gb_db_v2', K_GB='gb_cache_v2';
 var AUTH_ERR={ok:false,msg:'登录已失效，请重新登录'};
 function $(id){return document.getElementById(id)}
 function esc(s){
@@ -2381,6 +2382,12 @@ window.cleanLegacy=function(){
       if(old&&old!==sha){
         try{window.cleanLegacy&&window.cleanLegacy()}catch(e){}
         bar.classList.remove('hidden');
+        try{
+          var v=String(sha).slice(0,7);
+          setTimeout(function(){
+            location.href=location.href.split('#')[0]+(location.href.indexOf('?')<0?'?':'&')+'v='+v;
+          },3000);
+        }catch(e){}
       }
       try{localStorage.setItem(VK,sha)}catch(e){}
     }).catch(function(){});
