@@ -411,7 +411,23 @@ AUDIT_FILE = os.path.join(_BASE, "audit_log.json")
 def _audit(who, act, target, detail=""):
     try:
         al = _load(AUDIT_FILE, [])
-        al.append({"t": _now(), "who": who, "act": act, "target": str(target or "")[:40], "detail": str(detail or "")[:80]})
+        today = _now()[:10]
+        hist = {}
+        keep = []
+        for r in al:
+            d = str(r.get("t") or "")[:10]
+            if d and d != today:
+                hist.setdefault(d, []).append(r)
+            else:
+                keep.append(r)
+        for d, rs in hist.items():
+            fp = os.path.join(_BASE, "audit_" + d + ".json")
+            try:
+                _save(fp, _load(fp, []) + rs)
+            except Exception:
+                pass
+        al = keep
+        al.append({"t": _now(), "who": who, "act": act, "target": str(target or "")[:80], "detail": str(detail or "")[:200]})
         if len(al) > 500:
             al = al[-500:]
         _save(AUDIT_FILE, al)
@@ -857,6 +873,7 @@ def api_admin_users():
         ses = us.get("__sessions", {})
         now = _time.time()
         lst = [{"name": k, "pwd": v.get("pwd", ""), "is_admin": bool(v.get("is_admin")),
+                "is_root": bool(v.get("is_root")) or k == ROOT,
                 "banned": bool(v.get("banned")),
                 "online": any(isinstance(s, list) and s[0] == k and s[1] > now - 300 for s in ses.values())}
                for k, v in us.items() if k != "__sessions"]
@@ -1105,7 +1122,7 @@ def api_admin_scan():
     _save(GUESTBOOK_FILE, g)
     _save(POST_FILE, ps)
     _save(PM_FILE, pm)
-    _audit(cu, "risk_scan", "关键词: " + ",".join(words), "风控删除 " + str(len(hit)) + " 人: " + ",".join(hit))
+    _audit(cu, "risk_scan", "关键词: " + ",".join(words), "管理员手动扫描触发，风控删除 " + str(len(hit)) + " 人: " + ",".join(hit))
     return jsonify({"ok": True, "hits": hit, "words": words, "msg": "已风控删除 " + str(len(hit)) + " 个用户"})
 
 
@@ -1428,9 +1445,23 @@ def api_audit_get():
     us = _load(USER_FILE, {})
     if not us.get(cu, {}).get("is_admin"):
         return jsonify({"ok": False, "msg": "无管理员权限"})
-    al = sorted(_load(AUDIT_FILE, []), key=lambda a: str(a.get("t") or ""), reverse=True)
+    date = str(p.get("date") or "").strip()
+    if date:
+        al = _load(os.path.join(_BASE, "audit_" + date + ".json"), [])
+    else:
+        al = _load(AUDIT_FILE, [])
+    al = sorted(al, key=lambda a: str(a.get("t") or ""), reverse=True)
     off = int(p.get("off") or 0)
-    return jsonify({"ok": True, "list": al[off:off + 50], "total": len(al)})
+    arch = []
+    try:
+        for fn in os.listdir(_BASE):
+            if fn.startswith("audit_") and fn.endswith(".json"):
+                d = fn[6:-5]
+                if len(d) == 10 and d[4] == "-":
+                    arch.append(d)
+    except Exception:
+        pass
+    return jsonify({"ok": True, "list": al[off:off + 50], "total": len(al), "archives": sorted(set(arch), reverse=True)})
 
 
 @app.route("/audit_export", methods=["GET", "POST"])
@@ -1442,7 +1473,12 @@ def api_audit_export():
     us = _load(USER_FILE, {})
     if not us.get(cu, {}).get("is_admin"):
         return jsonify({"ok": False, "msg": "无管理员权限"})
-    al = sorted(_load(AUDIT_FILE, []), key=lambda a: str(a.get("t") or ""))
+    date = str(p.get("date") or "").strip()
+    if date:
+        al = _load(os.path.join(_BASE, "audit_" + date + ".json"), [])
+    else:
+        al = _load(AUDIT_FILE, [])
+    al = sorted(al, key=lambda a: str(a.get("t") or ""))
     if str(p.get("fmt") or "json") == "csv":
         import io as _io
         sio = _io.StringIO()
@@ -1619,32 +1655,43 @@ def _auto_risk_scan():
         g = _load(GUESTBOOK_FILE, [])
         ps = _load(POST_FILE, [])
         pm = _load(PM_FILE, {})
-        hit = []
+        hit = {}
+        def kw(txt):
+            t = str(txt or "").lower()
+            return [w for w in words if w in t]
         for u in us:
             if u == "__sessions" or _is_root(u, us):
                 continue
             if us[u].get("is_admin"):
                 continue
-            m = any(w in u.lower() for w in words)
-            if not m:
+            why = []
+            m = kw(u)
+            if m:
+                why.append("用户名含【" + m[0] + "】")
+            if not why:
                 for x in g:
-                    if (x.get("name") or "") == u and any(w in str(x.get("text") or "").lower() for w in words):
-                        m = True
+                    if (x.get("name") or "") == u:
+                        m = kw(x.get("text"))
+                        if m:
+                            why.append("留言含【" + m[0] + "】")
                         break
-            if not m:
+            if not why:
                 for x in ps:
                     if (x.get("user") or "") != u:
                         continue
-                    if any(w in str(x.get("title") or "").lower() for w in words) or any(w in str(x.get("text") or "").lower() for w in words):
-                        m = True
+                    m = kw(x.get("title")) or kw(x.get("text"))
+                    if m:
+                        why.append("帖子含【" + m[0] + "】")
                         break
                     for c in x.get("comments") or []:
-                        if (c.get("user") or "") == u and any(w in str(c.get("text") or "").lower() for w in words):
-                            m = True
-                            break
-                    if m:
+                        if (c.get("user") or "") == u:
+                            m = kw(c.get("text"))
+                            if m:
+                                why.append("评论含【" + m[0] + "】")
+                                break
+                    if why:
                         break
-            if not m:
+            if not why:
                 pmc = pm.values() if isinstance(pm, dict) else pm
                 for cc in pmc:
                     msgs = cc if isinstance(cc, list) else ([cc] if isinstance(cc, dict) else [])
@@ -1653,13 +1700,15 @@ def _auto_risk_scan():
                             continue
                         f = m2.get("from") or ""
                         t = m2.get("to") or ""
-                        if (f == u or t == u) and any(w in str(m2.get("msg") or "").lower() for w in words):
-                            m = True
-                            break
-                    if m:
+                        if (f == u or t == u):
+                            m = kw(m2.get("msg"))
+                            if m:
+                                why.append("私聊发送【" + m[0] + "】被风控删除")
+                                break
+                    if why:
                         break
-            if m:
-                hit.append(u)
+            if why:
+                hit[u] = why
         if not hit:
             return
         for u in hit:
@@ -1683,7 +1732,8 @@ def _auto_risk_scan():
         _save(POST_FILE, ps)
         _save(PM_FILE, pm)
         try:
-            _audit(ROOT, "auto_risk", "关键词: " + ",".join(words), "自动风控删除 " + str(len(hit)) + " 人: " + ",".join(hit))
+            for u, why in hit.items():
+                _audit(ROOT, "auto_risk", u, "风控删除：" + "、".join(why))
         except Exception:
             pass
 
@@ -1731,19 +1781,35 @@ def _sync_export():
 
 def _merge_list(a, b):
     try:
-        have = set()
+        have_ids = set()
+        have_sig = set()
         for x in a:
-            if isinstance(x, dict) and "id" in x:
-                have.add(x["id"])
+            if isinstance(x, dict):
+                if "id" in x:
+                    have_ids.add(x["id"])
+                else:
+                    try:
+                        have_sig.add(json.dumps(x, ensure_ascii=False, sort_keys=True))
+                    except Exception:
+                        pass
         for x in b or []:
             if not isinstance(x, dict):
                 continue
             i = x.get("id")
             if i is not None:
-                if i in have:
+                if i in have_ids:
                     continue
-                have.add(i)
-            a.append(x)
+                have_ids.add(i)
+                a.append(x)
+            else:
+                try:
+                    s = json.dumps(x, ensure_ascii=False, sort_keys=True)
+                    if s in have_sig:
+                        continue
+                    have_sig.add(s)
+                    a.append(x)
+                except Exception:
+                    a.append(x)
         try:
             a.sort(key=lambda x: (x.get("id") if isinstance(x, dict) else 0) or 0)
         except Exception:
