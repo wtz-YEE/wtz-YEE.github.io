@@ -2446,10 +2446,29 @@ function bind(){
     if(pu){ openProfile(pu.getAttribute('data-u')); return; }
     var b=e.target.closest('.gb-like'); if(!b) return;
     if(!S.user) return say('请先登录后再点赞',false);
-    call('/guest_like',{id:b.getAttribute('data-like')}).then(function(j){
+    var likeId=b.getAttribute('data-like');
+    call('/guest_like',{id:likeId}).then(function(j){
       if(!j.ok) return say(j.msg||'点赞失败',false);
-      loadGuestBook();
-    }).catch(function(e){ say('点赞失败：'+e.message,false); });
+      try{
+        var cache=null;try{cache=JSON.parse(localStorage.getItem(K_GB)||'null')}catch(e){}
+        if(cache&&cache.list){
+          var un=S.user.username;
+          for(var k=0;k<cache.list.length;k++){
+            var g0=cache.list[k];
+            if(g0&&String(g0.id)===String(likeId)){
+              var ls=g0.likes||[];
+              var ix=ls.indexOf(un);
+              if(ix>=0) ls.splice(ix,1); else ls.push(un);
+              g0.likes=ls;
+              break;
+            }
+          }
+          try{localStorage.setItem(K_GB,JSON.stringify(cache))}catch(e){}
+          renderGuests(cache.list);
+        }
+      }catch(e){}
+      setTimeout(loadGuestBook,2600);
+    }).catch(function(e){ say('点赞失败：'+e.message+ (e.message.indexOf('429')>=0?' · 操作过快请稍候':''),false); });
   });
   $('gb_ulist').addEventListener('click',function(e){
     var b=e.target.closest('[data-ua]');
