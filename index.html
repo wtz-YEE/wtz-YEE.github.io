@@ -1903,10 +1903,25 @@ function submitGuestBook(){
   if(S.replyTo) body.reply_to=S.replyTo;
   return call('/guest_add',body).then(function(j){
     if(!j.ok) return say(j.msg||'提交失败',false);
+    var oldImg=S.img,oldReply=S.replyTo;
     $('gb_text').value='';$('gb_file').value='';
     S.img='';S.replyTo='';$('gb_att').style.display='none';
+    if(j.id){
+      try{
+        var cache=null;try{cache=JSON.parse(localStorage.getItem(K_GB)||'null')}catch(e){}
+        if(!cache||!cache.list) cache={list:[],maxId:0};
+        var now=new Date(),pad=function(x){return x<10?'0'+x:''+x};
+        var tstr=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+        var it={id:j.id,user:S.user?S.user.username:'',name:name,text:text,time:tstr,avatar:S.avatar,image:oldImg,reply_to:oldReply,likes:[]};
+        var dup=false;
+        for(var k=0;k<cache.list.length;k++) if(cache.list[k]&&cache.list[k].id===j.id){dup=true;break}
+        if(!dup){cache.list.push(it);cache.list.sort(function(a,b){return (b.id||0)-(a.id||0)});cache.maxId=Math.max(cache.maxId||0,j.id)}
+        try{localStorage.setItem(K_GB,JSON.stringify(cache))}catch(e){}
+        renderGuests(cache.list,[it]);
+      }catch(e){}
+    }
     say('留言已提交',true);
-    loadGuestBook();
+    setTimeout(loadGuestBook,2600);
   }).catch(function(e){ say('提交失败：'+e.message,false); });
 }
 

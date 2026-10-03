@@ -464,7 +464,7 @@ def api_guest_add():
     g.append({"id": nid, "user": cu, "name": nm, "text": txt, "time": _now(), "avatar": av, "image": im, "reply_to": rt})
     _save(GUESTBOOK_FILE, g)
     _add_exp(_load(USER_FILE, {}), cu, 5)
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "id": nid})
 
 @app.route("/post_get", methods=["GET", "POST"])
 def api_post_get():
