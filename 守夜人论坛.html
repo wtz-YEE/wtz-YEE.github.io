@@ -70,6 +70,7 @@ header h1 b{color:var(--acc);font-weight:700}
 .mdli::before{content:'·';position:absolute;left:4px;color:var(--acc)}
 .mdq{border-left:3px solid var(--acc);background:rgba(255,92,122,.05);padding:6px 10px;margin:6px 0;color:var(--ink3);font-style:italic}
 .mdc{background:rgba(255,255,255,.08);border:1px solid var(--line);padding:1px 5px;font-size:12px;color:#8fd0ff}
+.md-b{font-weight:800;font-size:1.07em;color:#fff}
 .mdcode{display:block;background:#0d0d0d;border:1px solid var(--line);padding:9px 12px;margin:6px 0;font-size:12px;line-height:1.5;white-space:pre;overflow-x:auto;color:#c8e6ff}
 .at{color:#8fd0ff;cursor:pointer}
 .at:hover{text-decoration:underline}
@@ -265,7 +266,7 @@ function upImg(){
 }
 /* ---------- v2.8 Markdown ---------- */
 function mdIn(s){
-  s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<b class="md-b">$1</b>');
   s=s.replace(/`([^`]+)`/g,'<code class="mdc">$1</code>');
   s=s.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
   s=s.replace(/@([\w\u4e00-\u9fa5]{1,16})/g,'<span class="at" data-at="$1">@$1</span>');
@@ -278,7 +279,7 @@ function md(s){
   for(var i=0;i<ls.length;i++){
     var line=ls[i];
     if(/^```/.test(line)){ inCode=!inCode; if(inCode) out.push('<pre class="mdcode">'); else out.push('</pre>'); continue; }
-    if(inCode){ out.push(line); continue; }
+    if(inCode){ out.push(line+'\n'); continue; }
     if(/^&gt; /.test(line)){ out.push('<blockquote class="mdq">'+mdIn(line.replace(/^&gt; /,''))+'</blockquote>'); continue; }
     if(/^#{1,4} /.test(line)){ out.push('<div class="mdh">'+mdIn(line.replace(/^#{1,4} /,''))+'</div>'); continue; }
     if(/^[-*] /.test(line)){ out.push('<div class="mdli">'+mdIn(line.replace(/^[-*] /,''))+'</div>'); continue; }

@@ -14,6 +14,8 @@ PM_FILE = os.path.join(_BASE, "pm.json")
 CHANGELOG_FILE = os.path.join(_BASE, "changelog.json")
 SCORE_FILE = os.path.join(_BASE, "scores.json")
 RISK_FILE = os.path.join(_BASE, "risk_words.json")
+BANNED_FILE = os.path.join(_BASE, "banned_names.json")
+
 import time as _t
 DEL_LOG = []
 
@@ -87,6 +89,11 @@ def register():
 
     if uname in users:
         return jsonify({"ok": False, "msg": "账号已存在"})
+    bn = _load(BANNED_FILE, {})
+    b = bn.get(uname)
+    if b and _time.time() - float(b.get("t") or 0) < 86400:
+        rem = int(86400 - (_time.time() - float(b.get("t") or 0)))
+        return jsonify({"ok": False, "msg": "该账号为危险账号，禁止注册 · " + str(max(1, rem // 3600)) + " 小时后解除"})
 
     q = (data.get("q") or "").strip()[:60]
     a = (data.get("a") or "").strip()[:60]
@@ -800,10 +807,69 @@ def api_admin_del_user():
     for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) == tgt]:
         del ses[k]
     _save(USER_FILE, us)
-    _audit(cu, "del_user", tgt, "删除账号")
+    bn = _load(BANNED_FILE, {})
+    bn[tgt] = {"t": _time.time(), "by": cu}
+    _save(BANNED_FILE, bn)
+    _audit(cu, "del_user", tgt, "删除账号并标记危险账号(24h禁注册)")
     return jsonify({"ok": True, "msg": "已删除用户：" + tgt})
 
 
+
+@app.route("/admin_banned_get", methods=["GET", "POST"])
+def api_admin_banned_get():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    bn = _load(BANNED_FILE, {})
+    now = _time.time()
+    out = []
+    for name, b in bn.items():
+        t = float(b.get("t") or 0)
+        if now - t >= 86400:
+            continue
+        out.append({"name": name, "time": _time.strftime("%Y-%m-%d %H:%M:%S", _time.localtime(t)),
+                    "by": b.get("by") or "", "remain": int(86400 - (now - t))})
+    return jsonify({"ok": True, "list": sorted(out, key=lambda x: x["remain"])})
+
+
+@app.route("/admin_banned_clear", methods=["POST"])
+def api_admin_banned_clear():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    name = str(p.get("name") or "").strip()
+    bn = _load(BANNED_FILE, {})
+    if name in bn:
+        del bn[name]
+        _save(BANNED_FILE, bn)
+        _audit(cu, "banned_clear", name, "解除危险账号禁注册")
+        return jsonify({"ok": True, "msg": "已解除 " + name + " 的禁注册限制"})
+    return jsonify({"ok": False, "msg": "该账号不在禁注册名单"})
+
+
+@app.route("/token_state", methods=["GET", "POST"])
+def api_token_state():
+    p = request.get_json() or {}
+    tok = str(p.get("token") or "").strip()
+    if not tok:
+        return jsonify({"ok": True, "state": "none"})
+    us = _load(USER_FILE, {})
+    ses = us.get("__sessions", {})
+    v = ses.get(tok)
+    if not v:
+        return jsonify({"ok": True, "state": "kicked"})
+    name = v[0] if isinstance(v, list) else v
+    if name not in us:
+        return jsonify({"ok": True, "state": "deleted", "name": name})
+    return jsonify({"ok": True, "state": "valid", "name": name})
 @app.route("/risk_words_get", methods=["GET", "POST"])
 def api_risk_words_get():
     return jsonify({"ok": True, "words": _load(RISK_FILE, [])})
@@ -1353,7 +1419,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/sec_set", "/recover_q", "/recover")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/sec_set", "/recover_q", "/recover")
 
 @app.before_request
 def _rate():
