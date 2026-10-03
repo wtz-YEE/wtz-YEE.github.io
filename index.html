@@ -662,6 +662,15 @@ body.view-mobile .c-go{padding-top:12px;font-size:12px}
 .gb-att button:hover{border-color:#FF5C7A;color:#FF5C7A}
 .gb-ava-img{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
 .gb-like{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-family:var(--mono);color:var(--ink3);cursor:pointer;user-select:none}
+.gb-emoji-w{position:relative;display:inline-block}
+.gb-emoji-btn{border:1px solid var(--line2);color:var(--ink2);font-family:var(--mono);font-size:12px;padding:2px 10px;cursor:pointer;background:none;line-height:1.4}
+.gb-emoji-panel{position:absolute;bottom:30px;left:0;z-index:60;display:none;width:232px;flex-wrap:wrap;gap:2px;padding:8px;background:var(--panel);border:1px solid var(--line2);box-shadow:0 8px 26px rgba(0,0,0,.5)}
+.gb-emoji-panel.on{display:flex}
+.gb-emoji-panel span{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:19px;cursor:pointer;border-radius:4px}
+.gb-emoji-panel span:hover{background:rgba(255,255,255,.07)}
+.gb-reply-ref{margin-top:6px;padding:5px 9px;border-left:2px solid var(--accent);background:rgba(255,255,255,.03);color:var(--ink3);font-family:var(--mono);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gb-reply-btn{border:1px solid var(--line2);color:var(--ink3);font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 8px;cursor:pointer;transition:.2s;margin-left:6px}
+.gb-reply-btn:hover{border-color:var(--accent);color:var(--accent)}
 .gb-like.on{color:#FF5C7A}
 .gb-like:hover{color:var(--accent2)}
 .gb-pick .gpick.up{border-style:dashed;border-color:rgba(255,255,255,.4);background:none;font-size:11px;line-height:1;letter-spacing:.04em}
@@ -1083,6 +1092,7 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
     </div>
     <textarea id="gb_text" placeholder="写下留言…" maxlength="500"></textarea>
     <div class="gb-row" style="margin-top:10px">
+      <span class="gb-emoji-w"><button class="gb-emoji-btn" id="gb_emoji_btn" type="button" aria-label="表情">☺ 表情</button><div class="gb-emoji-panel" id="gb_emoji_panel"></div></span>
       <button class="gb-btn" id="gb_img_btn">发图</button>
       <button class="gb-btn" id="gb_submit">提交留言</button>
       <span class="gb-say" id="gb_say2" style="margin:0"></span>
@@ -1739,6 +1749,8 @@ function renderGuests(list, fresh){
     if(typeof av==='string'&&av.indexOf('/uploads/')===0) avH='<img class="gb-ava-img" src="'+esc(S.api+av)+'">';
     else{var av0=AVATARS[(+g.avatar||0)%AVATARS.length];avH='<span class="gb-ava" style="background:'+av0.c+'">'+av0.s+'</span>'}
     var isNew=fresh===true||freshIds[g.id];
+    var rref='';
+    if(g.reply_to) rref='<div class="gb-reply-ref">↳ 引用 #'+esc(g.reply_to)+'</div>';
     var txtBody=isNew?'<div class="gb-text gb-ty" data-t="'+esc(g.text)+'"></div>':'<div class="gb-text">'+esc(g.text)+'</div>';
     return '<div class="gb-item'+(isNew?' gb-item-new':'')+'">'+
       '<div class="gb-item-h">'+
@@ -1747,7 +1759,9 @@ function renderGuests(list, fresh){
         (g.user?'<span class="gb-tag" style="font-size:9px;padding:1px 6px">已认证</span>':'')+
         '<span class="gb-time">'+esc(g.time)+'</span>'+
         (canDel?'<button class="gb-del" data-del="'+esc(g.id)+'">删除</button>':'')+
+        (S.user?'<button class="gb-reply-btn" data-reply="'+esc(g.id)+'">回复</button>':'')+
       '</div>'+
+      rref+
       txtBody+
       (g.image&&S.api?'<img class="gb-img" src="'+esc(S.api+g.image)+'" onclick="window.open(this.src)">':'')+
       likeBtn(g)+
@@ -1820,9 +1834,8 @@ function compressImg(file,cb){
     };im.onerror=function(){cb('')};im.src=r.result;
   };r.onerror=function(){cb('')};r.readAsDataURL(file);
 }
-function uploadImg(){
+function uploadFile(f){
   if(!S.user) return say('请先登录后再留言',false);
-  var f=$('gb_file').files[0];
   if(!f) return;
   if(f.size>8*1024*1024) return say('图片超过 8MB',false);
   say('正在压缩上传…',false);
@@ -1837,6 +1850,10 @@ function uploadImg(){
       say('图片已就绪',true);
     }).catch(function(e){ say('上传失败：'+e.message,false); });
   });
+}
+function uploadImg(){
+  if(!S.api) return say('需云端模式才能发图',false);
+  uploadFile($('gb_file').files[0]);
 }
 function initAvatarPick(){
   var box=$('gb_pick');if(!box)return;
@@ -1883,10 +1900,11 @@ function submitGuestBook(){
   if(!text) return say('请先写点内容',false);
   var body={name:name,text:text,avatar:S.avatar};
   if(S.img) body.image=S.img;
+  if(S.replyTo) body.reply_to=S.replyTo;
   return call('/guest_add',body).then(function(j){
     if(!j.ok) return say(j.msg||'提交失败',false);
     $('gb_text').value='';$('gb_file').value='';
-    S.img='';$('gb_att').style.display='none';
+    S.img='';S.replyTo='';$('gb_att').style.display='none';
     say('留言已提交',true);
     loadGuestBook();
   }).catch(function(e){ say('提交失败：'+e.message,false); });
@@ -2400,6 +2418,15 @@ function bind(){
     }).catch(function(e){ say('请求失败：'+e.message,false); });
   });
   $('guestbookList').addEventListener('click',function(e){
+    var rb=e.target.closest('[data-reply]');
+    if(rb){
+      var rid=rb.getAttribute('data-reply');
+      S.replyTo=rid;
+      var ta=$('gb_text');
+      ta.value='回复 #'+rid+'：';ta.focus();
+      say('正在回复 #'+rid+' · 填写内容后提交',false);
+      return;
+    }
     var pu=e.target.closest('[data-u]');
     if(pu){ openProfile(pu.getAttribute('data-u')); return; }
     var b=e.target.closest('.gb-like'); if(!b) return;
@@ -2453,6 +2480,33 @@ function bind(){
     if(!S.api) return say('需云端模式才能发图',false);
     $('gb_file').click();
   });
+  var EMJ=['😀','😂','🤣','😊','😍','😘','😎','🤔','😭','😅','😡','👍','👎','🙏','💪','🔥','✨','🎉','❤️','💀','👻','🤖','🌈','🍀'];
+  var ep=$('gb_emoji_panel');
+  if(ep){
+    ep.innerHTML=EMJ.map(function(x){return '<span data-e="'+x+'">'+x+'</span>'}).join('');
+    $('gb_emoji_btn').addEventListener('click',function(ev){ev.stopPropagation();ep.classList.toggle('on')});
+    ep.addEventListener('click',function(ev){
+      var t=ev.target.closest('[data-e]');if(!t)return;
+      var ta=$('gb_text');
+      if(document.activeElement!==ta) ta.focus();
+      var v=ta.value,pos=ta.selectionStart==null?v.length:ta.selectionStart;
+      ta.value=v.slice(0,pos)+t.getAttribute('data-e')+v.slice(ta.selectionEnd==null?pos:ta.selectionEnd);
+      ta.focus();ta.selectionStart=ta.selectionEnd=pos+t.getAttribute('data-e').length;
+      ep.classList.remove('on');
+    });
+    document.addEventListener('click',function(ev){ if(ep.classList.contains('on')&&!ev.target.closest('.gb-emoji-w')) ep.classList.remove('on'); });
+  }
+  var gform=document.querySelector('.gb-form');
+  if(gform){
+    gform.addEventListener('dragover',function(ev){ev.preventDefault()});
+    gform.addEventListener('drop',function(ev){
+      ev.preventDefault();
+      var f=(ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0])||null;
+      if(!f)return;
+      if(f.type.indexOf('image/')!==0) return say('仅支持图片拖拽',false);
+      uploadFile(f);
+    });
+  }
   $('gb_file').addEventListener('change',uploadImg);
   $('gb_av_file').addEventListener('change',uploadAvatar);
   initAvatarPick();
@@ -3148,5 +3202,29 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
 })();
 </script>
 
+
+<div id="wNav" class="w-nav"><a href="index.html" data-w="index">◈ 指挥中心</a><a href="守夜人论坛.html" data-w="forum">守夜人论坛</a><a href="卡塞尔学院官网.html" data-w="cassel">卡塞尔学院</a><a href="changelog.html" data-w="chg">更新日志</a><span id="wNavDot" class="w-dot off" title="云端状态未检测">●</span></div>
+<style>
+.w-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:2147483000;display:flex;align-items:center;gap:2px;padding:4px 8px;background:rgba(10,12,14,.86);border:1px solid rgba(255,255,255,.16);border-radius:20px;font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:11px;letter-spacing:.05em;backdrop-filter:blur(4px);box-shadow:0 6px 22px rgba(0,0,0,.45)}
+.w-nav a{color:#C9D2D6;text-decoration:none;padding:3px 9px;border-radius:14px;transition:background .18s,color .18s;white-space:nowrap}
+.w-nav a:hover{background:rgba(255,255,255,.08);color:#FFF}
+.w-nav a.cur{background:rgba(255,255,255,.1);color:#FFC24B}
+.w-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:8px;margin-right:6px;cursor:pointer;flex:none}
+.w-dot.on{background:#2EE6A8;box-shadow:0 0 8px #2EE6A8}
+.w-dot.bad{background:#FF5C7A;box-shadow:0 0 8px #FF5C7A}
+.w-dot.off{background:#6E7681;box-shadow:0 0 6px #6E7681}
+@media(max-width:640px){.w-nav{font-size:10px;bottom:8px}.w-nav a{padding:3px 6px}}
+</style>
+<script>
+(function(){
+function ga(){try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return a[0]||''}catch(e){return''}}
+function norm(s){try{var m=location.pathname.split('/').pop().split('?')[0];return m}catch(e){return''}}
+(function(){var m=norm(),a=document.querySelectorAll('#wNav a[data-w]');for(var i=0;i<a.length;i++){var t=a[i].getAttribute('data-w'),hit=false;if(t==='index'&&(m==='index.html'||m===''||m==='wtz-YEE.github.io'))hit=true;else if(t==='forum'&&m.indexOf('守夜人论坛')===0)hit=true;else if(t==='cassel'&&m.indexOf('卡塞尔学院')===0)hit=true;else if(t==='chg'&&m.indexOf('changelog')===0)hit=true;if(hit)a[i].classList.add('cur')}})();
+var dot=document.getElementById('wNavDot');if(!dot)return;
+function chk(){var a=ga();if(!a){dot.className='w-dot off';dot.title='未配置云端 · 点击检测';return}
+fetch(a+'/health',{mode:'cors',cache:'no-store'}).then(function(r){dot.className=r.ok?'w-dot on':'w-dot bad';dot.title='云端在线 · '+a}).catch(function(){dot.className='w-dot bad';dot.title='云端离线 · '+a})}
+dot.addEventListener('click',chk);chk();setInterval(chk,30000);
+})();
+</script>
 </body>
 </html>
