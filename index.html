@@ -1867,6 +1867,17 @@ function loadGuestBook(){
   });
 }
 
+function autoRefreshGb(){
+  if(document.hidden) return;
+  var cache=null;
+  try{ cache=JSON.parse(localStorage.getItem(K_GB)||'null'); }catch(e){}
+  call('/guests_new',{since:cache?Math.max(0,cache.maxId||0):0},'GET').then(function(j){
+    var nl=(j&&j.list)||[];
+    if(nl.length) loadGuestBook();
+  }).catch(function(){});
+}
+setInterval(autoRefreshGb,10000);
+
 function compressImg(file,cb){
   var r=new FileReader();r.onload=function(){
     var im=new Image();im.onload=function(){
@@ -2347,7 +2358,7 @@ function autoCloud(){
   }).catch(function(){});
 }
 
-/* 主机版本检测（加载时一次 · 手动刷新，不轮询不自动刷新） */
+/* 主机版本检测（60s 自动轮询 · 检测到新版本提示刷新） */
 (function(){
   var VK='wz_ver';
   var bar=document.getElementById('updBar');
@@ -2367,6 +2378,7 @@ function autoCloud(){
     }).catch(function(){});
   }
   setTimeout(chk,1200);
+  setInterval(chk,60000);
 })();
 
 /* ---------- 顶栏动态 ---------- */

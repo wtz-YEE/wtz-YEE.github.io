@@ -369,6 +369,18 @@ function loadPosts(){
     var er=$('err');er.style.display='block';er.textContent='加载失败 · '+ferr(e.message);
   });
 }
+/* 自动更新：帖数变化才重渲染（避免打断阅读） */
+var _postN=-1;
+setInterval(function(){
+  if(document.hidden) return;
+  var ae=document.activeElement;
+  if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')) return;
+  call('/post_get',{}).then(function(j){
+    if(!j.ok||!j.list) return;
+    if(_postN>=0&&j.list.length!==_postN) loadPosts();
+    _postN=j.list.length;
+  }).catch(function(){});
+},15000);
 /* 列表事件 */
 function bindList(){
   $('list').addEventListener('click',function(e){
