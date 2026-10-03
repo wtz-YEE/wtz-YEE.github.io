@@ -2358,6 +2358,11 @@ function autoCloud(){
   }).catch(function(){});
 }
 
+/* 全局：新版本清理旧版本残留（仅清纯缓存，保留全部用户数据/偏好/会话） */
+window.cleanLegacy=function(){
+  var ks=['gb_cache_v1','gb_db_v1'];
+  for(var i=0;i<ks.length;i++){ try{localStorage.removeItem(ks[i]);}catch(e){} }
+};
 /* 主机版本检测（60s 自动轮询 · 检测到新版本提示刷新） */
 (function(){
   var VK='wz_ver';
@@ -2373,7 +2378,10 @@ function autoCloud(){
       if(!sha)return;
       var old='';
       try{old=localStorage.getItem(VK)||''}catch(e){}
-      if(old&&old!==sha)bar.classList.remove('hidden');
+      if(old&&old!==sha){
+        try{window.cleanLegacy&&window.cleanLegacy()}catch(e){}
+        bar.classList.remove('hidden');
+      }
       try{localStorage.setItem(VK,sha)}catch(e){}
     }).catch(function(){});
   }
@@ -3392,7 +3400,7 @@ if(upd)upd.addEventListener('click',function(){
     var sha=String(j.sha||'').slice(0,7);var cur=localStorage.getItem('wtz_site_sha')||'';var msg;
     if(!cur){localStorage.setItem('wtz_site_sha',sha);msg='已记录当前版本 '+sha+'，下次点击可检测更新'}
     else if(sha===cur){msg='已是最新版本（'+sha+'）'}
-    else{localStorage.setItem('wtz_site_sha',sha);msg='发现新版本 '+sha+'（本地 '+cur+'）· 请刷新页面获取更新'}
+    else{localStorage.setItem('wtz_site_sha',sha);try{window.cleanLegacy&&window.cleanLegacy()}catch(e){}msg='发现新版本 '+sha+'（本地 '+cur+'）· 已清理旧版本缓存，请刷新页面获取更新'}
     upd.textContent=o;alert(msg);
   }).catch(function(e){upd.textContent=o;alert('检查更新失败：'+(typeof ferr==='function'?ferr(e.message):e.message))});
 });
