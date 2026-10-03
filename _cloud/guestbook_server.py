@@ -460,7 +460,8 @@ def api_guest_add():
         av = int(_av) if _av.isdigit() else 0
         av = av % 12
     im = str(p.get("image") or "").strip()[:300]
-    g.append({"id": nid, "user": cu, "name": nm, "text": txt, "time": _now(), "avatar": av, "image": im})
+    rt = str(p.get("reply_to") or "").strip()[:8]
+    g.append({"id": nid, "user": cu, "name": nm, "text": txt, "time": _now(), "avatar": av, "image": im, "reply_to": rt})
     _save(GUESTBOOK_FILE, g)
     _add_exp(_load(USER_FILE, {}), cu, 5)
     return jsonify({"ok": True})
@@ -468,7 +469,7 @@ def api_guest_add():
 @app.route("/post_get", methods=["GET", "POST"])
 def api_post_get():
     ps = _load(POST_FILE, [])
-    ps = sorted(ps, key=lambda a: -int(a.get("id", 0) or 0))
+    ps = sorted(ps, key=lambda a: (-len(a.get("likes") or []), -int(a.get("id", 0) or 0)))
     return jsonify({"ok": True, "list": ps})
 
 @app.route("/post_add", methods=["POST"])
@@ -489,7 +490,7 @@ def api_post_add():
     for x in ps:
         nid = max(nid, int(x.get("id", 0) or 0) + 1)
     ps.append({"id": nid, "user": cu, "name": cu, "text": txt, "tags": tags,
-               "image": im, "time": _now(), "comments": []})
+               "image": im, "time": _now(), "comments": [], "likes": [], "dislikes": []})
     _save(POST_FILE, ps)
     _add_exp(_load(USER_FILE, {}), cu, 8)
     _scan_at(txt, str(nid))
@@ -529,7 +530,10 @@ def api_comment_add():
     for x in ps:
         if str(x.get("id")) == str(p.get("pid")):
             cs = x.setdefault("comments", [])
-            cs.append({"user": cu, "text": txt, "time": _now()})
+            cid = 1
+            for c0 in cs:
+                cid = max(cid, int(c0.get("id", 0) or 0) + 1)
+            cs.append({"id": cid, "user": cu, "text": txt, "time": _now(), "likes": [], "dislikes": []})
             _save(POST_FILE, ps)
             _add_exp(_load(USER_FILE, {}), cu, 3)
             _scan_at(txt, str(x.get("id")))
@@ -537,6 +541,63 @@ def api_comment_add():
             if _au and _au != cu:
                 _push_notify(_au, cu, "reply", txt, str(x.get("id")))
             return jsonify({"ok": True, "msg": "评论成功"})
+    return jsonify({"ok": False, "msg": "帖子不存在"})
+
+@app.route("/post_vote", methods=["POST"])
+def api_post_vote():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    v = int(p.get("vote") or 0)
+    if v not in (1, -1, 0):
+        return jsonify({"ok": False, "msg": "参数错误"})
+    ps = _load(POST_FILE, [])
+    for x in ps:
+        if str(x.get("id")) == str(p.get("pid")):
+            L = x.setdefault("likes", [])
+            D = x.setdefault("dislikes", [])
+            if v == 1:
+                if cu not in L: L.append(cu)
+                if cu in D: D.remove(cu)
+            elif v == -1:
+                if cu not in D: D.append(cu)
+                if cu in L: L.remove(cu)
+            else:
+                if cu in L: L.remove(cu)
+                if cu in D: D.remove(cu)
+            _save(POST_FILE, ps)
+            return jsonify({"ok": True, "like": len(L), "dislike": len(D)})
+    return jsonify({"ok": False, "msg": "帖子不存在"})
+
+@app.route("/comment_vote", methods=["POST"])
+def api_comment_vote():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    v = int(p.get("vote") or 0)
+    if v not in (1, -1, 0):
+        return jsonify({"ok": False, "msg": "参数错误"})
+    ps = _load(POST_FILE, [])
+    for x in ps:
+        if str(x.get("id")) == str(p.get("pid")):
+            for c0 in x.setdefault("comments", []):
+                if str(c0.get("id")) == str(p.get("cid")):
+                    L = c0.setdefault("likes", [])
+                    D = c0.setdefault("dislikes", [])
+                    if v == 1:
+                        if cu not in L: L.append(cu)
+                        if cu in D: D.remove(cu)
+                    elif v == -1:
+                        if cu not in D: D.append(cu)
+                        if cu in L: L.remove(cu)
+                    else:
+                        if cu in L: L.remove(cu)
+                        if cu in D: D.remove(cu)
+                    _save(POST_FILE, ps)
+                    return jsonify({"ok": True, "like": len(L), "dislike": len(D)})
+            return jsonify({"ok": False, "msg": "评论不存在"})
     return jsonify({"ok": False, "msg": "帖子不存在"})
 
 @app.route("/notice_get", methods=["GET", "POST"])
