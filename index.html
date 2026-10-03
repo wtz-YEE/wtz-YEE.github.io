@@ -1940,7 +1940,8 @@ function loadUsers(){
       var b1=(S.user.is_admin?'<button class="gb-btn ghost" data-ua="'+esc(u.name)+'" data-uadm="'+(u.is_admin?'1':'0')+'" style="padding:1px 8px;font-size:10px">'+(u.is_admin?'撤销':'授予')+'</button>':'');
       var b2=(S.user.is_admin?'<button class="gb-btn ghost" data-uban="'+esc(u.name)+'" data-ubanned="'+(u.banned?'1':'0')+'" style="padding:1px 8px;font-size:10px;'+(u.banned?'color:var(--bad);border-color:var(--bad)':'')+'">'+(u.banned?'解除拉黑':'拉黑')+'</button>':'');
       var b3=(S.user.is_admin?'<button class="gb-btn ghost" data-udel="'+esc(u.name)+'" style="padding:1px 8px;font-size:10px;color:var(--bad);border-color:var(--bad)">删除</button>':'');
-      return b1+b2+b3;
+      var b4=(S.user.is_admin?'<button class="gb-btn ghost" data-ukick="'+esc(u.name)+'" style="padding:1px 8px;font-size:10px;color:#d9a441;border-color:#d9a441">踢下线</button>':'');
+      return b1+b2+b3+b4;
     };
     if(j.root){
       box.innerHTML=j.list.map(function(u){
@@ -2408,6 +2409,16 @@ function bind(){
       if(!confirm('确认删除用户 '+t3+' ？此操作不可恢复')) return;
       call('/admin_del_user',{target:t3}).then(function(j){
         say(j.msg||(j.ok?'已删除':'失败'),!!j.ok);
+        if(j.ok) loadUsers();
+      }).catch(function(e){ say('请求失败：'+e.message,false); });
+      return;
+    }
+    b=e.target.closest('[data-ukick]');
+    if(b){
+      var t4=b.getAttribute('data-ukick');
+      if(!confirm('确认删除 '+t4+' 的全部登录会话（强制下线）？')) return;
+      call('/admin_del_session',{user:t4}).then(function(j){
+        say(j.msg||(j.ok?'已操作':'失败'),!!j.ok);
         if(j.ok) loadUsers();
       }).catch(function(e){ say('请求失败：'+e.message,false); });
     }

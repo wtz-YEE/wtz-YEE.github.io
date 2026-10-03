@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import json
 import os
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -933,6 +934,60 @@ def api_admin_scan():
     _audit(cu, "risk_scan", "关键词: " + ",".join(words), "风控删除 " + str(len(hit)) + " 人: " + ",".join(hit))
     return jsonify({"ok": True, "hits": hit, "words": words, "msg": "已风控删除 " + str(len(hit)) + " 个用户"})
 
+
+@app.route("/admin_del_session", methods=["POST"])
+def api_admin_del_session():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    ses = us.setdefault("__sessions", {})
+    n = 0
+    t = str(p.get("session") or "").strip()
+    u2 = str(p.get("user") or "").strip()
+    if t:
+        if t in ses:
+            del ses[t]
+            n = 1
+    elif u2:
+        for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) == u2]:
+            del ses[k]
+            n += 1
+    else:
+        return jsonify({"ok": False, "msg": "缺少参数"})
+    _save(USER_FILE, us)
+    _audit(cu, "del_session", t or (u2 + " 全部会话"), "删除会话 " + str(n) + " 个")
+    return jsonify({"ok": True, "n": n, "msg": "已删除 " + str(n) + " 个会话"})
+
+@app.route("/admin_del_comment", methods=["POST"])
+def api_admin_del_comment():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    adm = bool(us.get(cu, {}).get("is_admin"))
+    ps = _load(POST_FILE, [])
+    for x in ps:
+        if str(x.get("id")) == str(p.get("pid")):
+            cs = x.get("comments") or []
+            try:
+                i = int(p.get("idx"))
+            except Exception:
+                return jsonify({"ok": False, "msg": "参数错误"})
+            if i < 0 or i >= len(cs):
+                return jsonify({"ok": False, "msg": "评论不存在"})
+            c = cs[i]
+            if not adm and x.get("user") != cu and c.get("user") != cu:
+                return jsonify({"ok": False, "msg": "无权删除该评论"})
+            del cs[i]
+            _save(POST_FILE, ps)
+            _audit(cu, "del_comment", "帖 #" + str(x.get("id")) + " 评论@" + str(c.get("user") or ""), str(c.get("text") or "")[:40])
+            return jsonify({"ok": True, "msg": "已删除"})
+    return jsonify({"ok": False, "msg": "帖子不存在"})
 @app.route("/admin_ban_user", methods=["POST"])
 def api_admin_ban_user():
     p = request.get_json() or {}
@@ -1298,7 +1353,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/sec_set", "/recover_q", "/recover")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/sec_set", "/recover_q", "/recover")
 
 @app.before_request
 def _rate():

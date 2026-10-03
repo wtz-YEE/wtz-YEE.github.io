@@ -318,7 +318,7 @@ function render(ps){
       (p.image&&S.api?'<img src="'+esc(S.api+p.image)+'">':'')+'</div>'+
       '<div class="cm" data-cm="'+esc(p.id)+'">评论 '+(cm.length?cm.length:'0')+'</div>'+
       '<div class="cwrap" data-cw="'+esc(p.id)+'">'+
-        '<div class="clist">'+ (cm.length?cm.map(function(c){return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.user)+'</div>'+md(c.text)+'</div>'}).join(''):'<div class="citem" style="color:var(--ink3)">暂无评论</div>') +'</div>'+
+        '<div class="clist">'+ (cm.length?cm.map(function(c,ci){var cdel=(S.user&&(S.user.is_admin||p.user===S.user.username||c.user===S.user.username))?'<button class="del cdel" data-cd="'+esc(p.id)+'" data-cdi="'+ci+'">删除</button>':'';return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.user)+cdel+'</div>'+md(c.text)+'</div>'}).join(''):'<div class="citem" style="color:var(--ink3)">暂无评论</div>') +'</div>'+
         '<div class="cinput"><input data-ci="'+esc(p.id)+'" placeholder="写下评论…" maxlength="200"><button class="btn" data-cs="'+esc(p.id)+'">发送</button></div>'+
       '</div></div>';
   }).join('');
@@ -351,6 +351,17 @@ function bindList(){
     if(cm){
       var id=cm.getAttribute('data-cm'),cw=document.querySelector('[data-cw="'+id+'"]');
       if(cw){ cw.classList.toggle('open'); return; }
+    }
+    var cd=t.closest('[data-cd]');
+    if(cd){
+      if(!S.user) return say('请先登录',false);
+      var pid=cd.getAttribute('data-cd'),idx=cd.getAttribute('data-cdi');
+      if(!confirm('确认删除这条评论？')) return;
+      call('/admin_del_comment',{pid:pid,idx:idx}).then(function(j){
+        if(!j.ok) return say(j.msg||'删除失败',false);
+        loadPosts(); say('评论已删除',true);
+      }).catch(function(e){ say('删除失败：'+e.message,false); });
+      return;
     }
     var cs=t.closest('[data-cs]');
     if(cs){
