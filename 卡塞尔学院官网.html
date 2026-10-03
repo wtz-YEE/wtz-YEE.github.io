@@ -383,8 +383,8 @@ function ferr(msg){
   <!-- ============ 诺玛 ============ -->
   <section id="v-norna" class="view">
     <div class="panel">
-      <h2>诺玛 · 劳恩斯 <span class="chip" id="evaBtn" style="float:right;margin:0;border-color:var(--line2);color:var(--ink3)">EVA 模式 · OFF</span></h2>
-      <p class="small">学院中央电脑 · 知识库基于《龙族》原著设定（本地运行，无需网络）</p>
+      <h2>诺玛 · 劳恩斯 <span class="chip" id="aiCfgBtn" style="float:right;margin:0 8px 0 0;border-color:var(--gold);color:var(--gold)">AI 设置</span><span class="chip" id="evaBtn" style="float:right;margin:0;border-color:var(--line2);color:var(--ink3)">EVA 模式 · OFF</span></h2>
+      <p class="small">学院中央电脑 · 主机 AI 引擎 + 《龙族》原著知识库</p>
       <div class="divider"></div>
       <div class="chat" id="chat"></div>
       <div class="chatbar">
@@ -401,6 +401,24 @@ function ferr(msg){
       </div>
     </div>
   </section>
+
+  <div id="aiMask" class="permMask hidden">
+    <div class="permBox">
+      <h2>诺玛 · AI 设置</h2>
+      <p class="small">由主机中转调用在线大模型（OpenAI 兼容接口，默认 DeepSeek）。Key 仅保存在本机浏览器。</p>
+      <p class="small" style="margin-top:10px"><b>API Key</b></p>
+      <input id="aiKey" type="password" placeholder="sk-..." style="width:100%;box-sizing:border-box;background:#0B0C0E;border:1px solid var(--line2);color:var(--ink);padding:10px;font-family:var(--mono);font-size:13px;margin-top:4px">
+      <p class="small" style="margin-top:12px"><b>Base URL（可留空，默认 https://api.deepseek.com）</b></p>
+      <input id="aiBase" placeholder="https://api.deepseek.com" style="width:100%;box-sizing:border-box;background:#0B0C0E;border:1px solid var(--line2);color:var(--ink);padding:10px;font-family:var(--mono);font-size:13px;margin-top:4px">
+      <p class="small" style="margin-top:12px"><b>模型名（可留空，默认 deepseek-chat）</b></p>
+      <input id="aiModel" placeholder="deepseek-chat" style="width:100%;box-sizing:border-box;background:#0B0C0E;border:1px solid var(--line2);color:var(--ink);padding:10px;font-family:var(--mono);font-size:13px;margin-top:4px">
+      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+        <button class="btn" id="aiSave">保存并启用</button>
+        <button class="btn" id="aiClear">清除配置</button>
+        <button class="btn" id="aiCancel">取消</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ============ 原著资料 ============ -->
   <section id="v-lib" class="view">
@@ -703,20 +721,64 @@ function say(msg,who){
   chat.appendChild(d);chat.scrollTop=chat.scrollHeight;
 }
 function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
-function nornaAsk(q){
-  q=q.replace(/\s+/g,'').toLowerCase();
-  if(profile&&(q.indexOf('我')>=0||q.indexOf('血统')>=0&&q.length<8)){
-    var el=profile.lv;
-    return '根据档案记录，你当前的血统等级为 '+el+' 级。'+(el==='S'?'——学院已为你启动最高权限监控。':'——请继续努力，血统并非一切。');
-  }
-  for(var i=0;i<KB.length;i++){
-    var ks=KB[i].k;
-    for(var j=0;j<ks.length;j++){
-      if(q.indexOf(ks[j].toLowerCase().replace(/\s+/g,''))>=0)return KB[i].a;
-    }
-  }
-  return defA;
+var AI_CFG=null;
+function aiCfgLoad(){try{AI_CFG=JSON.parse(localStorage.getItem('cas_ai')||'null')}catch(e){AI_CFG=null}if(AI_CFG&&!AI_CFG.key)AI_CFG=null;return AI_CFG}
+aiCfgLoad();
+function nomaFetch(path,data,timeout){
+  var base=(function(){try{var u=localStorage.getItem('gb_api_url')||'';var a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return a[0]||''}catch(e){return''}})();
+  if(!base)return Promise.reject('no-cloud');
+  return new Promise(function(res,rej){
+    var ctl=(window.AbortController)?new AbortController():null;
+    var t=setTimeout(function(){if(ctl)ctl.abort()},timeout);
+    fetch(base.replace(/\/+$/,'')+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),signal:ctl?ctl.signal:undefined})
+      .then(function(r){return r.json()}).then(function(r){clearTimeout(t);res(r)})
+      .catch(function(e){clearTimeout(t);rej(e)});
+  });
 }
+function nornaAsk(q,cb){
+  var q0=q.replace(/\s+/g,'').toLowerCase();
+  if(profile&&(q0.indexOf('我')>=0||(q0.indexOf('血统')>=0&&q0.length<8))){
+    var el=profile.lv;
+    cb('根据档案记录，你当前的血统等级为 '+el+' 级。'+(el==='S'?'——学院已为你启动最高权限监控。':'——请继续努力，血统并非一切。'));return;
+  }
+  var done=false;
+  function local(){
+    if(done)return;done=true;
+    for(var i=0;i<KB.length;i++){var ks=KB[i].k;for(var j=0;j<ks.length;j++){if(q0.indexOf(ks[j].toLowerCase().replace(/\s+/g,''))>=0){cb(KB[i].a);return}}}
+    cb(defA);
+  }
+  aiCfgLoad();
+  if(AI_CFG){
+    nomaFetch('/noma_ai',{q:q,api_key:AI_CFG.key,base_url:AI_CFG.base||'',model:AI_CFG.model||'',mode:evaOn?'eva':'norna'},60000)
+      .then(function(r){if(done)return;done=true;cb((r&&r.a)?r.a:defA)})
+      .catch(function(){local()});
+  }else{
+    nomaFetch('/noma_ask',{q:q,mode:evaOn?'eva':'norna'},8000)
+      .then(function(r){if(done)return;done=true;cb((r&&r.a)?r.a:defA)})
+      .catch(function(){local()});
+  }
+}
+/* AI 设置 */
+var aiM=document.getElementById('aiMask');
+var aiCfgBtn=document.getElementById('aiCfgBtn');
+if(aiCfgBtn)aiCfgBtn.addEventListener('click',function(){
+  aiM.classList.remove('hidden');
+  document.getElementById('aiKey').value=(AI_CFG&&AI_CFG.key)||'';
+  document.getElementById('aiBase').value=(AI_CFG&&AI_CFG.base)||'';
+  document.getElementById('aiModel').value=(AI_CFG&&AI_CFG.model)||'';
+});
+if(aiM)aiM.addEventListener('click',function(e){if(e.target===aiM)aiM.classList.add('hidden')});
+if(document.getElementById('aiSave'))document.getElementById('aiSave').addEventListener('click',function(){
+  var o={key:document.getElementById('aiKey').value.trim(),base:document.getElementById('aiBase').value.trim(),model:document.getElementById('aiModel').value.trim()||'deepseek-chat'};
+  if(!o.key){say('请填写 API Key。','n');return}
+  localStorage.setItem('cas_ai',JSON.stringify(o));aiCfgLoad();aiM.classList.add('hidden');
+  say('AI 配置已保存——诺玛将调用模型「'+o.model+'」。','n');
+});
+if(document.getElementById('aiClear'))document.getElementById('aiClear').addEventListener('click',function(){
+  localStorage.removeItem('cas_ai');aiCfgLoad();aiM.classList.add('hidden');
+  say('AI 配置已清除——诺玛回退到原著知识库检索。','n');
+});
+if(document.getElementById('aiCancel'))document.getElementById('aiCancel').addEventListener('click',function(){aiM.classList.add('hidden')});
 /* EVA 模式 */
 var evaOn=false;
 var evaBtn=document.getElementById('evaBtn');
@@ -808,11 +870,11 @@ if(badgeBtn)badgeBtn.addEventListener('click',function(){
 function ask(q){
   q=q.trim();if(!q)return;
   say(q,'u');
-  var t=document.createElement('div');t.className='typing';t.id='ty';t.textContent='NORNA 正在检索…';chat.appendChild(t);chat.scrollTop=chat.scrollHeight;
-  setTimeout(function(){
-    var ty=document.getElementById('ty');if(ty)ty.remove();
-    say(nornaAsk(q),'n');
-  },620+Math.random()*500);
+  var t=document.createElement('div');t.className='typing';t.id='ty';
+  aiCfgLoad();
+  t.textContent=AI_CFG?'NORNA AI 深度解析中…':'NORNA 档案检索中…';
+  chat.appendChild(t);chat.scrollTop=chat.scrollHeight;
+  nornaAsk(q,function(ans){var ty=document.getElementById('ty');if(ty)ty.remove();say(ans,'n')});
 }
 $('chatBtn').addEventListener('click',function(){ask(inp.value);inp.value=''});
 inp.addEventListener('keydown',function(e){if(e.key==='Enter'){$('chatBtn').click()}});
@@ -820,6 +882,7 @@ document.querySelectorAll('.chip').forEach(function(c){
   c.addEventListener('click',function(){inp.value=c.getAttribute('data-q');$('chatBtn').click()});
 });
 say('你好，我是诺玛·劳恩斯，卡塞尔学院的中央电脑。有什么需要我协助的吗？','n');
+say(AI_CFG?('AI 引擎已配置（'+AI_CFG.model+'）——提问将调用在线模型，由主机中转。'):'未配置 AI 设置：点击「AI 设置」填入 API Key 即可唤醒在线引擎；当前使用原著知识库。','n');
 say('试试点击下方标签，或直接输入问题。','n');
 
 /* ============ 权限系统 ============ */
