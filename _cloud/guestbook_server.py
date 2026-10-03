@@ -829,6 +829,14 @@ def api_logout():
         pass
     return jsonify({"ok": True})
 
+@app.route("/ping", methods=["POST"])
+def api_ping():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "未登录"})
+    return jsonify({"ok": True})
+
 @app.route("/admin_users", methods=["POST"])
 def api_admin_users():
     p = request.get_json() or {}
