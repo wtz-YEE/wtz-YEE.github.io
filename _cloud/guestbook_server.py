@@ -1670,6 +1670,24 @@ def api_profile():
             days = max(0, int((_time.mktime(_d1) - _time.mktime(_d0)) / 86400))
     except Exception:
         days = 0
+    if days == 0:
+        try:
+            _ckd = (ck.get("days") or [])
+            if _ckd:
+                _d0 = _time.strptime(str(min(_ckd))[:10], "%Y-%m-%d")
+                _d1 = _time.strptime(_time.strftime("%Y-%m-%d"), "%Y-%m-%d")
+                days = max(0, int((_time.mktime(_d1) - _time.mktime(_d0)) / 86400))
+        except Exception:
+            days = 0
+    if days == 0:
+        try:
+            _gd = sorted([str(x.get("time") or "") for x in _load(GUESTBOOK_FILE, []) if (x.get("user") or x.get("name") or "") == nm])
+            if _gd and _gd[0][:10] >= "2026-01-01":
+                _d0 = _time.strptime(_gd[0][:10], "%Y-%m-%d")
+                _d1 = _time.strptime(_time.strftime("%Y-%m-%d"), "%Y-%m-%d")
+                days = max(0, int((_time.mktime(_d1) - _time.mktime(_d0)) / 86400))
+        except Exception:
+            days = 0
     likes = 0
     for x in _load(GUESTBOOK_FILE, []):
         if (x.get("user") or x.get("name") or "") == nm:
