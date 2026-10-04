@@ -143,6 +143,11 @@ a.card::after{content:"↗";position:absolute;right:10px;bottom:8px;font-size:11
 .st-nav a{color:var(--ink3);text-decoration:none;transition:color .2s}
 .st-nav a:hover{color:var(--ink)}
 @media(min-width:900px){.st-nav{display:flex}}
+.sec-tabs{display:flex;gap:8px;margin:var(--sp-2) auto var(--sp-4);max-width:980px;flex-wrap:wrap}
+.sec-tab{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink3);background:var(--panel);border:1px solid var(--line2);padding:7px 16px;cursor:pointer;transition:color .2s,border-color .2s}
+.sec-tab:hover{color:var(--ink)}
+.sec-tab.on{color:var(--ink);border-color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+
 
 .b-code{margin-left:auto;font-size:10.5px;letter-spacing:.3em;color:var(--ink3)}
 .grid.two{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -980,7 +985,14 @@ function ferr(msg){
   </div>
 
 <div class="block" style="padding-top:0">
-    <div class="b-head"><span class="b-no">01</span><h2>入口</h2><span class="b-code">GRID · 4CARD</span></div>
+    <div class="sec-tabs">
+  <button class="sec-tab on" type="button" data-s="1">入口</button>
+  <button class="sec-tab" type="button" data-s="2">工具</button>
+  <button class="sec-tab" type="button" data-s="3">社区</button>
+  <button class="sec-tab" type="button" data-s="4">设置</button>
+</div>
+<div class="sec" id="sec1">
+<div class="b-head"><span class="b-no">01</span><h2>入口</h2><span class="b-code">GRID · 4CARD</span></div>
 <div class="grid two" style="max-width:980px;margin:0 auto">
       <a class="card" href="prts.html">
         <div class="spot" aria-hidden="true"></div>
@@ -1148,6 +1160,8 @@ function ferr(msg){
         </div>
       </a>
 </div>
+</div>
+<div class="sec" id="sec2">
 <div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">02</span><h2>工具</h2><span class="b-code">GRID · 3CARD</span></div>
 <div class="grid two">
 <div class="card is-tool" data-memo style="cursor:pointer">
@@ -1256,6 +1270,8 @@ function ferr(msg){
 </div>
 </div>
 
+</div>
+<div class="sec" id="sec3">
 <div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">03</span><h2>社区</h2><span class="b-code">GUESTBOOK · FOLD</span></div>
 <div class="gb-card" id="gbCard">
   <div class="gb-card-h" id="gbCardH"><b>GUESTBOOK</b><span>访客留言板</span><span class="gb-fold">▾ 展开</span></div>
@@ -1397,11 +1413,14 @@ function ferr(msg){
   </div>
 </div>
 
+</div>
+<div class="sec" id="sec4">
 <div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">04</span><h2>设置</h2><span class="b-code">THEME · VIEW</span></div>
 <div class="st-set">
   <button class="th-btn" type="button" id="stTh">◐ 配色</button>
   <button class="th-btn" type="button" id="stUi">▣ 界面</button>
   <button class="th-btn" type="button" id="stVm">▦ 视图</button>
+</div>
 </div>
 
 <!-- 云端配置弹窗 -->
@@ -3692,6 +3711,16 @@ function memoOpen(){ var m=$('memoMask'); if(m){ memoRender(); m.classList.add('
 (function(){
   var m={stTh:'thBtn',stUi:'uiBtn',stVm:'vmBtn'};
   for(var k in m){(function(t){var b=document.getElementById(t);if(b)b.addEventListener('click',function(){var r=document.getElementById(m[t]);if(r)r.click();});})(k);}
+})();
+(function(){
+  var tabs=document.querySelectorAll('.sec-tab'),secs=document.querySelectorAll('.sec');
+  if(!tabs.length||!secs.length)return;
+  function show(n){
+    for(var i=0;i<secs.length;i++)secs[i].style.display=(i+1)===n?'':'none';
+    for(var j=0;j<tabs.length;j++)tabs[j].classList.toggle('on',(j+1)===n);
+  }
+  for(var k=0;k<tabs.length;k++)(function(t){t.addEventListener('click',function(){show(parseInt(t.getAttribute('data-s'),10)||1);});})(tabs[k]);
+  show(1);
 })();
 function memoClose(){ var m=$('memoMask'); if(m) m.classList.remove('on'); }
 (function(){
