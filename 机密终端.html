@@ -201,12 +201,13 @@ function cls(){out.innerHTML=''}
 function k2(){var d=new Date(),b=d.getDate(),c=d.getHours();return('00'+b).slice(-2)+('00'+c).slice(-2)+('00'+((b*7+c*3)%100)).slice(-2)}
 function k3(){var d=new Date(),b=d.getDate(),c=d.getHours(),p=('00'+b).slice(-2)+('00'+c).slice(-2)+('00'+((b*11+c*7)%100)).slice(-2),w=[],e=[];for(var i=0;i<6;i++){w.push((b*(i+1)+c)%10);e.push((+p[i]+w[i])%10)}return{p:p,w:w.join('-'),e:e.reverse().join('')}}
 var HIST=[],hi=0,V=0;
-var ATOK='',ABASE='';
-try{ABASE=((localStorage.getItem('gb_api_url')||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0})[0]||'').replace(/\/+$/,'')}catch(e){}
+function savedBase(){try{return((localStorage.getItem('gb_api_url')||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0})[0]||'').replace(/\/+$/,'')}catch(e){return''}}
+var ATOK='',ABASE=savedBase();
+function setBase(u){ABASE=u.replace(/\/+$/,'');try{localStorage.setItem('gb_api_url',ABASE)}catch(e){}}
 function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
 function api(p,b,cb){var x=new XMLHttpRequest();x.open('POST',ABASE+p);x.setRequestHeader('Content-Type','application/json');x.onload=function(){try{cb(JSON.parse(x.responseText))}catch(e){cb({ok:false,msg:'响应解析失败'})}};x.onerror=function(){cb({ok:false,msg:'无法连接云端，请检查 base 地址'})};x.send(JSON.stringify(b||{}))}
 function accounts(){
-if(!ABASE){lo('未设置云端基址：输入 <b>base &lt;url&gt;</b>（如 base https://36c3116e.r21.cpolar.top）','bad');return}
+if(!ABASE){lo('未设置云端基址：输入 <b>base &lt;url&gt;</b>（如 base https://58e29a49.r21.cpolar.top）','bad');return}
 if(!ATOK){lo('未认证管理员：输入 <b>admin &lt;账号&gt; &lt;密码&gt;</b> 验证','bad');return}
 lo('正在读取账号数据库 ...','dim');
 api('/admin_users',{token:ATOK},function(j){
@@ -231,8 +232,29 @@ api('/admin_set_admin',{token:ATOK,target:u,admin:adm},function(j){
 if(!j.ok){lo('<span class="r">[X]</span> '+esc(j.msg),'bad');return}
 lo('<span class="g">[OK]</span> '+esc(j.msg),'ok')})}
 function pr(t){lo('<span class="c">C:\\PRTS\\SECURE&gt;</span> '+t,'echo')}
+function baseProbe(u){
+if(!u)return Promise.resolve(false);
+var c=new AbortController(),t=setTimeout(function(){c.abort()},6000);
+return fetch(u+'/health',{cache:'no-store',signal:c.signal}).then(function(r){return r.ok?r.json().then(function(j){return !!(j&&j.ok)}).catch(function(){return false}):false}).catch(function(){return false}).then(function(v){clearTimeout(t);return v})}
+function baseFresh(){
+return fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
+var a=parseBase(t);if(!a.length)return false;var ch=a!==ABASE;setBase(a);if(ch)lo('<span class="g">[OK]</span> 云端基址已更新 <b>'+esc(ABASE)+'</b>','ok');return true}).catch(function(){return false})}
+function parseBase(t){
+return((t||'').replace(/^\uFEFF/,'').split(/[\n,;]+/).filter(function(x){var v=String(x||'').trim().replace(/\/+$/,'');return /^https?:\/\//i.test(v)&&v.indexOf('36c3116e')<0})[0]||'').replace(/\/+$/,'')}
+function baseQuery(){
+if(!ABASE){lo('正在读取云端地址 ...','dim');return baseFresh().then(function(k){if(!k)lo('<span class="r">[X]</span> 无法获取云端地址','bad');return k})}
+return baseProbe(ABASE).then(function(ok){
+if(ok)return true;
+lo('当前基址无响应 · 正在重新读取云端地址 ...','warn');
+return baseFresh().then(function(k){if(!k)lo('<span class="r">[X]</span> 云端地址获取失败，可用 base &lt;url&gt; 手动设置','bad');return k})})}
+function baseFetch(){
+if(!ABASE){baseQuery().then(function(k){if(k)lo('当前云端基址：<b>'+esc(ABASE)+'</b>')});return}
+lo('正在重新获取云端基址 ...','dim');
+baseFresh().then(function(k){
+if(k){lo('当前云端基址：<b>'+esc(ABASE)+'</b>','ok');return}
+baseProbe(ABASE).then(function(ok){if(ok)lo('cloud.txt 不可达 · 沿用当前基址：<b>'+esc(ABASE)+'</b>','warn');else lo('<span class="r">[X]</span> 云端地址获取失败，可用 base &lt;url&gt; 手动设置','bad')})})}
 function help(){lo('可用命令：');lo('<b>help</b> | ? ................ 命令列表');lo('<b>keys</b> | db | 数据库 ...... 内部数据库 · 全部密钥解法');lo('<b>key1</b> .................. 第 1 层 · 密钥');lo('<b>key2</b> | timekey ......... 第 2 层 · 时间密钥（实时）');lo('<b>perm</b> .................. 权限提升 · 三级答案');lo('<b>secret</b> | 9999 ......... 秘技 · LV9999 解锁');lo('<b>verify</b> ................ 双重验证流程');
-lo('<b>cloud</b> | visitors ....... 云端数据库 · 访客名列表');lo('<b>accounts</b> | users ...... 账号数据库 · 查看账号密码');lo('<b>admin</b> &lt;账号&gt; &lt;密码&gt; ... 管理员验证');lo('<b>grant</b>/<b>revoke</b> &lt;账号&gt; .. 授予 / 取消管理员');lo('<b>base</b> &lt;url&gt; ........... 设置云端基址');lo('<b>whoami</b> ................ 档案');lo('<b>clear</b> | cls ............ 清屏');lo('<b>lock</b> .................. 锁定并返回索引');lo('<b>exit</b> | back ........... 返回索引')}
+lo('<b>cloud</b> | visitors ....... 云端数据库 · 访客名列表');lo('<b>accounts</b> | users ...... 账号数据库 · 查看账号密码');lo('<b>admin</b> &lt;账号&gt; &lt;密码&gt; ... 管理员验证');lo('<b>grant</b>/<b>revoke</b> &lt;账号&gt; .. 授予 / 取消管理员');lo('<b>base</b> [url] ............ 查看 / 设置云端基址（无参数=重新获取）');lo('<b>whoami</b> ................ 档案');lo('<b>clear</b> | cls ............ 清屏');lo('<b>lock</b> .................. 锁定并返回索引');lo('<b>exit</b> | back ........... 返回索引')}
 function keys(){
 lo('========== 内部数据库 · 全部密钥解法 ==========','acc');
 lo('【权限链】 LV0 → 1  问题：wtz 的年龄？            <b>答案：13</b>');
@@ -254,7 +276,8 @@ var t=c.trim(),m=t.toLowerCase();
 if(m.indexOf('admin ')==0){var a1=t.split(/\s+/);adminAuth(a1[1],a1[2]);return}
 if(m.indexOf('grant ')==0){setAdmin(t.split(/\s+/)[1],true);return}
 if(m.indexOf('revoke ')==0){setAdmin(t.split(/\s+/)[1],false);return}
-if(m.indexOf('base ')==0){var a2=t.split(/\s+/),b2=a2[1]||'';if(!b2){lo('当前云端基址：'+(ABASE||'未设置')+'（用法：base &lt;url&gt;）');return}ABASE=b2.replace(/\/+$/,'');try{localStorage.setItem('gb_api_url',ABASE)}catch(e){}lo('<span class="g">[OK]</span> 云端基址已设为 <b>'+esc(ABASE)+'</b>','ok');return}
+if(m.indexOf('base ')==0){var a2=t.split(/\s+/),b2=a2[1]||'';if(!b2){lo('当前云端基址：'+(ABASE||'未设置')+'（用法：base &lt;url&gt;）');return}setBase(b2);lo('<span class="g">[OK]</span> 云端基址已设为 <b>'+esc(ABASE)+'</b>','ok');return}
+if(m==='base'||m==='cloud.txt'||m==='sync'){baseFetch();return}
 if(V){
 if(m===''){V=0;lo('验证已取消','dim');return}
 if(V===1){if(m==='cyrene'){V=2;lo('<span class="g">[OK]</span> 密钥通过','ok');lo('第 2 层 · 时间密钥？ （输入 6 位，空行取消）','warn')}else{lo('<span class="r">[X]</span> 密钥错误','bad');lo('第 1 层 · 密钥？','warn')}return}
@@ -297,6 +320,7 @@ lo('内部数据库已装载 · 全部密钥解法已索引（keys / db / 数据
 lo('云端已连接 · 输入 <b>cloud</b> 查看访客名列表；<b>accounts</b> 管理账号（admin 验证）');
 lo('提示：输入 <b>help</b> 查看可用命令；方向键 ↑↓ 浏览历史');
 lo('');
+baseQuery();
 cmdEl.focus();
 }
 </script>

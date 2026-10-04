@@ -66,6 +66,19 @@ a{color:var(--ink);text-decoration:none}
   function status(t){var m=$('mode');if(m)m.textContent=t}
   function av(n){var s=String(n||'?');var c=s.charCodeAt(0)%16;var ch='0123456789ABCDEF'[c];return ch}
   function pick(nm){return '&#x25A0;'}
+  function fresh(){
+    return fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
+      var a=(t||'').replace(/^\uFEFF/,'').split(/[\n,;]+/).filter(function(x){var v=String(x||'').trim().replace(/\/+$/,'');return /^https?:\/\//i.test(v)&&v.indexOf('36c3116e')<0});
+      if(!a.length)return '';
+      try{localStorage.setItem('gb_api_url',a.join('\n'))}catch(e){}
+      return a[0].replace(/\/+$/,'');
+    }).catch(function(){return ''});
+  }
+  function probe(u){
+    if(!u)return Promise.resolve(false);
+    var c=new AbortController(),t=setTimeout(function(){c.abort()},6000);
+    return fetch(u+'/health',{cache:'no-store',signal:c.signal}).then(function(r){return r.ok?r.json().then(function(j){return !!(j&&j.ok)}).catch(function(){return false}):false}).catch(function(){return false}).then(function(v){clearTimeout(t);return v});
+  }
   function render(){
     var el=$('list'),tot=$('btot');
     if(!fl){el.innerHTML='<div class="err">云端未连接 · 请检查云端服务</div>';return}
@@ -92,17 +105,24 @@ a{color:var(--ink);text-decoration:none}
   }
   var tabs=document.querySelectorAll('.tab');
   for(var i=0;i<tabs.length;i++)tabs[i].addEventListener('click',function(){mode=this.getAttribute('data-m')==='1'?1:0;for(var j=0;j<tabs.length;j++)tabs[j].classList.toggle('on',tabs[j]===this);render()});
-  $('rf').addEventListener('click',function(){if(api)load(api)});
+  $('rf').addEventListener('click',function(){boot()});
   function boot(){
     var saved='';try{saved=localStorage.getItem('gb_api_url')||''}catch(e){}
-    var s=(saved||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});
-    if(s.length)load(s[0]);
-    else{status('读取云端地址…');fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
-      var a=(t||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});
-      if(!a.length){status('云端地址无效');return}
-      try{localStorage.setItem('gb_api_url',a.join('\n'))}catch(e){}
-      load(a[0]);
-    }).catch(function(){status('无法获取云端地址');render()});}
+    var s=(saved||'').replace(/^\uFEFF/,'').split(/[\n,;]+/).filter(function(x){var v=String(x||'').trim().replace(/\/+$/,'');return /^https?:\/\//i.test(v)&&v.indexOf('36c3116e')<0});
+    if(!s.length){status('读取云端地址…');fresh().then(function(a){
+      if(a){load(a);return}
+      status('云端地址无效');fl=null;render();
+    });return}
+    var cur=s[0].replace(/\/+$/,'');
+    load(cur);
+    probe(cur).then(function(ok){
+      if(ok)return;
+      status('当前地址无响应 · 重新获取…');
+      fresh().then(function(a){
+        if(a&&a!==cur){load(a);return}
+        status('云端不可达 · 点「刷新」重试');fl=null;render();
+      });
+    });
   }
   boot();
 })();

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -3097,6 +3097,61 @@ function autoCloud(){
     ntRefresh();
   }).catch(function(){});
 }
+
+function cloudProbe(u){
+  if(!u) return Promise.resolve(false);
+  var c=new AbortController(),t=setTimeout(function(){c.abort()},6000);
+  return fetch(u+'/health',{cache:'no-store',signal:c.signal}).then(function(r){
+    return r.ok?r.json().then(function(j){return !!(j&&j.ok)}).catch(function(){return false}):false;
+  }).catch(function(){return false}).then(function(v){clearTimeout(t);return v});
+}
+function cloudRecover(){
+  var cur=S.api;
+  function fresh(){
+    return fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){
+      if(!r.ok) throw 0;
+      return r.text();
+    }).then(function(t){
+      var apis=parseApis(t||'').filter(function(x){return x.indexOf('36c3116e')<0});
+      if(!apis.length) return false;
+      var ch=apis[0]!==cur||apis.length!==(S.apis||[]).length;
+      S.apis=apis;
+      S.api=apis[0];
+      try{ localStorage.setItem(K_API,apis.join('\n')); }catch(e){}
+      if(!ch) return false;
+      updateModeLabel();
+      say('云端地址已更新 · '+apis[0],true);
+      loadGuestBook();
+      loadNotes();
+      autoRelogin();
+      ntRefresh();
+      if(S.user) pmRefreshConversations();
+      return true;
+    }).catch(function(){return false});
+  }
+  if(!cur) return fresh();
+  return cloudProbe(cur).then(function(ok){
+    if(ok) return false;
+    return fresh().then(function(done){
+      if(done) return true;
+      if((S.apis||[]).length>1){
+        var alt=S.apis.filter(function(x){return x!==cur});
+        return cloudProbe(alt[0]).then(function(a2){
+          if(!a2) return false;
+          S.api=alt[0];
+          updateModeLabel();
+          say('已切换到备用云端 · '+S.api,true);
+          loadGuestBook();
+          return true;
+        });
+      }
+      return false;
+    });
+  });
+}
+window.cloudRecover=cloudRecover;
+setTimeout(cloudRecover,2500);
+setInterval(cloudRecover,60000);
 
 /* 全局：新版本清理旧版本残留（仅清纯缓存，保留全部用户数据/偏好/会话） */
 window.cleanLegacy=function(){

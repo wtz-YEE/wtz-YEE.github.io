@@ -1,4 +1,4 @@
-var C='wtz-site-v3';
+var C='wtz-site-v4';
 var U=[
   './',
   './index.html',
@@ -31,6 +31,10 @@ self.addEventListener('fetch',function(e){
   var u=new URL(r.url);
   if(u.pathname.indexOf('/uploads/')>=0) return;
   if(u.origin!==self.location.origin) return;
+  if(u.pathname.indexOf('/cloud.txt')>=0){
+    e.respondWith(fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now(),{cache:'no-store'}));
+    return;
+  }
   if(isHtml(r)){
     e.respondWith(fetch(r).then(function(res){
       var cp=res.clone();
