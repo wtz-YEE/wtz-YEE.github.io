@@ -3,6 +3,8 @@ _backup/
 _shots/
 *.log
 _gb/
+__pycache__/
+*.pyc
 
 # 留言服务数据（含账号密码哈希与私聊记录，绝不入库）
 guestbook.json
