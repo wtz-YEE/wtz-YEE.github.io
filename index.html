@@ -1454,6 +1454,13 @@ function ferr(msg){
     <div class="memo-h">备忘录 <span class="memo-st" id="memoStat"></span>
       <span class="memo-act">
         <button class="gb-btn ghost" id="memoMode" style="padding:3px 12px;font-size:11px;color:var(--ok);border-color:var(--ok)">代码</button>
+        <button class="gb-btn ghost" id="memoExport" style="padding:3px 12px;font-size:11px">导出</button>
+        <button class="gb-btn ghost" id="memoClear" style="padding:3px 12px;font-size:11px;color:var(--bad);border-color:var(--bad)">清空</button>
+        <button class="gb-btn ghost" id="memoClose" style="padding:3px 12px;font-size:11px">✕</button>
+      </span>
+    </div>
+    <div class="memo-bd">
+      <textarea id="memoSrc" spellcheck="false" placeholder="在这里书写 Markdown / 代码……"></textarea>
       <div class="memo-pv" id="memoPv"></div>
     </div>
   </div>
@@ -1701,6 +1708,7 @@ function cloudSave(pref,delay){
     call('/pref_set',{pref:pref}).catch(function(){});
   },delay||0);
 }
+window.cloudSave=cloudSave;
 function cloudApply(){
   if(!S.user||!S.api) return Promise.resolve();
   return call('/pref_get',{}).then(function(j){
