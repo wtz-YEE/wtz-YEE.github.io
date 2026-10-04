@@ -590,6 +590,21 @@ var Gp=[];
 function gb(x,y,n,c){for(var i=0;i<n;i++)Gp.push({x:x,y:y,v:(Math.random()-.5)*11,h:(Math.random()-.5)*11-2,l:34,c:c||'#FF5C7A'})}
 function gs(c){for(var i=Gp.length-1;i>=0;i--){var q=Gp[i];q.x+=q.v;q.y+=q.h;q.h+=.6;q.l--;c.fillStyle=q.c;c.fillRect(q.x-2,q.y-2,4,4);if(q.l<=0)Gp.splice(i,1)}}
 function toast(m){toastEl.textContent=m;toastEl.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){toastEl.classList.remove('on')},1800)}
+var _achT=0;
+function achPing(){
+  clearTimeout(_achT);
+  _achT=setTimeout(function(){
+    try{
+      var s=JSON.parse(localStorage.getItem('gb_session')||'null');
+      if(!s||!s.token)return;
+      var u=localStorage.getItem('gb_api_url')||'';
+      var a=u.split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});
+      if(!a.length)return;
+      var L=[];try{L=JSON.parse(localStorage.getItem('wAch')||'[]')}catch(e){}
+      fetch(a[0].replace(/\/+$/,'')+'/pref_set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,pref:{ach:L}})}).catch(function(){});
+    }catch(e){}
+  },900);
+}
 
 var JB=(function(){
 var k='jbKey',b='jbBin',d='wtzDev',key=localStorage.getItem(k)||'$2a$10$y56G5WeQKPjCGJgh6qsZb.BONrxPfyzJTErDNraLrELGHJ.EuhEM6',bin=localStorage.getItem(b)||'6abcefbdffd5d160533ebffb',dev=localStorage.getItem(d);
@@ -906,7 +921,7 @@ var A=[
 function gv(k){try{return +localStorage.getItem(k)||0}catch(e){return 0}}
 function has(i){return done.indexOf(i)>-1}
 function save(){try{localStorage.setItem(K,JSON.stringify(done));localStorage.setItem(F,JSON.stringify(flags))}catch(e){}}
-function unlock(i){if(has(i))return;done.push(i);save();var a=A[i];try{toast('成就解锁 · '+a.n)}catch(e){};try{gb(innerWidth/2,innerHeight/2,14,'#FFC24B')}catch(e){};try{JB.push()}catch(e){}}
+function unlock(i){if(has(i))return;done.push(i);save();var a=A[i];try{toast('成就解锁 · '+a.n)}catch(e){};try{gb(innerWidth/2,innerHeight/2,14,'#FFC24B')}catch(e){};try{JB.push()}catch(e){};try{achPing()}catch(e){}}
 function note(k,v){flags[k]=v;save()}
 function get(k){return flags[k]||0}
 function visit(gid){var set=[];try{set=JSON.parse(localStorage.getItem('wPlaySet')||'[]')}catch(e){}
@@ -984,6 +999,12 @@ if(c2)c2.addEventListener('click',close);
 if(p)p.addEventListener('click',function(e){if(e.target===p)close()})})();
 scan();
 return{unlock:unlock,note:note,get:get,visit:visit,scan:scan,open:open,render:render};
+})();
+(function(){
+  if(window.ACH&&typeof ACH.scan==='function'){
+    var s0=ACH.scan;
+    ACH.scan=function(){s0.apply(this,arguments);try{achPing()}catch(e){}};
+  }
 })();
 var V={home:document.getElementById('v-home'),wtzwar:document.getElementById('v-wtzwar'),secret:document.getElementById('v-secret')};
 function show(v){for(var k in V)V[k].classList.toggle('on',k===v)}
