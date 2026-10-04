@@ -122,10 +122,28 @@ body.ready .hero .h-sub{animation:hin .5s cubic-bezier(.22,1,.36,1) .55s both}
 body.ready .hero .h-mono{animation:hin .5s cubic-bezier(.22,1,.36,1) .68s both}
 @keyframes hin{from{opacity:0;transform:translateY(14px)}to{opacity:1}}
 
-.block{padding:26px max(20px,calc((100% - 920px)/2)) 8px}
+.block{padding:var(--sp-8) max(20px,calc((100% - 920px)/2)) 8px}
 .b-head{display:flex;align-items:baseline;gap:12px;margin-bottom:18px;font-family:var(--mono)}
 .b-no{color:var(--accent);font-size:12px}
 .b-head h2{font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;font-size:22px;font-weight:700;letter-spacing:.12em;color:var(--ink)}
+:root{--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--sp-8:32px}
+.b-no{font-size:11px;color:var(--accent);letter-spacing:.2em;border:1px solid var(--accent);padding:0 7px;flex:none;opacity:.9}
+.b-code{margin-left:auto;font-size:10px;color:var(--ink3);letter-spacing:.15em;flex:none}
+a.card::after{content:"↗";position:absolute;right:10px;bottom:8px;font-size:11px;color:var(--ink3);z-index:2}
+.card.is-tool::after{content:"⚙"}
+.card.is-tool .c-go{color:var(--ink2)}
+.gb-card{margin:var(--sp-4) auto 0;max-width:980px;position:relative}
+.gb-card-h{padding:11px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border:1px solid var(--line2);border-bottom:none;background:var(--panel);font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--ink2)}
+.gb-card-h b{color:var(--accent);letter-spacing:.3em}
+.gb-fold{margin-left:auto;font-size:10px;color:var(--ink3)}
+.gb-body{display:block}
+.gb-card.collapsed .gb-body{display:none}
+.gb-card.collapsed .gb-card-h{border-bottom:1px solid var(--line2)}
+.st-nav{display:none;margin-left:18px;gap:16px;font-family:var(--mono);font-size:11px;letter-spacing:.12em}
+.st-nav a{color:var(--ink3);text-decoration:none;transition:color .2s}
+.st-nav a:hover{color:var(--ink)}
+@media(min-width:900px){.st-nav{display:flex}}
+
 .b-code{margin-left:auto;font-size:10.5px;letter-spacing:.3em;color:var(--ink3)}
 .grid.two{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
@@ -935,6 +953,7 @@ function ferr(msg){
 <header id="status">
   <span class="st-dot"></span><span class="st-l">WTZ // 个人网站 · 黑白</span>
   <span class="st-c" id="clock">--:--:--</span>
+  <nav class="st-nav"><a href="prts.html">档案室</a><a href="守夜人论坛.html">论坛</a><a href="卡塞尔学院官网.html">学院</a><a href="changelog.html">日志</a><a href="index.html#map">地图</a></nav>
   <span class="pbadge" id="permBadge">LV 0</span>
   <button class="th-btn" id="lvBtn" title="签到 · 经验等级" style="display:none">LV 1</button>
   <button class="th-btn" id="pmBadge" title="私聊未读" style="display:none">✉</button>
@@ -955,14 +974,14 @@ function ferr(msg){
       <span class="h-badge"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8 L52 21 V43 L32 56 L12 43 V21 Z" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M32 20 L41 26 V38 L32 44 L23 38 V26 Z" fill="currentColor"/></svg></span>
       <span class="h-char">个</span><span class="h-char">人</span><span class="h-char">网</span><span class="h-char">站</span>
     </h1>
-    <p class="h-sub">PRTS 档案室 ▸ 守夜人论坛 ▸ 卡塞尔学院 —— 多入口</p>
+    <p class="h-sub">黑白终端 · 数字宇宙入口</p>
     <p class="h-mono">档案 · 终端 · 技能 · 模组 · 更新日志 —— 云端留言板在此</p>
-    <div class="h-file">FILE WTZ·ROOT &nbsp;|&nbsp; <b>4 入口</b> · 档案 + 论坛 + 学院 + 日志 · 云端联动</div>
     <div class="h-q" id="qotd" title="点击换一句">[ 语录 ] ▸ LOADING…</div>
   </div>
 
 <div class="block" style="padding-top:0">
-    <div class="grid two" style="max-width:980px;margin:0 auto">
+    <div class="b-head"><span class="b-no">01</span><h2>入口</h2><span class="b-code">GRID · 4CARD</span></div>
+<div class="grid two" style="max-width:980px;margin:0 auto">
       <a class="card" href="prts.html">
         <div class="spot" aria-hidden="true"></div>
         <div class="thumb">
@@ -1128,7 +1147,10 @@ function ferr(msg){
           </span>
         </div>
       </a>
-<div class="card" data-memo style="cursor:pointer">
+</div>
+<div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">02</span><h2>工具</h2><span class="b-code">GRID · 3CARD</span></div>
+<div class="grid two">
+<div class="card is-tool" data-memo style="cursor:pointer">
   <div class="spot" aria-hidden="true"></div>
   <div class="thumb">
     <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
@@ -1167,7 +1189,7 @@ function ferr(msg){
     </span>
   </div>
 </div>
-<div class="card">
+<div class="card is-tool">
   <div class="spot" aria-hidden="true"></div>
   <div class="thumb">
     <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
@@ -1200,7 +1222,7 @@ function ferr(msg){
     <div class="wall-list" id="wall_list"></div>
   </div>
 </div>
-<div class="card">
+<div class="card is-tool" id="map">
   <div class="spot" aria-hidden="true"></div>
   <div class="thumb">
     <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
@@ -1234,6 +1256,10 @@ function ferr(msg){
 </div>
 </div>
 
+<div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">03</span><h2>社区</h2><span class="b-code">GUESTBOOK · FOLD</span></div>
+<div class="gb-card" id="gbCard">
+  <div class="gb-card-h" id="gbCardH"><b>GUESTBOOK</b><span>访客留言板</span><span class="gb-fold">▾ 展开</span></div>
+  <div class="gb-body" id="gbBody">
 <!-- ============ GUESTBOOK / 私聊 ============ -->
 <div class="gb" id="gbRoot">
   <div class="gb-head">
@@ -1367,6 +1393,15 @@ function ferr(msg){
 
   <!-- 留言列表 -->
   <div class="gb-list" id="guestbookList"></div>
+</div>
+  </div>
+</div>
+
+<div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">04</span><h2>设置</h2><span class="b-code">THEME · VIEW</span></div>
+<div class="st-set">
+  <button class="th-btn" type="button" id="stTh">◐ 配色</button>
+  <button class="th-btn" type="button" id="stUi">▣ 界面</button>
+  <button class="th-btn" type="button" id="stVm">▦ 视图</button>
 </div>
 
 <!-- 云端配置弹窗 -->
@@ -3641,6 +3676,23 @@ function memoRender(){
   if(st){ var n=(v.match(/\[ \]/g)||[]).length,d=(v.match(/\[x\]/g)||[]).length; st.textContent=n+' 待办 · '+d+' 完成'; }
 }
 function memoOpen(){ var m=$('memoMask'); if(m){ memoRender(); m.classList.add('on'); } }
+(function(){
+  var c=document.getElementById('gbCard'),h=document.getElementById('gbCardH');
+  if(!c||!h)return;
+  if((localStorage.getItem('gb_collapsed')||'1')==='1')c.classList.add('collapsed');
+  var fl=document.querySelector('.gb-fold');
+  function upd(){ if(fl)fl.textContent=c.classList.contains('collapsed')?'▾ 展开':'▴ 收起'; }
+  upd();
+  h.addEventListener('click',function(){
+    var on=c.classList.toggle('collapsed');
+    localStorage.setItem('gb_collapsed',on?'1':'0');
+    upd();
+  });
+})();
+(function(){
+  var m={stTh:'thBtn',stUi:'uiBtn',stVm:'vmBtn'};
+  for(var k in m){(function(t){var b=document.getElementById(t);if(b)b.addEventListener('click',function(){var r=document.getElementById(m[t]);if(r)r.click();});})(k);}
+})();
 function memoClose(){ var m=$('memoMask'); if(m) m.classList.remove('on'); }
 (function(){
   var cs=document.querySelectorAll('.card[data-memo]');
