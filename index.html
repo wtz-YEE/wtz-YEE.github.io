@@ -2450,6 +2450,9 @@ function loadGuestBook(){
     if(o&&j.online!==undefined){ o.textContent='在线 '+j.online; o.style.display=''; }
     var nl=j.list||[];
     if(!cache||!cache.list) cache={list:[],maxId:0};
+    if(typeof j.total==='number' && cache.list.length && Math.abs(cache.list.length-j.total) > 5){
+      if(typeof fullSyncGb==='function'){ fullSyncGb(); return; }
+    }
     var del=j.deleted||[];
     if(del.length){
       var oldLen=cache.list.length;
@@ -2499,7 +2502,7 @@ function fullSyncGb(){
   }).catch(function(){});
 }
 setInterval(autoRefreshGb,10000);
-setInterval(fullSyncGb,120000);
+setInterval(fullSyncGb,45000);
 
 function compressImg(file,cb){
   var r=new FileReader();r.onload=function(){

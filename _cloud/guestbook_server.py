@@ -485,7 +485,7 @@ def api_guests_new():
     except Exception:
         on = 0
     deleted = [d["id"] for d in DEL_LOG if d["t"] > _t.time() - 600]
-    return jsonify({"ok": True, "list": nl, "online": on, "deleted": deleted})
+    return jsonify({"ok": True, "list": nl, "online": on, "deleted": deleted, "total": len(g)})
 
 
 @app.route("/guest_add", methods=["POST"])
