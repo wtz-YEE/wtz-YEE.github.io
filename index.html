@@ -1134,7 +1134,8 @@ mark.hl{background:var(--accent);color:#000;padding:0 2px}
 .amb::after{content:"";position:absolute;inset:0;opacity:var(--amb-o,1)}
 body.amb-on .amb{display:block;opacity:1}
 body.amb-soft .amb{opacity:.45}
-body.amb-on #thMask,body.amb-on #uiMask,body.amb-on #gb_config_dialog,body.amb-on #memoMask,body.amb-on #rankMask,body.amb-on #pfMask{position:relative;z-index:130}
+/* 弹窗自身的 z-index（98~130）已高于 .amb，无需改动定位——
+   切勿给弹窗加 position:relative，那会覆盖 position:fixed 并把弹窗挤到页面底部 */
 /* 方界：四角基准刻度线 */
 .amb-square::after{background:
  linear-gradient(var(--accent),var(--accent)) left 14px top 14px/34px 1px no-repeat,
