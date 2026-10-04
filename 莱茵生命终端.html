@@ -2854,15 +2854,45 @@ function open(){
   var c=document.getElementById('fragClose');
   if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
 }
+function clamp(v,a,b){return v<a?a:(v>b?b:v)}
+function fragPos(){
+  var key='wz_fragpos_'+N;
+  try{var s=JSON.parse(localStorage.getItem(key)||'null');if(s&&typeof s.x==='number'&&typeof s.y==='number')return s}catch(e){}
+  var w=window.innerWidth||1200,h=window.innerHeight||800;
+  /* 四个角随机取一个（左右 × 上下），各自带一点抖动。
+     留白：顶栏约 38px、底部导航约 62px、收集按钮 34px，避免压住可点的东西 */
+  var p;
+  for(var k=0;k<12;k++){
+    var L=Math.random()<0.5, T=Math.random()<0.5;
+    var jx=Math.random()*Math.min(90,w*0.12);   /* 横向抖动 */
+    var jy=Math.random()*Math.min(80,h*0.14);   /* 纵向抖动 */
+    var x=L?(20+jx):(w-36-jx);
+    var y=T?(52+jy):(h-116-jy);
+    x=clamp(x,22,w-40); y=clamp(y,50,h-48);
+    /* 避开左下角的收集按钮（约 14, h-108 附近） */
+    if(x<62&&y>h-150)continue;
+    p={x:Math.round(x),y:Math.round(y)};
+    break;
+  }
+  if(!p)p={x:Math.round(clamp(w-36,22,w-40)),y:Math.round(clamp(h-116,50,h-48))};
+  try{localStorage.setItem(key,JSON.stringify(p))}catch(e){}
+  return p;
+}
 function hide(){
   if(!N)return;
   if(got().indexOf(N)>=0)return;
   var s=document.createElement('style');
-  s.textContent='@keyframes fgem{0%,100%{transform:rotate(45deg) scale(1);opacity:.5}50%{transform:rotate(45deg) scale(1.16);opacity:1}}';
+  s.textContent='@keyframes fgem{0%,100%{transform:rotate(45deg) scale(1);opacity:.72}50%{transform:rotate(45deg) scale(1.18);opacity:1}}';
   document.head.appendChild(s);
   var g=document.createElement('button');
   g.type='button';g.title='有什么东西在这里';
-  g.style.cssText='position:fixed;right:16px;bottom:74px;z-index:2147482000;width:15px;height:15px;padding:0;background:none;border:1px solid var(--accent,#fff);cursor:pointer;animation:fgem 3.2s ease-in-out infinite;opacity:.55';
+  var P=fragPos();
+  g.style.cssText='position:fixed;left:'+P.x+'px;top:'+P.y+'px;z-index:2147482000;width:15px;height:15px;padding:0;background:none;border:1px solid var(--accent,#fff);box-shadow:0 0 7px var(--accent,#fff);cursor:pointer;animation:fgem 3.2s ease-in-out infinite;opacity:.85';
+  window.addEventListener('resize',function(){
+    var q=fragPos();
+    g.style.left=clamp(q.x,22,(window.innerWidth||1200)-40)+'px';
+    g.style.top=clamp(q.y,50,(window.innerHeight||800)-48)+'px';
+  });
   g.onclick=function(){
     if(g.parentNode)g.parentNode.removeChild(g);
     var a=got();if(a.indexOf(N)<0){a.push(N);a.sort(function(x,y){return x-y});setGot(a)}
