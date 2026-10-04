@@ -344,7 +344,7 @@ body.inv{--bg:#F2F2F2;--bg2:#E9E9E9;--panel:#EBEBEB;--panel2:#DDDDDD;--line:rgba
 .block{padding:12px max(20px,calc((100% - 920px)/2)) 6px}
 .b-head{margin-bottom:10px}
 .grid.two,.grid3{gap:12px}
-.card{background:rgba(9,13,16,.72);border:1px solid var(--term-brd)}
+.card{background:rgba(9,13,16,.72);border:1px solid var(--cbd,var(--line2))}
 .thumb{height:118px}
 .perm-hero{display:flex;align-items:center;gap:16px}
 .term{position:relative;margin:14px max(20px,calc((100% - 920px)/2)) 0;border:1px solid var(--line2);background:#04070A;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 18px 46px rgba(0,0,0,.5);font-family:var(--mono)}
@@ -592,51 +592,120 @@ body.ui-ember .card,body.ui-ember #thBox,body.ui-ember .gb{border-color:rgba(255
 body.ui-mesh{--r:2px;--r2:1px;--bw:1px;--sh:none}
 body.ui-mesh::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:34px 34px}
 body.ui-aurora .card,body.ui-aurora #thBox,body.ui-aurora .gb{border:1px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(120deg,rgba(64,224,208,.5),rgba(150,110,255,.5)) border-box;box-shadow:0 0 26px rgba(120,160,255,.12)}
-/* ===== 每主题专属卡片表面特效（升级·光质版） ===== */
-/* 方界：数据刻度排线 + 角部亮边 */
-body.ui-square .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:repeating-linear-gradient(180deg,transparent 0 22px,rgba(255,255,255,.07) 22px 23px);opacity:.6}
-body.ui-square .card{box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),0 1px 0 rgba(255,255,255,.04)}
-/* 圆润：双层柔光——顶部主光 + 底部环境反光 */
-body.ui-round .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:radial-gradient(120% 60% at 50% 0%,rgba(255,255,255,.16),transparent 55%),radial-gradient(100% 50% at 50% 100%,rgba(255,255,255,.06),transparent 55%)}
-/* 像素：像素块立体高光（左上亮右下暗） */
-body.ui-pixel .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:linear-gradient(135deg,rgba(255,255,255,.22) 0 25%,transparent 60%),linear-gradient(315deg,rgba(0,0,0,.30) 0 20%,transparent 60%)}
-body.ui-pixel .card{box-shadow:inset 0 -4px 0 rgba(0,0,0,.28),inset 0 4px 0 rgba(255,255,255,.06)}
-/* 霓虹：内部扫光 + 外框辉光（呼吸） */
-body.ui-neon .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.24) 50%,transparent 70%);background-size:240% 100%;animation:neonsh 3.6s linear infinite;mix-blend-mode:screen}
-body.ui-neon .card{box-shadow:0 0 6px var(--accent),0 0 26px rgba(0,0,0,.28),inset 0 0 14px rgba(255,255,255,.04)}
-/* 纸张：纸纤维 + 折角 + 边磨损 */
-body.ui-paper .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(rgba(255,255,255,.14) 1px,transparent 1.4px) 0 0/3px 3px,linear-gradient(225deg,rgba(0,0,0,.20) 0 26px,transparent 26px);opacity:.5}
-/* 终端：光标闪烁 + 底光 */
-body.ui-term .card::before{content:"▌";position:absolute;right:12px;bottom:7px;color:var(--accent);animation:blink 1.1s steps(2) infinite;opacity:.85;z-index:2}
-body.ui-term .card{box-shadow:inset 0 -1px 0 rgba(255,255,255,.06)}
-/* 玻璃：折射光斑 + 高光斜条 + 边缘反射 */
-body.ui-glass .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 46%,transparent 60%),radial-gradient(90% 60% at 20% 0%,rgba(255,255,255,.10),transparent 60%);opacity:.8}
-body.ui-glass .card{box-shadow:0 0 0 1px rgba(255,255,255,.14),0 18px 40px rgba(0,0,0,.35)}
-/* 绿光：屏显网格 + 屏幕辉光 */
-body.ui-crt .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:repeating-linear-gradient(180deg,transparent 0 2px,rgba(0,0,0,.22) 2px 3px),radial-gradient(circle at 50% 40%,rgba(80,255,120,.07),transparent 70%);mix-blend-mode:overlay}
-body.ui-crt .card{box-shadow:0 0 0 1px rgba(57,255,20,.5),0 0 24px rgba(57,255,20,.18)}
-/* 极光：多色极光流动（screen 叠加，更强） */
-body.ui-aurora .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:linear-gradient(120deg,rgba(64,224,208,.34),transparent 45%,rgba(150,110,255,.32)),linear-gradient(60deg,transparent 55%,rgba(90,150,255,.24));background-size:260% 260%;animation:aurf 7s ease-in-out infinite;mix-blend-mode:screen}
-body.ui-aurora .card{box-shadow:0 0 0 1px rgba(120,160,255,.35),0 0 32px rgba(120,160,255,.25)}
-/* 全息：彩色衍射流光 + 全息噪点 */
-body.ui-hologram .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.28) 50%,transparent 62%),radial-gradient(rgba(255,255,255,.10) 1px,transparent 1.5px) 0 0/4px 4px;background-size:260% 100%,4px 4px;animation:neonsh 4.5s linear infinite;mix-blend-mode:screen}
+/* ===== 每主题专属卡片表面特效 ===== */
+/* 方界：档案卡 · 刻度排线 + 左侧主索引条 + 角标 */
+body.ui-square .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ repeating-linear-gradient(180deg,transparent 0 21px,rgba(255,255,255,.085) 21px 22px),
+ linear-gradient(90deg,var(--accent) 0 2px,transparent 2px),
+ linear-gradient(0deg,transparent 10px,rgba(255,255,255,.14) 10px 11px,transparent 11px) left 0 top 0/16px 100% no-repeat}
+body.ui-square .card{box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+/* 圆润：顶部主光 + 底部环境反光 + 内侧亮边 */
+body.ui-round .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ radial-gradient(130% 62% at 50% -6%,rgba(255,255,255,.20),transparent 58%),
+ radial-gradient(100% 50% at 50% 106%,rgba(255,255,255,.07),transparent 55%),
+ linear-gradient(180deg,rgba(255,255,255,.10),transparent 14%) top/100% 100% no-repeat}
+/* 像素：8-bit 抖动网点 + 立体高光/暗角 */
+body.ui-pixel .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ repeating-linear-gradient(45deg,rgba(255,255,255,.10) 0 2px,transparent 2px 4px),
+ linear-gradient(135deg,rgba(255,255,255,.20) 0 22%,transparent 52%),
+ linear-gradient(315deg,rgba(0,0,0,.34) 0 18%,transparent 52%)}
+body.ui-pixel .card{box-shadow:inset 0 -4px 0 rgba(0,0,0,.30),inset 0 4px 0 rgba(255,255,255,.07)}
+/* 霓虹：扫光头 + 呼吸描边 */
+body.ui-neon .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:linear-gradient(100deg,transparent 34%,rgba(255,255,255,.30) 50%,transparent 66%);background-size:240% 100%;background-repeat:no-repeat;animation:neonsh 3.6s linear infinite;mix-blend-mode:screen}
+body.ui-neon .card{box-shadow:0 0 0 1px var(--accent),0 0 14px rgba(255,255,255,.10),0 0 30px rgba(0,0,0,.30);animation:neonBreath 3.4s ease-in-out infinite}
+/* 纸张：纸纤维 + 折痕 + 折角暗面 */
+body.ui-paper .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ radial-gradient(rgba(0,0,0,.055) .6px,transparent 1.1px) 0 0/3px 3px,
+ linear-gradient(200deg,transparent 0 61%,rgba(0,0,0,.055) 61% 61.7%,transparent 61.7%),
+ linear-gradient(225deg,rgba(0,0,0,.17) 0 26px,transparent 26px),
+ radial-gradient(120% 80% at 12% 0%,rgba(255,255,255,.30),transparent 62%)}
+body.ui-paper .card{box-shadow:0 3px 0 rgba(0,0,0,.10),0 14px 30px rgba(0,0,0,.30)}
+/* 终端：扫描线 + 荧光顶光 + 光斑 */
+body.ui-term .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ repeating-linear-gradient(180deg,transparent 0 2px,rgba(0,0,0,.20) 2px 3px),
+ radial-gradient(120% 44% at 50% 0%,var(--accent-soft),transparent 66%),
+ radial-gradient(80% 34% at 50% 102%,var(--accent-soft),transparent 62%)}
+body.ui-term .card::after{content:"▌";position:absolute;right:12px;bottom:7px;color:var(--accent);animation:blink 1.1s steps(2) infinite;opacity:.85;z-index:2;pointer-events:none}
+body.ui-term .card{box-shadow:inset 0 0 0 1px var(--accent-soft),inset 0 0 22px rgba(0,0,0,.28)}
+/* 玻璃：高光斜条 + 边缘反射 + 折射弧 */
+body.ui-glass .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ linear-gradient(118deg,transparent 30%,rgba(255,255,255,.20) 43%,transparent 56%),
+ linear-gradient(180deg,rgba(255,255,255,.24),transparent 16%),
+ linear-gradient(0deg,rgba(255,255,255,.10),transparent 10%),
+ radial-gradient(70% 42% at 16% 104%,rgba(255,255,255,.10),transparent 62%)}
+body.ui-glass .card{box-shadow:0 0 0 1px rgba(255,255,255,.16),0 18px 40px rgba(0,0,0,.35)}
+/* 绿光：扫描线 + 荧光 + 屏幕暗角 */
+body.ui-crt .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ repeating-linear-gradient(180deg,transparent 0 2px,rgba(0,0,0,.26) 2px 3px),
+ radial-gradient(circle at 50% 42%,var(--accent-soft),transparent 72%),
+ radial-gradient(140% 120% at 50% 50%,transparent 52%,rgba(0,0,0,.42) 100%)}
+body.ui-crt .card{box-shadow:0 0 0 1px var(--accent),0 0 22px var(--accent-soft)}
+/* 极光：多色极光带流动 */
+body.ui-aurora .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ linear-gradient(120deg,var(--accent-soft),transparent 42%,rgba(150,110,255,.26),transparent 74%),
+ linear-gradient(60deg,transparent 48%,var(--accent-soft) 62%,transparent 82%),
+ radial-gradient(120% 70% at 12% 0%,var(--accent-soft),transparent 60%);
+ background-size:260% 260%,240% 240%,100% 100%;animation:aurf 7s ease-in-out infinite;mix-blend-mode:screen}
+body.ui-aurora .card{box-shadow:0 0 0 1px var(--accent-soft),0 0 32px var(--accent-soft)}
+/* 全息：衍射彩虹 + 噪点 */
+body.ui-hologram .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ linear-gradient(110deg,transparent 26%,rgba(255,46,147,.26) 38%,rgba(27,255,255,.26) 50%,rgba(255,214,0,.24) 62%,transparent 76%),
+ linear-gradient(75deg,transparent 62%,rgba(160,120,255,.20),transparent 84%),
+ radial-gradient(rgba(255,255,255,.10) 1px,transparent 1.6px) 0 0/4px 4px;
+ background-size:260% 100%,240% 100%,4px 4px;animation:holosh 4.5s linear infinite;mix-blend-mode:screen}
 body.ui-hologram .card{box-shadow:0 0 0 1px rgba(255,255,255,.22),0 0 30px rgba(27,255,255,.16)}
-/* 霜冻：立体冰晶——多簇冰晶点 + 冰棱 + 霜雾冰面反光 */
-body.ui-frost .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(circle at 30% 20%,rgba(215,245,255,.85) 1px,transparent 1.9px),radial-gradient(circle at 70% 55%,rgba(215,245,255,.75) 1.3px,transparent 2.1px),radial-gradient(circle at 45% 82%,rgba(215,245,255,.65) 1px,transparent 1.9px),linear-gradient(150deg,transparent 85%,rgba(190,240,255,.6) 85% 88%,transparent 88%),linear-gradient(30deg,transparent 85%,rgba(190,240,255,.45) 85% 88%,transparent 88%);background-size:120px 120px,110px 110px,100px 100px,26px 26px,34px 34px;opacity:.9;mix-blend-mode:screen}
-body.ui-frost .card{box-shadow:0 0 0 1px rgba(190,240,255,.4),0 0 36px rgba(150,220,255,.24)}
-/* 虚空：深邃暗角 + 悬浮星点（缓动） */
-body.ui-void .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(circle at 50% 50%,transparent 52%,rgba(0,0,0,.42) 100%),radial-gradient(rgba(255,255,255,.24) 1px,transparent 1.6px) 0 0/48px 48px;animation:voidmove 14s linear infinite}
-body.ui-void .card{box-shadow:0 10px 40px rgba(0,0,0,.5)}
-/* 余烬：跳动的火星 + 热浪 + 焦黑下缘 */
-body.ui-ember .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(rgba(255,150,70,.65) 1px,transparent 1.7px) 0 0/38px 38px,linear-gradient(180deg,transparent 40%,rgba(120,30,0,.38));opacity:.75}
-body.ui-ember .card{box-shadow:0 0 0 1px rgba(255,120,40,.32),0 0 28px rgba(255,120,40,.20)}
-/* 网格：发光网格 + 节点亮光 */
-body.ui-mesh .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:linear-gradient(rgba(120,180,255,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.16) 1px,transparent 1px),radial-gradient(circle at 25% 25%,rgba(120,200,255,.55) 1px,transparent 2px),radial-gradient(circle at 75% 60%,rgba(120,200,255,.45) 1px,transparent 2px);background-size:28px 28px,28px 28px,28px 28px,28px 28px}
-body.ui-mesh .card{box-shadow:0 0 0 1px rgba(120,180,255,.28),0 0 20px rgba(120,180,255,.14)}
+/* 霜冻：结霜——沿边冰壳 + 斜向冰棱晶纹 + 立体雪晶 + 冰面反光 */
+body.ui-frost .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ radial-gradient(140% 72% at 50% -14%,rgba(226,246,255,.30),transparent 62%),
+ radial-gradient(120% 64% at 50% 114%,rgba(196,232,255,.20),transparent 64%),
+ radial-gradient(110% 50% at -10% 50%,rgba(214,242,255,.20),transparent 58%),
+ radial-gradient(110% 50% at 110% 50%,rgba(214,242,255,.20),transparent 58%),
+ repeating-linear-gradient(58deg,transparent 0 13px,rgba(228,248,255,.13) 13px 14px,transparent 14px 29px),
+ repeating-linear-gradient(122deg,transparent 0 15px,rgba(210,240,255,.11) 15px 16px,transparent 16px 32px),
+ repeating-linear-gradient(180deg,transparent 0 22px,rgba(190,232,255,.07) 22px 23px)}
+/* 立体雪晶：六向细棱 + 亮心 */
+body.ui-frost .card::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ radial-gradient(circle at 26% 24%,rgba(255,255,255,.95) 1px,transparent 2.1px),
+ radial-gradient(circle at 72% 38%,rgba(255,255,255,.80) 1.2px,transparent 2.3px),
+ radial-gradient(circle at 44% 68%,rgba(255,255,255,.86) 1px,transparent 2.1px),
+ radial-gradient(circle at 84% 82%,rgba(255,255,255,.72) 1px,transparent 2px),
+ radial-gradient(circle at 14% 86%,rgba(255,255,255,.68) 1px,transparent 2px),
+ conic-gradient(from 0deg at 26% 24%,transparent 0 8%,rgba(232,250,255,.55) 8% 10%,transparent 10% 25%,rgba(232,250,255,.45) 25% 27%,transparent 27% 42%,rgba(232,250,255,.50) 42% 44%,transparent 44% 100%);
+ background-size:128px 128px,116px 116px,142px 142px,104px 104px,96px 96px,128px 128px;
+ background-repeat:repeat;opacity:.95;mix-blend-mode:screen;animation:frostGrow 12s ease-in-out infinite}
+body.ui-frost .card{box-shadow:0 0 0 1px rgba(198,238,255,.46),0 0 14px rgba(190,240,255,.20),inset 0 0 26px rgba(190,236,255,.13)}
+/* 虚空：极深暗角 + 微尘星点 + 顶端地平线 */
+body.ui-void .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ radial-gradient(140% 120% at 50% 50%,transparent 36%,rgba(0,0,0,.66) 100%),
+ radial-gradient(rgba(255,255,255,.32) 1px,transparent 1.6px) 0 0/44px 44px,
+ radial-gradient(rgba(180,210,255,.20) 1px,transparent 1.5px) 21px 27px/86px 86px,
+ linear-gradient(180deg,rgba(255,255,255,.12),transparent 5%) top/100% 100% no-repeat;
+ animation:voidmove 14s linear infinite}
+body.ui-void .card{box-shadow:0 12px 44px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.06)}
+/* 余烬：底部热源 + 上升热浪 + 火星 + 焦黑下缘 */
+body.ui-ember .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ radial-gradient(120% 74% at 50% 118%,rgba(255,122,44,.30),transparent 66%),
+ repeating-conic-gradient(from 0deg at 50% 128%,rgba(255,152,72,.10) 0 3deg,transparent 3deg 9deg),
+ radial-gradient(rgba(255,152,72,.60) 1px,transparent 1.7px) 0 0/42px 42px,
+ linear-gradient(0deg,rgba(96,24,0,.34),transparent 38%)}
+body.ui-ember .card{box-shadow:0 0 0 1px rgba(255,120,40,.34),0 0 28px rgba(255,120,40,.22),inset 0 -12px 24px rgba(120,34,0,.20)}
+/* 网格：工程蓝图——毫米格 + 交点节点 + 角标 */
+body.ui-mesh .card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:
+ linear-gradient(var(--accent-soft) 1px,transparent 1px),
+ linear-gradient(90deg,var(--accent-soft) 1px,transparent 1px),
+ radial-gradient(circle,var(--accent) 1px,transparent 1.8px) 0 0/28px 28px,
+ radial-gradient(120% 60% at 50% 0%,rgba(255,255,255,.07),transparent 62%);
+ background-size:28px 28px,28px 28px,28px 28px,100% 100%}
+body.ui-mesh .card{box-shadow:0 0 0 1px var(--accent-soft),0 0 20px var(--accent-soft)}
+@keyframes neonBreath{0%,100%{box-shadow:0 0 0 1px var(--accent),0 0 10px rgba(255,255,255,.07),0 0 26px rgba(0,0,0,.30)}50%{box-shadow:0 0 0 1px var(--accent),0 0 20px var(--accent-soft),0 0 36px rgba(0,0,0,.30)}}
+@keyframes frostGrow{0%,100%{opacity:.72}50%{opacity:1}}
 @keyframes neonsh{0%{background-position:200% 0}100%{background-position:-200% 0}}
-@keyframes aurf{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes aurf{0%,100%{background-position:0% 50%,0% 50%,50% 50%}50%{background-position:100% 50%,100% 50%,50% 50%}}
+@keyframes pactin{0%{opacity:0;transform:translateY(14px) scale(.985)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes holosh{0%{background-position:200% 0,200% 0,0 0}100%{background-position:-200% 0,-200% 0,0 0}}
 @keyframes blink{50%{opacity:0}}
-@keyframes voidmove{0%{background-position:0 0,0 0}100%{background-position:0 0,-48px 48px}}
+@keyframes voidmove{0%{background-position:0 0,0 0,0 0,0 0}100%{background-position:0 0,-44px 44px,-86px 86px,0 0}}
+@media(prefers-reduced-motion:reduce){body.ui-neon .card,body.ui-frost .card::after,body.ui-void .card::before,body.ui-aurora .card::before,body.ui-hologram .card::before,body.ui-neon .card::before,body.ui-term .card::after,.pt i,.card-pt i{animation:none!important}}
 #uiMask{position:fixed;inset:0;z-index:121;background:rgba(4,5,6,.74);display:flex;align-items:center;justify-content:center;padding:18px}
 #uiMask.hidden{display:none}
 #uiBox{width:min(680px,94vw);max-height:86vh;overflow-y:auto;background:#101214;border:1px solid var(--line2);padding:20px 22px 22px;box-shadow:0 24px 70px rgba(0,0,0,.6);animation:pactin .35s cubic-bezier(.22,1,.36,1) both;border-radius:var(--r);position:relative;box-sizing:border-box}
