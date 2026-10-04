@@ -1040,6 +1040,19 @@ body.view-mobile .gb-row input{min-width:80px}
 .wz-guide-n{font-size:10.5px;color:var(--ink3);letter-spacing:.3em;margin-bottom:10px}
 .wz-guide-t{font-size:19px;letter-spacing:.14em;color:var(--ink);margin-bottom:12px}
 .wz-guide-d{font-size:12.5px;line-height:1.9;color:var(--ink2)}
+.wz-ask{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.wz-ask-h{font-size:10.5px;color:var(--ink3);letter-spacing:.14em;margin-bottom:9px}
+.wz-qk{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+.wz-q{border:1px solid var(--line2);background:none;color:var(--ink2);font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:4px 10px;cursor:pointer;transition:.18s}
+.wz-q:hover{border-color:var(--accent);color:var(--accent)}
+.wz-ask-r{display:flex;gap:8px}
+.wz-ask-r input{flex:1;min-width:0;background:var(--bg2,var(--panel2));border:1px solid var(--line2);color:var(--ink);font-family:var(--mono);font-size:12px;padding:7px 10px;outline:none}
+.wz-ask-r input:focus{border-color:var(--accent)}
+.wz-ask-r button{border:1px solid var(--accent);background:none;color:var(--accent);font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;padding:7px 16px;cursor:pointer;white-space:nowrap}
+.wz-ask-r button:hover{background:var(--accent-soft)}
+.wz-ans{margin-top:10px;background:var(--panel2);border:1px solid var(--line);padding:10px 12px;font-size:12px;line-height:1.95}
+.wz-a-q{color:var(--ink3);font-size:11px;margin-bottom:6px}
+.wz-a-a{color:var(--ink2)}
 .wz-guide-f{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-top:1px solid var(--line)}
 .wz-guide-f #wzGDot{letter-spacing:.4em;color:var(--accent);font-size:9px}
 .pf-ckn{font-size:11px;color:var(--ink3);letter-spacing:.12em;margin:10px 0 6px}
@@ -1085,6 +1098,27 @@ body.view-mobile .gb-row input{min-width:80px}
 .rk-v{color:var(--accent);font-family:var(--mono);font-size:13px;flex:none}
 .rk-me{background:var(--accent-soft)}
 .rk-empty{color:var(--ink3);font-size:12px;padding:22px 0;text-align:center;letter-spacing:.1em}
+.shop-pts{color:var(--accent);font-family:var(--mono);font-size:12px;letter-spacing:.08em;margin-right:10px}
+.shop-item{border:1px solid var(--line2);background:rgba(255,255,255,.02);padding:10px 12px;margin-bottom:8px;border-radius:var(--r2)}
+.shop-item .si-h{display:flex;align-items:center;gap:8px}
+.shop-item .si-n{font-size:13.5px;color:var(--ink)}
+.shop-item .si-c{margin-left:auto;color:var(--accent);font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.shop-item .si-d{font-size:11px;color:var(--ink3);margin-top:4px;line-height:1.6}
+.shop-item .si-a{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+.shop-item.on{border-color:var(--accent)}
+.shop-own{color:var(--ok);font-size:10px;border:1px solid var(--ok);padding:0 6px;letter-spacing:.08em}
+.shop-eq{color:var(--accent);font-size:10px;border:1px solid var(--accent);padding:0 6px;letter-spacing:.08em}
+.shop-btn{border:1px solid var(--line2);background:none;color:var(--ink2);font-size:11px;letter-spacing:.1em;padding:5px 14px;cursor:pointer;font-family:var(--mono);transition:.18s}
+.shop-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.shop-btn:disabled{opacity:.38;cursor:default}
+.shop-btn.prim{border-color:var(--accent);color:var(--accent)}
+.u-title{color:var(--accent);font-size:10.5px;letter-spacing:.08em;margin-left:6px}
+.u-frame-sq{box-shadow:0 0 0 2px var(--accent)}
+.u-frame-neon{box-shadow:0 0 10px var(--accent),0 0 0 1px var(--accent)}
+.u-frame-frost{box-shadow:0 0 12px rgba(190,236,255,.8),0 0 0 1px rgba(220,245,255,.9)}
+.u-frame-ember{box-shadow:0 0 12px rgba(255,140,60,.75),0 0 0 1px rgba(255,170,90,.9)}
+.u-frame-aurora{box-shadow:0 0 14px rgba(92,232,216,.8),0 0 0 1px rgba(150,110,255,.9)}
+.u-frame-gold{box-shadow:0 0 12px rgba(212,160,23,.85),0 0 0 2px #D4A017}
 .th-grid .th-card.rt{padding:8px 10px;text-align:center}
 .th-grid .th-card.rt .tn{font-size:12px;color:var(--ink2);margin:0}
 .memo-tag.cd-over{color:var(--bad);border-color:var(--bad)}
@@ -1175,6 +1209,18 @@ body.ui-pixel .card::before{animation:ambSlide 5s steps(12) infinite}
 .card-pt{z-index:0}
 .pt i,.card-pt i{position:absolute;border-radius:50%;will-change:transform,opacity}
 .pt i,.card-pt i{animation-iteration-count:infinite}
+/* 亮底配色（晨光白/雾钢等）下，白色粒子会糊在浅背景里 —— 改用主色并反转混合模式 */
+body.light .pt i,body.light .card-pt i{filter:none!important}
+body.light .pt-snow i,body.light .card-pt-snow i{background:radial-gradient(circle at 42% 38%,var(--accent),rgba(0,0,0,.28) 62%,transparent 76%)}
+body.light .pt-star i,body.light .card-pt-star i{background:radial-gradient(circle,var(--accent),rgba(0,0,0,.30) 52%,transparent 78%)}
+body.light .pt-ash i,body.light .card-pt-ash i{background:radial-gradient(circle,rgba(0,0,0,.5),transparent 72%)}
+body.light .pt-glyph i,body.light .card-pt-glyph i{color:var(--accent);text-shadow:none}
+body.light .pt-dot i,body.light .card-pt-dot i,body.light .pt-spark i,body.light .card-pt-spark i{background:var(--accent);box-shadow:none}
+body.light .pt-prism i,body.light .card-pt-prism i{background:linear-gradient(120deg,#C2185B,#00838F,#B58900)}
+body.light .pt-ice i,body.light .card-pt-ice i{background:linear-gradient(140deg,rgba(0,0,0,.42),rgba(0,0,0,.16))}
+body.light .pt-fire i,body.light .card-pt-fire i{background:radial-gradient(circle,rgba(200,70,0,.85),transparent 74%);box-shadow:none}
+body.light .amb{opacity:.55}
+.shop-sub{color:var(--ink3);font-size:11px;letter-spacing:.1em;margin-bottom:10px}
 .pt-snow i{top:-10vh;background:radial-gradient(circle at 42% 38%,#fff,rgba(228,244,255,.78) 55%,rgba(200,228,255,0) 72%);animation-name:pFall;animation-timing-function:linear}
 .card-pt-snow i{top:-12px;background:radial-gradient(circle at 42% 38%,#fff,rgba(228,244,255,.8) 55%,rgba(200,228,255,0) 72%);animation-name:pFall;animation-timing-function:linear}
 .pt-ember i,.card-pt-ember i{background:radial-gradient(circle at 50% 50%,#FFD9A0,#FF8A2B 52%,rgba(255,90,10,0) 74%);box-shadow:0 0 5px rgba(255,140,40,.6);animation-name:pRise;animation-timing-function:linear}
@@ -1196,6 +1242,16 @@ body.ui-ember .card::before{animation:ambBreath 6s ease-in-out infinite}
 @keyframes ambShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 @keyframes ambSlide{0%{background-position:0 0}100%{background-position:0 22px}}
 @media(prefers-reduced-motion:reduce){.amb,.amb::after,body.ui-round .card::before,body.ui-pixel .card::before,body.ui-ember .card::before{animation:none}.amb{display:none}}
+/* 亮底下霜冻的 screen 混合会把白霜叠成更白 → 换成 multiply，白霜变深才算结晶 */
+body.light.ui-frost .card::after{mix-blend-mode:multiply;opacity:.72}
+body.light.ui-frost .card::before{background:
+ radial-gradient(140% 72% at 50% -14%,rgba(120,170,200,.30),transparent 62%),
+ radial-gradient(120% 64% at 50% 114%,rgba(140,185,215,.22),transparent 64%),
+ radial-gradient(110% 50% at -10% 50%,rgba(130,175,205,.22),transparent 58%),
+ radial-gradient(110% 50% at 110% 50%,rgba(130,175,205,.22),transparent 58%),
+ repeating-linear-gradient(58deg,transparent 0 13px,rgba(110,160,195,.16) 13px 14px,transparent 14px 29px),
+ repeating-linear-gradient(122deg,transparent 0 15px,rgba(120,170,200,.13) 15px 16px,transparent 16px 32px),
+ repeating-linear-gradient(180deg,transparent 0 22px,rgba(130,175,205,.09) 22px 23px)}
 </style>
 
 <script>
@@ -1470,6 +1526,36 @@ function ferr(msg){
     <h3>排行榜</h3>
     <p>经验 / 积分 / 成就三项总榜，看看谁在榜首。</p>
     <span class="c-go">查看排行
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</div>
+<div class="card is-tool" id="shopCard" style="cursor:pointer">
+  <div class="spot" aria-hidden="true"></div>
+  <div class="thumb">
+    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+      <rect width="400" height="200" fill="#0A0A0A"/>
+      <g stroke="#2a2a2a" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400"/></g>
+      <g fill="none" stroke="#FFFFFF" stroke-width="2">
+        <path d="M168 70 h64 l-6 66 a10 10 0 0 1 -10 9 h-32 a10 10 0 0 1 -10 -9 z"/>
+        <path d="M186 70 v-8 a14 14 0 0 1 28 0 v8"/>
+      </g>
+      <g fill="#8f8f8f">
+        <rect x="176" y="92" width="48" height="6"/>
+        <rect x="176" y="106" width="34" height="6"/>
+      </g>
+      <circle cx="200" cy="130" r="9" fill="none" stroke="#FFC24B" stroke-width="2"/>
+      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+        <path d="M118 176 H282" stroke="#444" stroke-width="1"/>
+        <text x="200" y="190" letter-spacing="6">POINTS SHOP</text>
+      </g>
+    </svg>
+  </div>
+  <div class="card-bd">
+    <div class="c-tag">SHOP · 积分</div>
+    <h3>积分商店</h3>
+    <p>用签到与游戏攒的积分，兑换称号与头像框。</p>
+    <span class="c-go">进入商店
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
     </span>
   </div>
@@ -1880,6 +1966,21 @@ function ferr(msg){
   </div>
 </div>
 
+<div class="memo-mask" id="shopMask">
+  <div class="memo-box" style="width:min(680px,94vw);height:auto;max-height:86vh">
+    <div class="memo-h">积分商店
+      <span class="memo-act">
+        <span id="shopPts" class="shop-pts">-- 积分</span>
+        <button class="gb-btn ghost" id="shopClose" style="padding:3px 12px;font-size:11px">✕</button>
+      </span>
+    </div>
+    <div class="memo-bd" style="display:block;overflow-y:auto">
+      <div class="th-grid" id="shopTabs" style="grid-template-columns:repeat(2,1fr);margin-bottom:12px"></div>
+      <div id="shopBody" style="min-height:140px"></div>
+    </div>
+  </div>
+</div>
+
 <div class="memo-mask" id="memoMask">
   <div class="memo-box">
     <div class="memo-h">备忘录 <span class="memo-st" id="memoStat"></span>
@@ -1945,6 +2046,7 @@ function setV(bg,a,c,cd,cl){
   st.setProperty('--accent',a);st.setProperty('--accent2',mix(a,.22));st.setProperty('--accent-soft',rgba(a,.12));
   st.setProperty('--line',line);st.setProperty('--line2',line2);
   st.setProperty('--ok',a);st.setProperty('--warn',mix(a,.28));st.setProperty('--bad','#FF5C7A');
+  try{document.body.classList.toggle('light',dark)}catch(e){}
 }
 function applyT(t){
   setV(t.bg,t.a,t.card,t.cbd,t.cgl);
@@ -2139,6 +2241,15 @@ function loadUi(){
   var id='';try{id=localStorage.getItem(UIK)||''}catch(e){}
   applyUi(id);
 }
+var loadUiReady=function(){
+  loadUi();
+  try{renderTh()}catch(e){}
+  try{if(window.renderUi)renderUi()}catch(e){}
+  /* 卡片与氛围层依赖 DOM 里的 .card，等解析完补挂粒子 */
+  try{pAttachCards(PT_CARD[localStorage.getItem(UIK)||'']||'')}catch(e){}
+};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadUiReady);
+else loadUiReady();
 var VK='wz_view';
 function vToast(t){
   var d=document.createElement('div');
@@ -3292,7 +3403,7 @@ function openProfile(nm){
     }
     bd.innerHTML=
       '<div class="pf-h">'+avH+'<div><div class="pf-nm">'+esc(pf.name)+(pf.badge?' <span style="color:var(--ok);font-size:10px;letter-spacing:.1em;border:1px solid var(--ok);padding:0 5px">连签'+pf.badge+'日</span>':'')+(pf.is_admin?' <span style="color:var(--accent);font-size:10px;letter-spacing:.1em;border:1px solid var(--accent);padding:0 5px">ADMIN</span>':'')+(pf.banned?' <span style="color:var(--bad);font-size:10px;border:1px solid var(--bad);padding:0 5px">已拉黑</span>':'')+'</div>'+
-      '<div class="pf-sub">LV '+lv+' · '+esc(pf.title)+'</div>'+
+      '<div class="pf-sub">LV '+lv+' · '+esc(pf.title)+(pf.pt?' <span class="u-title">· ' + esc(pf.pt) + '</span>':'')+'</div>'+
       '<div class="pf-lvbar"><i style="width:'+pct+'%"></i></div>'+
       '<div class="pf-lvt">经验 '+pf.exp+' · '+pct+'%</div>'+bioH+bioEdit+'</div></div>'+
       '<div class="pf-stats"><span>连签 '+pf.streak+'<i>天</i></span><span>总签 '+(+pf.total||0)+'<i>次</i></span><span>积分 '+pf.pts+'</span><span>注册 '+(pf.days>0?pf.days:'—')+'<i>天</i></span><span>获赞 '+pf.likes+'</span></div>'+
@@ -3964,6 +4075,8 @@ autoCloud();
 if(S.user){
   pmRefreshConversations();
   startPoll();
+  applyAuth();
+  try{shopBadge()}catch(e){}
 }
 
 /* 暴露到全局，兼容页面里可能存在的内联调用 */
@@ -4418,6 +4531,108 @@ function openRank(by){
   if(rt)rt.addEventListener('click',function(e){
     var c=e.target.closest('[data-rk]');
     if(c)openRank(c.getAttribute('data-rk'));
+  });
+})();
+/* ===== 积分商店 ===== */
+var _shopCat=null,_shopKind='title';
+function shopItemHtml(x,owned,eq){
+  var canBuy=!!S.user&&!owned,short=!!S.user&&!owned&&(+S.user.pts||0)<x.cost;
+  var a='';
+  if(!S.user)a='<span class="shop-sub">登录后可购买</span>';
+  else if(owned&&eq)a='<span class="shop-eq">已装备</span><button class="shop-btn" data-unequip="'+x.id+'">卸下</button>';
+  else if(owned)a='<span class="shop-own">已拥有</span><button class="shop-btn prim" data-equip="'+x.id+'">装备</button>';
+  else a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'积分不足':'兑换')+'</button>';
+  return '<div class="shop-item'+(eq?' on':'')+'"><div class="si-h"><span class="si-n">'+esc(x.name)+'</span>'+
+    (owned?'<span class="shop-own">已有</span>':'')+'<span class="si-c">'+x.cost+' 积分</span></div>'+
+    '<div class="si-d">'+esc(x.desc||'')+'</div><div class="si-a">'+a+'</div></div>';
+}
+function shopRender(){
+  var bd=$('shopBody');if(!bd)return;
+  var pts=$('shopPts');
+  if(pts)pts.textContent=(S.user?(+S.user.pts||0):0)+' 积分';
+  if(!_shopCat){bd.innerHTML='<div class="rk-empty">载入中…</div>';return}
+  var t=$('shopTabs');
+  if(t)t.innerHTML=[['title','称号'],['frame','头像框']].map(function(x){
+    return '<div class="th-card rt'+(_shopKind===x[0]?' on':'')+'" data-sk="'+x[0]+'"><div class="tn">'+x[1]+'</div></div>';}).join('');
+  var list=_shopCat.filter(function(x){return x.type===_shopKind});
+  if(!list.length){bd.innerHTML='<div class="rk-empty">暂无商品</div>';return}
+  var myTitle='',myFrame='';
+  if(S.user){myTitle=S.user.title||'';myFrame=S.user.frame||''}
+  bd.innerHTML=list.map(function(x){
+    var owned=false;
+    if(S.user){
+      owned=(S.user.items||[]).indexOf(x.id)>=0;
+      if(x.type==='title'&&myTitle===x.name)owned=true;
+    }
+    var eq=(x.type==='title')?(myTitle===x.name):(myFrame===x.id);
+    return shopItemHtml(x,owned,eq);
+  }).join('');
+}
+function openShop(){
+  var m=$('shopMask');if(m)m.classList.add('on');
+  if(_shopCat){shopRender();return}
+  shopRender();
+  call('/shop',{}).then(function(j){
+    _shopCat=(j&&j.ok&&j.list)?j.list:[];
+    shopRender();
+  }).catch(function(){_shopCat=[];shopRender()});
+}
+function shopBuy(id){
+  var bd=$('shopBody');
+  call('/buy',{id:id}).then(function(j){
+    if(!j||!j.ok)return say((j&&j.msg)||'兑换失败',false);
+    S.user.pts=j.pts;S.user.items=j.items||S.user.items||[];
+    if(j.title)S.user.title=j.title;
+    if(j.frame)S.user.frame=j.frame;
+    try{localStorage.setItem(K_SESS,JSON.stringify(S.user))}catch(e){}
+    say(j.msg||'已兑换',true);
+    shopRender();shopBadge();
+  }).catch(function(e){say('兑换失败：'+ferr(e.message),false)});
+}
+function shopEquip(id){
+  call('/equip',{kind:_shopKind,id:id}).then(function(j){
+    if(!j||!j.ok)return say((j&&j.msg)||'装备失败',false);
+    S.user.title=j.title||'';S.user.frame=j.frame||'';
+    try{localStorage.setItem(K_SESS,JSON.stringify(S.user))}catch(e){}
+    say('已装备',true);
+    shopRender();shopBadge();
+  }).catch(function(e){say('装备失败：'+ferr(e.message),false)});
+}
+function shopBadge(){
+  var el=$('gb_curuser');if(!el)return;
+  el.textContent=S.user?S.user.username:'';
+  var nm=el.parentNode;if(!nm)return;
+  var old=nm.querySelector('.u-title');if(old)old.parentNode.removeChild(old);
+  if(S.user&&S.user.title){
+    var sp=document.createElement('span');sp.className='u-title';sp.textContent=S.user.title;
+    nm.appendChild(sp);
+  }
+}
+window.shopBadge=shopBadge;
+(function(){
+  var sc=$('shopCard');
+  if(sc)sc.addEventListener('click',function(){openShop()});
+  var scl=$('shopClose');
+  if(scl)scl.addEventListener('click',function(){var m=$('shopMask');if(m)m.classList.remove('on')});
+  var sm=$('shopMask');
+  if(sm)sm.addEventListener('click',function(e){if(e.target===sm)sm.classList.remove('on')});
+  var st=$('shopTabs');
+  if(st)st.addEventListener('click',function(e){
+    var c=e.target.closest('[data-sk]');
+    if(c){_shopKind=c.getAttribute('data-sk');shopRender()}
+  });
+  var sb=$('shopBody');
+  if(sb)sb.addEventListener('click',function(e){
+    var b=e.target.closest('[data-buy]');if(b){shopBuy(b.getAttribute('data-buy'));return}
+    var q=e.target.closest('[data-equip]');if(q){shopEquip(q.getAttribute('data-equip'));return}
+    var u=e.target.closest('[data-unequip]');
+    if(u){
+      call('/equip',{kind:_shopKind,id:''}).then(function(j){
+        if(j&&j.ok){S.user.title=j.title||'';S.user.frame=j.frame||'';
+          try{localStorage.setItem(K_SESS,JSON.stringify(S.user))}catch(e){}
+          shopRender();shopBadge();}
+      }).catch(function(){});
+    }
   });
 })();
 (function(){
@@ -4928,21 +5143,160 @@ dot.addEventListener('click',chk);chk();setInterval(chk,30000);
     ['探索 · 入口','顶部卡片通往四大区域：PRTS 档案室、守夜人论坛、卡塞尔学院、终端接口（32 款小游戏）。你的配色、界面主题、头像与备忘录会自动云端同步到每个设备。'],
     ['权限 · 成长','经验升级 LV、连续签到积累记录；成就分基础与隐藏两类，隐藏成就不会公开。成就满 30 项或解锁 2048 彩蛋后，还有「与作者对战」等待挑战。']
   ];
+  var QUICK=['积分怎么获得','怎么升级','第一次来该做什么','世界碎片是什么','有哪些小游戏'];
   var i=0;
+  function base(){
+    try{
+      var u=localStorage.getItem('gb_api_url')||'';
+      var a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});
+      return (a[0]||'').replace(/\/+$/,'');
+    }catch(e){return''}
+  }
+  function ask(q){
+    var out=document.getElementById('wzGAns');if(!out||!q)return;
+    out.style.display='';
+    out.innerHTML='<div class="wz-a-q">你：'+esc(q)+'</div><div class="wz-a-a" id="wzGAnsBody">诺玛正在检索档案 …</div>';
+    var b=base();
+    if(!b){
+      document.getElementById('wzGAnsBody').textContent='云端未连接，现在无法回答。登录后下面这些问题会更有用。';
+      return;
+    }
+    fetch(b+'/noma_ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q:q,mode:'norna'})})
+      .then(function(r){return r.json()})
+      .then(function(j){
+        var el=document.getElementById('wzGAnsBody');if(!el)return;
+        el.textContent=(j&&j.a)?j.a:'这条档案里没有记录。试试换个说法，或者点上面的按钮直接进对应页面。';
+      })
+      .catch(function(){
+        var el=document.getElementById('wzGAnsBody');if(el)el.textContent='诺玛暂时联系不上（云端不可达）。';
+      });
+  }
   function show(){
     var st=steps[i];
-    document.getElementById('wzGBody').innerHTML='<div class="wz-guide-n">0'+(i+1)+' / 0'+steps.length+'</div><div class="wz-guide-t">'+st[0]+'</div><div class="wz-guide-d">'+st[1]+'</div>';
+    var quick=QUICK.map(function(q){return '<button type="button" class="wz-q" data-q="'+esc(q)+'">'+esc(q)+'</button>'}).join('');
+    document.getElementById('wzGBody').innerHTML=
+      '<div class="wz-guide-n">0'+(i+1)+' / 0'+steps.length+'</div>'+
+      '<div class="wz-guide-t">'+st[0]+'</div>'+
+      '<div class="wz-guide-d">'+st[1]+'</div>'+
+      '<div class="wz-ask">'+
+        '<div class="wz-ask-h">问诺玛 · 卡塞尔学院中央电脑（本站助手）</div>'+
+        '<div class="wz-qk">'+quick+'</div>'+
+        '<div class="wz-ask-r"><input id="wzGQ" maxlength="40" placeholder="想了解本站什么？例如：积分怎么获得"><button type="button" id="wzGAsk">提问</button></div>'+
+        '<div id="wzGAns" class="wz-ans" style="display:none"></div>'+
+      '</div>';
     var dots=''; for(var k=0;k<steps.length;k++) dots+=(k<=i?'●':'○');
     document.getElementById('wzGDot').textContent=dots;
     document.getElementById('wzGNext').textContent=(i===steps.length-1)?'进入站点':'下一步';
   }
   function fin(){ try{ localStorage.setItem('wz_guided','1'); }catch(e){} g.style.display='none'; }
+  g.addEventListener('click',function(e){
+    var qb=e.target.closest?e.target.closest('[data-q]'):null;
+    if(qb){ask(qb.getAttribute('data-q'));return}
+    if(e.target&&e.target.id==='wzGAsk'){
+      var inp=document.getElementById('wzGQ');
+      ask(inp?inp.value.trim():'');
+    }
+  });
+  g.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&e.target&&e.target.id==='wzGQ'){
+      e.preventDefault();
+      var inp=document.getElementById('wzGQ');
+      ask(inp?inp.value.trim():'');
+    }
+  });
   show();
   g.style.display='flex';
   var nx=document.getElementById('wzGNext'),cl=document.getElementById('wzGClose'),mk=document.getElementById('wzGuideMask');
   if(nx) nx.addEventListener('click',function(){ i++; if(i>=steps.length){ fin(); return; } show(); });
   if(cl) cl.addEventListener('click',fin);
   if(mk) mk.addEventListener('click',fin);
+})();
+</script>
+<script>
+/* ===== 世界碎片收集（各页共用） ===== */
+(function(){
+if(document.getElementById('fragBtn'))return;
+var D={1:'从罗德岛甲板缝里扫出来的，编号 001。',2:'上面只有一句话：活着回来。',3:'火把灭了，巡夜还没结束。',4:'字迹在你不看的时候会换位置。',5:'照片被人用马克笔画了胡子。',6:'有效期：直到你不需要它为止。',7:'背面写着「忘了就跑 gen_keys.py」。',8:'它一直想变成 4096。',9:'它跳了一整天，没撞到任何东西。',10:'它咬到了自己，然后学会了穿墙。',11:'「今天又有人问我路明非是谁。」',12:'背面刻着 S 级血统的编号，被人刮掉了。',13:'签名处是空的——你还没签。',14:'标签写着「请勿摇晃」，然后被人摇晃过。',15:'它曾经是一条点亮的分支。',16:'注释里写着「这里应该能跑」，不能。',17:'第一页只有一句：泰拉没有真相。',18:'播报员念到一半停了电。',19:'某个名字被涂掉了，但笔画还在。',20:'夹在一本没人借过的书里。',21:'它不发光，只是把光借给了你。',22:'拿到它的人，会先愣一会儿。'};
+var MAP={'index.html':1,'':1,'守夜人论坛.html':3,'卡塞尔学院官网.html':4,'终端接口.html':6,'机密终端.html':7,'PRTS泰拉大典终端.html':17,'prts.html':2,'莱茵生命终端.html':14,'技能树.html':15,'模组开发.html':16,'解码器.html':8,'guestwall.html':19,'changelog.html':18,'404.html':20,'游戏-01.html':9,'游戏-02.html':10,'游戏-03.html':11,'游戏-04.html':12,'游戏-05.html':13,'游戏-06.html':21,'游戏-07.html':22,'游戏-08.html':5};
+function pageFile(){
+  try{var m=location.pathname.split('/').pop().split('?')[0];if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}
+}
+var N=MAP[pageFile()]||0;
+function got(){try{var a=JSON.parse(localStorage.getItem('wz_frag')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function setGot(a){try{localStorage.setItem('wz_frag',JSON.stringify(a))}catch(e){}}
+function apiBase(){
+  try{var u=localStorage.getItem('gb_api_url')||'';var a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return (a[0]||'').replace(/\/+$/,'')}catch(e){return''}
+}
+function sync(n){
+  var s=null;try{s=JSON.parse(localStorage.getItem('gb_session')||'null')}catch(e){}
+  if(!s||!s.token)return;
+  var b=apiBase();if(!b)return;
+  try{fetch(b+'/frag_get',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,n:n})}).catch(function(){})}catch(e){}
+}
+function toast(txt,sub){
+  var d=document.createElement('div');
+  d.innerHTML='<b style="display:block;letter-spacing:.14em">'+txt+'</b>'+(sub?'<span style="display:block;margin-top:6px;color:#9a9a9a;font-size:11.5px">'+sub+'</span>':'');
+  d.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:2147483000;background:rgba(8,10,12,.96);border:1px solid var(--accent,#fff);color:var(--accent,#fff);padding:12px 22px;font-family:Consolas,monospace;font-size:12.5px;text-align:center;pointer-events:none;max-width:82vw;line-height:1.8';
+  document.body.appendChild(d);
+  setTimeout(function(){d.style.transition='opacity .6s';d.style.opacity='0'},2400);
+  setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},3100);
+}
+function open(){
+  var all=got(),have=all.length;
+  var mask=document.createElement('div');
+  mask.style.cssText='position:fixed;inset:0;z-index:2147483100;background:rgba(4,5,6,.8);display:flex;align-items:center;justify-content:center;padding:18px';
+  var box=document.createElement('div');
+  box.style.cssText='width:min(620px,94vw);max-height:86vh;overflow-y:auto;background:#101214;border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box';
+  var h='<div style="font-family:Consolas,monospace;font-size:13px;letter-spacing:.3em;color:var(--accent,#fff);margin-bottom:4px">WORLD FRAGMENTS</div>'+
+        '<div style="font-size:11px;color:#8a8a8a;margin-bottom:14px">世界碎片 · 已收集 <b style="color:var(--accent,#fff)">'+have+'</b> / 22　（每页藏一枚，点它收下）</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;margin-bottom:14px">';
+  for(var i=1;i<=22;i++){
+    var on=all.indexOf(i)>=0;
+    h+='<div style="border:1px solid '+(on?'var(--accent,#fff)':'#2c2c2c')+';color:'+(on?'var(--accent,#fff)':'#5b5b5b')+';text-align:center;padding:8px 0;font-family:Consolas,monospace;font-size:12px">'+(on?('#'+(i<10?'0':'')+i):'·')+'</div>';
+  }
+  h+='</div>';
+  if(have>=22){
+    h+='<div style="border:1px dashed var(--accent,#fff);padding:14px;color:var(--accent,#fff);font-size:12.5px;line-height:1.9">全部收集完毕。<br>你在服务器最深处找到一行没人删掉的注释：<br><br><span style="color:#8a8a8a"># 这个世界存档还在，他随时可以继续。</span></div>';
+  }else{
+    h+='<div style="color:#6e6e6e;font-size:11.5px;line-height:1.9">碎片散落在各个页面里，是那种「一眼看不出、点下去才知道」的东西。<br>找齐 22 枚，最深处有留言。</div>';
+  }
+  box.innerHTML=h+'<div style="text-align:right;margin-top:14px"><button id="fragClose" style="border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 18px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer">关闭</button></div>';
+  mask.appendChild(box);
+  mask.onclick=function(e){if(e.target===mask&&mask.parentNode)mask.parentNode.removeChild(mask)};
+  document.body.appendChild(mask);
+  var c=document.getElementById('fragClose');
+  if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
+}
+function hide(){
+  if(!N)return;
+  if(got().indexOf(N)>=0)return;
+  var s=document.createElement('style');
+  s.textContent='@keyframes fgem{0%,100%{transform:rotate(45deg) scale(1);opacity:.5}50%{transform:rotate(45deg) scale(1.16);opacity:1}}';
+  document.head.appendChild(s);
+  var g=document.createElement('button');
+  g.type='button';g.title='有什么东西在这里';
+  g.style.cssText='position:fixed;right:16px;bottom:74px;z-index:2147482000;width:15px;height:15px;padding:0;background:none;border:1px solid var(--accent,#fff);cursor:pointer;animation:fgem 3.2s ease-in-out infinite;opacity:.55';
+  g.onclick=function(){
+    if(g.parentNode)g.parentNode.removeChild(g);
+    var a=got();if(a.indexOf(N)<0){a.push(N);a.sort(function(x,y){return x-y});setGot(a)}
+    sync(N);
+    var cnt=got().length;
+    toast('\u25c6 收下碎片 #'+(N<10?'0':'')+N,D[N]||'');
+    if(cnt>=22)setTimeout(function(){toast('22 / 22 全部集齐','点左下角 \u25c6 查看')},3200);
+  };
+  document.body.appendChild(g);
+}
+if(N){
+  var b=document.createElement('button');
+  b.id='fragBtn';b.type='button';b.title='世界碎片';
+  b.style.cssText='position:fixed;left:14px;bottom:74px;z-index:2147482000;width:34px;height:34px;background:rgba(8,10,12,.82);border:1px solid var(--cbd,var(--line2,#444));color:var(--accent,#fff);font-size:15px;line-height:1;cursor:pointer;font-family:Consolas,monospace;transition:.2s;opacity:.72';
+  b.textContent='\u25c6';
+  b.onmouseover=function(){b.style.opacity='1';b.style.borderColor='var(--accent,#fff)'};
+  b.onmouseout=function(){b.style.opacity='.72'};
+  b.onclick=function(){open()};
+  document.body.appendChild(b);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hide);else hide();
+}
 })();
 </script>
 </body>
