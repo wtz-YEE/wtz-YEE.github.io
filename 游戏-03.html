@@ -602,5 +602,92 @@ fetch(a+'/health',{mode:'cors',cache:'no-store'}).then(function(r){dot.className
 dot.addEventListener('click',chk);chk();setInterval(chk,30000);
 })();
 </script>
+<script>
+/* ===== 世界碎片收集（各页共用） ===== */
+(function(){
+if(document.getElementById('fragBtn'))return;
+var D={1:'从罗德岛甲板缝里扫出来的，编号 001。',2:'上面只有一句话：活着回来。',3:'火把灭了，巡夜还没结束。',4:'字迹在你不看的时候会换位置。',5:'照片被人用马克笔画了胡子。',6:'有效期：直到你不需要它为止。',7:'背面写着「忘了就跑 gen_keys.py」。',8:'它一直想变成 4096。',9:'它跳了一整天，没撞到任何东西。',10:'它咬到了自己，然后学会了穿墙。',11:'「今天又有人问我路明非是谁。」',12:'背面刻着 S 级血统的编号，被人刮掉了。',13:'签名处是空的——你还没签。',14:'标签写着「请勿摇晃」，然后被人摇晃过。',15:'它曾经是一条点亮的分支。',16:'注释里写着「这里应该能跑」，不能。',17:'第一页只有一句：泰拉没有真相。',18:'播报员念到一半停了电。',19:'某个名字被涂掉了，但笔画还在。',20:'夹在一本没人借过的书里。',21:'它不发光，只是把光借给了你。',22:'拿到它的人，会先愣一会儿。'};
+var MAP={'index.html':1,'':1,'守夜人论坛.html':3,'卡塞尔学院官网.html':4,'终端接口.html':6,'机密终端.html':7,'PRTS泰拉大典终端.html':17,'prts.html':2,'莱茵生命终端.html':14,'技能树.html':15,'模组开发.html':16,'解码器.html':8,'guestwall.html':19,'changelog.html':18,'404.html':20,'游戏-01.html':9,'游戏-02.html':10,'游戏-03.html':11,'游戏-04.html':12,'游戏-05.html':13,'游戏-06.html':21,'游戏-07.html':22,'游戏-08.html':5};
+function pageFile(){
+  try{var m=location.pathname.split('/').pop().split('?')[0];if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}
+}
+var N=MAP[pageFile()]||0;
+function got(){try{var a=JSON.parse(localStorage.getItem('wz_frag')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function setGot(a){try{localStorage.setItem('wz_frag',JSON.stringify(a))}catch(e){}}
+function apiBase(){
+  try{var u=localStorage.getItem('gb_api_url')||'';var a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return (a[0]||'').replace(/\/+$/,'')}catch(e){return''}
+}
+function sync(n){
+  var s=null;try{s=JSON.parse(localStorage.getItem('gb_session')||'null')}catch(e){}
+  if(!s||!s.token)return;
+  var b=apiBase();if(!b)return;
+  try{fetch(b+'/frag_get',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,n:n})}).catch(function(){})}catch(e){}
+}
+function toast(txt,sub){
+  var d=document.createElement('div');
+  d.innerHTML='<b style="display:block;letter-spacing:.14em">'+txt+'</b>'+(sub?'<span style="display:block;margin-top:6px;color:#9a9a9a;font-size:11.5px">'+sub+'</span>':'');
+  d.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:2147483000;background:rgba(8,10,12,.96);border:1px solid var(--accent,#fff);color:var(--accent,#fff);padding:12px 22px;font-family:Consolas,monospace;font-size:12.5px;text-align:center;pointer-events:none;max-width:82vw;line-height:1.8';
+  document.body.appendChild(d);
+  setTimeout(function(){d.style.transition='opacity .6s';d.style.opacity='0'},2400);
+  setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},3100);
+}
+function open(){
+  var all=got(),have=all.length;
+  var mask=document.createElement('div');
+  mask.style.cssText='position:fixed;inset:0;z-index:2147483100;background:rgba(4,5,6,.8);display:flex;align-items:center;justify-content:center;padding:18px';
+  var box=document.createElement('div');
+  box.style.cssText='width:min(620px,94vw);max-height:86vh;overflow-y:auto;background:#101214;border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box';
+  var h='<div style="font-family:Consolas,monospace;font-size:13px;letter-spacing:.3em;color:var(--accent,#fff);margin-bottom:4px">WORLD FRAGMENTS</div>'+
+        '<div style="font-size:11px;color:#8a8a8a;margin-bottom:14px">世界碎片 · 已收集 <b style="color:var(--accent,#fff)">'+have+'</b> / 22　（每页藏一枚，点它收下）</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;margin-bottom:14px">';
+  for(var i=1;i<=22;i++){
+    var on=all.indexOf(i)>=0;
+    h+='<div style="border:1px solid '+(on?'var(--accent,#fff)':'#2c2c2c')+';color:'+(on?'var(--accent,#fff)':'#5b5b5b')+';text-align:center;padding:8px 0;font-family:Consolas,monospace;font-size:12px">'+(on?('#'+(i<10?'0':'')+i):'·')+'</div>';
+  }
+  h+='</div>';
+  if(have>=22){
+    h+='<div style="border:1px dashed var(--accent,#fff);padding:14px;color:var(--accent,#fff);font-size:12.5px;line-height:1.9">全部收集完毕。<br>你在服务器最深处找到一行没人删掉的注释：<br><br><span style="color:#8a8a8a"># 这个世界存档还在，他随时可以继续。</span></div>';
+  }else{
+    h+='<div style="color:#6e6e6e;font-size:11.5px;line-height:1.9">碎片散落在各个页面里，是那种「一眼看不出、点下去才知道」的东西。<br>找齐 22 枚，最深处有留言。</div>';
+  }
+  box.innerHTML=h+'<div style="text-align:right;margin-top:14px"><button id="fragClose" style="border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 18px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer">关闭</button></div>';
+  mask.appendChild(box);
+  mask.onclick=function(e){if(e.target===mask&&mask.parentNode)mask.parentNode.removeChild(mask)};
+  document.body.appendChild(mask);
+  var c=document.getElementById('fragClose');
+  if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
+}
+function hide(){
+  if(!N)return;
+  if(got().indexOf(N)>=0)return;
+  var s=document.createElement('style');
+  s.textContent='@keyframes fgem{0%,100%{transform:rotate(45deg) scale(1);opacity:.5}50%{transform:rotate(45deg) scale(1.16);opacity:1}}';
+  document.head.appendChild(s);
+  var g=document.createElement('button');
+  g.type='button';g.title='有什么东西在这里';
+  g.style.cssText='position:fixed;right:16px;bottom:74px;z-index:2147482000;width:15px;height:15px;padding:0;background:none;border:1px solid var(--accent,#fff);cursor:pointer;animation:fgem 3.2s ease-in-out infinite;opacity:.55';
+  g.onclick=function(){
+    if(g.parentNode)g.parentNode.removeChild(g);
+    var a=got();if(a.indexOf(N)<0){a.push(N);a.sort(function(x,y){return x-y});setGot(a)}
+    sync(N);
+    var cnt=got().length;
+    toast('\u25c6 收下碎片 #'+(N<10?'0':'')+N,D[N]||'');
+    if(cnt>=22)setTimeout(function(){toast('22 / 22 全部集齐','点左下角 \u25c6 查看')},3200);
+  };
+  document.body.appendChild(g);
+}
+if(N){
+  var b=document.createElement('button');
+  b.id='fragBtn';b.type='button';b.title='世界碎片';
+  b.style.cssText='position:fixed;left:14px;bottom:74px;z-index:2147482000;width:34px;height:34px;background:rgba(8,10,12,.82);border:1px solid var(--cbd,var(--line2,#444));color:var(--accent,#fff);font-size:15px;line-height:1;cursor:pointer;font-family:Consolas,monospace;transition:.2s;opacity:.72';
+  b.textContent='\u25c6';
+  b.onmouseover=function(){b.style.opacity='1';b.style.borderColor='var(--accent,#fff)'};
+  b.onmouseout=function(){b.style.opacity='.72'};
+  b.onclick=function(){open()};
+  document.body.appendChild(b);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hide);else hide();
+}
+})();
+</script>
 </body>
 </html>
