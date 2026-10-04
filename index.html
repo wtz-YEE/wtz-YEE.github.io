@@ -2468,7 +2468,7 @@ function loadGuestBook(){
       }
       all.sort(function(a,b){return (b.id||0)-(a.id||0)});
       cache.list=all;
-      cache.maxId=Math.max(cache.maxId||0,(nl[0]&&nl[0].id)||0);
+      var mxid=cache.maxId||0;for(var qi=0;qi<nl.length;qi++)mxid=Math.max(mxid,Number(nl[qi]&&nl[qi].id)||0);cache.maxId=mxid;
       try{ localStorage.setItem(K_GB,JSON.stringify(cache)); }catch(e){}
       renderGuests(all, nl);
     }else if(!cache.list.length){
@@ -2484,11 +2484,22 @@ function autoRefreshGb(){
   var cache=null;
   try{ cache=JSON.parse(localStorage.getItem(K_GB)||'null'); }catch(e){}
   call('/guests_new',{since:cache?Math.max(0,cache.maxId||0):0},'GET').then(function(j){
-    var nl=(j&&j.list)||[];
-    if(nl.length) loadGuestBook();
+    var nl=(j&&j.list)||[], del=(j&&j.deleted)||[];
+    if(nl.length||del.length) loadGuestBook();
+  }).catch(function(){});
+}
+function fullSyncGb(){
+  call('/guests_new',{since:0},'GET').then(function(j){
+    if(!j||!j.ok) return;
+    var ls=j.list||[],mx=0;
+    for(var i=0;i<ls.length;i++) mx=Math.max(mx,Number(ls[i]&&ls[i].id)||0);
+    var cache={list:ls,maxId:mx};
+    try{ localStorage.setItem(K_GB,JSON.stringify(cache)); }catch(e){}
+    renderGuests(ls);
   }).catch(function(){});
 }
 setInterval(autoRefreshGb,10000);
+setInterval(fullSyncGb,120000);
 
 function compressImg(file,cb){
   var r=new FileReader();r.onload=function(){
@@ -3418,6 +3429,7 @@ function bind(){
           localStorage.setItem(K_GB,JSON.stringify(cc));
         }catch(e){}
         loadGuestBook();
+        if(typeof fullSyncGb==='function') setTimeout(fullSyncGb,1200);
       }
     }).catch(function(err){ say('删除失败：'+err.message,false); });
   });
