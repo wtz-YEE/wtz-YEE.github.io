@@ -32,6 +32,49 @@ ACH_LIST = {"n": 20, "items": [
     ("分数狂人", 1), ("成就专家", 1), ("万物起源", 1), ("神枪手", 1), ("十连靶心", 1)
 ]}
 
+SHOP = [
+    {"id": "t_night", "type": "title", "name": "夜行", "cost": 40, "desc": "深夜驻留者 · 昵称旁显示"},
+    {"id": "t_watch", "type": "title", "name": "守夜人", "cost": 60, "desc": "接过巡夜的火把"},
+    {"id": "t_lore", "type": "title", "name": "档案员", "cost": 80, "desc": "泰拉大典的常客"},
+    {"id": "t_knight", "type": "title", "name": "守夜骑士", "cost": 120, "desc": "有编号的正式骑士"},
+    {"id": "t_ember", "type": "title", "name": "余烬行者", "cost": 160, "desc": "在灰烬里走出来的"},
+    {"id": "t_void", "type": "title", "name": "虚空漫步", "cost": 200, "desc": "黑域不迷路"},
+    {"id": "t_lord", "type": "title", "name": "夜色领主", "cost": 300, "desc": "夜幕之下的主人"},
+    {"id": "t_legend", "type": "title", "name": "泰拉传说", "cost": 500, "desc": "被写进大典的人"},
+    {"id": "f_square", "type": "frame", "name": "方界头像框", "cost": 80, "desc": "直角硬边 · 档案风"},
+    {"id": "f_neon", "type": "frame", "name": "霓虹头像框", "cost": 120, "desc": "发光描边 · 赛博夜行"},
+    {"id": "f_frost", "type": "frame", "name": "霜冻头像框", "cost": 160, "desc": "冰晶封存 · 冷光"},
+    {"id": "f_ember", "type": "frame", "name": "余烬头像框", "cost": 160, "desc": "烬火微光 · 暖调"},
+    {"id": "f_aurora", "type": "frame", "name": "极光头像框", "cost": 240, "desc": "极夜流光 · 呼吸"},
+    {"id": "f_gold", "type": "frame", "name": "鎏金头像框", "cost": 400, "desc": "收藏级 · 金色描边"},
+]
+
+FRAGS = [
+    {"n": 1, "t": "源石尘", "d": "从罗德岛甲板缝里扫出来的，编号 001。"},
+    {"n": 2, "t": "战术演习记录", "d": "上面只有一句话：活着回来。"},
+    {"n": 3, "t": "守夜人火把灰", "d": "火把灭了，巡夜还没结束。"},
+    {"n": 4, "t": "言灵残页", "d": "字迹在你不看的时候会换位置。"},
+    {"n": 5, "t": "干员工牌", "d": "照片被人用马克笔画了胡子。"},
+    {"n": 6, "t": "龙门通行证", "d": "有效期：直到你不需要它为止。"},
+    {"n": 7, "t": "机密终端密钥卡", "d": "背面写着「忘了就跑 gen_keys.py」。"},
+    {"n": 8, "t": "2048 方块", "d": "它一直想变成 4096。"},
+    {"n": 9, "t": "小恐龙的鳞片", "d": "它跳了一整天，没撞到任何东西。"},
+    {"n": 10, "t": "贪吃蛇的尾尖", "d": "它咬到了自己，然后学会了穿墙。"},
+    {"n": 11, "t": "诺玛的日志", "d": "「今天又有人问我路明非是谁。」"},
+    {"n": 12, "t": "学院徽章", "d": "背面刻着 S 级血统的编号，被人刮掉了。"},
+    {"n": 13, "t": "血统契副本", "d": "签名处是空的——你还没签。"},
+    {"n": 14, "t": "莱茵生命试剂", "d": "标签写着「请勿摇晃」，然后被人摇晃过。"},
+    {"n": 15, "t": "技能树枯枝", "d": "它曾经是一条点亮的分支。"},
+    {"n": 16, "t": "模组源码", "d": "注释里写着「这里应该能跑」，不能。"},
+    {"n": 17, "t": "泰拉编年史扉页", "d": "第一页只有一句：泰拉没有真相。"},
+    {"n": 18, "t": "罗德岛通讯残页", "d": "播报员念到一半停了电。"},
+    {"n": 19, "t": "访客墙的签名", "d": "某个名字被涂掉了，但笔画还在。"},
+    {"n": 20, "t": "枫叶书签", "d": "夹在一本没人借过的书里。"},
+    {"n": 21, "t": "极光碎片", "d": "它不发光，只是把光借给了你。"},
+    {"n": 22, "t": "系统根权限", "d": "拿到它的人，会先愣一会儿。"},
+]
+
+
 SYNC_LOG = os.path.join(_BASE, "sync.log")
 CLOUD_TXT = os.path.join(_BASE, "..", "cloud.txt")
 
@@ -1415,6 +1458,131 @@ def api_achievements():
     return jsonify({"ok": True, "base": ACH_LIST["n"], "total": len(items), "items": items})
 
 
+@app.route("/shop", methods=["GET", "POST"])
+def api_shop():
+    return jsonify({"ok": True, "list": [dict(x) for x in SHOP]})
+
+
+@app.route("/frags", methods=["GET", "POST"])
+def api_frags():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    us = _load(USER_FILE, {})
+    mine = []
+    if cu:
+        mine = (us.get(cu) or {}).get("frags") or []
+    if not isinstance(mine, list):
+        mine = []
+    got = set(int(x) for x in mine if str(x).strip().isdigit())
+    items = [{"n": f["n"], "t": f["t"], "d": f["d"] if f["n"] in got else "",
+              "got": f["n"] in got} for f in FRAGS]
+    return jsonify({"ok": True, "total": len(FRAGS), "mine": sorted(got), "items": items})
+
+
+@app.route("/frag_get", methods=["POST"])
+def api_frag_get():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    try:
+        n = int(p.get("n") or 0)
+    except Exception:
+        return jsonify({"ok": False, "msg": "参数错误"})
+    if n < 1 or n > len(FRAGS):
+        return jsonify({"ok": False, "msg": "碎片编号无效"})
+    us = _load(USER_FILE, {})
+    rec = us.setdefault(cu, {})
+    mine = rec.get("frags") or []
+    if not isinstance(mine, list):
+        mine = []
+    if n in [int(x) for x in mine if str(x).strip().isdigit()]:
+        return jsonify({"ok": True, "new": False, "n": n, "count": len(mine), "total": len(FRAGS)})
+    mine.append(n)
+    rec["frags"] = mine
+    _save(USER_FILE, us)
+    f = FRAGS[n - 1]
+    _add_exp(_load(USER_FILE, {}), cu, 5)
+    return jsonify({"ok": True, "new": True, "n": n, "t": f["t"], "d": f["d"],
+                    "count": len(mine), "total": len(FRAGS),
+                    "all": len(mine) >= len(FRAGS)})
+
+
+@app.route("/buy", methods=["GET", "POST"])
+def api_buy():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    iid = str(p.get("id") or "").strip()[:32]
+    item = None
+    for x in SHOP:
+        if x["id"] == iid:
+            item = x
+            break
+    if not item:
+        return jsonify({"ok": False, "msg": "商品不存在"})
+    us = _load(USER_FILE, {})
+    rec = us.setdefault(cu, {})
+    owned = rec.get("items") or []
+    if not isinstance(owned, list):
+        owned = []
+    if iid in owned:
+        return jsonify({"ok": False, "msg": "已经拥有了"})
+    pts = int(rec.get("pts") or 0)
+    cost = int(item["cost"])
+    if pts < cost:
+        return jsonify({"ok": False, "msg": "积分不足，还差 %d 分" % (cost - pts), "pts": pts})
+    rec["pts"] = pts - cost
+    owned.append(iid)
+    rec["items"] = owned
+    if item["type"] == "title":
+        rec["title"] = item["name"]
+    elif item["type"] == "frame":
+        rec["frame"] = item["id"]
+    _save(USER_FILE, us)
+    _audit(cu, "buy", item["name"], "花费 %d 积分" % cost)
+    return jsonify({"ok": True, "msg": "已获得 " + item["name"], "pts": rec["pts"],
+                    "items": owned, "title": rec.get("title") or "",
+                    "frame": rec.get("frame") or ""})
+
+
+@app.route("/equip", methods=["GET", "POST"])
+def api_equip():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    rec = us.setdefault(cu, {})
+    owned = rec.get("items") or []
+    if not isinstance(owned, list):
+        owned = []
+    kind = str(p.get("kind") or "")
+    iid = str(p.get("id") or "").strip()[:32]
+    if kind == "title":
+        if not iid:
+            rec["title"] = ""
+        else:
+            t = next((x for x in SHOP if x["id"] == iid and x["type"] == "title"), None)
+            if not t or iid not in owned:
+                return jsonify({"ok": False, "msg": "尚未拥有该称号"})
+            rec["title"] = t["name"]
+    elif kind == "frame":
+        if not iid:
+            rec["frame"] = ""
+        else:
+            t = next((x for x in SHOP if x["id"] == iid and x["type"] == "frame"), None)
+            if not t or iid not in owned:
+                return jsonify({"ok": False, "msg": "尚未拥有该头像框"})
+            rec["frame"] = iid
+    else:
+        return jsonify({"ok": False, "msg": "参数错误"})
+    _save(USER_FILE, us)
+    return jsonify({"ok": True, "msg": "已更换", "title": rec.get("title") or "",
+                    "frame": rec.get("frame") or ""})
+
+
 @app.route("/rank", methods=["GET", "POST"])
 def api_rank():
     by = "exp"
@@ -1778,6 +1946,9 @@ def api_profile():
         "base": info["base"], "next": info["next"], "need": info["need"],
         "streak": ck.get("streak") or 0, "total": ck.get("total") or 0,
         "badge": _badge, "pts": int(rec.get("pts") or 0),
+        "pt": str(rec.get("title") or ""), "frame": str(rec.get("frame") or ""),
+        "items": rec.get("items") if isinstance(rec.get("items"), list) else [],
+        "fragc": len([x for x in (rec.get("frags") or []) if str(x).strip().isdigit()]),
         "ckdays": (ck.get("days") or [])[-60:], "ach": ach,
         "reg": rec.get("reg") or "", "avatar": rec.get("avatar") or 0,
         "self_": self_, "days": days, "likes": likes, "bio": str(rec.get("bio") or "")},
@@ -1887,7 +2058,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get")
 
 @app.before_request
 def _rate():
@@ -2261,7 +2432,43 @@ NOMA_KB = [
     {"k":["执行部","专员"],"a":"执行部是卡塞尔学院的武装力量：毕业生派驻世界各地，追踪龙类与混血种异常，执行最危险的屠龙任务。"},
     {"k":["狮心会","学生会"],"a":"学院两大社团——楚子航执掌狮心会，恺撒执掌学生会。二者针锋相对，却都是执行部最锋利的刀。"},
     {"k":["选课","课程"],"a":"选课、任务分析、网络监控——这些都由我，诺玛，一手包办。课程包括格斗、言灵应用与龙族历史，祝你好运。"},
-    {"k":["世界树","卡塞尔之门","奥丁","校董"],"a":"卡塞尔学院校徽为世界树纹章。学院最高密令「奥丁之眼」掌握在校董会手中——那是秘党最高阶层，学院一切决议的最终裁决者。"}
+    {"k":["世界树","卡塞尔之门","奥丁","校董"],"a":"卡塞尔学院校徽为世界树纹章。学院最高密令「奥丁之眼」掌握在校董会手中——那是秘党最高阶层，学院一切决议的最终裁决者。"},
+    {"k":["积分怎么","积分怎么得","怎么得积分","积分有什么用","积分能干嘛","积分能干什么","积分"],
+     "a":"积分有三个来源：每日签到（+10，连签 3/7/30 天有额外加成）、答对每日谜题（+30）、以及在终端接口玩小游戏——每次提交成绩 +2，刷新个人纪录 +10。积分可以在「积分商店」兑换称号和头像框。"},
+    {"k":["怎么升级","经验怎么","升级","经验"],
+     "a":"经验（EXP）来自：留言 +5、发帖 +8、评论 +3、点赞 +2、签到 +10、谜题 +20、游戏成绩 +2~5。等级按 50×L×(L+1) 递增，等级会带来自动称号，从「见习守夜人」到「WTZ亲卫队」。"},
+    {"k":["签到","打卡","连签"],
+     "a":"点右上角的等级徽章即可签到，一天一次。连签 3 天、7 天、30 天分别有额外积分加成——断了会重新累计，所以每天都来比较划算。"},
+    {"k":["每日谜题","谜题","口令"],
+     "a":"每天一道口令谜题，提示是「今日日期(2位)+00+(日×7 后两位)」。答对 +30 积分 +20 经验。算不出来可以去「解码器」页面，那里能推算出当天的口令。"},
+    {"k":["小游戏","游戏在哪","玩什么","有什么游戏"],
+     "a":"终端接口里有 32 款小游戏，分成 8 组，每组需要对应等级解锁：2048、小恐龙、贪吃蛇、俄罗斯方块、扫雷、五子棋、数独、迷宫……每组 4 款。玩之前记得先在首页登录，否则成绩不会记录。"},
+    {"k":["怎么玩","怎么用","从哪开始","新手","第一次来","怎么开始","我该"],
+     "a":"建议顺序：① 登录账号（右上角）② 点右上角徽章签到拿积分 ③ 去个人主页看看自己的等级和成就 ④ 进终端接口挑一个小游戏 ⑤ 攒够积分去积分商店换个称号。想找彩蛋的话，每个页面角落都藏着一枚「世界碎片」。"},
+    {"k":["成就","成就怎么","成就墙"],
+     "a":"成就有 50 项：20 项基础成就公开可见，30 项隐藏成就只显示为「？？？」。在终端接口玩游戏时自动解锁，个人主页的「成就」页可以看完整清单。"},
+    {"k":["排行榜","排名","榜"],
+     "a":"首页「工具」区有排行榜卡片，分经验榜、积分榜、成就榜三个榜单，各显示前十名。名次是按服务端数据实时排的。"},
+    {"k":["世界碎片","碎片","彩蛋","隐藏"],
+     "a":"22 个主页面各藏着一枚「世界碎片」，是角落里一枚很淡的菱形，不太显眼——点下去才能收下。集齐 22 枚，最深处有一句留给你的话。"},
+    {"k":["机密终端","密钥","密钥是什么"],
+     "a":"机密终端需要三重验证：第一层口令、第二层时间密钥（日×7+时×3 的算法）、第三层加权逆序解码。忘了公式可以看「解码器」页面，或者运行 gen_keys.py。"},
+    {"k":["论坛","发帖","帖子"],
+     "a":"守夜人论坛支持发帖（可带图）、评论、标签、Markdown、赞踩和 @提醒。发帖 +8 经验，评论 +3，被点赞也会涨经验。管理员可以置顶、删除、管理风控词。"},
+    {"k":["留言板","留言"],
+     "a":"首页「社区」区就是留言板，默认是收起的卡片，点开即可留言。需要先登录，支持头像、图片、引用回复、点赞和私聊。"},
+    {"k":["主题","配色","换肤","界面"],
+     "a":"首页右上角有「界面配色」和「界面主题」两个入口：24 套配色（含自定义主色）、14 种界面风格，可以叠加使用。你的选择会随账号云端同步到其他设备。"},
+    {"k":["泰拉大典","档案","干员"],
+     "a":"泰拉大典收录了 48 位干员档案、30 个组织、30 个地理条目、38 条时间线与 38 条术语，支持按类别筛选和原著检索。"},
+    {"k":["卡塞尔","学院官网","血统测评","测评"],
+     "a":"卡塞尔学院官网有血统测评（画画抽象度越高分越高，F→S 七级）、诺玛 AI 问答、学院知识库与权限系统。首次进入需要签订《亚伯拉罕血统契》。"},
+    {"k":["私聊","私信","消息"],
+     "a":"登录后可以私聊其他用户，未读消息会在右上角显示红色角标。私聊内容只有双方能看到，管理员不会读取，但风控系统会扫描关键词。"},
+    {"k":["管理员","站长","谁是"],
+     "a":"站长是 wtz，另一位最高权限是清久感冒灵。管理员可以在留言板删除内容、拉黑用户、上传风控关键词、查看用户列表。"},
+    {"k":["怎么注册","注册","账号"],
+     "a":"首页留言板右上角有登录/注册入口，账号 2–16 位（字母/数字/汉字），密码至少 3 位。被风控删除过的同名账号会 24 小时内禁止注册。"},
 ]
 
 def _noma_norm(s):
