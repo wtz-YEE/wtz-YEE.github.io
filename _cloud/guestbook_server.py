@@ -19,6 +19,19 @@ BANNED_IP_FILE = os.path.join(_BASE, "banned_ips.json")
 import time as _t
 DEL_LOG = []
 SYNC_KEY_FILE = os.path.join(_BASE, "sync_key.txt")
+ACH_LIST = {"n": 20, "items": [
+    ("初入终端", 0), ("数字猎人", 0), ("2048 大师", 0), ("远古跑者", 0), ("贪吃蛇大师", 0),
+    ("方块消行者", 0), ("扫雷先锋", 0), ("砖块粉碎者", 0), ("像素鸟", 0), ("太空卫士", 0),
+    ("五子连珠", 0), ("三连即胜", 0), ("数独达人", 0), ("拼图快手", 0), ("迷宫探索者", 0),
+    ("记忆大师", 0), ("三消高手", 0), ("反应大师", 0), ("打字高手", 0), ("21 点首胜", 0),
+    ("秘技解锁", 1), ("权限巅峰", 1), ("蛇王", 1), ("方块之神", 1), ("弹幕舞者", 1),
+    ("炼金术士", 1), ("苹果丰收", 1), ("地鼠终结者", 1), ("大鱼王", 1), ("飞人", 1),
+    ("完美牌局", 1), ("百步穿杨", 1), ("闪电反应", 1), ("完美记忆", 1), ("键盘钢琴家", 1),
+    ("单词大师", 1), ("连消风暴", 1), ("连切十果", 1), ("二段飞人", 1), ("摘星者", 1),
+    ("数独常客", 1), ("游戏收藏家", 1), ("全成就猎人", 1), ("坚持不懈", 1), ("常驻访客", 1),
+    ("分数狂人", 1), ("成就专家", 1), ("万物起源", 1), ("神枪手", 1), ("十连靶心", 1)
+]}
+
 SYNC_LOG = os.path.join(_BASE, "sync.log")
 CLOUD_TXT = os.path.join(_BASE, "..", "cloud.txt")
 
@@ -379,6 +392,14 @@ def _add_exp(us, cu, n):
     exp = int(rec.get("exp") or 0) + int(n)
     rec["exp"] = exp
     _save(USER_FILE, us)
+
+def _award(cu, pts=0, exp=0):
+    us = _load(USER_FILE, {})
+    rec = us.setdefault(cu, {})
+    rec["pts"] = int(rec.get("pts") or 0) + int(pts)
+    rec["exp"] = int(rec.get("exp") or 0) + int(exp)
+    _save(USER_FILE, us)
+    return int(rec["pts"]), int(rec["exp"])
 
 def _push_notify(target, src, kind, text, ref=""):
     if not target or target == src or target == "__sessions":
@@ -1352,15 +1373,23 @@ def api_score_add():
             found = x
             break
     if found:
-        if int(found.get("score") or 0) < score:
+        old = int(found.get("score") or 0)
+        nw = score > old
+        if nw:
             found["score"] = score
             found["time"] = _now()
             _save(SCORE_FILE, sc)
-        return jsonify({"ok": True, "best": int(found.get("score") or 0)})
+        pts = 10 if nw else 2
+        ep = 5 if nw else 2
+        tp, te = _award(cu, pts, ep)
+        return jsonify({"ok": True, "best": int(found.get("score") or 0), "new": nw,
+                        "pts": tp, "exp": te, "gain": pts, "gain_exp": ep})
     lst.append({"user": cu, "score": score, "time": _now()})
     lst.sort(key=lambda x: -int(x.get("score") or 0))
     _save(SCORE_FILE, sc)
-    return jsonify({"ok": True, "best": score})
+    tp, te = _award(cu, 10, 5)
+    return jsonify({"ok": True, "best": score, "new": True,
+                    "pts": tp, "exp": te, "gain": 10, "gain_exp": 5})
 
 
 @app.route("/score_top", methods=["GET", "POST"])
@@ -1378,6 +1407,42 @@ def api_score_top():
     sc = _load(SCORE_FILE, {})
     lst = sorted(sc.get(game, []), key=lambda x: -int(x.get("score") or 0))[:limit]
     return jsonify({"ok": True, "list": lst})
+
+
+@app.route("/achievements", methods=["GET", "POST"])
+def api_achievements():
+    items = [{"n": n, "h": h} for n, h in ACH_LIST["items"]]
+    return jsonify({"ok": True, "base": ACH_LIST["n"], "total": len(items), "items": items})
+
+
+@app.route("/rank", methods=["GET", "POST"])
+def api_rank():
+    by = "exp"
+    if request.method == "POST":
+        by = str((request.get_json() or {}).get("by") or "exp")
+    else:
+        by = str(request.args.get("by") or "exp")
+    limit = 10
+    try:
+        limit = int((request.get_json() or {}).get("limit") or 10) if request.method == "POST" else int(request.args.get("limit") or 10)
+    except Exception:
+        limit = 10
+    if by not in ("exp", "pts", "ach"):
+        by = "exp"
+    us = _load(USER_FILE, {})
+    rows = []
+    for name, rec in us.items():
+        if name == "__sessions" or not isinstance(rec, dict) or rec.get("banned"):
+            continue
+        exp = int(rec.get("exp") or 0)
+        pts = int(rec.get("pts") or 0)
+        ach = len(rec.get("ach") or (rec.get("pref") or {}).get("ach") or [])
+        info = _lvl_info(exp)
+        rows.append({"name": name, "exp": exp, "pts": pts, "ach": ach,
+                     "lv": info["lv"], "title": info["title"],
+                     "is_admin": bool(rec.get("is_admin"))})
+    rows.sort(key=lambda x: (-int(x.get(by, 0)), x["name"]))
+    return jsonify({"ok": True, "by": by, "list": rows[:limit], "total": len(rows)})
 
 
 @app.route("/search", methods=["GET", "POST"])
@@ -2024,6 +2089,12 @@ def _merge_users(a, b):
             x["exp"] = max(x.get("exp", 0) or 0, rec.get("exp", 0) or 0)
         except Exception:
             pass
+        for nf in ("pts", "puz"):
+            if rec.get(nf) is not None and (x.get(nf) is None or rec.get(nf) > x.get(nf)):
+                x[nf] = rec[nf]
+        for nf in ("pet", "items", "equip", "pref"):
+            if rec.get(nf) and not x.get(nf):
+                x[nf] = rec[nf]
         if rec.get("is_root"):
             x["is_root"] = True
         if rec.get("is_admin"):
