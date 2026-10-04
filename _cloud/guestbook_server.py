@@ -22,6 +22,32 @@ SYNC_KEY_FILE = os.path.join(_BASE, "sync_key.txt")
 SYNC_LOG = os.path.join(_BASE, "sync.log")
 CLOUD_TXT = os.path.join(_BASE, "..", "cloud.txt")
 
+
+def _save(p, x):
+    tmp = p + ".tmp" + str(os.getpid())
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(x, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, p)
+    return x
+
+
+def _load(p, d):
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        pass
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            raw = f.read()
+        obj, _ = json.JSONDecoder().raw_decode(raw.lstrip())
+        _save(p, obj)
+        print("[repair] %s salvaged from corrupt json" % os.path.basename(p))
+        return obj
+    except Exception:
+        return d
+
+
 # 初始化排行榜
 if not os.path.exists(SCORE_FILE):
     with open(SCORE_FILE, "w", encoding="utf-8") as f:
@@ -45,8 +71,7 @@ if not os.path.exists(USER_FILE):
             "is_admin": True
         }
     }
-    with open(USER_FILE, "w", encoding="utf-8") as f:
-        json.dump(init_users, f, ensure_ascii=False)
+    _save(USER_FILE, init_users)
 
 # 初始化私聊存储
 if not os.path.exists(PM_FILE):
@@ -105,8 +130,7 @@ def register():
     if q and a:
         users[uname]["sec_q"] = q
         users[uname]["sec_a"] = a
-    with open(USER_FILE, "w", encoding="utf-8") as f:
-        json.dump(users, f, ensure_ascii=False)
+    _save(USER_FILE, users)
     return jsonify({"ok": True, "msg": "注册成功"})
 
 
@@ -131,8 +155,7 @@ def sec_set():
         return jsonify({"ok": False, "msg": "登录已失效"})
     users[name]["sec_q"] = q
     users[name]["sec_a"] = a
-    with open(USER_FILE, "w", encoding="utf-8") as f:
-        json.dump(users, f, ensure_ascii=False)
+    _save(USER_FILE, users)
     return jsonify({"ok": True, "msg": "安全问题已设置"})
 
 
@@ -177,8 +200,7 @@ def recover():
     ses = users.setdefault("__sessions", {})
     for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) == uname]:
         del ses[k]
-    with open(USER_FILE, "w", encoding="utf-8") as f:
-        json.dump(users, f, ensure_ascii=False)
+    _save(USER_FILE, users)
     return jsonify({"ok": True, "msg": "密码已重置，请重新登录"})
 
 
@@ -203,8 +225,7 @@ def login():
     for k in [k for k, v in ses.items() if (v[0] if isinstance(v, list) else v) == uname]:
         del ses[k]
     ses[tk] = [uname, _time.time()]
-    with open(USER_FILE, "w", encoding="utf-8") as f:
-        json.dump(us, f, ensure_ascii=False)
+    _save(USER_FILE, us)
     return jsonify({
         "ok": True,
         "username": uname,
@@ -324,25 +345,13 @@ def _cur_user(tok):
             return None
         if _time.time() - t > 60:
             u["__sessions"][tok] = [name, _time.time()]
-            with open(USER_FILE, "w", encoding="utf-8") as f:
-                json.dump(u, f, ensure_ascii=False)
+            _save(USER_FILE, u)
         return name
     except Exception:
         return None
 
 def _is_root(cu, us):
     return cu == ROOT or bool((us.get(cu) or {}).get("is_root"))
-
-def _load(p, d):
-    try:
-        with open(p, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return d
-
-def _save(p, x):
-    with open(p, "w", encoding="utf-8") as f:
-        json.dump(x, f, ensure_ascii=False)
 
 def _now():
     return _time.strftime("%Y-%m-%d %H:%M:%S")
@@ -450,8 +459,7 @@ def api_guests():
         us = _clean_sessions(us)
         after = len(us.get("__sessions", {}))
         if after != before:
-            with open(USER_FILE, "w", encoding="utf-8") as f:
-                json.dump(us, f, ensure_ascii=False)
+            _save(USER_FILE, us)
         on = after
     except Exception:
         on = 0
@@ -479,8 +487,7 @@ def api_guests_new():
         us = _clean_sessions(us)
         after = len(us.get("__sessions", {}))
         if after != before:
-            with open(USER_FILE, "w", encoding="utf-8") as f:
-                json.dump(us, f, ensure_ascii=False)
+            _save(USER_FILE, us)
         on = after
     except Exception:
         on = 0
@@ -906,8 +913,7 @@ def api_logout():
             u = json.load(f)
         if p.get("token") and p.get("token") in u.get("__sessions", {}):
             del u["__sessions"][p.get("token")]
-            with open(USER_FILE, "w", encoding="utf-8") as f:
-                json.dump(u, f, ensure_ascii=False)
+            _save(USER_FILE, u)
     except Exception:
         pass
     return jsonify({"ok": True})
