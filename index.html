@@ -4606,7 +4606,7 @@ if(v)v.addEventListener('keydown',function(e){if(e.key==='Enter'&&b)b.click()});
 <script>
 (function(){
 var k='wtz_vn',kc='wtz_vc',n=localStorage.getItem(k);
-function esc(s){return s.replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
+function esc(s){return String(s==null?'':s).replace(/[<>&"']/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]})}
 function upd(){
 var c=localStorage.getItem(kc)||0,el=document.querySelectorAll('.site-stat');
 for(var i=0;i<el.length;i++)el[i].innerHTML='SITE // VISITOR '+(n?esc(n):'GUEST')+' · '+c+' VISITS · <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS';
