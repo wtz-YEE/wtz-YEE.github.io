@@ -147,6 +147,8 @@ a.card::after{content:"↗";position:absolute;right:10px;bottom:8px;font-size:11
 .sec-tab{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink3);background:var(--panel);border:1px solid var(--line2);padding:7px 16px;cursor:pointer;transition:color .2s,border-color .2s}
 .sec-tab:hover{color:var(--ink)}
 .sec-tab.on{color:var(--ink);border-color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+.st-set{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:900px){.st-set{grid-template-columns:1fr}}
 
 
 .b-code{margin-left:auto;font-size:10.5px;letter-spacing:.3em;color:var(--ink3)}
@@ -1417,9 +1419,61 @@ function ferr(msg){
 <div class="sec" id="sec4">
 <div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">04</span><h2>设置</h2><span class="b-code">THEME · VIEW</span></div>
 <div class="st-set">
-  <button class="th-btn" type="button" id="stTh">◐ 配色</button>
-  <button class="th-btn" type="button" id="stUi">▣ 界面</button>
-  <button class="th-btn" type="button" id="stVm">▦ 视图</button>
+  <div class="card is-tool" id="stTh" style="cursor:pointer">
+    <div class="spot" aria-hidden="true"></div>
+    <div class="thumb">
+      <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+        <rect width="400" height="200" fill="#0A0A0A"/>
+        <rect x="40" y="52" width="92" height="96" fill="#1C1C1E"/>
+        <rect x="154" y="52" width="92" height="96" fill="#E8E8E8"/>
+        <rect x="268" y="52" width="92" height="96" fill="#4A6CF7"/>
+        <g stroke="#333" stroke-width="1"><path d="M40 40 H360 M40 160 H360"/></g>
+      </svg>
+    </div>
+    <div class="card-bd">
+      <div class="c-tag">THEME · 配色</div>
+      <h3>配色</h3>
+      <p>切换界面配色方案</p>
+      <span class="c-go">打开</span>
+    </div>
+  </div>
+  <div class="card is-tool" id="stUi" style="cursor:pointer">
+    <div class="spot" aria-hidden="true"></div>
+    <div class="thumb">
+      <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+        <rect width="400" height="200" fill="#0A0A0A"/>
+        <rect x="60" y="46" width="280" height="108" rx="12" fill="none" stroke="#E8E8E8" stroke-width="2"/>
+        <rect x="80" y="72" width="140" height="20" rx="3" fill="#555"/>
+        <rect x="80" y="104" width="220" height="12" fill="#333"/>
+        <rect x="80" y="124" width="180" height="12" fill="#333"/>
+        <rect x="300" y="68" width="26" height="30" rx="4" fill="none" stroke="#777" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="card-bd">
+      <div class="c-tag">UI · 主题</div>
+      <h3>界面</h3>
+      <p>切换界面主题风格</p>
+      <span class="c-go">打开</span>
+    </div>
+  </div>
+  <div class="card is-tool" id="stVm" style="cursor:pointer">
+    <div class="spot" aria-hidden="true"></div>
+    <div class="thumb">
+      <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+        <rect width="400" height="200" fill="#0A0A0A"/>
+        <rect x="86" y="40" width="228" height="118" rx="6" fill="none" stroke="#E8E8E8" stroke-width="2"/>
+        <rect x="102" y="56" width="196" height="86" rx="2" fill="#141414"/>
+        <rect x="196" y="142" width="20" height="10" fill="#555"/>
+        <g stroke="#444" stroke-width="1.5"><path d="M120 176 H288 M150 176 V192 H262"/></g>
+      </svg>
+    </div>
+    <div class="card-bd">
+      <div class="c-tag">VIEW · 视图</div>
+      <h3>视图</h3>
+      <p>切换手机 / 电脑界面</p>
+      <span class="c-go">打开</span>
+    </div>
+  </div>
 </div>
 </div>
 
