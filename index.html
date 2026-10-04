@@ -1934,6 +1934,10 @@ function pBuild(kind,n,card){
   var H=card?1:((window.innerHeight||800)/100);
   for(i=0;i<n;i++){
     var sz,dx,dy,so,dur,dl,top,ex='';
+    var tw=(kind===PT_STAR||kind===PT_SPARK);
+    var up=(kind===PT_EMBER||kind===PT_FIRE);
+    if(up){top=card?pr(66,104):pr(64,100)}
+    else if(tw){top=card?pr(8,92):pr(3,95)}
     if(kind===PT_SNOW){
       var r=Math.random();
       if(r<.35){sz=pr(1.3,2.4);so=pr(.35,.6);dur=pr(11,19);dx=pr(-3,3);ex=';filter:blur(.4px)'}
@@ -1946,9 +1950,9 @@ function pBuild(kind,n,card){
       top=card?pr(58,104):pr(60,108);
       if(Math.random()<.5)ex=';animation-name:pRise,pFlick;animation-duration:'+dur+'s,'+pr(.8,1.9)+'s;animation-timing-function:linear,ease-in-out';
     }else if(kind===PT_STAR||kind===PT_SPARK){
-      /* 星点/光点靠 pTwinkle 原地明灭，位移归零，避免被 pFall 的兜底位移顶走 */
+      /* 星点/光点原地明灭：必须直接落在视口内，否则位移为 0 就永远看不见 */
       sz=kind===PT_SPARK?pr(1,2.2):pr(1,2.8);so=pr(.4,1);dur=pr(2.6,6.5);dx='0.0';dy='0.0';
-      top=pr(4,94);
+      top=card?pr(8,92):pr(3,95);
     }else if(kind===PT_DOT){
       sz=pr(2,3.4);so=pr(.25,.7);dur=pr(5,11);dx=pr(-4,4);dy=card?pr(24,60):pr(h*.9,h*1.15);top=card?pr(-14,-4):pr(-8,0);
     }else if(kind===PT_FIRE){
@@ -1966,7 +1970,9 @@ function pBuild(kind,n,card){
     var glyph='';
     if(kind===PT_GLYPH){var gs=PT_G||'01';glyph='>'+gs.charAt(Math.floor(Math.random()*gs.length))+'<'}
     var st='left:'+pClamp(parseFloat(pr(0,100)),0,99)+'%;';
-    st+=(card?'top:'+pr(-14,-4)+'px;':'top:'+pr(-12,-2)+'vh;');
+    if(tw)st+='top:'+top+(card?'%':'vh')+';';
+    else if(up)st+='top:'+top+(card?'%':'vh')+';';
+    else st+=(card?'top:'+pr(-14,-4)+'px;':'top:'+pr(-12,-2)+'vh;');
     st+='width:'+sz+'px;height:'+sz+'px;';
     st+='--dx:'+dx+'px;--dy:'+dy+'px;--so:'+so+';';
     st+='animation-duration:'+dur+'s;animation-delay:'+dl+'s';
