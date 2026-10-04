@@ -681,6 +681,41 @@ body.view-mobile #thBox,body.view-mobile #uiBox{width:94vw;padding:16px 14px 18p
 body.view-mobile .th-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
 body.view-mobile .c-go{padding-top:12px;font-size:12px}
 
+/* ===== 手机/电脑差异化布局（清晰区分） ===== */
+/* —— 电脑：完整桌面体验 —— */
+body:not(.view-mobile) .st-nav{display:flex}
+body:not(.view-mobile) .hero{padding:66px 24px 44px}
+body:not(.view-mobile) .hero h1{font-size:clamp(46px,7vw,78px)}
+body:not(.view-mobile) .hero .h-sub{font-size:14px;letter-spacing:.14em;margin-top:12px}
+body:not(.view-mobile) .card-bd{padding:20px 22px 22px}
+body:not(.view-mobile) .card-bd h3{font-size:19px}
+body:not(.view-mobile) .sec-tabs{gap:12px;margin:14px auto 24px}
+body:not(.view-mobile) .sec-tab{padding:8px 24px;font-size:13px;letter-spacing:.16em}
+body:not(.view-mobile) .grid.two{gap:18px}
+body:not(.view-mobile) #status{height:38px;gap:16px;padding:0 20px}
+
+/* —— 手机：移动端体验（底部导航 + 紧凑 + 大触控） —— */
+body.view-mobile .st-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:95;margin:0;padding:7px 5px calc(7px + env(safe-area-inset-bottom));border-top:1px solid var(--line2);border-bottom:none;background:var(--panel2);gap:2px;justify-content:space-around;box-shadow:0 -6px 24px rgba(0,0,0,.25)}
+body.view-mobile .st-nav a{flex:1;text-align:center;padding:9px 0;font-size:12px;letter-spacing:.1em;border:1px solid transparent;border-radius:var(--r2);color:var(--ink2)}
+body.view-mobile .st-nav a:hover{border-color:var(--accent);color:var(--accent)}
+body.view-mobile .sec{padding-bottom:78px}
+body.view-mobile .st-dot{display:none}
+body.view-mobile #status{justify-content:flex-end;gap:8px;padding:0 9px;height:37px;font-size:10px}
+body.view-mobile .hero{padding:30px 14px 22px}
+body.view-mobile .hero .h-eyebrow{font-size:9px;letter-spacing:.18em}
+body.view-mobile .hero h1{font-size:clamp(28px,10.5vw,38px);gap:6px}
+body.view-mobile .hero .h-badge svg{width:24px;height:24px}
+body.view-mobile .hero .h-sub{font-size:11.5px;letter-spacing:.08em;margin-top:8px}
+body.view-mobile .hero .h-mono,body.view-mobile .hero .h-grid{display:none}
+body.view-mobile .hero .h-q{font-size:10px;padding:6px 10px;margin-top:12px}
+body.view-mobile .sec-tabs{gap:6px;margin:10px auto 14px;justify-content:center}
+body.view-mobile .sec-tab{padding:8px 15px;font-size:12px;letter-spacing:.1em;min-height:34px}
+body.view-mobile .th-btn{padding:7px 10px;font-size:11px;min-height:34px;letter-spacing:.08em}
+body.view-mobile .gb-btn{padding:12px 20px;font-size:13px}
+body.view-mobile .gb-row input{padding:12px;font-size:15px}
+body.view-mobile #thBox,body.view-mobile #uiBox{width:96vw}
+body.view-mobile .gb-row input{min-width:80px}
+
 /* ===== 留言板 / 私聊 v3.0 ===== */
 .gb{max-width:1080px;margin:26px auto 0;border:1px solid var(--line2);background:linear-gradient(165deg,#151516,#0E0E0F);box-shadow:0 0 0 1px rgba(255,255,255,.05);border-radius:var(--r)}
 .gb-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink3)}
