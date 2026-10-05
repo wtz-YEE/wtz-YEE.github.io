@@ -1463,6 +1463,109 @@ def api_shop():
     return jsonify({"ok": True, "list": [dict(x) for x in SHOP]})
 
 
+# 时间碎片：只在固定时段出现，错过就等下一场
+TFRAG_WIN = [(11, 0), (21, 0)]   # 每天两个时段，各自持续 TFRAG_MIN 分钟
+TFRAG_MIN = 30
+TFRAG_TXT = [
+    ("晨间残留", "在还没人上线的时候凝出来的，凉得像铁。"),
+    ("正午刻度", "太阳最高的时候它最清楚。"),
+    ("黄昏碎片", "颜色一直在变，抓不住的那种。"),
+    ("午夜回声", "你听到的是三秒前的自己。"),
+    ("凌晨残响", "这段本来不该被人听见。"),
+    ("午间静默", "世界安静了一瞬，它就在那时候出现。"),
+    ("傍晚余温", "摸上去还是暖的，像谁刚走。"),
+    ("深夜坐标", "它只标一个位置，而且只标一次。"),
+    ("破晓切片", "边缘在褪色，天亮前会消失。"),
+    ("日照倾角", "它在记录光的角度。"),
+    ("子夜钟摆", "一秒一次，从不停。"),
+    ("黎明前", "最难熬的那一段，它陪着你。"),
+]
+
+
+def _tfrag_day():
+    return _time.strftime("%Y-%m-%d")
+
+
+def _tfrag_info(now=None):
+    """返回当前时段 / 下一时段，全部由服务器时间推导（确定性，刷新不会重置）。"""
+    t = now or _time.localtime()
+    slots = []
+    for i, (hh, mm) in enumerate(TFRAG_WIN):
+        st = _time.mktime((t.tm_year, t.tm_mon, t.tm_mday, hh, mm, 0, 0, 0, -1))
+        slots.append({"i": i, "start": st})
+    for s in slots:
+        s["end"] = s["start"] + TFRAG_MIN * 60
+    nowts = _time.mktime(t)
+    cur = next((s for s in slots if s["start"] <= nowts < s["end"]), None)
+    day = _tfrag_day()
+    if cur:
+        return {"open": True, "spawn": "%s#%d" % (day, cur["i"]),
+                "left": int(cur["end"] - nowts),
+                "next": int(cur["start"] - nowts)}
+    nxt = [s for s in slots if s["start"] > nowts]
+    if not nxt:
+        nxt = [{"start": slots[0]["start"] + 86400, "i": slots[0]["i"]}]
+        nd = _time.strftime("%Y-%m-%d", _time.localtime(nxt[0]["start"]))
+        return {"open": False, "spawn": "%s#%d" % (nd, nxt[0]["i"]),
+                "left": 0, "next": int(nxt[0]["start"] - nowts)}
+    return {"open": False, "spawn": "%s#%d" % (day, nxt[0]["i"]),
+            "left": 0, "next": int(nxt[0]["start"] - nowts)}
+
+
+def _tfrag_name(spawn):
+    h = 0
+    for ch in str(spawn):
+        h = (h * 131 + ord(ch)) % 100000007
+    return TFRAG_TXT[h % len(TFRAG_TXT)]
+
+
+@app.route("/tfrag", methods=["GET", "POST"])
+def api_tfrag():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    info = _tfrag_info()
+    us = _load(USER_FILE, {})
+    mine = []
+    if cu:
+        mine = (us.get(cu) or {}).get("tfrags") or []
+    if not isinstance(mine, list):
+        mine = []
+    caught_today = info["spawn"] in [str(x) for x in mine]
+    return jsonify({"ok": True, "open": info["open"], "left": info["left"],
+                    "next": info["next"], "spawn": info["spawn"],
+                    "caught_today": caught_today, "count": len(mine),
+                    "now": _now()})
+
+
+@app.route("/tfrag_catch", methods=["POST"])
+def api_tfrag_catch():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    info = _tfrag_info()
+    if not info["open"]:
+        return jsonify({"ok": False, "msg": "时间碎片还没出现", "open": False, "next": info["next"]})
+    if info["left"] < 0:
+        return jsonify({"ok": False, "msg": "这一场已经结束了", "open": False, "next": info["next"]})
+    spawn = info["spawn"]
+    us = _load(USER_FILE, {})
+    rec = us.setdefault(cu, {})
+    mine = rec.get("tfrags") or []
+    if not isinstance(mine, list):
+        mine = []
+    if spawn in [str(x) for x in mine]:
+        return jsonify({"ok": True, "new": False, "spawn": spawn, "count": len(mine),
+                        "msg": "这一场已经收过了"})
+    mine.append(spawn)
+    rec["tfrags"] = mine[-200:]
+    _save(USER_FILE, us)
+    nm, dsc = _tfrag_name(spawn)
+    _award(cu, 15, 12)
+    return jsonify({"ok": True, "new": True, "spawn": spawn, "name": nm, "desc": dsc,
+                    "count": len(rec["tfrags"]), "gain": 15, "gain_exp": 12})
+
+
 @app.route("/frags", methods=["GET", "POST"])
 def api_frags():
     p = request.get_json() or {}
@@ -2058,7 +2161,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch")
 
 @app.before_request
 def _rate():

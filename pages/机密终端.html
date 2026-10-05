@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -297,8 +297,8 @@ case'whoami':whoami();break;
 case'verify':verify();break;
 	case'cloud':case'visitors':case'访客':case'visitor':JB2.cloudCmd();break;
 case'clear':case'cls':cls();break;
-case'lock':sessionStorage.removeItem('wzKey');location.href='index.html';break;
-case'exit':case'back':case'返回':location.href='index.html';break;
+case'lock':sessionStorage.removeItem('wzKey');location.href='../index.html';break;
+case'exit':case'back':case'返回':location.href='../index.html';break;
 default:lo('无法识别的命令："'+c.trim()+'" 输入 <b>help</b> 查看命令列表','bad')}
 }
 function enter(){var v=cmdEl.value;if(!v.trim())return;HIST.push(v);hi=HIST.length;pr(v);run(v);cmdEl.value=''}
@@ -307,8 +307,8 @@ if(e.key==='Enter')enter();
 else if(e.key==='ArrowUp'){if(hi>0){hi--;cmdEl.value=HIST[hi]||''}}
 else if(e.key==='ArrowDown'){if(hi<HIST.length){hi++;cmdEl.value=HIST[hi]||''}}
 else if(e.key==='Escape'){V=0;lo('验证已取消','dim');cmdEl.value=''}});
-document.getElementById('lockBtn').addEventListener('click',function(){sessionStorage.removeItem('wzKey');location.href='index.html'});
-document.getElementById('backIndex').addEventListener('click',function(){location.href='index.html'});
+document.getElementById('lockBtn').addEventListener('click',function(){sessionStorage.removeItem('wzKey');location.href='../index.html'});
+document.getElementById('backIndex').addEventListener('click',function(){location.href='../index.html'});
 function clk(){
 var d=new Date(),f=function(n){return(n<10?'0':'')+n};
 document.getElementById('clock').textContent=f(d.getHours())+':'+f(d.getMinutes())+':'+f(d.getSeconds());
@@ -378,7 +378,7 @@ document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.cl
 </script>
 
 
-<div id="wNav" class="w-nav"><a href="index.html" data-w="index">◈ 指挥中心</a><a href="守夜人论坛.html" data-w="forum">守夜人论坛</a><a href="卡塞尔学院官网.html" data-w="cassel">卡塞尔学院</a><a href="changelog.html" data-w="chg">更新日志</a><a id="wNavUpd" class="w-upd" href="javascript:void 0" title="检查 GitHub 是否有新版本">⚡ 更新</a><span id="wNavDot" class="w-dot off" title="云端状态未检测">●</span></div>
+<div id="wNav" class="w-nav"><a href="../index.html" data-w="index">◈ 指挥中心</a><a href="../pages/守夜人论坛.html" data-w="forum">守夜人论坛</a><a href="../pages/卡塞尔学院官网.html" data-w="cassel">卡塞尔学院</a><a href="../pages/changelog.html" data-w="chg">更新日志</a><a id="wNavUpd" class="w-upd" href="javascript:void 0" title="检查 GitHub 是否有新版本">⚡ 更新</a><span id="wNavDot" class="w-dot off" title="云端状态未检测">●</span></div>
 <style>
 .w-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:2147483000;display:flex;align-items:center;gap:2px;padding:4px 8px;background:rgba(10,12,14,.86);border:1px solid rgba(255,255,255,.16);border-radius:20px;font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:11px;letter-spacing:.05em;backdrop-filter:blur(4px);box-shadow:0 6px 22px rgba(0,0,0,.45)}
 .w-nav a{color:#C9D2D6;text-decoration:none;padding:3px 9px;border-radius:14px;transition:background .18s,color .18s;white-space:nowrap}
@@ -528,6 +528,164 @@ if(N){
   document.body.appendChild(b);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hide);else hide();
 }
+})();
+
+/* ===== 时间碎片（每日两个时段，限时出现） ===== */
+(function(){
+if(document.getElementById('tfragBtn'))return;
+var SLOTS=[[11,0],[21,0]], DUR=30;
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function pageFile(){
+  try{var m=location.pathname.split('/').pop().split('?')[0];if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}
+}
+function apiBase(){
+  try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return (a[0]||'').replace(/\/+$/,'')}catch(e){return''}
+}
+function apiToken(){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');return (s&&s.token)||''}catch(e){return''}}
+function call(path,payload){
+  var b=apiBase();
+  if(!b)return Promise.reject('no-cloud');
+  var body=Object.assign({token:apiToken()},payload||{});
+  var tried=[];
+  function attempt(api){
+    tried.push(api);
+    return fetch(api+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(res){
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      return res.json();
+    }).catch(function(err){
+      var u=(localStorage.getItem('gb_api_url')||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});
+      var next=null;
+      for(var i=0;i<u.length;i++) if(tried.indexOf(u[i])<0){next=u[i];break}
+      if(next)return attempt(next);
+      throw err;
+    });
+  }
+  return attempt(b);
+}
+function pad(n){return (n<10?'0':'')+n}
+function fmt(sec){
+  sec=Math.max(0,Math.floor(sec));
+  var h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+  return (h?h+':'+pad(m):m)+':'+pad(s);
+}
+function slotNow(t){
+  var cur=-1;
+  for(var i=0;i<SLOTS.length;i++){
+    var h=SLOTS[i][0],m=SLOTS[i][1];
+    var lo=h*3600+m*60, hi=lo+DUR*60;
+    var v=t.getHours()*3600+t.getMinutes()*60+t.getSeconds();
+    if(v>=lo&&v<hi) cur=i;
+  }
+  return cur;
+}
+function nextAt(t){
+  var v=t.getHours()*3600+t.getMinutes()*60+t.getSeconds();
+  for(var i=0;i<SLOTS.length;i++){
+    var lo=SLOTS[i][0]*3600+SLOTS[i][1]*60;
+    if(v<lo) return lo-v;
+  }
+  return 86400-v+SLOTS[0][0]*3600+SLOTS[0][1]*60;
+}
+function accent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#fff'}
+function toast(txt,sub){
+  var d=document.createElement('div');
+  d.innerHTML='<b style="display:block;letter-spacing:.14em">'+esc(txt)+'</b>'+(sub?'<span style="display:block;margin-top:6px;color:#9a9a9a;font-size:11.5px">'+esc(sub)+'</span>':'');
+  d.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:2147483000;background:rgba(8,10,12,.96);border:1px solid var(--accent,#fff);color:var(--accent,#fff);padding:12px 22px;font-family:Consolas,monospace;font-size:12.5px;text-align:center;pointer-events:none;max-width:82vw;line-height:1.8';
+  document.body.appendChild(d);
+  setTimeout(function(){d.style.transition='opacity .6s';d.style.opacity='0'},2400);
+  setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},3100);
+}
+var S={open:false,left:0,next:0,spawn:'',caught:false,count:0};
+var tick=null;
+function poll(){
+  call('/tfrag',{}).then(function(j){
+    if(!j||!j.ok)return;
+    S.open=!!j.open;S.left=j.left||0;S.next=j.next||0;
+    S.spawn=j.spawn||'';S.caught=!!j.caught_today;S.count=j.count||0;
+    if(window.__tfPanel)window.__tfPanel();
+  }).catch(function(){});
+}
+function catchIt(btn){
+  var old=btn.textContent;
+  btn.disabled=true;btn.textContent='收集中…';
+  call('/tfrag_catch',{},'POST').then(function(j){
+    if(!j||!j.ok){toast(j&&j.msg||'收不到','这一场已经过去了');return}
+    if(j.new===false){toast('\u23f1 错过这一场','下一场会再出现');return}
+    toast('\u23f1 '+j.name,j.desc+'+15 积分 / +12 经验');
+  }).catch(function(){toast('\u23f1 收集中断','云端没接上，稍后再试')})
+    .then(function(){btn.disabled=false;btn.textContent=old});
+}
+function open(full){
+  var mask=document.createElement('div');
+  mask.style.cssText='position:fixed;inset:0;z-index:2147483100;background:rgba(4,5,6,.8);display:flex;align-items:center;justify-content:center;padding:18px';
+  var box=document.createElement('div');
+  box.style.cssText='width:min(560px,94vw);max-height:86vh;overflow-y:auto;background:#101214;border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box;font-family:Consolas,monospace';
+  var st=document.createElement('div');
+  var btn=document.createElement('button');
+  btn.style.cssText='margin-top:16px;width:100%;border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);padding:11px;font-family:Consolas,monospace;font-size:13px;letter-spacing:.16em;cursor:pointer';
+  var cls=document.createElement('div');
+  var tip=document.createElement('div');
+  tip.style.cssText='color:#6e6e6e;font-size:11.5px;line-height:1.9;margin-top:12px';
+  tip.innerHTML='每天两个时段各 '+DUR+' 分钟：<b style="color:#b8b8b8">11:00</b> 与 <b style="color:#b8b8b8">21:00</b>。<br>时段由服务器时间判定，刷新不会重置；收下一枚 +15 积分 / +12 经验。';
+  box.appendChild(st);box.appendChild(btn);
+  if(full)box.appendChild(cls);
+  box.appendChild(tip);
+  var foot=document.createElement('div');
+  foot.style.cssText='text-align:right;margin-top:16px';
+  var cb=document.createElement('button');
+  cb.textContent='关闭';
+  cb.style.cssText='border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 18px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer';
+  foot.appendChild(cb);box.appendChild(foot);
+  mask.appendChild(box);
+  mask.onclick=function(e){if(e.target===mask&&mask.parentNode)mask.parentNode.removeChild(mask)};
+  cb.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
+  document.body.appendChild(mask);
+  function paint(){
+    if(!mask.parentNode)return false;
+    if(S.open){
+      st.innerHTML='<div style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff);margin-bottom:8px">TEMPORAL FRAGMENT</div>'+
+        '<div style="font-size:12.5px;color:#e6edef;line-height:2">状态<span style="color:var(--accent,#fff)">正在出现</span><br>剩余　<b style="color:var(--accent,#fff)" id="tfLeft">'+fmt(S.left)+'</b><br>已收　'+S.count+' 枚'+(S.caught?'　（这一场已收下）':'')+'</div>';
+      btn.textContent=S.caught?'这一场已经收过了':'收下这一枚';
+      btn.style.borderColor='var(--accent,#fff)';btn.style.color='var(--accent,#fff)';btn.disabled=false;
+    }else{
+      st.innerHTML='<div style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff);margin-bottom:8px">TEMPORAL FRAGMENT</div>'+
+        '<div style="font-size:12.5px;color:#e6edef;line-height:2">状态　<span style="color:#6e6e6e">现在没有</span><br>下一场　<b style="color:var(--accent,#fff)" id="tfLeft">'+fmt(S.next)+'</b> 后<br>已收　'+S.count+' 枚</div>';
+      btn.textContent='还没到时间';btn.style.borderColor='#2c2c2c';btn.style.color='#5b5b5b';btn.disabled=true;
+    }
+    if(full){
+      if(!cls.dataset.done){
+        call('/frags',{}).then(function(j){
+          if(!j||!j.ok)return;
+          cls.dataset.done='1';
+          var got={};for(var i=0;i<(j.mine||[]).length;i++)got[j.mine[i]]=1;
+          var h='<div style="font-size:11px;color:#8a8a8a;margin:16px 0 10px">世界碎片 · 已收集 <b style="color:var(--accent,#fff)">'+(j.mine||[]).length+'</b> / '+(j.total||22)+'　（点各页角落那枚菱形收下）</div>'+
+            '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px">';
+          for(var k=1;k<=(j.total||22);k++){
+            var on=!!got[k];
+            h+='<div style="border:1px solid '+(on?'var(--accent,#fff)':'#2c2c2c')+';color:'+(on?'var(--accent,#fff)':'#5b5b5b')+';text-align:center;padding:8px 0;font-size:12px">'+(on?('#'+(k<10?'0':'')+k):'\u00b7')+'</div>';
+          }
+          cls.innerHTML=h+'</div>';
+        }).catch(function(){});
+      }
+    }
+    return true;
+  }
+  window.__tfPanel=paint;
+  btn.onclick=function(){catchIt(btn)};
+  paint();
+  if(tick)clearInterval(tick);
+  tick=setInterval(function(){if(!paint()){clearInterval(tick);tick=null;window.__tfPanel=null}},1000);
+}
+var b=document.createElement('button');
+b.id='tfragBtn';b.type='button';b.title='时间碎片';
+b.style.cssText='position:fixed;left:56px;bottom:74px;z-index:2147482000;width:34px;height:34px;background:rgba(8,10,12,.82);border:1px solid var(--cbd,var(--line2,#444));color:var(--accent,#fff);font-size:14px;line-height:1;cursor:pointer;font-family:Consolas,monospace;transition:.2s;opacity:.72';
+b.textContent='\u23f1';
+b.onmouseover=function(){b.style.opacity='1';b.style.borderColor='var(--accent,#fff)';b.title=slotNow(new Date())>=0?'时间碎片 ·正在出现':'时间碎片'};
+b.onmouseout=function(){b.style.opacity='.72';b.title='时间碎片'};
+b.onclick=function(){poll();open(pageFile()==='index.html')};
+document.body.appendChild(b);
+poll();
+setInterval(poll,60000);
 })();
 </script>
 </body>
