@@ -801,9 +801,9 @@ function open(){
 }
 function clamp(v,a,b){return v<a?a:(v>b?b:v)}
 function fragPos(){
-  var key='wz_fragpos_'+N;
-  try{var s=JSON.parse(localStorage.getItem(key)||'null');if(s&&typeof s.x==='number'&&typeof s.y==='number')return s}catch(e){}
+  var key='wz_fragpos2_'+N;
   var w=window.innerWidth||1200,h=window.innerHeight||800;
+  try{var s=JSON.parse(localStorage.getItem(key)||'null');if(s&&typeof s.x==='number'&&typeof s.y==='number')return {x:Math.round(clamp(s.x,22,Math.max(22,w-40))),y:Math.round(clamp(s.y,50,Math.max(50,h-48)))}}catch(e){}
   /* 四个角随机取一个（左右 × 上下），各自带一点抖动。
      留白：顶栏约 38px、底部导航约 62px、收集按钮 34px，避免压住可点的东西 */
   var p;
