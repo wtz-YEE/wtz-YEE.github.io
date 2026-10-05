@@ -1,4 +1,4 @@
-var C='wtz-site-v7';
+var C='wtz-site-v8';
 var U=[
   './',
   './index.html',
