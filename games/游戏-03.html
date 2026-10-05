@@ -582,7 +582,7 @@ perm();
 <script>
 (function(){
 function ga(){try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return a[0]||''}catch(e){return''}}
-function norm(s){try{var m=location.pathname.split('/').pop().split('?')[0];return m}catch(e){return''}}
+function norm(s){try{var m=decodeURIComponent(location.pathname.split('/')).pop().split('?')[0];return m}catch(e){return''}}
 (function(){try{var m=location.pathname.split('/').pop().split('?')[0]||'',MAP={'index.html':'index','守夜人论坛.html':'forum','卡塞尔学院官网.html':'cassel','changelog.html':'chg','终端接口.html':'term','PRTS泰拉大典终端.html':'prts','prts.html':'prts','莱茵生命终端.html':'rhine','技能树.html':'skill','模组开发.html':'mod','解码器.html':'dec'};if(m===''||m==='wtz-YEE.github.io')m='index.html';var k=MAP[m];if(k)localStorage.setItem('wz_map_'+k,'1')}catch(e){}})();
 (function(){var m=norm(),a=document.querySelectorAll('#wNav a[data-w]');for(var i=0;i<a.length;i++){var t=a[i].getAttribute('data-w'),hit=false;if(t==='index'&&(m==='index.html'||m===''||m==='wtz-YEE.github.io'))hit=true;else if(t==='forum'&&m.indexOf('守夜人论坛')===0)hit=true;else if(t==='cassel'&&m.indexOf('卡塞尔学院')===0)hit=true;else if(t==='chg'&&m.indexOf('changelog')===0)hit=true;if(hit)a[i].classList.add('cur')}})();
 var upd=document.getElementById('wNavUpd');
@@ -609,7 +609,7 @@ if(document.getElementById('fragBtn'))return;
 var D={1:'从罗德岛甲板缝里扫出来的，编号 001。',2:'上面只有一句话：活着回来。',3:'火把灭了，巡夜还没结束。',4:'字迹在你不看的时候会换位置。',5:'照片被人用马克笔画了胡子。',6:'有效期：直到你不需要它为止。',7:'背面写着「忘了就跑 gen_keys.py」。',8:'它一直想变成 4096。',9:'它跳了一整天，没撞到任何东西。',10:'它咬到了自己，然后学会了穿墙。',11:'「今天又有人问我路明非是谁。」',12:'背面刻着 S 级血统的编号，被人刮掉了。',13:'签名处是空的——你还没签。',14:'标签写着「请勿摇晃」，然后被人摇晃过。',15:'它曾经是一条点亮的分支。',16:'注释里写着「这里应该能跑」，不能。',17:'第一页只有一句：泰拉没有真相。',18:'播报员念到一半停了电。',19:'某个名字被涂掉了，但笔画还在。',20:'夹在一本没人借过的书里。',21:'它不发光，只是把光借给了你。',22:'拿到它的人，会先愣一会儿。'};
 var MAP={'index.html':1,'':1,'守夜人论坛.html':3,'卡塞尔学院官网.html':4,'终端接口.html':6,'机密终端.html':7,'PRTS泰拉大典终端.html':17,'prts.html':2,'莱茵生命终端.html':14,'技能树.html':15,'模组开发.html':16,'解码器.html':8,'guestwall.html':19,'changelog.html':18,'404.html':20,'游戏-01.html':9,'游戏-02.html':10,'游戏-03.html':11,'游戏-04.html':12,'游戏-05.html':13,'游戏-06.html':21,'游戏-07.html':22,'游戏-08.html':5};
 function pageFile(){
-  try{var m=location.pathname.split('/').pop().split('?')[0];if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}
+  try{var m=decodeURIComponent(location.pathname.split('/').pop().split('?')[0]);if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}
 }
 var N=MAP[pageFile()]||0;
 function got(){try{var a=JSON.parse(localStorage.getItem('wz_frag2')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
@@ -725,7 +725,7 @@ if(document.getElementById('tfragBtn'))return;
 var SLOTS=[[11,0],[21,0]], DUR=30;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function pageFile(){
-  try{var m=location.pathname.split('/').pop().split('?')[0];if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}
+  try{var m=decodeURIComponent(location.pathname.split('/').pop().split('?')[0]);if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}
 }
 function apiBase(){
   try{var u=localStorage.getItem('gb_api_url')||'',a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return (a[0]||'').replace(/\/+$/,'')}catch(e){return''}
