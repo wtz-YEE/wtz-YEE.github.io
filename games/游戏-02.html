@@ -711,10 +711,14 @@ if(N){
 }
 })();
 
-/* ===== 时间碎片（每日两个时段，限时出现） ===== */
+/* ===== 时间碎片（每日 4 场 · 随机页面 · 随机位置） ===== */
 (function(){
 if(document.getElementById('tfragBtn'))return;
-var SLOTS=[[11,0],[21,0]], DUR=30;
+var DUR=30;
+var TGP=['index.html','prts.html','守夜人论坛.html','卡塞尔学院官网.html','终端接口.html','机密终端.html','PRTS泰拉大典终端.html','莱茵生命终端.html','技能树.html','模组开发.html','解码器.html','guestwall.html','changelog.html','游戏-01.html','游戏-02.html','游戏-03.html','游戏-04.html','游戏-05.html','游戏-06.html','游戏-07.html','游戏-08.html'];
+function tgh(s){var h=0;s=String(s);for(var i=0;i<s.length;i++)h=(h*131+s.charCodeAt(i))%100000007;return h}
+function tgSlots(day){var a=[],i;for(i=0;i<4;i++)a.push(360+i*270+tgh(day+'#'+i)%240);return a}
+function tgPage(sp){return TGP[tgh(sp+'@p')%TGP.length]}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function pageFile(){
   try{var m=decodeURIComponent(location.pathname.split('/').pop().split('?')[0]);if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}
@@ -750,22 +754,20 @@ function fmt(sec){
   return (h?h+':'+pad(m):m)+':'+pad(s);
 }
 function slotNow(t){
-  var cur=-1;
-  for(var i=0;i<SLOTS.length;i++){
-    var h=SLOTS[i][0],m=SLOTS[i][1];
-    var lo=h*3600+m*60, hi=lo+DUR*60;
-    var v=t.getHours()*3600+t.getMinutes()*60+t.getSeconds();
-    if(v>=lo&&v<hi) cur=i;
-  }
-  return cur;
+  var day=t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());
+  var v=t.getHours()*3600+t.getMinutes()*60+t.getSeconds();
+  var sl=tgSlots(day),i;
+  for(i=0;i<sl.length;i++){var lo=sl[i]*60;if(v>=lo&&v<lo+DUR*60)return i}
+  return -1;
 }
 function nextAt(t){
+  var day=t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());
   var v=t.getHours()*3600+t.getMinutes()*60+t.getSeconds();
-  for(var i=0;i<SLOTS.length;i++){
-    var lo=SLOTS[i][0]*3600+SLOTS[i][1]*60;
-    if(v<lo) return lo-v;
-  }
-  return 86400-v+SLOTS[0][0]*3600+SLOTS[0][1]*60;
+  var sl=tgSlots(day),i;
+  for(i=0;i<sl.length;i++){if(v<sl[i]*60)return sl[i]*60-v}
+  var nd=new Date(t.getTime()+86400000);
+  var d2=nd.getFullYear()+'-'+pad(nd.getMonth()+1)+'-'+pad(nd.getDate());
+  return 86400-v+tgSlots(d2)[0]*60;
 }
 function accent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#fff'}
 function toast(txt,sub){
@@ -776,25 +778,58 @@ function toast(txt,sub){
   setTimeout(function(){d.style.transition='opacity .6s';d.style.opacity='0'},2400);
   setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},3100);
 }
-var S={open:false,left:0,next:0,spawn:'',caught:false,count:0};
+var S={open:false,left:0,next:0,spawn:'',page:'',caught:false,count:0};
+var TFG=null,TFGH='';
 var tick=null;
 function poll(){
   call('/tfrag',{}).then(function(j){
     if(!j||!j.ok)return;
     S.open=!!j.open;S.left=j.left||0;S.next=j.next||0;
-    S.spawn=j.spawn||'';S.caught=!!j.caught_today;S.count=j.count||0;
+    S.spawn=j.spawn||'';S.page=j.page||'';S.caught=!!j.caught_today;S.count=j.count||0;
+    TFGWatch();
     if(window.__tfPanel)window.__tfPanel();
   }).catch(function(){});
 }
+function TFGWatch(){
+  var want=S.open&&!S.caught&&S.page;
+  if(!want){if(TFG){TFG.parentNode.removeChild(TFG);TFG=null}return}
+  if(S.page!==pageFile()){
+    if(TFGH!==S.spawn){TFGH=S.spawn;toast('\u23f1 时间碎片出现了','它正在「'+S.page.replace('.html','')+'」颤动')}
+    if(TFG){TFG.parentNode.removeChild(TFG);TFG=null}
+    return
+  }
+  if(TFG)return;
+  if(!document.getElementById('tfgkey')){
+    var st=document.createElement('style');st.id='tfgkey';
+    st.textContent='@keyframes tfgp{0%,100%{transform:scale(1);opacity:.75}50%{transform:scale(1.3);opacity:1}}';
+    document.head.appendChild(st);
+  }
+  var w=window.innerWidth||1200,h=window.innerHeight||800;
+  var x=60+tgh(S.spawn+'x')%Math.max(60,w-170);
+  var y=70+tgh(S.spawn+'y')%Math.max(60,h-240);
+  if(x<140&&y>h-210)x=Math.min(w-50,150+tgh(S.spawn+'z')%140);
+  TFG=document.createElement('button');TFG.type='button';TFG.title='时间碎片 ·正在颤动';
+  TFG.style.cssText='position:fixed;left:'+Math.round(x)+'px;top:'+Math.round(y)+'px;z-index:2147482500;width:16px;height:16px;padding:0;background:none;border:1px solid var(--accent,#fff);border-radius:50%;box-shadow:0 0 9px var(--accent,#fff);cursor:pointer;animation:tfgp 1.6s ease-in-out infinite';
+  TFG.onclick=function(){catchIt(null)};
+  document.body.appendChild(TFG);
+}
+window.addEventListener('resize',function(){
+  if(!TFG)return;
+  var w=window.innerWidth||1200,h=window.innerHeight||800;
+  TFG.style.left=Math.min(Math.max(20,parseFloat(TFG.style.left)),w-40)+'px';
+  TFG.style.top=Math.min(Math.max(50,parseFloat(TFG.style.top)),h-60)+'px';
+});
 function catchIt(btn){
-  var old=btn.textContent;
-  btn.disabled=true;btn.textContent='收集中…';
-  call('/tfrag_catch',{},'POST').then(function(j){
-    if(!j||!j.ok){toast(j&&j.msg||'收不到','这一场已经过去了');return}
+  var old=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='收集中…'}
+  call('/tfrag_catch',{page:pageFile()},'POST').then(function(j){
+    if(!j||!j.ok){toast(j&&j.msg||'收不到',j&&j.page?'它正在「'+j.page.replace('.html','')+'」颤动':(j&&j.next!=null?'下一场 '+fmt(j.next)+' 后':'这一场已经过去了'));return}
     if(j.new===false){toast('\u23f1 错过这一场','下一场会再出现');return}
-    toast('\u23f1 '+j.name,j.desc+'+15 积分 / +12 经验');
+    S.caught=true;
+    if(TFG){TFG.parentNode.removeChild(TFG);TFG=null}
+    toast('\u23f1 '+j.name,j.desc+'　+15 积分 / +12 经验');
   }).catch(function(){toast('\u23f1 收集中断','云端没接上，稍后再试')})
-    .then(function(){btn.disabled=false;btn.textContent=old});
+    .then(function(){if(btn){btn.disabled=false;btn.textContent=old}});
 }
 function open(full){
   var mask=document.createElement('div');
@@ -807,7 +842,7 @@ function open(full){
   var cls=document.createElement('div');
   var tip=document.createElement('div');
   tip.style.cssText='color:#6e6e6e;font-size:11.5px;line-height:1.9;margin-top:12px';
-  tip.innerHTML='每天两个时段各 '+DUR+' 分钟：<b style="color:#b8b8b8">11:00</b> 与 <b style="color:#b8b8b8">21:00</b>。<br>时段由服务器时间判定，刷新不会重置；收下一枚 +15 积分 / +12 经验。';
+  tip.innerHTML='每天随机 4 场、每场 '+DUR+' 分钟，出现时刻与页面由当天日期决定；到点后左下 ⏱ 会提示它在哪一页，去那页找一个会颤动的小圆点，点它收下。<br>由服务器时间判定，刷新不会重置；收下一枚 +15 积分 / +12 经验。';
   box.appendChild(st);box.appendChild(btn);
   if(full)box.appendChild(cls);
   box.appendChild(tip);
@@ -825,7 +860,7 @@ function open(full){
     if(!mask.parentNode)return false;
     if(S.open){
       st.innerHTML='<div style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff);margin-bottom:8px">TEMPORAL FRAGMENT</div>'+
-        '<div style="font-size:12.5px;color:#e6edef;line-height:2">状态<span style="color:var(--accent,#fff)">正在出现</span><br>剩余　<b style="color:var(--accent,#fff)" id="tfLeft">'+fmt(S.left)+'</b><br>已收　'+S.count+' 枚'+(S.caught?'　（这一场已收下）':'')+'</div>';
+        '<div style="font-size:12.5px;color:#e6edef;line-height:2">状态<span style="color:var(--accent,#fff)">正在出现</span><br>剩余　<b style="color:var(--accent,#fff)" id="tfLeft">'+fmt(S.left)+'</b><br>本次出现　「'+(S.page||'').replace('.html','')+'」<br>已收　'+S.count+' 枚'+(S.caught?'　（这一场已收下）':'')+'</div>';
       btn.textContent=S.caught?'这一场已经收过了':'收下这一枚';
       btn.style.borderColor='var(--accent,#fff)';btn.style.color='var(--accent,#fff)';btn.disabled=false;
     }else{
