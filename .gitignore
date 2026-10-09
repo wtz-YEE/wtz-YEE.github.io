@@ -28,3 +28,9 @@ sync_key.txt
 _cred_in.txt
 
 云端地址.txt
+
+_cloud/audit_*.json
+
+cloud.txt
+
+cloud_fixing.txt
