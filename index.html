@@ -5772,15 +5772,15 @@ function openGarden(){
   gSeedRefresh();
   gWhisper();
   renderMy();gProgRefresh();
-  mask.onclick=function(e){if(e.target===mask&&mask.parentNode)mask.parentNode.removeChild(mask)};
-  var c=document.getElementById('gClose');if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
+  mask.onclick=function(e){if(e.target===mask&&mask.parentNode){mask.parentNode.removeChild(mask);gAniStop()}};
+  var c=document.getElementById('gClose');if(c)c.onclick=function(){if(mask.parentNode){mask.parentNode.removeChild(mask);gAniStop()}};
   gLoadShared();
 }
 function gSeedCard(sp,un){
   var d=document.createElement('div');
   if(un){
     var isLeg=G_LEGEND.indexOf(sp.id)>=0,isRar=G_RARE.indexOf(sp.id)>=0;
-    d.style.cssText='border:1px solid '+(isLeg?'#c8a84a':(isRar?'#8a5ae0':'#2e3a32'))+';border-radius:12px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)'+(isLeg?';box-shadow:0 0 12px rgba(200,168,74,.25)':'');d.onmouseenter=function(){d.style.borderColor='#5a5a5a';d.style.transform='translateY(-2px)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor=isLeg?'#c8a84a':(isRar?'#8a5ae0':'#2c2c2c');d.style.transform='none'}};
+    d.style.cssText='border:1px solid '+(isLeg?'#c8a84a':(isRar?'#8a5ae0':'#2e3a32'))+';border-radius:12px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)'+(isLeg?';box-shadow:0 0 12px rgba(200,168,74,.25)':'');d.onmouseenter=function(){d.style.borderColor='var(--accent,#fff)';d.style.transform='translateY(-3px)';d.style.boxShadow='0 6px 18px rgba(120,160,255,.22)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor=isLeg?'#c8a84a':(isRar?'#8a5ae0':'#2c2c2c');d.style.transform='none';d.style.boxShadow='none'}};
     d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:'+(isLeg?'#c8a84a':(isRar?'#9a7ae0':'#9aa6ad'))+';font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+(isLeg?' ★':(isRar?' ✦':''))+'</div>';
     d.onclick=function(){gPick(d,sp.id)};
   }else{
@@ -5823,12 +5823,15 @@ function gPick(el,id){
   G_SEL=id;el.style.borderColor='var(--accent,#fff)';el.style.background='rgba(255,255,255,.06)';el.style.boxShadow='0 0 14px var(--accent,#fff)';el._el=el;
   var pb=document.getElementById('gPlantBtn');if(pb)pb.textContent='种下 '+gP(id).n;
 }
+var gAniCv=[];var gAniOn=false;
+function gAniAdd(cv,id,g){gAniCv.push({cv:cv,id:id,g:g,t:Math.random()*6});if(!gAniOn){gAniOn=true;(function loop(){var k=0;for(var i=0;i<gAniCv.length;i++){var o=gAniCv[i];if(o.cv&&o.cv.isConnected){o.t+=.03;try{gDraw(o.cv,o.id,o.g,o.t)}catch(e){}gAniCv[k++]=o}}gAniCv.length=k;if(gAniCv.length)requestAnimationFrame(loop);else gAniOn=false})()}}
+function gAniStop(){gAniCv.length=0;gAniOn=false}
 function gPlantCard(p,cnt){
   var sp=gP(p.sp),d=document.createElement('div');
   d.style.cssText='border:1px solid #2e3a32;border-radius:12px;padding:6px;text-align:center;box-sizing:border-box;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.008));box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.25);transform:scale(.92);opacity:0;transition:transform .25s,opacity .25s';setTimeout(function(){d.style.transform='scale(1)';d.style.opacity='1'},10);
   var cv=document.createElement('canvas');cv.width=84;cv.height=84;
   var rm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(rm){setTimeout(function(){gDraw(cv,sp.id,p.g||.5)},10)}else{var _t=Math.random()*6;(function loop(){gDraw(cv,sp.id,p.g||.5,_t);_t+=.03;cv.__raf=requestAnimationFrame(loop)})()}
+  if(rm){setTimeout(function(){gDraw(cv,sp.id,p.g||.5)},10)}else{gAniAdd(cv,sp.id,p.g||.5)}
   d.appendChild(cv);
   var stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));
   var star=G_LEGEND.indexOf(sp.id)>=0?' ★':(G_RARE.indexOf(sp.id)>=0?' ✦':'');
@@ -5845,6 +5848,10 @@ function renderMy(){
   var cnt={};for(var i=0;i<a.length;i++){var st=gP(a[i].sp).st;cnt[st]=(cnt[st]||0)+1}
   box.innerHTML='';
   if(!a.length){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">花园还空。从上方种子库选一种种下。</div>';return}
+  var totC=0,comp=0;for(var i=0;i<a.length;i++){totC+=(a[i].c||0);if((a[i].g||.5)>=1)comp++}
+  var comps=0;for(var k in cnt)if(cnt[k]>=2)comps++;
+  var head=document.createElement('div');head.style.cssText='grid-column:1/-1;font-size:9.5px;color:#6e8a86;letter-spacing:.18em;margin-bottom:2px;text-align:left';head.textContent='共 '+a.length+' 株 · 照料 '+totC+' 次 · 盛开 '+comp+' · 相伴 '+comps+' · 你的花园';
+  box.appendChild(head);
   for(var i=a.length-1;i>=0;i--){var d=gPlantCard(a[i],cnt);var cv=d.querySelector('canvas');d.firstChild.parentNode.replaceChild(cv,d.firstChild);box.appendChild(d)}
 }
 function gPlant(){
@@ -5863,7 +5870,7 @@ function gCare(id){
   G_CARE[id]=Date.now();
   var b=apiBase();if(!b)return;
   fetch(b+'/garden_care',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(j){
-    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#80ffdb')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
+    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();d.style.boxShadow='0 0 18px rgba(255,214,10,.5)';gFx(r.left+r.width/2,r.top+r.height/2,'#ffd60a')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
   }).catch(function(){toast('照料失败','云端不可用')});
 }
 function gLoadShared(){
