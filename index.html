@@ -5735,7 +5735,7 @@ function openGarden(){
     '<div style="font-size:11px;color:#8a8a8a;margin-bottom:12px">协作种植花园 · 25 种植物 · 多画风 · 星夜之下，万物生长</div>'+
     '<div style="height:2px;background:linear-gradient(90deg,transparent,var(--accent,#fff),transparent);opacity:.5;margin-bottom:14px"></div>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">'+
-      '<div style="flex:1;min-width:200px"><div style="font-size:11px;letter-spacing:.15em;color:#6e8a86;margin-bottom:6px">图鉴探索 · DISCOVERED '+gSeeds().length+' / 25</div>'+
+      '<div style="flex:1;min-width:200px"><div id="gProgLabel" style="font-size:11px;letter-spacing:.15em;color:#6e8a86;margin-bottom:6px">图鉴探索 · DISCOVERED '+gSeeds().length+' / 25</div>'+
       '<div style="height:6px;background:#1c1f26;border-radius:3px;overflow:hidden"><div id="gProg" style="height:100%;width:'+Math.round(gSeeds().length/25*100)+'%;background:var(--accent,#fff);border-radius:3px;transition:width .4s"></div></div></div>'+
       '<div style="text-align:right;padding-right:4px"><div style="font-size:11px;color:#8a8a8a">探索点</div><div id="gExBox" style="font-size:16px;color:var(--accent,#fff);font-weight:bold">'+gEx()+'</div></div>'+
     '</div>'+
@@ -5761,7 +5761,7 @@ function openGarden(){
   mask.appendChild(box);document.body.appendChild(mask);
   gSeedRefresh();
   gWhisper();
-  renderMy();
+  renderMy();gProgRefresh();
   mask.onclick=function(e){if(e.target===mask&&mask.parentNode)mask.parentNode.removeChild(mask)};
   var c=document.getElementById('gClose');if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
   gLoadShared();
@@ -5769,8 +5769,9 @@ function openGarden(){
 function gSeedCard(sp,un){
   var d=document.createElement('div');
   if(un){
-    d.style.cssText='border:1px solid #2c2c2c;border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s';d.onmouseenter=function(){d.style.borderColor='#5a5a5a';d.style.transform='translateY(-2px)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor='#2c2c2c';d.style.transform='none'}};
-    d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:#9aa6ad;font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+'</div>';
+    var isLeg=G_LEGEND.indexOf(sp.id)>=0,isRar=G_RARE.indexOf(sp.id)>=0;
+    d.style.cssText='border:1px solid '+(isLeg?'#c8a84a':(isRar?'#8a5ae0':'#2c2c2c'))+';border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s'+(isLeg?';box-shadow:0 0 12px rgba(200,168,74,.25)':'');d.onmouseenter=function(){d.style.borderColor='#5a5a5a';d.style.transform='translateY(-2px)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor=isLeg?'#c8a84a':(isRar?'#8a5ae0':'#2c2c2c');d.style.transform='none'}};
+    d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:'+(isLeg?'#c8a84a':(isRar?'#9a7ae0':'#9aa6ad'))+';font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+(isLeg?' ★':(isRar?' ✦':''))+'</div>';
     d.onclick=function(){gPick(d,sp.id)};
   }else{
     var tier=G_LEGEND.indexOf(sp.id)>=0?'传说':(G_RARE.indexOf(sp.id)>=0?'稀有':'常见');
@@ -5821,7 +5822,8 @@ function gPlantCard(p){
   setTimeout(function(){gDraw(cv,sp.id,p.g||.5)},10);
   d.appendChild(cv);
   var stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));
-  var nm=document.createElement('div');nm.style.cssText='color:#e6edef;font-size:10.5px;line-height:1.4';nm.innerHTML=sp.n+' <span style="color:#6e8a86;font-size:9px">['+stg+']</span>';d.appendChild(nm);
+  var star=G_LEGEND.indexOf(sp.id)>=0?' ★':(G_RARE.indexOf(sp.id)>=0?' ✦':'');
+  var nm=document.createElement('div');nm.style.cssText='color:#e6edef;font-size:10.5px;line-height:1.4';nm.innerHTML=sp.n+' <span style="color:#6e8a86;font-size:9px">['+stg+']</span>'+(star?star:'');d.appendChild(nm);
   var st=document.createElement('div');st.style.cssText='color:#6a767d;font-size:9px;margin-top:3px';
   var age='';if(p.t){var days=Math.floor((new Date().getTime()-p.t)/86400000);age=days<=0?'今日种下':days+' 天'}st.textContent=((p.u&&p.u!==gbName())?p.u+' · ':'')+(age?age+' · ':'')+Math.round((p.g||.5)*100)+'% · 照料 '+(p.c||0);d.appendChild(st);
   return d;
@@ -5866,7 +5868,7 @@ function gLoadShared(){
     }
   }).catch(function(){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">花园加载失败。</div>'});
 }
-function gProgRefresh(){var p=document.getElementById('gProg');if(p)p.style.width=Math.round(gSeeds().length/25*100)+'%'}
+function gProgRefresh(){var p=document.getElementById('gProg');if(p)p.style.width=Math.round(gSeeds().length/25*100)+'%';var t=document.getElementById('gProgLabel');if(t){t.innerHTML=gSeeds().length>=25?'图鉴全收 · 守园人 ⚜':' 图鉴探索 · DISCOVERED '+gSeeds().length+' / 25'}}
 function gExplore(){
   var eb=document.getElementById('gExploreBtn');if(eb)eb.disabled=true;
   if(gEx()<1){toast('探索点不足','种下或照料植物可获得探索点');if(eb)eb.disabled=false;return}
