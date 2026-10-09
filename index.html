@@ -5720,9 +5720,10 @@ function openGarden(){
   var mask=document.createElement('div');
   mask.style.cssText='position:fixed;inset:0;z-index:2147483100;background:rgba(4,5,6,.86);display:flex;align-items:center;justify-content:center;padding:18px';
   var box=document.createElement('div');
-  box.style.cssText='width:min(780px,96vw);max-height:90vh;overflow-y:auto;background:#101214;border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box;font-family:Consolas,monospace';
-  var h='<div style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff);margin-bottom:4px">COLLABORATIVE GARDEN</div>'+
-    '<div style="font-size:11px;color:#8a8a8a;margin-bottom:14px">协作种植花园 · 25 种植物 · 多画风 · 可照料照顾</div>'+
+  box.style.cssText='width:min(820px,96vw);max-height:90vh;overflow-y:auto;background:linear-gradient(180deg,#0a0e1a 0%,#101824 34%,#0d1512 100%);border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box;font-family:Consolas,monospace;border-radius:14px';
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff)">COLLABORATIVE GARDEN</span><span style="color:#5b5b5b;font-size:11px">NIGHT GARDEN</span></div>'+
+    '<div style="font-size:11px;color:#8a8a8a;margin-bottom:12px">协作种植花园 · 25 种植物 · 多画风 · 星夜之下，万物生长</div>'+
+    '<div style="height:2px;background:linear-gradient(90deg,transparent,var(--accent,#fff),transparent);opacity:.5;margin-bottom:14px"></div>'+
     '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">种子库 · SEEDS · 点选种下</div>'+
     '<div id="seedGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;margin-bottom:16px"></div>'+
@@ -5739,7 +5740,7 @@ function openGarden(){
   for(var i=0;i<G_PLANTS.length;i++){
     (function(sp){
       var d=document.createElement('div');
-      d.style.cssText='border:1px solid #2c2c2c;border-radius:8px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.15s';
+      d.style.cssText='border:1px solid #2c2c2c;border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s';d.onmouseenter=function(){d.style.borderColor='#5a5a5a';d.style.transform='translateY(-2px)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor='#2c2c2c';d.style.transform='none'}};
       d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:#9aa6ad;font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+'</div>';
       d.onclick=function(){gPick(d,sp.id)};
       sg.appendChild(d);
@@ -5751,21 +5752,22 @@ function openGarden(){
   var c=document.getElementById('gClose');if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
   gLoadShared();
 }
+function gFx(x,y,c){for(var i=0;i<10;i++){(function(i){var d=document.createElement('div');var a=Math.random()*6.283,sp=20+Math.random()*50;d.style.cssText='position:fixed;left:'+x+'px;top:'+y+'px;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px;background:'+c+';border-radius:50%;pointer-events:none;z-index:2147483500;transition:transform .6s,opacity .6s';document.body.appendChild(d);requestAnimationFrame(function(){d.style.transform='translate('+Math.cos(a)*sp+'px,'+(Math.sin(a)*sp-30)+'px)';d.style.opacity='0'});setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},650)})(i)}if(document.readyState==='loading')return}
 var G_SEL=null;
 function gPick(el,id){
-  if(G_SEL&&G_SEL._el){G_SEL._el.style.borderColor='#2c2c2c';G_SEL._el.style.background='transparent'}
-  G_SEL=id;el.style.borderColor='var(--accent,#fff)';el.style.background='rgba(255,255,255,.06)';el._el=el;
+  if(G_SEL&&G_SEL._el){G_SEL._el.style.borderColor='#2c2c2c';G_SEL._el.style.background='transparent';G_SEL._el.style.boxShadow='none'}
+  G_SEL=id;el.style.borderColor='var(--accent,#fff)';el.style.background='rgba(255,255,255,.06)';el.style.boxShadow='0 0 14px var(--accent,#fff)';el._el=el;
   var pb=document.getElementById('gPlantBtn');if(pb)pb.textContent='种下 '+gP(id).n;
 }
 function gPlantCard(p){
   var sp=gP(p.sp),d=document.createElement('div');
-  d.style.cssText='border:1px solid #2c2c2c;border-radius:8px;padding:6px;text-align:center;box-sizing:border-box';
+  d.style.cssText='border:1px solid #2c2c2c;border-radius:10px;padding:6px;text-align:center;box-sizing:border-box;background:rgba(255,255,255,.02);transform:scale(.92);opacity:0;transition:transform .25s,opacity .25s';setTimeout(function(){d.style.transform='scale(1)';d.style.opacity='1'},10);
   var cv=document.createElement('canvas');cv.width=84;cv.height=84;
   setTimeout(function(){gDraw(cv,sp.id,p.g||.5)},10);
   d.appendChild(cv);
   var nm=document.createElement('div');nm.style.cssText='color:#e6edef;font-size:10.5px;line-height:1.4';nm.textContent=sp.n;d.appendChild(nm);
   var st=document.createElement('div');st.style.cssText='color:#6a767d;font-size:9px;margin-top:3px';
-  st.textContent=((p.u&&p.u!==gbName())?p.u+' · ':'')+Math.round((p.g||.5)*100)+'% · 照料 '+(p.c||0);d.appendChild(st);
+  var age='';if(p.t){var days=Math.floor((new Date().getTime()-p.t)/86400000);age=days<=0?'今日种下':days+' 天'}st.textContent=((p.u&&p.u!==gbName())?p.u+' · ':'')+(age?age+' · ':'')+Math.round((p.g||.5)*100)+'% · 照料 '+(p.c||0);d.appendChild(st);
   return d;
 }
 function renderMy(){
@@ -5779,25 +5781,28 @@ function gPlant(){
   var p={sp:G_SEL,t:new Date().getTime(),g:.5,c:0,u:gbName()};
   var b=apiBase();
   if(b){try{fetch(b+'/garden_plant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).catch(function(){})}catch(e){}}
-  gAdd(p);G_SEL=null;renderMy();gLoadShared();
+  gAdd(p);G_SEL=null;renderMy();gLoadShared();var me=gbName();var cvd=document.querySelector('#myGarden>div');if(cvd){var r=cvd.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#7dff7a')}
   toast('已种下 '+gP(p.sp).n,'它会慢慢生长，别人也能为它照料');
 }
+var G_CARE={};
 function gCare(id){
+  if(G_CARE[id]&&Date.now()-G_CARE[id]<3000){toast('照料冷却中','3 秒后再照料');return}
+  G_CARE[id]=Date.now();
   var b=apiBase();if(!b)return;
   fetch(b+'/garden_care',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(j){
-    if(j&&j.ok){gLoadShared();toast('照料成功','生长 +12%')}else{toast('照料失败','试试刷新')}
+    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#80ffdb')}gLoadShared();toast('照料成功','生长 +12%')}else{toast('照料失败','试试刷新')}
   }).catch(function(){toast('照料失败','云端不可用')});
 }
 function gLoadShared(){
   var b=apiBase();var box=document.getElementById('shGarden');if(!box)return;
   if(!b){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">当前未连接云端，仅本地花园可用。</div>';return}
   fetch(b+'/garden_get').then(function(r){return r.json()}).then(function(j){
-    var list=(j&&j.plants)||[];box.innerHTML='';
+    var list=(j&&j.plants)||[];list.sort(function(a,b){return (b.c||0)-(a.c||0)||((b.t||0)-(a.t||0))});box.innerHTML='';
     if(!list.length){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">还没人种下。来种第一棵。</div>';return}
     for(var i=0;i<list.length;i++){
       (function(p){var d=gPlantCard(p);var cv=d.querySelector('canvas');d.firstChild.parentNode.replaceChild(cv,d.firstChild);
         var bt=document.createElement('div');bt.style.cssText='margin-top:5px';
-        bt.innerHTML='<button onclick="gCare('+p.id+')" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);font-family:Consolas,monospace;font-size:9px;padding:3px 8px;cursor:pointer">照料 +12%</button>';
+        bt.innerHTML='<button onclick="gCare('+p.id+')" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);font-family:Consolas,monospace;font-size:9px;padding:3px 8px;cursor:pointer;transition:.15s" onmouseenter="this.style.background=\'rgba(255,255,255,.08)\'" onmouseleave="this.style.background=\'none\'">照料 +12%</button>';
         d.appendChild(bt);box.appendChild(d);
       })(list[i]);
     }
