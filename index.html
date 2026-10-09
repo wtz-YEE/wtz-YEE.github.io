@@ -5803,14 +5803,12 @@ function gSeedGroup(area,title,list){
 }
 function gSeedRefresh(){
   var area=document.getElementById('gSeedArea');if(!area)return;
-  var G_SEL_KEEP=G_SEL;
   area.innerHTML='';
   var common=[],rare=[],legend=[];
   for(var i=0;i<G_PLANTS.length;i++){var id=G_PLANTS[i].id;if(G_LEGEND.indexOf(id)>=0)legend.push(G_PLANTS[i]);else if(G_RARE.indexOf(id)>=0)rare.push(G_PLANTS[i]);else common.push(G_PLANTS[i])}
   gSeedGroup(area,'常见 SEEDS',common);
   gSeedGroup(area,'稀有 RARE',rare);
   gSeedGroup(area,'传说 LEGEND',legend);
-  if(G_SEL_KEEP){var card=null;var cs=area.querySelectorAll('canvas');for(var i=0;i<G_PLANTS.length;i++){};var all=area.querySelectorAll('div');for(var i=0;i<all.length;i++){if(all[i].getAttribute&&all[i].getAttribute('data-sel')===''+G_SEL_KEEP){card=all[i];break}}if(!card){var t=area.querySelectorAll('#gSeedArea>div>div>div');for(var i=0;i<t.length;i++){}}}
 }
 function gWhisper(){
   var w=document.getElementById('gWhisper');if(!w)return;
