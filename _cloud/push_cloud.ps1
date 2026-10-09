@@ -1,9 +1,10 @@
-﻿$ErrorActionPreference = 'Stop'
-$path = 'D:\WTZ\prts\cloud.txt'
+$ErrorActionPreference = 'Stop'
+$cloudDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$path = Join-Path $cloudDir '..\cloud.txt'
 $local = ([IO.File]::ReadAllText($path)).Trim()
 if (-not $local) { Write-Output 'cloud.txt empty, skip'; exit 0 }
 
-$f = 'D:\WTZ\prts\_cloud\_cred_in.txt'
+$f = Join-Path $cloudDir '_cred_in.txt'
 [IO.File]::WriteAllText($f, "protocol=https`nhost=github.com`n`n")
 $cred = cmd /c "git credential fill < $f" 2>$null
 $tok = ($cred | Where-Object { $_ -like 'password=*' }) -replace 'password=',''
@@ -12,7 +13,6 @@ $H = @{ Authorization = 'token ' + $tok; 'User-Agent' = 'wtz'; 'Content-Type' = 
 $repo = 'wtz-YEE/wtz-YEE.github.io'
 $url = "https://api.github.com/repos/$repo/contents/cloud.txt"
 
-# 去重：远端与本地一致则不推送
 $remote = ''
 try { $meta = Invoke-RestMethod -Uri $url -Headers $H -TimeoutSec 60; $remote = ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($meta.content))).Trim() } catch {}
 if ($remote -eq $local) { Write-Output 'cloud.txt already up to date, skip'; exit 0 }
