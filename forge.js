@@ -44,12 +44,19 @@ var AF=[
 {id:'walk',n:'夜行者',grp:'',mx:1,pre:0,t:'专属',e:'夜行探索 +1'},
 {id:'star',n:'星尘亲和',grp:'',mx:1,pre:0,t:'专属',e:'星雨掉落加成'},
 {id:'cmd',n:'指挥官',grp:'',mx:1,pre:0,t:'专属',e:'排行积分 +5%'},
-{id:'soul',n:'吸血之魂',grp:'',mx:2,pre:1,t:'攻击',e:'击杀回复'}
+{id:'soul',n:'吸血之魂',grp:'',mx:2,pre:1,t:'攻击',e:'击杀回复'},
+{id:'ice',n:'霜',grp:'el',mx:2,pre:1,t:'专属',e:'命中减速'},
+{id:'still',n:'凝滞',grp:'el',mx:1,pre:0,t:'专属',e:'暴击率↑'},
+{id:'void',n:'虚空',grp:'dark',mx:2,pre:1,t:'专属',e:'对暗影增伤'},
+{id:'hunter',n:'猎魔',grp:'dark',mx:2,pre:1,t:'专属',e:'对恶魔增伤'}
 ];
 var COMBO=[
 {ids:['fire','cmd'],n:'狂战士之焰',e:'伤害+暴击'},
 {ids:['ice','still'],n:'霜语',e:'减速+暴击率'},
-{ids:['void','hunter'],n:'虚空狩猎',e:'对暗影增伤'}
+{ids:['void','hunter'],n:'虚空狩猎',e:'对暗影增伤'},
+{ids:['sharp','sweep'],n:'利刃风暴',e:'攻速+暴击'},
+{ids:['loot','fort'],n:'丰收之镰',e:'掉落翻倍'},
+{ids:['soul','smite'],n:'亡灵收割',e:'击杀回血翻倍'}
 ];
 function fBlank(id){for(var i=0;i<B.length;i++)if(B[i].id===id)return B[i];return null}
 function fAffix(id){for(var i=0;i<AF.length;i++)if(AF[i].id===id)return AF[i];return null}
@@ -77,7 +84,7 @@ function fUpgradeLv(){
   var c=fLvCost(lv);if(fBS()<c)return toast('书架不足','升级需要 '+c+' 书架（积分商店/成就获取）');
   fBSAdd(-c);js(K_LV,lv+1);toast('锻造台升级至 LV'+(lv+1),'解锁更强词缀');return true;
 }
-function fShowSet(id){js(K_SHOW,id);toast('已设为个人门面','');return true}
+function fShowSet(id){js(K_SHOW,id);toast('已设为个人门面','');if(typeof forgeRender==='function')forgeRender();return true}
 /* ===== 引擎 ===== */
 function fConflict(x,y){
   if(!x||!y)return false;var gx=x.grp,gy=y.grp;
@@ -142,10 +149,19 @@ function fMaybeDrop(){
 /* ===== 面板 ===== */
 var FORGE_VIEW='vault',FORGE_SEL=null,FORGE_MERGE=null;
 function fResBar(){
-  return '<span style="color:#4fa8ff">青金石 '+fLapis()+'</span> · <span style="color:#b0bec5">魔铁锭 '+fIron()+'</span> · <span style="color:#ffb703">书架 '+fBS()+'</span> · <span style="color:#ffd60a">锻造台 LV'+fLv()+'</span>';
+  var sh=fShow(),shN='';
+  if(sh){var va=fVault();for(var i=0;i<va.length;i++)if(va[i].id===sh){var bl=fBlank(va[i].b);shN=' · <span style="color:#ffd60a">★门面:'+(bl?bl.n:'?')+'</span>';break}}
+  return '<span style="color:#4fa8ff">青金石 '+fLapis()+'</span> · <span style="color:#b0bec5">魔铁锭 '+fIron()+'</span> · <span style="color:#ffb703">书架 '+fBS()+'</span> · <span style="color:#ffd60a">锻造台 LV'+fLv()+'</span>'+shN;
+}
+function fStyle(){
+  if(document.getElementById('forgeSty'))return;
+  var s=document.createElement('style');s.id='forgeSty';
+  s.textContent='#forgeMask{backdrop-filter:blur(6px)}#forgeMask button{transition:transform .14s,box-shadow .14s,opacity .14s}#forgeMask button:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.55);opacity:.9}#forgeMask ::-webkit-scrollbar{width:8px}#forgeMask ::-webkit-scrollbar-thumb{background:#2c2c2c;border-radius:4px}#forgeMask .fc{transition:all .16s}#forgeMask .fc:hover{border-color:var(--accent,#fff)!important;background:rgba(255,255,255,.07)}';
+  document.head.appendChild(s);
 }
 function fRarCol(r){return r==='传说'?'#ffd60a':r==='稀有'?'#ffb703':r==='魔法'?'#4fa8ff':'#cfd8dc'}
 function openForge(){
+  fStyle();
   var old=document.getElementById('forgeMask');if(old)old.parentNode.removeChild(old);
   var m=document.createElement('div');m.id='forgeMask';
   m.style.cssText='position:fixed;inset:0;z-index:2147482900;background:rgba(7,9,10,.78);display:flex;align-items:center;justify-content:center;padding:24px';
@@ -171,12 +187,12 @@ function fBuyGuide(){toast('去 index 积分商店「武器」分类购买胚子
 function fWCard(v,extra){
   var bl=fBlank(v.b);if(!bl)return'';var r=fRarity(v),p=fPower(v),col=fRarCol(r);
   var show=fShow()===v.id;
-  return '<div style="border:1px solid '+col+';border-radius:8px;padding:8px;background:rgba(255,255,255,.03);position:relative">'+
+  return '<div class="fc" style="border:1px solid '+col+';border-radius:8px;padding:8px;background:rgba(255,255,255,.03);position:relative">'+
     (show?'<div style="position:absolute;top:2px;right:6px;color:#ffd60a;font-size:9px">★门面</div>':'')+
     '<div style="color:'+col+';font-size:12px;font-weight:bold">'+esc(bl.n)+'</div>'+
     '<div style="font-size:10px;color:#8a8a8a;margin:2px 0">'+r+' · 战力 '+p+'</div>'+
     '<div style="font-size:10px;color:#aab3bc;line-height:1.5">'+(fAffNames(v).join(' / ')||'<span style="color:#5b5b5b">未附魔</span>')+'</div>'+
-    (v.combo?'<div style="font-size:10px;color:#ffd60a;margin-top:2px">✦ '+v.combo+'</div>':'')+
+    (fComboName(v)?'<div style="font-size:10px;color:#ffd60a;margin-top:2px">✦ '+fComboName(v)+'</div>':'')+
     (v.cost>0?'<div style="font-size:9px;color:'+(v.cost>=8?'#ff5c7a':'#8a8a8a')+'">'+(v.cost>=8?'⚠ 过于昂贵':'铁砧成本 '+v.cost)+'</div>':'')+
     (extra||'')+
     '<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">'+
@@ -210,7 +226,7 @@ function fMergeChoices(v){
 function forgePick(id){var a=fVault();for(var i=0;i<a.length;i++)if(a[i].id===id){FORGE_SEL=a[i];break}forgeRender()}
 function forgeRender(){
   var bd=document.getElementById('fBody');if(!bd)return;
-  var res=document.getElementById('fRes');if(res)res.textContent=fResBar();
+  var res=document.getElementById('fRes');if(res)res.innerHTML=fResBar();
   var h='';
   if(FORGE_VIEW==='rank'){
     h+='<div style="font-size:11px;letter-spacing:.15em;color:#6e8a86;margin:8px 0 6px">武器战力榜 · RANK</div>';
@@ -255,7 +271,7 @@ window.forgeMerge=function(id){if(!FORGE_SEL)return;var o=null;var a=fVault();fo
 window.forgeClear=function(){FORGE_SEL=null;FORGE_MERGE=null;forgeRender()};
 window.fDiscard=fDiscard;
 window.fBlankList=function(){return B.slice()};
-window.fVault=fVault;window.fPower=fPower;window.fRarity=fRarity;window.fAffNames=fAffNames;window.fShow=fShow;
+window.fVault=fVault;window.fPower=fPower;window.fRarity=fRarity;window.fAffNames=fAffNames;window.fShow=fShow;window.fComboName=fComboName;
 window.fLapisAdd=fLapisAdd;window.fIronAdd=fIronAdd;window.fBSAdd=fBSAdd;
 window.fMaybeDrop=fMaybeDrop;window.fImportPurchased=function(ids){
   var vault=fVault(),got=[];var have={};for(var i=0;i<vault.length;i++)have[vault[i].b]=1;
