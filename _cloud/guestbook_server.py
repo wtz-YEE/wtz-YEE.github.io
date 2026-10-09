@@ -884,7 +884,7 @@ def api_visitors_get():
 @app.route("/garden_get", methods=["GET", "POST"])
 def api_garden_get():
     d = _load(GARDEN_FILE, {})
-    return jsonify({"ok": True, "plants": d.get("plants") or []})
+    return jsonify({"ok": True, "plants": d.get("plants") or [], "care_total": d.get("care_total") or 0})
 
 @app.route("/garden_plant", methods=["POST"])
 def api_garden_plant():
@@ -893,11 +893,25 @@ def api_garden_plant():
     pl = d.get("plants") or []
     nid = d.get("seq", 0) + 1
     pl.append({"id": nid, "sp": int(p.get("sp") or 1), "u": str(p.get("u") or "游客")[:16],
-               "g": 0.5, "c": 0, "t": int(_t.time() * 1000)})
+               "g": 0.5, "c": 0, "t": int(_t.time() * 1000), "msgs": []})
     d["plants"] = pl[-200:]
     d["seq"] = nid
     _save(GARDEN_FILE, d)
     return jsonify({"ok": True, "id": nid})
+
+@app.route("/garden_note", methods=["POST"])
+def api_garden_note():
+    p = request.get_json() or {}
+    d = _load(GARDEN_FILE, {})
+    pl = d.get("plants") or []
+    for x in pl:
+        if str(x.get("id")) == str(p.get("id")):
+            ms = x.get("msgs") or []
+            ms.append({"u": str(p.get("u") or "游客")[:16], "tx": str(p.get("tx") or "")[:120], "t": int(_t.time() * 1000)})
+            x["msgs"] = ms[-12:]
+            _save(GARDEN_FILE, d)
+            return jsonify({"ok": True})
+    return jsonify({"ok": False, "msg": "植物不存在"})
 
 @app.route("/garden_care", methods=["POST"])
 def api_garden_care():
@@ -908,8 +922,9 @@ def api_garden_care():
         if str(x.get("id")) == str(p.get("id")):
             x["g"] = min(1.0, (x.get("g") or 0.5) + 0.12)
             x["c"] = (x.get("c") or 0) + 1
+            d["care_total"] = (d.get("care_total") or 0) + 1
             _save(GARDEN_FILE, d)
-            return jsonify({"ok": True})
+            return jsonify({"ok": True, "care_total": d.get("care_total")})
     return jsonify({"ok": False, "msg": "植物不存在"})
 
 @app.route("/guest_like", methods=["POST"])
