@@ -15,6 +15,7 @@ CHANGELOG_FILE = os.path.join(_BASE, "changelog.json")
 SCORE_FILE = os.path.join(_BASE, "scores.json")
 RISK_FILE = os.path.join(_BASE, "risk_words.json")
 BANNED_IP_FILE = os.path.join(_BASE, "banned_ips.json")
+GARDEN_FILE = os.path.join(_BASE, "garden.json")
 
 import time as _t
 DEL_LOG = []
@@ -877,6 +878,39 @@ def api_visitors_get():
     return jsonify({"ok": True, "visits": st.get("visits") or 0,
                     "today": st.get("today_visits") or 0,
                     "list": [{"name": k, "n": v} for k, v in arr]})
+
+
+
+@app.route("/garden_get", methods=["GET", "POST"])
+def api_garden_get():
+    d = _load(GARDEN_FILE, {})
+    return jsonify({"ok": True, "plants": d.get("plants") or []})
+
+@app.route("/garden_plant", methods=["POST"])
+def api_garden_plant():
+    p = request.get_json() or {}
+    d = _load(GARDEN_FILE, {})
+    pl = d.get("plants") or []
+    nid = d.get("seq", 0) + 1
+    pl.append({"id": nid, "sp": int(p.get("sp") or 1), "u": str(p.get("u") or "游客")[:16],
+               "g": 0.5, "c": 0, "t": int(_t.time() * 1000)})
+    d["plants"] = pl[-200:]
+    d["seq"] = nid
+    _save(GARDEN_FILE, d)
+    return jsonify({"ok": True, "id": nid})
+
+@app.route("/garden_care", methods=["POST"])
+def api_garden_care():
+    p = request.get_json() or {}
+    d = _load(GARDEN_FILE, {})
+    pl = d.get("plants") or []
+    for x in pl:
+        if str(x.get("id")) == str(p.get("id")):
+            x["g"] = min(1.0, (x.get("g") or 0.5) + 0.12)
+            x["c"] = (x.get("c") or 0) + 1
+            _save(GARDEN_FILE, d)
+            return jsonify({"ok": True})
+    return jsonify({"ok": False, "msg": "植物不存在"})
 
 @app.route("/guest_like", methods=["POST"])
 def api_guest_like():

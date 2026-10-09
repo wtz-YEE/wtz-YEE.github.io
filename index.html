@@ -5617,5 +5617,205 @@ poll();
 setInterval(poll,60000);
 })();
 </script>
+
+<script>
+
+/* ===== 协作种植花园
+if(typeof apiBase!=='function'){window.apiBase=function(){return''}}if(typeof toast!=='function'){window.toast=function(){}}if(typeof gbName!=='function'){window.gbName=function(){return'游客'}}
+（25 植物 · 多画风 · 协作照料） ===== */
+var G_PLANTS=[
+{id:1,n:'字母·A藤',st:'letter',c:'#9b5de5'},
+{id:2,n:'字母·W芽',st:'letter',c:'#00bbf9'},
+{id:3,n:'字母·梦苗',st:'letter',c:'#f15bb5'},
+{id:4,n:'像素向日葵',st:'pixel',c:'#ffd166'},
+{id:5,n:'像素松树',st:'pixel',c:'#06d6a0'},
+{id:6,n:'像素蘑菇',st:'pixel',c:'#ef476f'},
+{id:7,n:'像素仙人掌',st:'pixel',c:'#06a77d'},
+{id:8,n:'像素玫瑰',st:'pixel',c:'#f72585'},
+{id:9,n:'像素郁金香',st:'pixel',c:'#ff90e8'},
+{id:10,n:'几何·三角松',st:'geo',c:'#4cc9f0'},
+{id:11,n:'几何·圆环莲',st:'geo',c:'#4361ee'},
+{id:12,n:'几何·菱形仙人掌',st:'geo',c:'#7bc950'},
+{id:13,n:'几何·星形花',st:'geo',c:'#ffd60a'},
+{id:14,n:'几何·太阳花',st:'geo',c:'#ffb703'},
+{id:15,n:'发光菌',st:'glow',c:'#39ff14'},
+{id:16,n:'墨线竹',st:'ink',c:'#3a3f44'},
+{id:17,n:'水晶缤',st:'crystal',c:'#b388ff'},
+{id:18,n:'星云藤',st:'nebula',c:'#7b2cbf'},
+{id:19,n:'电路草',st:'circuit',c:'#00ff9f'},
+{id:20,n:'泡泡果',st:'bubble',c:'#80ffdb'},
+{id:21,n:'火绒草',st:'flame',c:'#ff5400'},
+{id:22,n:'冰晶叶',st:'ice',c:'#48cae4'},
+{id:23,n:'时针花',st:'clock',c:'#c8b6a6'},
+{id:24,n:'音符兰',st:'note',c:'#ffd6ff'},
+{id:25,n:'心电图草',st:'ecg',c:'#00f5d4'}
+];
+function gP(id){for(var i=0;i<G_PLANTS.length;i++)if(G_PLANTS[i].id===id)return G_PLANTS[i];return G_PLANTS[0]}
+function gbName(){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');return (s&&s.username)||'游客'}catch(e){return'游客'}}
+function gDraw(cv,id,g){
+  var sp=gP(id),c=sp.c,s=cv.width,ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,s,s);
+  ctx.save();ctx.translate(s/2,s-4);
+  var h=(s*0.42)*Math.min(1,Math.max(.15,g||.5));
+  ctx.strokeStyle=c;ctx.lineWidth=Math.max(1.5,s/40);
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-h);ctx.stroke();
+  if(sp.st==='letter'){
+    ctx.fillStyle=c;ctx.font='bold '+(s*0.34)+'px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(sp.id===1?'A':(sp.id===2?'W':'梦'),0,-h-s*0.14);
+  }else if(sp.st==='pixel'){
+    var p=Math.max(2,s/14);function px(a,b){ctx.fillRect(a*p-p/2,b*p-p/2,p-1,p-1)}
+    ctx.fillStyle=c;
+    if(sp.id===4){for(var i=0;i<7;i++){px(i-3,-12);px(-3,-12-((i%2)?p:0))}ctx.fillStyle='#8b5a2b';px(0,-5)}
+    else if(sp.id===5){for(var i=0;i<5;i++){px(i-2,-h-p*2-((i%2)?p:0))}ctx.fillStyle='#8b5a2b';px(0,-2)}
+    else if(sp.id===6){ctx.fillStyle='#f1f1f1';px(-1,-4);px(0,-4);px(1,-4);ctx.fillStyle=c;px(-1,-6);px(0,-6);px(1,-6);ctx.fillStyle='#fff';px(0,-1)}
+    else if(sp.id===7){ctx.fillStyle=c;px(-1,-8);px(1,-10);px(0,-12);ctx.fillStyle='#ffd166';px(0,-14)}
+    else if(sp.id===8){ctx.fillStyle=c;px(0,-8);px(-1,-10);px(1,-10);px(0,-12);ctx.fillStyle='#4cc9f0';px(-2,-6)}
+    else if(sp.id===9){ctx.fillStyle=c;px(-1,-8);px(1,-8);px(-1,-10);px(1,-10);px(0,-9)}
+  }else if(sp.st==='geo'){
+    if(sp.id===10){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(0,-h-s*0.2);ctx.lineTo(-s*0.18,-h);ctx.lineTo(s*0.18,-h);ctx.closePath();ctx.fill()}
+    else if(sp.id===11){ctx.strokeStyle=c;ctx.lineWidth=s/22;for(var i=0;i<2;i++){ctx.beginPath();ctx.arc(0,-h-s*0.14,i*s/14+s*0.05,0,6.283);ctx.stroke()}}
+    else if(sp.id===12){ctx.save();ctx.translate(0,-h-s*0.16);ctx.rotate(.785);ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(0,-s*0.16);ctx.lineTo(s*0.12,0);ctx.lineTo(0,s*0.16);ctx.lineTo(-s*0.12,0);ctx.closePath();ctx.fill();ctx.restore()}
+    else if(sp.id===13){ctx.fillStyle=c;ctx.beginPath();for(var i=0;i<10;i++){var a=i*1.256,r=i%2?s*0.18:s*0.08,X=Math.cos(a)*r,Y=Math.sin(a)*r-h-s*0.16;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.closePath();ctx.fill()}
+    else if(sp.id===14){ctx.fillStyle=c;ctx.beginPath();ctx.arc(0,-h-s*0.14,s*0.16,0,6.283);ctx.fill();ctx.fillStyle='#3a0ca3';ctx.beginPath();ctx.arc(0,-h-s*0.14,s*0.05,0,6.283);ctx.fill()}
+  }else if(sp.st==='glow'){
+    ctx.shadowColor=c;ctx.shadowBlur=s/5;ctx.fillStyle=c;ctx.beginPath();ctx.arc(0,-h-s*0.1,s*0.12,0,6.283);ctx.fill();
+    ctx.shadowBlur=0;ctx.strokeStyle=c;ctx.lineWidth=s/30;for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-h*(.3+i*.23));ctx.stroke()}
+  }else if(sp.st==='ink'){
+    ctx.strokeStyle=c;ctx.lineWidth=s/30;ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(s*0.1,-h*0.5,0,-h);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,-h);ctx.lineTo(-s*0.12,-h-s*0.2);ctx.moveTo(0,-h);ctx.lineTo(s*0.12,-h-s*0.16);ctx.stroke()
+  }else if(sp.st==='crystal'){
+    ctx.fillStyle=c;for(var i=0;i<3;i++){var bx=(i-1)*s*0.12,by=-h;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx-s*0.05,by-s*0.22-i*2);ctx.lineTo(bx,by-s*0.3-i*3);ctx.lineTo(bx+s*0.05,by-s*0.2-i*2);ctx.closePath();ctx.fill()}
+  }else if(sp.st==='nebula'){
+    ctx.strokeStyle=c;ctx.lineWidth=s/28;ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(s*0.12,-h*0.6,-s*0.12,-h*0.8,s*0.02,-h);ctx.stroke();
+    ctx.fillStyle=c;ctx.globalAlpha=.5;for(var i=0;i<6;i++){ctx.beginPath();ctx.arc((i-3)*s*0.07,-h*0.5-(i%2)*s*0.08,s*0.02,0,6.283);ctx.fill()}
+    ctx.globalAlpha=1;
+  }else if(sp.st==='circuit'){
+    ctx.strokeStyle=c;ctx.lineWidth=s/30;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-h);ctx.stroke();
+    for(var i=0;i<3;i++){var yy=-h*(i+1)/4;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(s*0.1,yy);ctx.lineTo(s*0.1,yy-s*0.05);ctx.stroke();ctx.fillStyle=c;ctx.beginPath();ctx.arc(s*0.12,yy-s*0.05,s*0.02,0,6.283);ctx.fill()}
+  }else if(sp.st==='bubble'){
+    ctx.fillStyle=c;ctx.globalAlpha=.4;ctx.beginPath();ctx.arc(0,-h-s*0.14,s*0.15,0,6.283);ctx.fill();
+    ctx.globalAlpha=1;ctx.strokeStyle=c;ctx.lineWidth=s/40;ctx.beginPath();ctx.arc(0,-h-s*0.14,s*0.15,0,6.283);ctx.stroke();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-s*0.05,-h-s*0.2,s*0.03,0,6.283);ctx.fill()
+  }else if(sp.st==='flame'){
+    ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(0,-h-s*0.3);ctx.quadraticCurveTo(s*0.18,-h-s*0.12,0,-h);ctx.quadraticCurveTo(-s*0.18,-h-s*0.12,0,-h-s*0.3);ctx.fill();
+    ctx.fillStyle='#ffd166';ctx.beginPath();ctx.arc(0,-h-s*0.16,s*0.04,0,6.283);ctx.fill()
+  }else if(sp.st==='ice'){
+    ctx.strokeStyle=c;ctx.lineWidth=s/26;ctx.beginPath();ctx.moveTo(0,-h);ctx.lineTo(-s*0.12,-h-s*0.12);ctx.moveTo(0,-h);ctx.lineTo(s*0.1,-h-s*0.16);ctx.moveTo(0,-h*0.7);ctx.lineTo(-s*0.06,-h*0.8);ctx.stroke();
+    ctx.fillStyle=c;ctx.globalAlpha=.35;for(var i=0;i<3;i++){ctx.beginPath();ctx.arc((i-1)*s*0.1,-h-s*0.16,s*0.015,0,6.283);ctx.fill()}
+    ctx.globalAlpha=1;
+  }else if(sp.st==='clock'){
+    ctx.strokeStyle=c;ctx.lineWidth=s/28;ctx.beginPath();ctx.arc(0,-h-s*0.12,s*0.13,0,6.283);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,-h-s*0.12);ctx.lineTo(0,-h-s*0.12-s*0.06);ctx.moveTo(0,-h-s*0.12);ctx.lineTo(s*0.04,-h-s*0.12);ctx.stroke()
+  }else if(sp.st==='note'){
+    ctx.fillStyle=c;ctx.beginPath();ctx.arc(-s*0.06,-h-s*0.2,s*0.03,0,6.283);ctx.fill();ctx.beginPath();ctx.arc(s*0.06,-h-s*0.08,s*0.03,0,6.283);ctx.fill();
+    ctx.strokeStyle=c;ctx.lineWidth=s/30;ctx.beginPath();ctx.moveTo(-s*0.06,-h-s*0.2);ctx.lineTo(-s*0.06,-h-s*0.32);ctx.moveTo(s*0.06,-h-s*0.08);ctx.lineTo(s*0.06,-h-s*0.2);ctx.stroke()
+  }else if(sp.st==='ecg'){
+    ctx.strokeStyle=c;ctx.lineWidth=s/26;ctx.beginPath();ctx.moveTo(-s*0.14,-h*0.7);ctx.lineTo(-s*0.02,-h*0.7);ctx.lineTo(s*0.02,-h);ctx.lineTo(s*0.06,-h*0.5);ctx.lineTo(s*0.14,-h*0.5);ctx.stroke()
+  }
+  ctx.restore();
+}
+function gSet(){try{var a=JSON.parse(localStorage.getItem('wz_garden')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function gAdd(p){try{var a=gSet();a.push(p);localStorage.setItem('wz_garden',JSON.stringify(a))}catch(e){}}
+function openGarden(){
+  var mask=document.createElement('div');
+  mask.style.cssText='position:fixed;inset:0;z-index:2147483100;background:rgba(4,5,6,.86);display:flex;align-items:center;justify-content:center;padding:18px';
+  var box=document.createElement('div');
+  box.style.cssText='width:min(780px,96vw);max-height:90vh;overflow-y:auto;background:#101214;border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box;font-family:Consolas,monospace';
+  var h='<div style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff);margin-bottom:4px">COLLABORATIVE GARDEN</div>'+
+    '<div style="font-size:11px;color:#8a8a8a;margin-bottom:14px">协作种植花园 · 25 种植物 · 多画风 · 可照料照顾</div>'+
+    '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
+    '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">种子库 · SEEDS · 点选种下</div>'+
+    '<div id="seedGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;margin-bottom:16px"></div>'+
+    '<div style="text-align:center;margin-bottom:14px"><button id="gPlantBtn" onclick="gPlant()" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);padding:8px 22px;font-family:Consolas,monospace;font-size:11.5px;letter-spacing:.15em;cursor:pointer">先选一颗种子</button></div>'+
+    '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
+    '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">我的花园 · MY GARDEN</div>'+
+    '<div id="myGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:16px"></div>'+
+    '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
+    '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">共享花园 · SHARED · 可照料</div>'+
+    '<div id="shGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>';
+  box.innerHTML=h+'<div style="text-align:right;margin-top:14px"><button id="gClose" style="border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 18px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer">关闭</button></div>';
+  mask.appendChild(box);document.body.appendChild(mask);
+  var sg=document.getElementById('seedGrid');
+  for(var i=0;i<G_PLANTS.length;i++){
+    (function(sp){
+      var d=document.createElement('div');
+      d.style.cssText='border:1px solid #2c2c2c;border-radius:8px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.15s';
+      d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:#9aa6ad;font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+'</div>';
+      d.onclick=function(){gPick(d,sp.id)};
+      sg.appendChild(d);
+      var cv=d.querySelector('canvas');setTimeout(function(){gDraw(cv,sp.id,.9)},10);
+    })(G_PLANTS[i]);
+  }
+  renderMy();
+  mask.onclick=function(e){if(e.target===mask&&mask.parentNode)mask.parentNode.removeChild(mask)};
+  var c=document.getElementById('gClose');if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
+  gLoadShared();
+}
+var G_SEL=null;
+function gPick(el,id){
+  if(G_SEL&&G_SEL._el){G_SEL._el.style.borderColor='#2c2c2c';G_SEL._el.style.background='transparent'}
+  G_SEL=id;el.style.borderColor='var(--accent,#fff)';el.style.background='rgba(255,255,255,.06)';el._el=el;
+  var pb=document.getElementById('gPlantBtn');if(pb)pb.textContent='种下 '+gP(id).n;
+}
+function gPlantCard(p){
+  var sp=gP(p.sp),d=document.createElement('div');
+  d.style.cssText='border:1px solid #2c2c2c;border-radius:8px;padding:6px;text-align:center;box-sizing:border-box';
+  var cv=document.createElement('canvas');cv.width=84;cv.height=84;
+  setTimeout(function(){gDraw(cv,sp.id,p.g||.5)},10);
+  d.appendChild(cv);
+  var nm=document.createElement('div');nm.style.cssText='color:#e6edef;font-size:10.5px;line-height:1.4';nm.textContent=sp.n;d.appendChild(nm);
+  var st=document.createElement('div');st.style.cssText='color:#6a767d;font-size:9px;margin-top:3px';
+  st.textContent=((p.u&&p.u!==gbName())?p.u+' · ':'')+Math.round((p.g||.5)*100)+'% · 照料 '+(p.c||0);d.appendChild(st);
+  return d;
+}
+function renderMy(){
+  var box=document.getElementById('myGarden');if(!box)return;
+  var a=gSet();box.innerHTML='';
+  if(!a.length){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">花园还空。从上方种子库选一种种下。</div>';return}
+  for(var i=a.length-1;i>=0;i--){var d=gPlantCard(a[i]);var cv=d.querySelector('canvas');d.firstChild.parentNode.replaceChild(cv,d.firstChild);box.appendChild(d)}
+}
+function gPlant(){
+  if(!G_SEL){toast('先选一颗种子','在种子库点一种植物');return}
+  var p={sp:G_SEL,t:new Date().getTime(),g:.5,c:0,u:gbName()};
+  var b=apiBase();
+  if(b){try{fetch(b+'/garden_plant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).catch(function(){})}catch(e){}}
+  gAdd(p);G_SEL=null;renderMy();gLoadShared();
+  toast('已种下 '+gP(p.sp).n,'它会慢慢生长，别人也能为它照料');
+}
+function gCare(id){
+  var b=apiBase();if(!b)return;
+  fetch(b+'/garden_care',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(j){
+    if(j&&j.ok){gLoadShared();toast('照料成功','生长 +12%')}else{toast('照料失败','试试刷新')}
+  }).catch(function(){toast('照料失败','云端不可用')});
+}
+function gLoadShared(){
+  var b=apiBase();var box=document.getElementById('shGarden');if(!box)return;
+  if(!b){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">当前未连接云端，仅本地花园可用。</div>';return}
+  fetch(b+'/garden_get').then(function(r){return r.json()}).then(function(j){
+    var list=(j&&j.plants)||[];box.innerHTML='';
+    if(!list.length){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">还没人种下。来种第一棵。</div>';return}
+    for(var i=0;i<list.length;i++){
+      (function(p){var d=gPlantCard(p);var cv=d.querySelector('canvas');d.firstChild.parentNode.replaceChild(cv,d.firstChild);
+        var bt=document.createElement('div');bt.style.cssText='margin-top:5px';
+        bt.innerHTML='<button onclick="gCare('+p.id+')" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);font-family:Consolas,monospace;font-size:9px;padding:3px 8px;cursor:pointer">照料 +12%</button>';
+        d.appendChild(bt);box.appendChild(d);
+      })(list[i]);
+    }
+  }).catch(function(){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">花园加载失败。</div>'});
+}
+
+(function(){
+  var b=document.createElement('button');
+  b.type='button';b.title='协作种植花园';
+  b.style.cssText='position:fixed;left:14px;bottom:62px;z-index:2147482100;background:rgba(8,10,12,.82);border:1px solid var(--cbd,var(--line2,#444));color:var(--accent,#fff);font-size:11px;letter-spacing:.1em;font-family:Consolas,monospace;padding:6px 10px;cursor:pointer;transition:.2s;opacity:.8';
+  b.textContent='卵 花园';
+  b.onmouseover=function(){b.style.opacity='1';b.style.borderColor='var(--accent,#fff)'};
+  b.onmouseout=function(){b.style.opacity='.8'};
+  b.onclick=function(){if(window.openGarden)openGarden()};
+  document.body.appendChild(b);
+})();
+
+
+</script>
 </body>
 </html>
