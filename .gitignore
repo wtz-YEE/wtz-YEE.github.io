@@ -1,4 +1,4 @@
-# 历史备份与临时产物不入库
+# ��ʷ��������ʱ���ﲻ���
 _backup/
 _shots/
 *.log
@@ -7,11 +7,11 @@ __pycache__/
 *.pyc
 *.bak-*
 
-# 留言服务数据（含账号密码哈希与私聊记录，绝不入库）
+# ���Է������ݣ����˺������ϣ��˽�ļ�¼��������⣩
 guestbook.json
 users.json
 pm.json
-# 服务端首次启动自动创建的运行时数据（含真实用户数据，绝不入库）
+# ������״������Զ�����������ʱ���ݣ�����ʵ�û����ݣ�������⣩
 posts.json
 notifications.json
 notices.json
@@ -22,15 +22,14 @@ risk_words.json
 stats.json
 scores.json
 uploads/
-# 多主机同步密钥（32 位随机，泄了任何人都能拉走全量数据）
+# ������ͬ����Կ��32 λ�����й���κ��˶�������ȫ�����ݣ�
 sync_key.txt
-# git credential 临时输入文件
+# git credential ��ʱ�����ļ�
 _cred_in.txt
 
-云端地址.txt
+�ƶ˵�ַ.txt
 
 _cloud/audit_*.json
 
-cloud.txt
 
 cloud_fixing.txt
