@@ -5769,13 +5769,14 @@ function openGarden(){
       '<div style="font-size:12px;letter-spacing:.3em;color:#8a8a8a;margin-bottom:4px">夜行深处 · DEEP NIGHT</div>'+
       '<div style="font-size:10.5px;color:#5b5b5b;line-height:1.7;margin-bottom:10px">一片未名之地。消耗 <b style="color:var(--accent,#fff)">1 探索点</b> 点亮一次，可能带回传说的种子，或一无所获。</div>'+
       '<div id="gExploreBox" style="min-height:18px;margin-bottom:10px;color:#cfd8da;font-size:12px;line-height:1.9"></div>'+
-      '<button id="gExploreBtn" onclick="gExplore()" style="border:1px solid var(--accent,#fff);background:rgba(255,255,255,.05);color:var(--accent,#fff);padding:7px 20px;font-family:Consolas,monospace;font-size:11px;letter-spacing:.15em;cursor:pointer;transition:.2s;box-shadow:0 0 12px rgba(120,160,255,.2)" onmouseenter="this.style.boxShadow=\'0 0 18px rgba(120,160,255,.45)\'" onmouseleave="this.style.boxShadow=\'0 0 12px rgba(120,160,255,.2)\'">● 踏入夜行深处</button>'+
+      '<div style="font-size:10px;color:#5b5b5b;line-height:1.6;margin-bottom:6px">沿节点树深入夜行。小节点耗 <b style="color:var(--accent,#fff)">1 探索点</b>，大节点耗 <b style="color:#ffd60a">2 点</b>，尽头的节点会带来传说。</div>'+
+      '<div id="gTreeBox"></div>'+
     '</div>';
   box.innerHTML=h+'<div style="text-align:right;margin-top:14px"><button id="gClose" style="border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 18px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer">关闭</button></div>';
   mask.appendChild(box);document.body.appendChild(mask);
   gSeedRefresh();
   gWhisper();
-  renderMy();gProgRefresh();gSceneLoop();
+  renderMy();gProgRefresh();gSceneLoop();gTreeRender();
   mask.onclick=function(e){if(e.target===mask&&mask.parentNode){mask.parentNode.removeChild(mask);gAniStop()}};
   var c=document.getElementById('gClose');if(c)c.onclick=function(){if(mask.parentNode){mask.parentNode.removeChild(mask);gAniStop()}};
   var sc=document.getElementById('gSceneCv');if(sc)sc.onclick=gSceneClick;
@@ -5975,31 +5976,80 @@ function gStarRefresh(care){
   }
 }
 function gProgRefresh(){var p=document.getElementById('gProg');if(p)p.style.width=Math.round(gSeeds().length/25*100)+'%';var t=document.getElementById('gProgLabel');if(t){t.innerHTML=gSeeds().length>=25?'图鉴全收 · 守园人 ⚜':' 图鉴探索 · DISCOVERED '+gSeeds().length+' / 25'}}
-function gExplore(){
-  var eb=document.getElementById('gExploreBtn');if(eb)eb.disabled=true;
-  if(gEx()<1){toast('探索点不足','种下或照料植物可获得探索点');if(eb)eb.disabled=false;return}
-  gExAdd(-1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();
-  var box=document.getElementById('gExploreBox');if(!box){if(eb)eb.disabled=false;return}
-  var locked=[];for(var i=0;i<G_PLANTS.length;i++){var id=G_PLANTS[i].id;if(gSeeds().indexOf(id)<0)locked.push(id)}
-  var r=Math.random();
-  if(locked.length&&r<.6){
-    var legs=locked.filter(function(x){return G_LEGEND.indexOf(x)>=0});
-    var rars=locked.filter(function(x){return G_RARE.indexOf(x)>=0});
-    var got;
-    if(legs.length&&Math.random()<.6)got=legs[Math.floor(Math.random()*legs.length)];
-    else if(rars.length)got=rars[Math.floor(Math.random()*rars.length)];
-    else got=locked[Math.floor(Math.random()*locked.length)];
-    gSeedAdd(got);gProgRefresh();gSeedRefresh();
-    box.innerHTML='<div style="color:var(--accent,#fff);font-size:13px;line-height:1.9">黑暗中有一粒种子静静发亮—— <b>'+gP(got).n+'</b> 已加入种子库。</div>';
-    gFx(window.innerWidth/2,window.innerHeight/2,'#ffd60a');
-  }else if(Math.random()<.5){
-    var a=gSet();if(a.length){var last=a[a.length-1];last.g=Math.min(1,(last.g||.5)+.15);localStorage.setItem('wz_garden',JSON.stringify(a));renderMy();
-      box.innerHTML='<div style="color:#80ffdb;font-size:13px;line-height:1.9">星尘洒下，'+gP(last.sp).n+'生长 +15%。</div>'}
-    else box.innerHTML='<div style="color:#5b5b5b;font-size:13px;line-height:1.9">星尘洒下，但花园空无一物。先种点什么。</div>';
-  }else{
-    box.innerHTML='<div style="color:#5b5b5b;font-size:13px;line-height:1.9">深处一片死寂。你点亮了夜，什么都没带回来——但夜记住了你来过。</div>';
+var gTree=[
+  {id:1,ly:1,ty:1,n:'星尘浅洼',re:'dust',pa:0},
+  {id:2,ly:1,ty:1,n:'苔光小径',re:'rare',pa:0},
+  {id:3,ly:1,ty:1,n:'露珠营地',re:'dust',pa:0},
+  {id:4,ly:2,ty:2,n:'深眠花心',re:'legend',pa:1},
+  {id:5,ly:2,ty:2,n:'月曆祭坛',re:'dust',pa:2},
+  {id:6,ly:2,ty:2,n:'荒茠王座',re:'legend',pa:3},
+  {id:7,ly:3,ty:1,n:'传说的余烬',re:'boss',pa:4},
+  {id:8,ly:3,ty:1,n:'星核残响',re:'boss',pa:6},
+];
+function gTrek(){try{return JSON.parse(localStorage.getItem('wz_gtrek')||'[]')}catch(e){return[]}}
+function gTrekSave(a){try{localStorage.setItem('wz_gtrek',JSON.stringify(a))}catch(e){}}
+function gTreeAvail(done,id){
+  if(done.indexOf(id)>=0)return 2;
+  var nd=gTree[id-1];if(!nd)return 0;
+  if(nd.pa===0)return 1;
+  if(done.indexOf(nd.pa)>=0)return 1;
+  return 0;
+}
+function gTreeRender(){
+  var box=document.getElementById('gTreeBox');if(!box)return;
+  var done=gTrek();box.innerHTML='';
+  for(var ly=1;ly<=3;ly++){
+    var row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-around;align-items:flex-start;gap:8px;margin-bottom:6px';
+    var colNodes=[];
+    for(var i=0;i<gTree.length;i++)if(gTree[i].ly===ly)colNodes.push(gTree[i]);
+    for(var i=0;i<colNodes.length;i++){
+      var nd=colNodes[i];var av=gTreeAvail(done,nd.id);
+      (function(nd,av){var el=document.createElement('div');
+        el.style.cssText='position:relative;width:98px;border-radius:10px;padding:7px 6px;text-align:center;box-sizing:border-box;font-size:9.5px;line-height:1.4;transition:.18s';
+        if(av===2)el.style.cssText+='border:1px solid var(--accent,#fff);background:rgba(255,255,255,.08);color:#e6edef;opacity:.95';
+        else if(av===1){el.style.cssText+='border:1px solid var(--accent,#fff);background:rgba(120,160,255,.12);color:#e6edef;cursor:pointer;box-shadow:0 0 10px rgba(120,160,255,.25)';el.onmouseenter=function(){this.style.transform='translateY(-2px)'};el.onmouseleave=function(){this.style.transform='none'};el.onclick=function(){gTreeGo(nd.id)}}
+        else el.style.cssText+='border:1px dashed #2c2c2c;background:rgba(255,255,255,.02);color:#5b5b5b;opacity:.6';
+        var dn=(av===2?'已点亮':(av===1?(nd.ty===2?'大节点 · 2 点':'小节点 · 1 点'):'未解锁'));
+        el.innerHTML='<div style="font-size:10px;color:'+(av===2?'var(--accent,#fff)':av===1?'#ffd60a':'#6a767d')+'">'+nd.n+'</div><div style="font-size:8px;color:#8a8a8a;margin-top:2px">'+dn+'</div>';
+        row.appendChild(el);
+      })(nd,av);
+    }
+    box.appendChild(row);
+    if(ly<3){var ln=document.createElement('div');ln.style.cssText='display:flex;justify-content:space-around;color:#3a3a3a;font-size:10px;margin:2px 0';ln.innerHTML=(new Array(colNodes.length+1)).join('<span>│</span>');box.appendChild(ln)}
   }
-  setTimeout(function(){if(eb)eb.disabled=false},900);
+}
+function gTreeGo(id){
+  var nd=gTree[id-1];if(!nd)return;
+  var done=gTrek();
+  if(gTreeAvail(done,id)!==1){toast('该节点未解锁','先探索上一层');return}
+  var cost=nd.ty===2?2:1;
+  if(gEx()<cost){toast('探索点不足','需要 '+cost+' 点 · 种下或照料可获得');return}
+  gExAdd(-cost);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();
+  done.push(id);gTrekSave(done);
+  gTreeReward(nd);
+  gTreeRender();
+}
+function gTreeReward(nd){
+  var box=document.getElementById('gExploreBox');if(!box)return;
+  var locked=[];for(var i=0;i<G_PLANTS.length;i++){var x=G_PLANTS[i].id;if(gSeeds().indexOf(x)<0)locked.push(x)}
+  var legs=locked.filter(function(x){return G_LEGEND.indexOf(x)>=0});
+  var rars=locked.filter(function(x){return G_RARE.indexOf(x)>=0});
+  var txt='';
+  if(nd.re==='dust'){
+    var bonus=nd.ty===2?3:1;gExAdd(bonus);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();
+    txt='<div style="color:#80ffdb;font-size:12.5px">星尘弥漫——探索点 +'+bonus+'。</div>';
+  }else if(nd.re==='rare'){
+    if(rars.length){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();txt='<div style="color:var(--accent,#fff);font-size:12.5px">黑暗中浮出 <b>'+gP(got).n+'</b>（稀有）</div>'}
+    else txt='<div style="color:#8a8a8a;font-size:12.5px">稀有种子已尽数收齐——星尘 +2</div>';
+  }else if(nd.re==='legend'){
+    if(legs.length&&Math.random()<.75){var got=legs[Math.floor(Math.random()*legs.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();txt='<div style="color:#ffd60a;font-size:12.5px">传说在深处低语——获得 <b>'+gP(got).n+'</b> ★</div>'}
+    else if(rars.length){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();txt='<div style="color:var(--accent,#fff);font-size:12.5px">获得稀有种子 <b>'+gP(got).n+'</b> ✦</div>'}
+    else txt='<div style="color:#8a8a8a;font-size:12.5px">种子已收齐——星尘 +4</div>';
+  }else{
+    if(legs.length){var got=legs[Math.floor(Math.random()*legs.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();txt='<div style="color:#ffd60a;font-size:12.5px;font-weight:bold">传说的余烬燃起——保底获得 <b>'+gP(got).n+'</b> ★</div>'}
+    else {gExAdd(5);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();txt='<div style="color:#8a8a8a;font-size:12.5px">传说齐了——星尘 +5，夜的尽头再无秘密。</div>'}
+  }
+  box.innerHTML=txt;gFx(window.innerWidth/2,window.innerHeight/2,'#ffd60a');
 }
 
 (function(){
