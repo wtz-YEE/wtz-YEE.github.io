@@ -2837,6 +2837,10 @@ function tokenPulse(){
     }else if(j.state==='kicked'){
       say('你的登录已被顶号或失效，已自动登出',false);
       gbLogout();
+    }else if(j.state==='expired'){
+      var pw='';try{pw=localStorage.getItem('gb_pwd')||''}catch(e){}
+      if(pw) autoRelogin();
+      else{ say('登录已过期，请重新登录',false); gbLogout(); }
     }
   }).catch(function(){});
 }
@@ -5216,73 +5220,113 @@ dot.addEventListener('click',chk);chk();setInterval(chk,30000);
 /* ===== 世界碎片收集（各页共用） ===== */
 (function(){
 if(document.getElementById('fragBtn'))return;
+var R={1:'一切的起点，也是终点的入口。',2:'先有这片大地，才有后续所有故事。',3:'守夜的人，总在深夜交换消息。',4:'一所学院，只录取「能看见」的人。',5:'最旧的街机，第八号。',6:'指挥官的第一台终端。',7:'这里说的每句话，都不该被第三个人听见。',8:'数字碎了一地，等你去拼。',9:'第一只恐龙，还在横版里跑。',10:'格子合到 2048，它就出现。',11:'有人在问路明非是谁。',12:'S 级的编号，被刮掉了。',13:'签名处是空的——你还没签。',14:'标签写着请勿摇晃，它被摇过。',15:'一条点亮过的分支。',16:'注释里写着「这里应该能跑」。',17:'第一页只有一句：泰拉没有真相。',18:'播报员念到一半停了电。',19:'某个名字被涂掉了，笔画还在。',20:'你迷路时，它也迷路了。',21:'它不发光，只是把光借给你。',22:'拿到它的人会先愣一会儿。'};
+var NM={1:'起始之屑',2:'大地之屑',3:'守夜之屑',4:'学院之屑',5:'街机之屑',6:'指挥之屑',7:'密语之屑',8:'解码之屑',9:'恐龙之屑',10:'方格之屑',11:'迷名之屑',12:'血统之屑',13:'契约之屑',14:'摇晃之屑',15:'分支之屑',16:'模组之屑',17:'泰拉之屑',18:'停电之屑',19:'涂名之屑',20:'迷路之屑',21:'借光之屑',22:'愣神之屑'};
+var SR={1:'index',2:'prts',3:'守夜人论坛',4:'卡塞尔学院官网',5:'游戏-08',6:'终端接口',7:'机密终端',8:'解码器',9:'游戏-01',10:'游戏-02',11:'游戏-03',12:'游戏-04',13:'游戏-05',14:'莱茵生命终端',15:'技能树',16:'模组开发',17:'PRTS泰拉大典终端',18:'changelog',19:'guestwall',20:'404',21:'游戏-06',22:'游戏-07'};
 var D={1:'从罗德岛甲板缝里扫出来的，编号 001。',2:'上面只有一句话：活着回来。',3:'火把灭了，巡夜还没结束。',4:'字迹在你不看的时候会换位置。',5:'照片被人用马克笔画了胡子。',6:'有效期：直到你不需要它为止。',7:'背面写着「忘了就跑 gen_keys.py」。',8:'它一直想变成 4096。',9:'它跳了一整天，没撞到任何东西。',10:'它咬到了自己，然后学会了穿墙。',11:'「今天又有人问我路明非是谁。」',12:'背面刻着 S 级血统的编号，被人刮掉了。',13:'签名处是空的——你还没签。',14:'标签写着「请勿摇晃」，然后被人摇晃过。',15:'它曾经是一条点亮的分支。',16:'注释里写着「这里应该能跑」，不能。',17:'第一页只有一句：泰拉没有真相。',18:'播报员念到一半停了电。',19:'某个名字被涂掉了，但笔画还在。',20:'夹在一本没人借过的书里。',21:'它不发光，只是把光借给了你。',22:'拿到它的人，会先愣一会儿。'};
 var MAP={'index.html':1,'':1,'守夜人论坛.html':3,'卡塞尔学院官网.html':4,'终端接口.html':6,'机密终端.html':7,'PRTS泰拉大典终端.html':17,'prts.html':2,'莱茵生命终端.html':14,'技能树.html':15,'模组开发.html':16,'解码器.html':8,'guestwall.html':19,'changelog.html':18,'404.html':20,'游戏-01.html':9,'游戏-02.html':10,'游戏-03.html':11,'游戏-04.html':12,'游戏-05.html':13,'游戏-06.html':21,'游戏-07.html':22,'游戏-08.html':5};
-function pageFile(){
-  try{var m=decodeURIComponent(location.pathname.split('/').pop().split('?')[0]);if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}
-}
+function pageFile(){try{var m=decodeURIComponent(location.pathname.split('/').pop().split('?')[0]);if(m==='wtz-YEE.github.io'||m==='')m='index.html';return m}catch(e){return'index.html'}}
 var N=MAP[pageFile()]||0;
 function got(){try{var a=JSON.parse(localStorage.getItem('wz_frag2')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function gotN(){var a=got(),r=[];for(var i=0;i<a.length;i++){r.push(typeof a[i]==='object'&&a[i]?a[i].n:a[i])}return r}
+function gotT(n){var a=got();for(var i=0;i<a.length;i++){var x=a[i];if((typeof x==='object'&&x&&x.n===n)||x===n)return(typeof x==='object'&&x&&x.t)?x.t:''}return''}
 function setGot(a){try{localStorage.setItem('wz_frag2',JSON.stringify(a))}catch(e){}}
-function apiBase(){
-  try{var u=localStorage.getItem('gb_api_url')||'';var a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return (a[0]||'').replace(/\/+$/,'')}catch(e){return''}
-}
-function sync(n){
-  var s=null;try{s=JSON.parse(localStorage.getItem('gb_session')||'null')}catch(e){}
-  if(!s||!s.token)return;
-  var b=apiBase();if(!b)return;
-  try{fetch(b+'/frag_get',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,n:n})}).catch(function(){})}catch(e){}
-}
+function pad2(n){return(n<10?'0':'')+n}
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
+function apiBase(){try{var u=localStorage.getItem('gb_api_url')||'';var a=(u||'').split('\n').filter(function(x){return x.indexOf('http')===0&&x.indexOf('36c3116e')<0});return (a[0]||'').replace(/\/+$/,'')}catch(e){return''}}
+function sync(n){var s=null;try{s=JSON.parse(localStorage.getItem('gb_session')||'null')}catch(e){};if(!s||!s.token)return;var b=apiBase();if(!b)return;try{fetch(b+'/frag_get',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token,n:n})}).catch(function(){})}catch(e){}}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function toast(txt,sub){
   var d=document.createElement('div');
-  d.innerHTML='<b style="display:block;letter-spacing:.14em">'+txt+'</b>'+(sub?'<span style="display:block;margin-top:6px;color:#9a9a9a;font-size:11.5px">'+sub+'</span>':'');
+  d.innerHTML='<b style="display:block;letter-spacing:.14em">'+esc(txt)+'</b>'+(sub?'<span style="display:block;margin-top:6px;color:#9a9a9a;font-size:11.5px">'+esc(sub)+'</span>':'');
   d.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:2147483000;background:rgba(8,10,12,.96);border:1px solid var(--accent,#fff);color:var(--accent,#fff);padding:12px 22px;font-family:Consolas,monospace;font-size:12.5px;text-align:center;pointer-events:none;max-width:82vw;line-height:1.8';
   document.body.appendChild(d);
   setTimeout(function(){d.style.transition='opacity .6s';d.style.opacity='0'},2400);
   setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},3100);
 }
-function open(){
-  var all=got(),have=all.length;
+window.fragFx=function(x,y){
+  var i,col;
+  try{col=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#fff'}catch(e){col='#fff'}
+  try{var A=window.__ac||(window.__ac=new(window.AudioContext||window.webkitAudioContext)());if(A.state==='suspended')A.resume();var t=A.currentTime,o=A.createOscillator(),g=A.createGain();o.type='triangle';o.frequency.setValueAtTime(520,t);o.frequency.exponentialRampToValueAtTime(1240,t+.12);g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(g);g.connect(A.destination);o.start(t);o.stop(t+.32)}catch(e){}
+  for(i=0;i<16;i++){(function(i){var d=document.createElement('div');var ang=Math.random()*6.283,sp=45+Math.random()*140;d.style.cssText='position:fixed;left:'+(x||0)+'px;top:'+(y||0)+'px;width:'+(3+Math.random()*4)+'px;height:'+(3+Math.random()*4)+'px;background:'+col+';border-radius:50%;pointer-events:none;z-index:2147483500;transition:transform .65s cubic-bezier(.1,.8,.3,1),opacity .65s';document.body.appendChild(d);requestAnimationFrame(function(){d.style.transform='translate('+Math.cos(ang)*sp+'px,'+(Math.sin(ang)*sp-70)+'px)';d.style.opacity='0'});setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},700)})(i)}
+  var f=document.createElement('div');f.style.cssText='position:fixed;inset:0;z-index:2147483400;background:'+col+';opacity:.30;pointer-events:none;transition:opacity .5s';document.body.appendChild(f);requestAnimationFrame(function(){f.style.opacity='0'});setTimeout(function(){if(f.parentNode)f.parentNode.removeChild(f)},560);
+};
+window.fragDetail=function(i){
+  var on=gotN().indexOf(i)>=0;
   var mask=document.createElement('div');
-  mask.style.cssText='position:fixed;inset:0;z-index:2147483100;background:rgba(4,5,6,.8);display:flex;align-items:center;justify-content:center;padding:18px';
+  mask.style.cssText='position:fixed;inset:0;z-index:2147483200;background:rgba(4,5,6,.85);display:flex;align-items:center;justify-content:center;padding:20px';
   var box=document.createElement('div');
-  box.style.cssText='width:min(620px,94vw);max-height:86vh;overflow-y:auto;background:#101214;border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box';
-  var h='<div style="font-family:Consolas,monospace;font-size:13px;letter-spacing:.3em;color:var(--accent,#fff);margin-bottom:4px">WORLD FRAGMENTS</div>'+
-        '<div style="font-size:11px;color:#8a8a8a;margin-bottom:14px">世界碎片 · 已收集 <b style="color:var(--accent,#fff)">'+have+'</b> / 22　（每页藏一枚，点它收下）</div>'+
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;margin-bottom:14px">';
+  box.style.cssText='width:min(420px,92vw);background:#101214;border:1px solid '+(on?'var(--accent,#fff)':'#3a3a3a')+';padding:22px;box-sizing:border-box;font-family:Consolas,monospace';
+  var inner='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:12px;letter-spacing:.2em;color:'+(on?'var(--accent,#fff)':'#5b5b5b')+'">#'+(i<10?'0':'')+i+' · '+(on?esc(NM[i]):'未解锁')+'</span><span style="color:'+(on?'var(--accent,#fff)':'#3a3a3a')+';font-size:18px">'+(on?'\u25c6':'\u25c7')+'</span></div>';
+  if(on){
+    inner+='<div style="color:#e6edef;font-size:14px;line-height:1.9;margin-bottom:10px">'+esc(NM[i])+'</div>'+
+      '<div style="color:#9a9a9a;font-size:12px;line-height:2">来源　'+esc(SR[i]||'未知')+'<br>收集于　'+esc(gotT(i)||'——')+'</div>'+
+      '<div style="border-top:1px solid #222;margin:14px 0 8px"></div>'+
+      '<div style="color:#b8c4c6;font-size:12.5px;line-height:1.9">'+esc(D[i]||'')+'</div>';
+  }else{
+    inner+='<div style="color:#8a8a8a;font-size:12px;line-height:1.9">谜语</div>'+
+      '<div style="color:#cfd8da;font-size:13px;line-height:2;margin-top:8px">'+esc(R[i]||'')+'</div>'+
+      '<div style="color:#5b5b5b;font-size:11.5px;line-height:1.9;margin-top:14px">找到它藏身的那一页，点角落的菱形收下。</div>';
+  }
+  inner+='<div style="text-align:right;margin-top:16px"><button id="fdClose" style="border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 16px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer">关闭</button></div>';
+  box.innerHTML=inner;
+  mask.appendChild(box);
+  mask.onclick=function(e){if(e.target===mask&&mask.parentNode)mask.parentNode.removeChild(mask)};
+  document.body.appendChild(mask);
+  var c=document.getElementById('fdClose');if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
+};
+function fmtSec(sec){sec=Math.max(0,Math.floor(sec));var m=Math.floor(sec/60),s=sec%60;return m+':'+((s<10?'0':'')+s)}
+function open(){
+  var all=gotN(),have=all.length;
+  var mask=document.createElement('div');
+  mask.style.cssText='position:fixed;inset:0;z-index:2147483100;background:rgba(4,5,6,.86);display:flex;align-items:center;justify-content:center;padding:18px';
+  var box=document.createElement('div');
+  box.style.cssText='width:min(700px,94vw);max-height:86vh;overflow-y:auto;background:#101214;border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box;font-family:Consolas,monospace';
+  var h='<div style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff);margin-bottom:4px">WORLD FRAGMENTS</div>'+
+    '<div style="font-size:11px;color:#8a8a8a;margin-bottom:12px">世界碎片 · 已收集 <b style="color:var(--accent,#fff)">'+have+'</b> / 22　点任意碎片查看提示</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:10px">';
   for(var i=1;i<=22;i++){
     var on=all.indexOf(i)>=0;
-    h+='<div style="border:1px solid '+(on?'var(--accent,#fff)':'#2c2c2c')+';color:'+(on?'var(--accent,#fff)':'#5b5b5b')+';text-align:center;padding:8px 0;font-family:Consolas,monospace;font-size:12px">'+(on?('#'+(i<10?'0':'')+i):'·')+'</div>';
+    h+='<div onclick="fragDetail('+i+')" style="border:1px solid '+(on?'var(--accent,#fff)':'#2c2c2c')+';background:'+(on?'rgba(255,255,255,.04)':'transparent')+';border-radius:8px;padding:10px 10px 9px;cursor:pointer;box-sizing:border-box;transition:.15s">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="color:'+(on?'var(--accent,#fff)':'#5b5b5b')+';font-size:11px;letter-spacing:.12em">#'+(i<10?'0':'')+i+'</span><span style="color:'+(on?'var(--accent,#fff)':'#3a3a3a')+';font-size:13px">'+(on?'\u25c6':'\u25c7')+'</span></div>'+
+      '<div style="color:'+(on?'#e6edef':'#7a7a7a')+';font-size:12.5px;line-height:1.6;min-height:34px">'+(on?esc(NM[i]):esc(R[i]))+'</div>'+
+      '<div style="color:'+(on?'#6e8a86':'#4a4a4a')+';font-size:10.5px;margin-top:5px;line-height:1.5;min-height:14px">'+(on?(esc(SR[i])+(gotT(i)?(' · '+esc(gotT(i))):'')):'谜语')+'</div>'+
+      '</div>';
   }
   h+='</div>';
   if(have>=22){
     h+='<div style="border:1px dashed var(--accent,#fff);padding:14px;color:var(--accent,#fff);font-size:12.5px;line-height:1.9">全部收集完毕。<br>你在服务器最深处找到一行没人删掉的注释：<br><br><span style="color:#8a8a8a"># 这个世界存档还在，他随时可以继续。</span></div>';
   }else{
-    h+='<div style="color:#6e6e6e;font-size:11.5px;line-height:1.9">碎片散落在各个页面里，是那种「一眼看不出、点下去才知道」的东西。<br>找齐 22 枚，最深处有留言。</div>';
+    h+='<div style="color:#6e6e6e;font-size:11.5px;line-height:1.9">碎片散落在各个页面里，谜语会指向它藏身的地方。<br>找齐 22 枚，最深处有留言。</div>';
   }
+  h+='<div id="tfragStat" style="margin-top:12px;border-top:1px solid #222;padding-top:12px;color:#8a8a8a;font-size:11.5px;line-height:1.9">时间碎片 · 加载中…</div>';
   box.innerHTML=h+'<div style="text-align:right;margin-top:14px"><button id="fragClose" style="border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 18px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer">关闭</button></div>';
   mask.appendChild(box);
   mask.onclick=function(e){if(e.target===mask&&mask.parentNode)mask.parentNode.removeChild(mask)};
   document.body.appendChild(mask);
   var c=document.getElementById('fragClose');
   if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
+  var b=apiBase();if(b){
+    var st=document.getElementById('tfragStat');
+    fetch(b+'/tfrag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:(function(){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');return(s&&s.token)||''}catch(e){return''}})()})}).then(function(r){return r.json()}).then(function(j){
+      if(!j||!j.ok)return;
+      if(st)st.innerHTML='时间碎片 · 已收 <b style="color:var(--accent,#fff)">'+(j.count||0)+'</b> 枚　'+(j.open?'（本场正在出现，左下 \u23f1）':'（下一场 '+fmtSec(j.next||0)+' 后）');
+    }).catch(function(){});
+  }
 }
 function clamp(v,a,b){return v<a?a:(v>b?b:v)}
 function fragPos(){
   var key='wz_fragpos2_'+N;
   var w=window.innerWidth||1200,h=window.innerHeight||800;
   try{var s=JSON.parse(localStorage.getItem(key)||'null');if(s&&typeof s.x==='number'&&typeof s.y==='number')return {x:Math.round(clamp(s.x,22,Math.max(22,w-40))),y:Math.round(clamp(s.y,50,Math.max(50,h-48)))}}catch(e){}
-  /* 四个角随机取一个（左右 × 上下），各自带一点抖动。
-     留白：顶栏约 38px、底部导航约 62px、收集按钮 34px，避免压住可点的东西 */
   var p;
   for(var k=0;k<12;k++){
     var L=Math.random()<0.5, T=Math.random()<0.5;
-    var jx=Math.random()*Math.min(90,w*0.12);   /* 横向抖动 */
-    var jy=Math.random()*Math.min(80,h*0.14);   /* 纵向抖动 */
+    var jx=Math.random()*Math.min(90,w*0.12);
+    var jy=Math.random()*Math.min(80,h*0.14);
     var x=L?(20+jx):(w-36-jx);
     var y=T?(52+jy):(h-116-jy);
     x=clamp(x,22,w-40); y=clamp(y,50,h-48);
-    /* 避开左下角的收集按钮（约 14, h-108 附近） */
     if(x<62&&y>h-150)continue;
     p={x:Math.round(x),y:Math.round(y)};
     break;
@@ -5293,7 +5337,7 @@ function fragPos(){
 }
 function hide(){
   if(!N)return;
-  if(got().indexOf(N)>=0)return;
+  if(gotN().indexOf(N)>=0)return;
   var s=document.createElement('style');
   s.textContent='@keyframes fgem{0%,100%{transform:rotate(45deg) scale(1);opacity:.72}50%{transform:rotate(45deg) scale(1.18);opacity:1}}';
   document.head.appendChild(s);
@@ -5308,9 +5352,12 @@ function hide(){
   });
   g.onclick=function(){
     if(g.parentNode)g.parentNode.removeChild(g);
-    var a=got();if(a.indexOf(N)<0){a.push(N);a.sort(function(x,y){return x-y});setGot(a)}
+    var a=got(),idx=-1,i;
+    for(i=0;i<a.length;i++){var x=a[i];if((typeof x==='object'&&x&&x.n===N)||x===N){idx=i;break}}
+    if(idx<0){a.push({n:N,t:todayStr()});a.sort(function(x,y){var x1=typeof x==='object'&&x?x.n:x,y1=typeof y==='object'&&y?y.n:y;return x1-y1});setGot(a)}
     sync(N);
-    var cnt=got().length;
+    window.fragFx(P.x,P.y);
+    var cnt=gotN().length;
     toast('\u25c6 收下碎片 #'+(N<10?'0':'')+N,D[N]||'');
     if(cnt>=22)setTimeout(function(){toast('22 / 22 全部集齐','点左下角 \u25c6 查看')},3200);
   };
@@ -5444,7 +5491,9 @@ function catchIt(btn){
     if(!j||!j.ok){toast(j&&j.msg||'收不到',j&&j.page?'它正在「'+j.page.replace('.html','')+'」颤动':(j&&j.next!=null?'下一场 '+fmt(j.next)+' 后':'这一场已经过去了'));return}
     if(j.new===false){toast('\u23f1 错过这一场','下一场会再出现');return}
     S.caught=true;
+    var fr=TFG?TFG.getBoundingClientRect():null;
     if(TFG){TFG.parentNode.removeChild(TFG);TFG=null}
+    if(window.fragFx){var fx=fr?fr:(btn?btn.getBoundingClientRect():null);if(fx)window.fragFx(fx.left+fx.width/2,fx.top+fx.height/2)}
     toast('\u23f1 '+j.name,j.desc+'　+15 积分 / +12 经验');
   }).catch(function(){toast('\u23f1 收集中断','云端没接上，稍后再试')})
     .then(function(){if(btn){btn.disabled=false;btn.textContent=old}});

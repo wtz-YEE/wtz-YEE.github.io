@@ -397,7 +397,7 @@ def _cur_user(tok):
             return None
         name = v[0] if isinstance(v, list) else v
         t = v[1] if isinstance(v, list) else 0
-        if _time.time() - t > 300:
+        if _time.time() - t > 86400:
             return None
         if _time.time() - t > 60:
             u["__sessions"][tok] = [name, _time.time()]
@@ -472,7 +472,7 @@ def _clean_sessions(u):
     ses = u.get("__sessions", {})
     if not ses:
         return u
-    cut = _time.time() - 300
+    cut = _time.time() - 86400
     for k, v in list(ses.items()):
         t = v[1] if isinstance(v, list) else 0
         if t < cut:
@@ -1123,6 +1123,9 @@ def api_token_state():
     if not v:
         return jsonify({"ok": True, "state": "kicked"})
     name = v[0] if isinstance(v, list) else v
+    t = v[1] if isinstance(v, list) else 0
+    if _time.time() - t > 86400:
+        return jsonify({"ok": True, "state": "expired", "name": name})
     if name not in us:
         return jsonify({"ok": True, "state": "deleted", "name": name})
     return jsonify({"ok": True, "state": "valid", "name": name})
