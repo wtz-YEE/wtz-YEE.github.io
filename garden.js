@@ -398,7 +398,7 @@ function gCare(id){
   G_CARE[id]=Date.now();
   var b=apiBase();if(!b)return;
   fetch(b+'/garden_care',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(j){
-    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();d.style.boxShadow='0 0 18px rgba(255,214,10,.5)';gFx(r.left+r.width/2,r.top+r.height/2,'#ffd60a')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
+    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();d.style.boxShadow='0 0 18px rgba(255,214,10,.5)';gFx(r.left+r.width/2,r.top+r.height/2,'#ffd60a')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();var _fd=window.fMaybeDrop&&fMaybeDrop();if(_fd){toast('照料时翻出一件武器胚子：'+_fd.n,'已入武器仓库')}(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
   }).catch(function(){toast('照料失败','云端不可用')});
 }
 function gLoadShared(){
