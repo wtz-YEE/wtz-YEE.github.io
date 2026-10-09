@@ -5699,7 +5699,46 @@ var G_PLANTS=[
 {id:22,n:'冰晶叶',st:'ice',c:'#48cae4'},
 {id:23,n:'时针花',st:'clock',c:'#c8b6a6'},
 {id:24,n:'音符兰',st:'note',c:'#ffd6ff'},
-{id:25,n:'心电图草',st:'ecg',c:'#00f5d4'}
+{id:25,n:'心电图草',st:'ecg',c:'#00f5d4'},
+{id:26,n:'字母·B枝',st:'letter',c:'#4ea8de'},
+{id:27,n:'字母·C刺',st:'letter',c:'#f3722c'},
+{id:28,n:'字母·T星',st:'letter',c:'#90be6d'},
+{id:29,n:'字母·Z环',st:'letter',c:'#ffd166'},
+{id:30,n:'像素樱桃',st:'pixel',c:'#e63946'},
+{id:31,n:'像素铃兰',st:'pixel',c:'#f1faee'},
+{id:32,n:'像素竹笋',st:'pixel',c:'#2a9d8f'},
+{id:33,n:'像素西瓜芽',st:'pixel',c:'#e9c46a'},
+{id:34,n:'像素枫',st:'pixel',c:'#bc6c25'},
+{id:35,n:'几何·正六花',st:'geo',c:'#6d597a'},
+{id:36,n:'几何·方晶',st:'geo',c:'#219ebc'},
+{id:37,n:'几何·三角旗',st:'geo',c:'#fb8500'},
+{id:38,n:'几何·环菱',st:'geo',c:'#8338ec'},
+{id:39,n:'几何·双圆',st:'geo',c:'#06d6a0'},
+{id:40,n:'烛光藤',st:'glow',c:'#ffb703'},
+{id:41,n:'幽光菌',st:'glow',c:'#9d4edd'},
+{id:42,n:'水墨梅',st:'ink',c:'#355070'},
+{id:43,n:'焦墨兰',st:'ink',c:'#6c584c'},
+{id:44,n:'蓝晶簇',st:'crystal',c:'#00b4d8'},
+{id:45,n:'紫晶簇',st:'crystal',c:'#c77dff'},
+{id:46,n:'雪晶花',st:'crystal',c:'#aedff7'},
+{id:47,n:'星尘藤',st:'nebula',c:'#3a0ca3'},
+{id:48,n:'极光草',st:'nebula',c:'#80ffdb'},
+{id:49,n:'暗星花',st:'nebula',c:'#ff8fab'},
+{id:50,n:'处理器花',st:'circuit',c:'#23c552'},
+{id:51,n:'焊点草',st:'circuit',c:'#f9c74f'},
+{id:52,n:'皂泡草',st:'bubble',c:'#7bdff2'},
+{id:53,n:'气泡果',st:'bubble',c:'#ffb3c1'},
+{id:54,n:'熔岩芯',st:'flame',c:'#ef476f'},
+{id:55,n:'焰火簇',st:'flame',c:'#f77f00'},
+{id:56,n:'霜花',st:'ice',c:'#00e5ff'},
+{id:57,n:'雾凇枝',st:'ice',c:'#9cc3d5'},
+{id:58,n:'秒针草',st:'clock',c:'#e0d6c8'},
+{id:59,n:'高音符花',st:'note',c:'#ffc8dd'},
+{id:60,n:'低音兰',st:'note',c:'#bde0fe'},
+{id:61,n:'心电藤',st:'ecg',c:'#4ade80'},
+{id:62,n:'脉冲草',st:'ecg',c:'#facc15'},
+{id:63,n:'暗影绒',st:'ink',c:'#adb5bd'},
+{id:64,n:'极昼花',st:'glow',c:'#ffffff'}
 ];
 function gP(id){for(var i=0;i<G_PLANTS.length;i++)if(G_PLANTS[i].id===id)return G_PLANTS[i];return G_PLANTS[0]}
 function gbName(){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');return (s&&s.username)||'游客'}catch(e){return'游客'}}
@@ -5721,7 +5760,7 @@ function gDraw(cv,id,g,t){
   ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-h);ctx.stroke();
   if(sp.st==='letter'){
     ctx.fillStyle=c;ctx.font='bold '+(s*0.34)+'px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(sp.id===1?'A':(sp.id===2?'W':'梦'),0,-h-s*0.14);
+    ctx.fillText(sp.id===1?'A':(sp.id===2?'W':(sp.id<=25?'梦':String.fromCharCode(65+(sp.id-3)%26))),0,-h-s*0.14);
   }else if(sp.st==='pixel'){
     var p=Math.max(2,s/14);function px(a,b){ctx.fillRect(a*p-p/2,b*p-p/2,p-1,p-1)}
     ctx.fillStyle=c;
@@ -5731,12 +5770,14 @@ function gDraw(cv,id,g,t){
     else if(sp.id===7){ctx.fillStyle=c;px(-1,-8);px(1,-10);px(0,-12);ctx.fillStyle='#ffd166';px(0,-14)}
     else if(sp.id===8){ctx.fillStyle=c;px(0,-8);px(-1,-10);px(1,-10);px(0,-12);ctx.fillStyle='#4cc9f0';px(-2,-6)}
     else if(sp.id===9){ctx.fillStyle=c;px(-1,-8);px(1,-8);px(-1,-10);px(1,-10);px(0,-9)}
+    else{ctx.fillStyle=c;var np=4+(sp.id%4);for(var bi=0;bi<np;bi++){px(Math.cos(bi*6.28/np)*2,-10+Math.sin(bi*6.28/np)*2-((sp.id%2)*2))}ctx.fillStyle='#8b5a2b';px(0,-6)}
   }else if(sp.st==='geo'){
     if(sp.id===10){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(0,-h-s*0.2);ctx.lineTo(-s*0.18,-h);ctx.lineTo(s*0.18,-h);ctx.closePath();ctx.fill()}
     else if(sp.id===11){ctx.strokeStyle=c;ctx.lineWidth=s/22;for(var i=0;i<2;i++){ctx.beginPath();ctx.arc(0,-h-s*0.14,i*s/14+s*0.05,0,6.283);ctx.stroke()}}
     else if(sp.id===12){ctx.save();ctx.translate(0,-h-s*0.16);ctx.rotate(.785);ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(0,-s*0.16);ctx.lineTo(s*0.12,0);ctx.lineTo(0,s*0.16);ctx.lineTo(-s*0.12,0);ctx.closePath();ctx.fill();ctx.restore()}
     else if(sp.id===13){ctx.fillStyle=c;ctx.beginPath();for(var i=0;i<10;i++){var a=i*1.256,r=i%2?s*0.18:s*0.08,X=Math.cos(a)*r,Y=Math.sin(a)*r-h-s*0.16;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.closePath();ctx.fill()}
     else if(sp.id===14){ctx.fillStyle=c;ctx.beginPath();ctx.arc(0,-h-s*0.14,s*0.16,0,6.283);ctx.fill();ctx.fillStyle='#3a0ca3';ctx.beginPath();ctx.arc(0,-h-s*0.14,s*0.05,0,6.283);ctx.fill()}
+    else{ctx.fillStyle=c;var ng=3+(sp.id%4);ctx.beginPath();for(var gi=0;gi<ng;gi++){var ga=gi*6.283/ng-1.57,gx=Math.cos(ga)*s*0.16,gy=Math.sin(ga)*s*0.16-h-s*0.14;gi?ctx.lineTo(gx,gy):ctx.moveTo(gx,gy)}ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,-h-s*0.14,s*0.04,0,6.283);ctx.fill()}
   }else if(sp.st==='glow'){
     ctx.shadowColor=c;ctx.shadowBlur=s/5;ctx.fillStyle=c;ctx.beginPath();ctx.arc(0,-h-s*0.1,s*0.12,0,6.283);ctx.fill();
     ctx.shadowBlur=0;ctx.strokeStyle=c;ctx.lineWidth=s/30;for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-h*(.3+i*.23));ctx.stroke()}
@@ -5793,13 +5834,13 @@ function openGarden(){
   var box=document.createElement('div');
   box.style.cssText='width:min(820px,96vw);max-height:90vh;overflow-y:auto;background:radial-gradient(120% 60% at 50% -10%,rgba(130,170,255,.14),transparent 60%),radial-gradient(1px 1px at 18% 22%,rgba(255,255,255,.8),transparent),radial-gradient(1px 1px at 62% 12%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 84% 30%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 38% 40%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 72% 52%,rgba(255,255,255,.45),transparent),radial-gradient(1px 1px at 8% 60%,rgba(255,255,255,.4),transparent),linear-gradient(180deg,#080c18 0%,#0f1524 38%,#0d1a13 74%,#14251a 100%);border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box;font-family:Consolas,monospace;border-radius:14px';
   var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff)">❀ COLLABORATIVE GARDEN</span><span style="color:#6e8a86;font-size:11px;letter-spacing:.2em">● NIGHT GARDEN ●</span></div>'+
-    '<div style="font-size:11px;color:#8a8a8a;margin-bottom:12px">协作种植花园 · 25 种植物 · 多画风 · 星夜之下，万物生长</div>'+
+    '<div style="font-size:11px;color:#8a8a8a;margin-bottom:12px">协作种植花园 · 64 种植物 · 多画风 · 星夜之下，万物生长</div>'+
     '<div style="margin-bottom:12px"><button id="gTutBtn" onclick="gTut()" style="border:1px solid #4a5560;background:none;color:#9aa6ad;font-family:Consolas,monospace;font-size:10.5px;letter-spacing:.1em;padding:5px 14px;cursor:pointer;transition:.18s" onmouseenter="this.style.borderColor=\'var(--accent,#fff)\'" onmouseleave="this.style.borderColor=\'#4a5560\'">🌱 玩法教程</button></div>'+
     '<div id="gTut" style="display:none;border:1px dashed #3a3a3a;border-radius:10px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,.02);color:#b8c0c4;font-size:11px;line-height:1.9"></div>'+
     '<div style="height:2px;background:linear-gradient(90deg,transparent,var(--accent,#fff),transparent);opacity:.5;margin-bottom:14px"></div>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">'+
-      '<div style="flex:1;min-width:200px"><div id="gProgLabel" style="font-size:11px;letter-spacing:.15em;color:#6e8a86;margin-bottom:6px">图鉴探索 · DISCOVERED '+gDisc().length+' / 25</div>'+
-      '<div style="height:6px;background:#1c1f26;border-radius:3px;overflow:hidden"><div id="gProg" style="height:100%;width:'+Math.round(gDisc().length/25*100)+'%;background:var(--accent,#fff);border-radius:3px;transition:width .4s"></div></div></div>'+
+      '<div style="flex:1;min-width:200px"><div id="gProgLabel" style="font-size:11px;letter-spacing:.15em;color:#6e8a86;margin-bottom:6px">图鉴探索 · DISCOVERED '+gDisc().length+' / 64</div>'+
+      '<div style="height:6px;background:#1c1f26;border-radius:3px;overflow:hidden"><div id="gProg" style="height:100%;width:'+Math.round(gDisc().length/64*100)+'%;background:var(--accent,#fff);border-radius:3px;transition:width .4s"></div></div></div>'+
       '<div style="text-align:right;padding-right:4px"><div style="font-size:11px;color:#8a8a8a">探索点</div><div id="gExBox" style="font-size:16px;color:var(--accent,#fff);font-weight:bold">'+gEx()+'</div></div>'+
     '</div>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span id="gStar" style="font-size:11px;letter-spacing:.15em;color:#6e8a86">星雨之夜 · 全站照料 0 / 50</span><span style="font-size:10px;color:#5b5b5b">集体目标</span></div>'+
@@ -5954,7 +5995,7 @@ function gSceneClick(ev){
 var gTutSteps=[
   ['拾种落种','初始你只有 1 颗随机种子。在种子库点选它（光标会携带种子），再点击下方【花园实景】任意位置把它种下——种下会消耗这颗种子，落点会生长为花。再点该种子或按 Esc 取消','1'],
   ['照料成长','在共享花园里点“照料”，生长 +12%（每 3 秒一次）；照料也 +1 探索点','2'],
-  ['收集种子','种下 / 照料时偶尔会发现新种子；集齐 25 种解锁“守园人 ⚜”','3'],
+  ['收集种子','种下 / 照料时偶尔会发现新种子；集齐 64 种解锁“守园人 ⚜”','3'],
   ['夜行深处','花 1 探索点踏入“夜行深处”，可能带回传说种子或星尘——也可能一无所获','4'],
   ['相伴加成','同一画风植物≥2株时显示金色“相伴✦”，更显生机','5'],
   ['盛开','照料 / 离线生长把植物养到生长度 1，出现金色星环“✦ 盛开”','6'],
@@ -6072,7 +6113,7 @@ function gStarRefresh(care){
     gFx(window.innerWidth/2,window.innerHeight/2,'#ffd60a');
   }
 }
-function gProgRefresh(){var p=document.getElementById('gProg');if(p)p.style.width=Math.round(gDisc().length/25*100)+'%';var t=document.getElementById('gProgLabel');if(t){t.innerHTML=gDisc().length>=25?'图鉴全收 · 守园人 ⚜':' 图鉴探索 · DISCOVERED '+gDisc().length+' / 25'}}
+function gProgRefresh(){var p=document.getElementById('gProg');if(p)p.style.width=Math.round(gDisc().length/64*100)+'%';var t=document.getElementById('gProgLabel');if(t){t.innerHTML=gDisc().length>=64?'图鉴全收 · 守园人 ⚜':' 图鉴探索 · DISCOVERED '+gDisc().length+' / 64'}}
 var gTree=[
   {id:1,ly:1,ty:1,n:'星尘浅洼',re:'dust',pa:0},
   {id:2,ly:1,ty:1,n:'苔光小径',re:'rare',pa:0},
