@@ -5652,6 +5652,12 @@ var G_PLANTS=[
 ];
 function gP(id){for(var i=0;i<G_PLANTS.length;i++)if(G_PLANTS[i].id===id)return G_PLANTS[i];return G_PLANTS[0]}
 function gbName(){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');return (s&&s.username)||'游客'}catch(e){return'游客'}}
+var G_RARE=[6,11,13,15,17,18,21,24];
+var G_LEGEND=[22,23,25];
+function gSeeds(){try{var a=JSON.parse(localStorage.getItem('wz_gseeds')||'null');if(Array.isArray(a))return a;var b=[];for(var i=0;i<G_PLANTS.length;i++){var id=G_PLANTS[i].id;if(G_RARE.indexOf(id)<0&&G_LEGEND.indexOf(id)<0)b.push(id)}return b}catch(e){return[]}}
+function gSeedAdd(id){try{var a=gSeeds();if(a.indexOf(id)<0)a.push(id);localStorage.setItem('wz_gseeds',JSON.stringify(a))}catch(e){}}
+function gEx(){try{return parseInt(localStorage.getItem('wz_gex')||'0',10)||0}catch(e){return 0}}
+function gExAdd(n){try{localStorage.setItem('wz_gex',String(gEx()+n))}catch(e){}}
 function gDraw(cv,id,g){
   var sp=gP(id),c=sp.c,s=cv.width,ctx=cv.getContext('2d');
   ctx.clearRect(0,0,s,s);
@@ -5712,6 +5718,10 @@ function gDraw(cv,id,g){
   }else if(sp.st==='ecg'){
     ctx.strokeStyle=c;ctx.lineWidth=s/26;ctx.beginPath();ctx.moveTo(-s*0.14,-h*0.7);ctx.lineTo(-s*0.02,-h*0.7);ctx.lineTo(s*0.02,-h);ctx.lineTo(s*0.06,-h*0.5);ctx.lineTo(s*0.14,-h*0.5);ctx.stroke()
   }
+  if(g<.3){ctx.globalAlpha=.55}
+  if(g>=.6){ctx.strokeStyle=c;ctx.globalAlpha=.4;ctx.lineWidth=s/30;for(var fi=0;fi<6;fi++){var fa=fi*1.047;ctx.beginPath();ctx.arc(Math.cos(fa)*s*.16,-h-s*.16+Math.sin(fa)*s*.03,s*.02,0,6.283);ctx.stroke()}}
+  if(g>.9){ctx.shadowColor=c;ctx.shadowBlur=s/4;ctx.fillStyle=c;ctx.beginPath();ctx.arc(0,-h-s*.16,s*.05,0,6.283);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle=c;ctx.globalAlpha=.7;for(var si=0;si<3;si++){ctx.beginPath();ctx.arc(Math.cos(si*2.1)*s*.24,-h-s*.16+Math.sin(si*2.1)*s*.12,s*.015,0,6.283);ctx.fill()}}
+  ctx.globalAlpha=1;
   ctx.restore();
 }
 function gSet(){try{var a=JSON.parse(localStorage.getItem('wz_garden')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
@@ -5724,6 +5734,11 @@ function openGarden(){
   var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff)">COLLABORATIVE GARDEN</span><span style="color:#5b5b5b;font-size:11px">NIGHT GARDEN</span></div>'+
     '<div style="font-size:11px;color:#8a8a8a;margin-bottom:12px">协作种植花园 · 25 种植物 · 多画风 · 星夜之下，万物生长</div>'+
     '<div style="height:2px;background:linear-gradient(90deg,transparent,var(--accent,#fff),transparent);opacity:.5;margin-bottom:14px"></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">'+
+      '<div style="flex:1;min-width:200px"><div style="font-size:11px;letter-spacing:.15em;color:#6e8a86;margin-bottom:6px">图鉴探索 · DISCOVERED '+gSeeds().length+' / 25</div>'+
+      '<div style="height:6px;background:#1c1f26;border-radius:3px;overflow:hidden"><div id="gProg" style="height:100%;width:'+Math.round(gSeeds().length/25*100)+'%;background:var(--accent,#fff);border-radius:3px;transition:width .4s"></div></div></div>'+
+      '<div style="text-align:right;padding-right:4px"><div style="font-size:11px;color:#8a8a8a">探索点</div><div id="gExBox" style="font-size:16px;color:var(--accent,#fff);font-weight:bold">'+gEx()+'</div></div>'+
+    '</div>'+
     '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">种子库 · SEEDS · 点选种下</div>'+
     '<div id="seedGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;margin-bottom:16px"></div>'+
@@ -5733,18 +5748,33 @@ function openGarden(){
     '<div id="myGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:16px"></div>'+
     '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">共享花园 · SHARED · 可照料</div>'+
-    '<div id="shGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>';
+    '<div id="shGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>'+
+    '<div style="border-top:1px solid #222;margin:14px 0 12px"></div>'+
+    '<div style="background:radial-gradient(circle at 50% 0%,#0c1018,#06070a);border:1px solid #2c2c2c;border-radius:12px;padding:14px;text-align:center">'+
+      '<div style="font-size:12px;letter-spacing:.3em;color:#8a8a8a;margin-bottom:4px">夜行深处 · DEEP NIGHT</div>'+
+      '<div style="font-size:10.5px;color:#5b5b5b;line-height:1.7;margin-bottom:10px">一片未名之地。消耗 <b style="color:var(--accent,#fff)">1 探索点</b> 点亮一次，可能带回传说的种子，或一无所获。</div>'+
+      '<div id="gExploreBox" style="min-height:18px;margin-bottom:10px;color:#cfd8da;font-size:12px;line-height:1.9"></div>'+
+      '<button id="gExploreBtn" onclick="gExplore()" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);padding:7px 20px;font-family:Consolas,monospace;font-size:11px;letter-spacing:.15em;cursor:pointer;transition:.2s">● 踏入夜行深处</button>'+
+    '</div>';
   box.innerHTML=h+'<div style="text-align:right;margin-top:14px"><button id="gClose" style="border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 18px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer">关闭</button></div>';
   mask.appendChild(box);document.body.appendChild(mask);
   var sg=document.getElementById('seedGrid');
   for(var i=0;i<G_PLANTS.length;i++){
     (function(sp){
+      var un=gSeeds().indexOf(sp.id)>=0;
       var d=document.createElement('div');
-      d.style.cssText='border:1px solid #2c2c2c;border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s';d.onmouseenter=function(){d.style.borderColor='#5a5a5a';d.style.transform='translateY(-2px)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor='#2c2c2c';d.style.transform='none'}};
-      d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:#9aa6ad;font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+'</div>';
-      d.onclick=function(){gPick(d,sp.id)};
+      if(un){
+        d.style.cssText='border:1px solid #2c2c2c;border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s';d.onmouseenter=function(){d.style.borderColor='#5a5a5a';d.style.transform='translateY(-2px)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor='#2c2c2c';d.style.transform='none'}};
+        d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:#9aa6ad;font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+'</div>';
+        d.onclick=function(){gPick(d,sp.id)};
+      }else{
+        var tier=G_LEGEND.indexOf(sp.id)>=0?'传说':(G_RARE.indexOf(sp.id)>=0?'稀有':'常见');
+        d.style.cssText='border:1px dashed #3a3a3a;border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;background:rgba(255,255,255,.02);opacity:.6;transition:.18s';
+        d.innerHTML='<div style="height:54px;display:flex;align-items:center;justify-content:center;color:#4a4a4a;font-size:20px">?</div><div style="color:#5b5b5b;font-size:9px;margin-top:4px;line-height:1.4">？？？<br><span style="color:#6e5a2a">'+tier+'</span></div>';
+        d.onclick=function(){toast('未解锁 · '+tier,'种植或照料植物，或踏入夜行深处，可发现它')};
+      }
       sg.appendChild(d);
-      var cv=d.querySelector('canvas');setTimeout(function(){gDraw(cv,sp.id,.9)},10);
+      var cv=d.querySelector('canvas');if(cv)setTimeout(function(){gDraw(cv,sp.id,.9)},10);
     })(G_PLANTS[i]);
   }
   renderMy();
@@ -5782,6 +5812,8 @@ function gPlant(){
   var b=apiBase();
   if(b){try{fetch(b+'/garden_plant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).catch(function(){})}catch(e){}}
   gAdd(p);G_SEL=null;renderMy();gLoadShared();var me=gbName();var cvd=document.querySelector('#myGarden>div');if(cvd){var r=cvd.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#7dff7a')}
+  gExAdd(1);var pbox=document.getElementById('gExBox');if(pbox)pbox.textContent=gEx();
+  (function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.45){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();toast('你的花园里长出一粒新种子','解锁 '+gP(got).n)}})();
   toast('已种下 '+gP(p.sp).n,'它会慢慢生长，别人也能为它照料');
 }
 var G_CARE={};
@@ -5790,7 +5822,7 @@ function gCare(id){
   G_CARE[id]=Date.now();
   var b=apiBase();if(!b)return;
   fetch(b+'/garden_care',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(j){
-    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#80ffdb')}gLoadShared();toast('照料成功','生长 +12%')}else{toast('照料失败','试试刷新')}
+    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#80ffdb')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
   }).catch(function(){toast('照料失败','云端不可用')});
 }
 function gLoadShared(){
@@ -5807,6 +5839,33 @@ function gLoadShared(){
       })(list[i]);
     }
   }).catch(function(){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">花园加载失败。</div>'});
+}
+function gProgRefresh(){var p=document.getElementById('gProg');if(p)p.style.width=Math.round(gSeeds().length/25*100)+'%'}
+function gExplore(){
+  var eb=document.getElementById('gExploreBtn');if(eb)eb.disabled=true;
+  if(gEx()<1){toast('探索点不足','种下或照料植物可获得探索点');if(eb)eb.disabled=false;return}
+  gExAdd(-1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();
+  var box=document.getElementById('gExploreBox');if(!box){if(eb)eb.disabled=false;return}
+  var locked=[];for(var i=0;i<G_PLANTS.length;i++){var id=G_PLANTS[i].id;if(gSeeds().indexOf(id)<0)locked.push(id)}
+  var r=Math.random();
+  if(locked.length&&r<.6){
+    var legs=locked.filter(function(x){return G_LEGEND.indexOf(x)>=0});
+    var rars=locked.filter(function(x){return G_RARE.indexOf(x)>=0});
+    var got;
+    if(legs.length&&Math.random()<.6)got=legs[Math.floor(Math.random()*legs.length)];
+    else if(rars.length)got=rars[Math.floor(Math.random()*rars.length)];
+    else got=locked[Math.floor(Math.random()*locked.length)];
+    gSeedAdd(got);gProgRefresh();
+    box.innerHTML='<div style="color:var(--accent,#fff);font-size:13px;line-height:1.9">黑暗中有一粒种子静静发亮—— <b>'+gP(got).n+'</b> 已加入种子库。</div>';
+    gFx(window.innerWidth/2,window.innerHeight/2,'#ffd60a');
+  }else if(Math.random()<.5){
+    var a=gSet();if(a.length){var last=a[a.length-1];last.g=Math.min(1,(last.g||.5)+.15);localStorage.setItem('wz_garden',JSON.stringify(a));renderMy();
+      box.innerHTML='<div style="color:#80ffdb;font-size:13px;line-height:1.9">星尘洒下，'+gP(last.sp).n+'生长 +15%。</div>'}
+    else box.innerHTML='<div style="color:#5b5b5b;font-size:13px;line-height:1.9">星尘洒下，但花园空无一物。先种点什么。</div>';
+  }else{
+    box.innerHTML='<div style="color:#5b5b5b;font-size:13px;line-height:1.9">深处一片死寂。你点亮了夜，什么都没带回来——但夜记住了你来过。</div>';
+  }
+  setTimeout(function(){if(eb)eb.disabled=false},900);
 }
 
 (function(){
