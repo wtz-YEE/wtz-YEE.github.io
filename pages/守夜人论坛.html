@@ -158,6 +158,14 @@ function ferr(msg){
       <span class="tag" data-t="询问">询问</span>
       <span class="tag" data-t="分享">分享</span>
     </div>
+    <div class="popts" style="display:flex;gap:16px;padding:0 14px 10px;flex-wrap:wrap;align-items:center">
+      <label style="font-size:11px;color:var(--ink2);display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" id="anonChk" style="accent-color:#9a6fae"> 匿名发布</label>
+      <label style="font-size:11px;color:var(--ink2);display:flex;align-items:center;gap:5px">时间胶囊
+        <select id="capSel" style="background:var(--bg2);color:var(--ink);border:1px solid var(--line);font-size:10.5px;padding:2px 4px;border-radius:3px">
+          <option value="0">不封存</option><option value="1">1 天后公开</option><option value="7">7 天后公开</option><option value="30">30 天后公开</option>
+        </select>
+      </label>
+    </div>
     <div class="prow">
       <button class="imgbtn" id="pb">＋ 附图片</button>
       <span class="att" id="att"><img id="attImg"><span>已附带 1 张图</span><button id="attRm">移除</button></span>
@@ -412,10 +420,14 @@ function send(){
   if(!S.user) return say('请先登录',false);
   var t=$('pt').value.trim();
   if(!t) return say('请写点内容',false);
-  call('/post_add',{text:t,tags:S.tags,image:S.img}).then(function(j){
+  var anon=document.getElementById('anonChk')?document.getElementById('anonChk').checked:false;
+  var capSel=document.getElementById('capSel');var cap=capSel?parseInt(capSel.value||'0')||0:0;
+  call('/post_add',{text:t,tags:S.tags,image:S.img,anon:anon,capsule:cap}).then(function(j){
     if(!j.ok) return say(j.msg||'发布失败',false);
     $('pt').value='';S.img='';S.tags=[];
     $('att').style.display='none';$('pf').value='';
+    if(document.getElementById('anonChk'))document.getElementById('anonChk').checked=false;
+    if(document.getElementById('capSel'))document.getElementById('capSel').value='0';
     var all=$('tags').querySelectorAll('.tag');all.forEach(function(x){x.classList.remove('on')});
     say('发布成功',true);
     loadPosts();
@@ -445,11 +457,13 @@ function render(ps){
     var tk=p.tags&&p.tags.length?p.tags.map(function(t){return '<span class="tk t-'+esc(t)+'">'+esc(t)+'</span>'}).join(''):'';
     var del=(S.user&&(S.user.is_admin||p.user===S.user.username))?'<button class="del" data-pd="'+esc(p.id)+'">删除</button>':'';
     var cm=p.comments||[];
+    var nm=p.shown||p.name||p.user;
+    var badge=(p.anon?'<span style="color:#9a6fae;font-size:10px;margin-left:4px">⚿ 匿名</span>':'')+(p.capsule?'<span style="color:#c8a84a;font-size:10px;margin-left:4px">⏳ 胶囊</span>':'');
+    var body=p.sealed?('<div class="bd" style="color:#8a6f4a;font-style:italic">⏳ 这是一枚时间胶囊 · '+Math.max(1,Math.ceil((p.unveil-Date.now()/1000)/86400))+' 天后破土公开</div>'):('<div class="bd">'+md(p.text)+(p.image&&S.api?'<img src="'+esc(S.api+p.image)+'">':'')+'</div>');
     return '<div class="post">'+
-      '<div class="ph"><span class="nm">'+esc(p.name)+'</span><span>'+esc(p.time)+'</span>'+
+      '<div class="ph"><span class="nm">'+esc(nm)+'</span>'+badge+'<span>'+esc(p.time)+'</span>'+
       '<span class="tagsm">'+tk+'</span>'+del+'</div>'+
-      '<div class="bd">'+md(p.text)+
-      (p.image&&S.api?'<img src="'+esc(S.api+p.image)+'">':'')+'</div>'+
+      body+
       '<div class="votes">'+
         '<span class="vbtn up'+(S.user&&(p.likes||[]).indexOf(S.user.username)>=0?' on':'')+'" data-pv="'+esc(p.id)+'" data-pvv="1">▲ <span class="cnt">'+(p.likes||[]).length+'</span></span>'+
         '<span class="vbtn dn'+(S.user&&(p.dislikes||[]).indexOf(S.user.username)>=0?' on':'')+'" data-pv="'+esc(p.id)+'" data-pvv="-1">▼ <span class="cnt">'+(p.dislikes||[]).length+'</span></span>'+
@@ -461,8 +475,8 @@ if(c.id!==undefined&&c.id!==null){
   var clk=(c.likes||[]).indexOf(S.user?S.user.username:'')>=0,cld=(c.dislikes||[]).indexOf(S.user?S.user.username:'')>=0;
   cv='<div class="cvotes"><span class="cvbtn up'+(clk?' on':'')+'" data-cv="'+esc(p.id)+'" data-cvi="'+esc(c.id)+'" data-cvv="1">▲ '+(c.likes||[]).length+'</span><span class="cvbtn dn'+(cld?' on':'')+'" data-cv="'+esc(p.id)+'" data-cvi="'+esc(c.id)+'" data-cvv="-1">▼ '+(c.dislikes||[]).length+'</span></div>';
 }
-return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.user)+cdel+'</div>'+md(c.text)+cv+'</div>'}).join(''):'<div class="citem" style="color:var(--ink3)">暂无评论</div>') +'</div>'+
-        '<div class="cinput"><input data-ci="'+esc(p.id)+'" placeholder="写下评论…" maxlength="200"><button class="btn" data-cs="'+esc(p.id)+'">发送</button></div>'+
+return '<div class="citem"><div class="cmt">'+esc(c.time)+' · '+esc(c.shown||c.user)+(c.anon?' <span style="color:#9a6fae;font-size:10px">⚿匿名</span>':'')+cdel+'</div>'+md(c.text)+cv+'</div>'}).join(''):'<div class="citem" style="color:var(--ink3)">暂无评论</div>') +'</div>'+
+        '<div class="cinput"><input data-ci="'+esc(p.id)+'" placeholder="写下评论…" maxlength="200"><label style="font-size:10px;color:var(--ink2);display:flex;align-items:center;gap:4px;white-space:nowrap"><input type="checkbox" data-cano="'+esc(p.id)+'" style="accent-color:#9a6fae">匿名</label><button class="btn" data-cs="'+esc(p.id)+'">发送</button></div>'+
       '</div></div>';
   }).join('');
 }
@@ -547,7 +561,8 @@ function bindList(){
       var id=cs.getAttribute('data-cs'),inp=document.querySelector('[data-ci="'+id+'"]');
       var v=inp?inp.value.trim():'';
       if(!v) return say('评论不能为空',false);
-      call('/comment_add',{pid:id,text:v}).then(function(j){
+      var cano=document.querySelector('[data-cano="'+id+'"]');var anonV=cano?cano.checked:false;
+      call('/comment_add',{pid:id,text:v,anon:anonV}).then(function(j){
         if(!j.ok) return say(j.msg||'评论失败',false);
         say('评论成功',true); loadPosts();
       }).catch(function(e){ say('评论失败：'+ferr(e.message),false); });

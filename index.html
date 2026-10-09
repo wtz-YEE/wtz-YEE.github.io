@@ -2851,6 +2851,25 @@ function likeBtn(g){
   var ls=g.likes||[], liked=S.user&&ls.indexOf(S.user.username)>=0;
   return '<div class="gb-like'+(liked?' on':'')+'" data-like="'+esc(g.id)+'">'+(liked?'♥':'♡')+' '+ls.length+'</div>';
 }
+function resonBtn(g){
+  var rs=g.reson||[], resonated=S.user&&rs.indexOf(S.user.username)>=0;
+  return '<div class="gb-like gb-reson'+(resonated?' on':'')+'" data-reson="'+esc(g.id)+'" title="共鸣 · 共振涟漪（≥3 触发共鸣潮）">'+(resonated?'⚡':'≋')+' 共鸣 '+(rs.length||0)+'</div>';
+}
+var _gbripple_injected=false;
+function doResonRipple(n,cardEl){
+  if(!_gbripple_injected){
+    _gbripple_injected=true;
+    var s=document.createElement('style');
+    s.textContent='@keyframes gbRip{0%{box-shadow:0 0 0 0 rgba(154,111,174,.65)}100%{box-shadow:0 0 0 16px rgba(154,111,174,0)}}.gb-ripple{animation:gbRip .6s ease-out}.gb-tide .gb-item{animation:gbTide 1s ease-in-out}@keyframes gbTide{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}';
+    document.head.appendChild(s);
+  }
+  if(cardEl) cardEl.classList.add('gb-ripple');
+  if(n>=3){
+    var box=$('guestbookList');
+    if(box){ box.classList.add('gb-tide'); setTimeout(function(){box.classList.remove('gb-tide')},900); }
+    say('共鸣潮 · 全场共振',true);
+  }
+}
 var GB_ALL=null;
 function sortGB(list){
   var k=$('gb_sort')?$('gb_sort').value:'new';
@@ -2896,6 +2915,7 @@ function renderGuests(list, fresh){
       txtBody+
       (g.image&&S.api?'<img class="gb-img" src="'+esc(S.api+g.image)+'" onclick="window.open(this.src)">':'')+
       likeBtn(g)+
+      resonBtn(g)+
     '</div>';
   }).join('');
   var tys=box.querySelectorAll('.gb-ty');
@@ -3846,6 +3866,36 @@ function bind(){
     }
     var pu=e.target.closest('[data-u]');
     if(pu){ openProfile(pu.getAttribute('data-u')); return; }
+    var rb=e.target.closest('.gb-reson');
+    if(rb){
+      if(!S.user) return say('请先登录后再共鸣',false);
+      var resonId=rb.getAttribute('data-reson');
+      var rCard=rb.closest('.gb-item');
+      call('/guest_resonate',{id:resonId}).then(function(j){
+        if(!j.ok) return say(j.msg||'共鸣失败',false);
+        doResonRipple(j.n||0,rCard);
+        try{
+          var cache=null;try{cache=JSON.parse(localStorage.getItem(K_GB)||'null')}catch(e){}
+          if(cache&&cache.list){
+            var un=S.user.username;
+            for(var k=0;k<cache.list.length;k++){
+              var g0=cache.list[k];
+              if(g0&&String(g0.id)===String(resonId)){
+                var rs=g0.reson||[];
+                var ix=rs.indexOf(un);
+                if(ix>=0) rs.splice(ix,1); else rs.push(un);
+                g0.reson=rs;
+                break;
+              }
+            }
+            try{localStorage.setItem(K_GB,JSON.stringify(cache))}catch(e){}
+            renderGuests(cache.list);
+          }
+        }catch(e){}
+        setTimeout(loadGuestBook,2600);
+      }).catch(function(e){ say('共鸣失败：'+ferr(e.message)+(ferr(e.message).indexOf('429')>=0?' · 操作过快请稍候':''),false); });
+      return;
+    }
     var b=e.target.closest('.gb-like'); if(!b) return;
     if(!S.user) return say('请先登录后再点赞',false);
     var likeId=b.getAttribute('data-like');

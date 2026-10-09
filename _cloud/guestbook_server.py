@@ -592,8 +592,19 @@ def api_guest_add():
 @app.route("/post_get", methods=["GET", "POST"])
 def api_post_get():
     ps = _load(POST_FILE, [])
-    ps = sorted(ps, key=lambda a: (-len(a.get("likes") or []), -int(a.get("id", 0) or 0)))
-    return jsonify({"ok": True, "list": ps})
+    now = int(_time.time())
+    res = []
+    for x in ps:
+        if x.get("capsule") and now < int(x.get("unveil") or 0):
+            res.append({"id": x.get("id"), "capsule": x.get("capsule"),
+                        "unveil": x.get("unveil"), "time": x.get("time"),
+                        "shown": x.get("shown") or x.get("name") or x.get("user"), "sealed": True})
+        else:
+            x["sealed"] = False
+            x["shown"] = x.get("shown") or x.get("name") or x.get("user")
+            res.append(x)
+    res = sorted(res, key=lambda a: (-len(a.get("likes") or []), -int(a.get("id", 0) or 0)))
+    return jsonify({"ok": True, "list": res})
 
 @app.route("/post_add", methods=["POST"])
 def api_post_add():
@@ -612,8 +623,15 @@ def api_post_add():
     nid = 1
     for x in ps:
         nid = max(nid, int(x.get("id", 0) or 0) + 1)
-    ps.append({"id": nid, "user": cu, "name": cu, "text": txt, "tags": tags,
-               "image": im, "time": _now(), "comments": [], "likes": [], "dislikes": []})
+    anon = bool(p.get("anon"))
+    cap = int(p.get("capsule") or 0)
+    unveil = 0
+    if cap:
+        unveil = int(_time.time()) + cap * 86400
+    shown = ("匿名·%04d" % _random.randint(1000, 9999)) if anon else cu
+    ps.append({"id": nid, "user": cu, "name": cu, "shown": shown, "text": txt, "tags": tags,
+               "image": im, "time": _now(), "comments": [], "likes": [], "dislikes": [],
+               "anon": anon, "capsule": cap, "unveil": unveil})
     _save(POST_FILE, ps)
     _add_exp(_load(USER_FILE, {}), cu, 8)
     _scan_at(txt, str(nid))
@@ -656,7 +674,9 @@ def api_comment_add():
             cid = 1
             for c0 in cs:
                 cid = max(cid, int(c0.get("id", 0) or 0) + 1)
-            cs.append({"id": cid, "user": cu, "text": txt, "time": _now(), "likes": [], "dislikes": []})
+            canon = bool(p.get("anon"))
+            cshown = ("匿名·%04d" % _random.randint(1000, 9999)) if canon else cu
+            cs.append({"id": cid, "user": cu, "shown": cshown, "text": txt, "time": _now(), "likes": [], "dislikes": [], "anon": canon})
             _save(POST_FILE, ps)
             _add_exp(_load(USER_FILE, {}), cu, 3)
             _scan_at(txt, str(x.get("id")))
@@ -926,6 +946,25 @@ def api_garden_care():
             _save(GARDEN_FILE, d)
             return jsonify({"ok": True, "care_total": d.get("care_total")})
     return jsonify({"ok": False, "msg": "植物不存在"})
+
+@app.route("/guest_resonate", methods=["POST"])
+def api_guest_resonate():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录后再共鸣"})
+    g = _load(GUESTBOOK_FILE, [])
+    for x in g:
+        if str(x.get("id")) == str(p.get("id")):
+            rs = x.get("reson") or []
+            if cu in rs:
+                rs = [u for u in rs if u != cu]
+            else:
+                rs.append(cu)
+            x["reson"] = rs
+            _save(GUESTBOOK_FILE, g)
+            return jsonify({"ok": True, "reson": rs, "n": len(rs)})
+    return jsonify({"ok": False, "msg": "留言不存在"})
 
 @app.route("/guest_like", methods=["POST"])
 def api_guest_like():
@@ -2231,7 +2270,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch")
 
 @app.before_request
 def _rate():
