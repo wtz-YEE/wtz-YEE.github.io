@@ -5705,8 +5705,11 @@ function gP(id){for(var i=0;i<G_PLANTS.length;i++)if(G_PLANTS[i].id===id)return 
 function gbName(){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');return (s&&s.username)||'游客'}catch(e){return'游客'}}
 var G_RARE=[6,11,13,15,17,18,21,24];
 var G_LEGEND=[22,23,25];
-function gSeeds(){try{var a=JSON.parse(localStorage.getItem('wz_gseeds')||'null');if(Array.isArray(a))return a;var b=[];for(var i=0;i<G_PLANTS.length;i++){var id=G_PLANTS[i].id;if(G_RARE.indexOf(id)<0&&G_LEGEND.indexOf(id)<0)b.push(id)}return b}catch(e){return[]}}
-function gSeedAdd(id){try{var a=gSeeds();if(a.indexOf(id)<0)a.push(id);localStorage.setItem('wz_gseeds',JSON.stringify(a))}catch(e){}}
+function gSeeds(){try{var a=JSON.parse(localStorage.getItem('wz_gseeds')||'null');if(Array.isArray(a))return a.slice();var r=[G_PLANTS[Math.floor(Math.random()*G_PLANTS.length)].id];try{localStorage.setItem('wz_gseeds',JSON.stringify(r))}catch(e){};var d=gDisc();if(d.indexOf(r[0])<0){d.push(r[0]);try{localStorage.setItem('wz_gdisc',JSON.stringify(d))}catch(e){}}return r}catch(e){return[]}}
+function gSeedAdd(id){try{var a=gSeeds();a.push(id);localStorage.setItem('wz_gseeds',JSON.stringify(a));var d=gDisc();if(d.indexOf(id)<0){d.push(id);localStorage.setItem('wz_gdisc',JSON.stringify(d))}}catch(e){}}
+function gDisc(){try{return JSON.parse(localStorage.getItem('wz_gdisc')||'[]')}catch(e){return[]}}
+function gSeedTake(id){try{var a=gSeeds();var i=a.indexOf(id);if(i<0)return false;a.splice(i,1);localStorage.setItem('wz_gseeds',JSON.stringify(a));return true}catch(e){return false}}
+function gDiscAdd(id){var d=gDisc();if(d.indexOf(id)<0){d.push(id);try{localStorage.setItem('wz_gdisc',JSON.stringify(d))}catch(e){}}}
 function gEx(){try{return parseInt(localStorage.getItem('wz_gex')||'0',10)||0}catch(e){return 0}}
 function gExAdd(n){try{localStorage.setItem('wz_gex',String(gEx()+n))}catch(e){}}
 function gDraw(cv,id,g,t){
@@ -5795,8 +5798,8 @@ function openGarden(){
     '<div id="gTut" style="display:none;border:1px dashed #3a3a3a;border-radius:10px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,.02);color:#b8c0c4;font-size:11px;line-height:1.9"></div>'+
     '<div style="height:2px;background:linear-gradient(90deg,transparent,var(--accent,#fff),transparent);opacity:.5;margin-bottom:14px"></div>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">'+
-      '<div style="flex:1;min-width:200px"><div id="gProgLabel" style="font-size:11px;letter-spacing:.15em;color:#6e8a86;margin-bottom:6px">图鉴探索 · DISCOVERED '+gSeeds().length+' / 25</div>'+
-      '<div style="height:6px;background:#1c1f26;border-radius:3px;overflow:hidden"><div id="gProg" style="height:100%;width:'+Math.round(gSeeds().length/25*100)+'%;background:var(--accent,#fff);border-radius:3px;transition:width .4s"></div></div></div>'+
+      '<div style="flex:1;min-width:200px"><div id="gProgLabel" style="font-size:11px;letter-spacing:.15em;color:#6e8a86;margin-bottom:6px">图鉴探索 · DISCOVERED '+gDisc().length+' / 25</div>'+
+      '<div style="height:6px;background:#1c1f26;border-radius:3px;overflow:hidden"><div id="gProg" style="height:100%;width:'+Math.round(gDisc().length/25*100)+'%;background:var(--accent,#fff);border-radius:3px;transition:width .4s"></div></div></div>'+
       '<div style="text-align:right;padding-right:4px"><div style="font-size:11px;color:#8a8a8a">探索点</div><div id="gExBox" style="font-size:16px;color:var(--accent,#fff);font-weight:bold">'+gEx()+'</div></div>'+
     '</div>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span id="gStar" style="font-size:11px;letter-spacing:.15em;color:#6e8a86">星雨之夜 · 全站照料 0 / 50</span><span style="font-size:10px;color:#5b5b5b">集体目标</span></div>'+
@@ -5833,12 +5836,12 @@ function openGarden(){
   var sc=document.getElementById('gSceneCv');if(sc)sc.onclick=gSceneClick;
   gLoadShared();
 }
-function gSeedCard(sp,un){
+function gSeedCard(sp,un,count){
   var d=document.createElement('div');
   if(un){
     var isLeg=G_LEGEND.indexOf(sp.id)>=0,isRar=G_RARE.indexOf(sp.id)>=0;
     d.style.cssText='border:1px solid '+(isLeg?'#c8a84a':(isRar?'#8a5ae0':'#2e3a32'))+';border-radius:12px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)'+(isLeg?';box-shadow:0 0 12px rgba(200,168,74,.25)':'');d.onmouseenter=function(){d.style.borderColor='var(--accent,#fff)';d.style.transform='translateY(-3px)';d.style.boxShadow='0 6px 18px rgba(120,160,255,.22)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor=isLeg?'#c8a84a':(isRar?'#8a5ae0':'#2c2c2c');d.style.transform='none';d.style.boxShadow='none'}};
-    d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:'+(isLeg?'#c8a84a':(isRar?'#9a7ae0':'#9aa6ad'))+';font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+(isLeg?' ★':(isRar?' ✦':''))+'</div>';
+    d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:'+(isLeg?'#c8a84a':(isRar?'#9a7ae0':'#9aa6ad'))+';font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+(isLeg?' ★':(isRar?' ✦':''))+(count>1?' <span style="color:#ffd60a">×'+count+'</span>':'')+'</div>';
     d.onclick=function(){gPick(d,sp.id)};
   }else{
     var tier=G_LEGEND.indexOf(sp.id)>=0?'传说':(G_RARE.indexOf(sp.id)>=0?'稀有':'常见');
@@ -5851,12 +5854,13 @@ function gSeedCard(sp,un){
 }
 function gSeedGroup(area,title,list){
   var hd=document.createElement('div');hd.style.cssText='display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px';
-  var got=0;for(var i=0;i<list.length;i++)if(gSeeds().indexOf(list[i].id)>=0)got++;
+  var inv=gSeeds(),cnt={};for(var i=0;i<inv.length;i++)cnt[inv[i]]=(cnt[inv[i]]||0)+1;
+  var got=0;for(var i=0;i<list.length;i++)if(cnt[list[i].id])got++;
   hd.innerHTML='<span style="font-size:11px;letter-spacing:.2em;color:#6e8a86">'+title+'</span><span style="font-size:10px;color:#5b5b5b">'+got+' / '+list.length+'</span>';
   area.appendChild(hd);
   var grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px';
   area.appendChild(grid);
-  for(var i=0;i<list.length;i++)grid.appendChild(gSeedCard(list[i],gSeeds().indexOf(list[i].id)>=0));
+  for(var i=0;i<list.length;i++)grid.appendChild(gSeedCard(list[i],!!cnt[list[i].id],cnt[list[i].id]||0));
 }
 function gSeedRefresh(){
   var area=document.getElementById('gSeedArea');if(!area)return;
@@ -5924,7 +5928,7 @@ function gSceneClick(ev){
   if(best&&bd<36){var a=gSet();for(var j=0;j<a.length;j++)if(a[j].sp===best.id){var p=a[j],sp=gP(p.sp),stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));toast(sp.n+' · ['+stg+']','生长 '+Math.round((p.g||.5)*100)+'% · 照料 '+(p.c||0)+' · 画风 '+sp.st);break}}
 }
 var gTutSteps=[
-  ['选种种下','在种子库点选一棵植物（传说带 ★、稀有带 ✦），再点“先选一颗种子”，它便种入你的花园，也在下方花园实景中展示','1'],
+  ['选种种下','初始你只有 1 颗随机种子。在种子库点选它，再点“先选一颗种子”种入花园——种下会消耗这颗种子。更多种子来自探索、照料与星雨','1'],
   ['照料成长','在共享花园里点“照料”，生长 +12%（每 3 秒一次）；照料也 +1 探索点','2'],
   ['收集种子','种下 / 照料时偶尔会发现新种子；集齐 25 种解锁“守园人 ⚜”','3'],
   ['夜行深处','花 1 探索点踏入“夜行深处”，可能带回传说种子或星尘——也可能一无所获','4'],
@@ -5971,12 +5975,15 @@ function renderMy(){
 }
 function gPlant(){
   if(!G_SEL){toast('先选一颗种子','在种子库点一种植物');return}
-  var p={sp:G_SEL,t:new Date().getTime(),g:.5,c:0,u:gbName()};
+  var sid=G_SEL;
+  if(!gSeedTake(sid)){toast('这颗种子已经用完了','去探索或照料，获得新种子');G_SEL=null;gSeedRefresh();return}
+  gDiscAdd(sid);
+  var p={sp:sid,t:new Date().getTime(),g:.5,c:0,u:gbName()};
   var b=apiBase();
   if(b){try{fetch(b+'/garden_plant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).catch(function(){})}catch(e){}}
-  gAdd(p);G_SEL=null;renderMy();gLoadShared();var me=gbName();var cvd=document.querySelector('#myGarden>div');if(cvd){var r=cvd.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#7dff7a')}
+  gAdd(p);G_SEL=null;renderMy();gLoadShared();gSeedRefresh();var me=gbName();var cvd=document.querySelector('#myGarden>div');if(cvd){var r=cvd.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#7dff7a')}
   gExAdd(1);var pbox=document.getElementById('gExBox');if(pbox)pbox.textContent=gEx();
-  (function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.45){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('你的花园里长出一粒新种子','解锁 '+gP(got).n)}})();
+  (function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.45){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('你的花园里长出一粒新种子','解锁 '+gP(got).n)}})();
   toast('已种下 '+gP(p.sp).n,'它会慢慢生长，别人也能为它照料');
 }
 var G_CARE={};
@@ -5985,7 +5992,7 @@ function gCare(id){
   G_CARE[id]=Date.now();
   var b=apiBase();if(!b)return;
   fetch(b+'/garden_care',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(j){
-    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();d.style.boxShadow='0 0 18px rgba(255,214,10,.5)';gFx(r.left+r.width/2,r.top+r.height/2,'#ffd60a')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
+    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();d.style.boxShadow='0 0 18px rgba(255,214,10,.5)';gFx(r.left+r.width/2,r.top+r.height/2,'#ffd60a')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
   }).catch(function(){toast('照料失败','云端不可用')});
 }
 function gLoadShared(){
@@ -6021,12 +6028,12 @@ function gStarRefresh(care){
   if(care>=G_STAR_GOAL&&msg&&!msg.dataset.done){
     msg.dataset.done=1;msg.innerHTML='<div style="color:#ffd60a;font-size:11px;margin-top:4px;line-height:1.6">★ 星雨之夜降临！全体探索点 +2，传说种子正在重新被发现</div>';
     gExAdd(2);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();
-    var legs=[];for(var i=0;i<G_LEGEND.length;i++)if(gSeeds().indexOf(G_LEGEND[i])<0)legs.push(G_LEGEND[i]);
+    var legs=[];for(var i=0;i<G_LEGEND.length;i++)if(gDisc().indexOf(G_LEGEND[i])<0)legs.push(G_LEGEND[i]);
     if(legs.length){var got=legs[Math.floor(Math.random()*legs.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('星雨带来神秘种子','解锁 '+gP(got).n)}
     gFx(window.innerWidth/2,window.innerHeight/2,'#ffd60a');
   }
 }
-function gProgRefresh(){var p=document.getElementById('gProg');if(p)p.style.width=Math.round(gSeeds().length/25*100)+'%';var t=document.getElementById('gProgLabel');if(t){t.innerHTML=gSeeds().length>=25?'图鉴全收 · 守园人 ⚜':' 图鉴探索 · DISCOVERED '+gSeeds().length+' / 25'}}
+function gProgRefresh(){var p=document.getElementById('gProg');if(p)p.style.width=Math.round(gDisc().length/25*100)+'%';var t=document.getElementById('gProgLabel');if(t){t.innerHTML=gDisc().length>=25?'图鉴全收 · 守园人 ⚜':' 图鉴探索 · DISCOVERED '+gDisc().length+' / 25'}}
 var gTree=[
   {id:1,ly:1,ty:1,n:'星尘浅洼',re:'dust',pa:0},
   {id:2,ly:1,ty:1,n:'苔光小径',re:'rare',pa:0},
@@ -6108,7 +6115,7 @@ function gTreeGo(id){
 }
 function gTreeReward(nd){
   var box=document.getElementById('gExploreBox');if(!box)return;
-  var locked=[];for(var i=0;i<G_PLANTS.length;i++){var x=G_PLANTS[i].id;if(gSeeds().indexOf(x)<0)locked.push(x)}
+  var locked=[];for(var i=0;i<G_PLANTS.length;i++){var x=G_PLANTS[i].id;if(gDisc().indexOf(x)<0)locked.push(x)}
   var legs=locked.filter(function(x){return G_LEGEND.indexOf(x)>=0});
   var rars=locked.filter(function(x){return G_RARE.indexOf(x)>=0});
   var txt='';
