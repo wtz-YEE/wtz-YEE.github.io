@@ -5807,9 +5807,10 @@ function openGarden(){
     '<div id="gStarMsg"></div>'+
     '<div style="border-top:1px solid #222;margin:12px 0"></div>'+
     '<div id="gWhisper" style="border:1px dashed #3a3a3a;border-radius:8px;padding:8px 10px;margin-bottom:10px;color:#8a8a8a;font-size:11px;line-height:1.6;background:rgba(255,255,255,.02)"></div>'+
-    '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">◆ 种子库 · SEEDS · 点选种下 · 稀有种藏在深处 ◆</div>'+
+    '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">◆ 种子库 · SEEDS · 拾取后点花园落种 · 稀有种藏在深处 ◆</div>'+
+    '<div id="gPlantTip" style="display:none;border:1px dashed #5a5a5a;border-radius:8px;padding:7px 10px;margin-bottom:8px;color:#ffd60a;font-size:10.5px;letter-spacing:.05em;background:rgba(255,214,10,.05)">⚒ 已拾取种子 —— 点击下方【花园实景】任意位置落种 · 再点该种子或按 Esc 取消</div>'+
     '<div id="gSeedArea"></div>'+
-    '<div style="text-align:center;margin-bottom:14px"><button id="gPlantBtn" onclick="gPlant()" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);padding:8px 22px;font-family:Consolas,monospace;font-size:11.5px;letter-spacing:.15em;cursor:pointer">先选一颗种子</button></div>'+
+    '<div style="text-align:center;margin-bottom:14px"><button id="gPlantBtn" onclick="gPlant()" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);padding:8px 22px;font-family:Consolas,monospace;font-size:11.5px;letter-spacing:.15em;cursor:pointer">拾取一颗种子 · 点击花园落种</button></div>'+
     '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">花园实景 · GARDEN VIEW · 点击一朵花</div>'+
     '<div style="position:relative;border:1px solid #2c2c2c;border-radius:12px;overflow:hidden;margin-bottom:12px"><canvas id="gSceneCv" width="760" height="200" style="width:100%;display:block"></canvas></div>'+
@@ -5831,8 +5832,11 @@ function openGarden(){
   gSeedRefresh();
   gWhisper();
   renderMy();gProgRefresh();gSceneLoop();gTreeRender();
-  mask.onclick=function(e){if(e.target===mask&&mask.parentNode){mask.parentNode.removeChild(mask);gAniStop()}};
-  var c=document.getElementById('gClose');if(c)c.onclick=function(){if(mask.parentNode){mask.parentNode.removeChild(mask);gAniStop()}};
+  function hGKey(e){if((e.key==='Escape'||e.key==='Esc')&&G_SEL){gPickOff()}}
+  document.addEventListener('keydown',hGKey);
+  var hClose=function(){if(mask.parentNode){mask.parentNode.removeChild(mask);gAniStop()}document.removeEventListener('keydown',hGKey)};
+  mask.onclick=function(e){if(e.target===mask){hClose()}};
+  var c=document.getElementById('gClose');if(c)c.onclick=hClose;
   var sc=document.getElementById('gSceneCv');if(sc)sc.onclick=gSceneClick;
   gLoadShared();
 }
@@ -5878,12 +5882,29 @@ function gWhisper(){
   w.textContent='★ 夜行者低语：'+ws[h];
 }
 function gFx(x,y,c){for(var i=0;i<10;i++){(function(i){var d=document.createElement('div');var a=Math.random()*6.283,sp=20+Math.random()*50;d.style.cssText='position:fixed;left:'+x+'px;top:'+y+'px;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px;background:'+c+';border-radius:50%;pointer-events:none;z-index:2147483500;transition:transform .6s,opacity .6s';document.body.appendChild(d);requestAnimationFrame(function(){d.style.transform='translate('+Math.cos(a)*sp+'px,'+(Math.sin(a)*sp-30)+'px)';d.style.opacity='0'});setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},650)})(i)}if(document.readyState==='loading')return}
-var G_SEL=null;
+var G_SEL=null;var G_CURSOR=null;
 function gPick(el,id){
+  if(G_SEL===id){gPickOff();return}
   if(G_SEL&&G_SEL._el){G_SEL._el.style.borderColor='#2c2c2c';G_SEL._el.style.background='transparent';G_SEL._el.style.boxShadow='none'}
-  G_SEL=id;el.style.borderColor='var(--accent,#fff)';el.style.background='rgba(255,255,255,.06)';el.style.boxShadow='0 0 14px var(--accent,#fff)';el._el=el;
-  var pb=document.getElementById('gPlantBtn');if(pb)pb.textContent='种下 '+gP(id).n;
+  G_SEL=id;el.style.borderColor='#ffd60a';el.style.background='rgba(255,214,10,.08)';el.style.boxShadow='0 0 14px rgba(255,214,10,.55)';el._el=el;
+  gCursorOn(id);
+  var pb=document.getElementById('gPlantBtn');if(pb){pb.textContent='已拾取 '+gP(id).n+' · 点击花园落种';pb.style.borderColor='#ffd60a';pb.style.color='#ffd60a'}
+  var tip=document.getElementById('gPlantTip');if(tip)tip.style.display='block';
 }
+function gPickOff(){
+  if(G_SEL&&G_SEL._el){G_SEL._el.style.borderColor='#2c2c2c';G_SEL._el.style.background='transparent';G_SEL._el.style.boxShadow='none'}
+  G_SEL=null;gCursorOff();
+  var pb=document.getElementById('gPlantBtn');if(pb){pb.textContent='拾取一颗种子 · 点击花园落种';pb.style.borderColor='var(--accent,#fff)';pb.style.color='var(--accent,#fff)'}
+  var tip=document.getElementById('gPlantTip');if(tip)tip.style.display='none';
+}
+function gCursorOn(id){
+  if(G_CURSOR)return;
+  var d=document.createElement('canvas');d.id='gCursor';d.width=28;d.height=28;d.style.cssText='position:fixed;left:-99px;top:-99px;pointer-events:none;z-index:2147483600;filter:drop-shadow(0 0 6px rgba(255,214,10,.6))';
+  document.body.appendChild(d);try{gDraw(d,id,.8)}catch(e){}
+  G_CURSOR=d;document.addEventListener('mousemove',gCursorMove);document.body.style.cursor='crosshair';
+}
+function gCursorMove(ev){if(G_CURSOR){G_CURSOR.style.left=(ev.clientX+12)+'px';G_CURSOR.style.top=(ev.clientY+12)+'px'}}
+function gCursorOff(){if(G_CURSOR&&G_CURSOR.parentNode)G_CURSOR.parentNode.removeChild(G_CURSOR);G_CURSOR=null;document.removeEventListener('mousemove',gCursorMove);document.body.style.cursor=''}
 var gAniCv=[];var gAniOn=false;
 function gAniAdd(cv,id,g){gAniCv.push({cv:cv,id:id,g:g,t:Math.random()*6});if(!gAniOn){gAniOn=true;(function loop(){var k=0;for(var i=0;i<gAniCv.length;i++){var o=gAniCv[i];if(o.cv&&o.cv.isConnected){o.t+=.03;try{gDraw(o.cv,o.id,o.g,o.t)}catch(e){}gAniCv[k++]=o}}gAniCv.length=k;if(gAniCv.length)requestAnimationFrame(loop);else gAniOn=false})()}}
 var gSceneRaf=0;
@@ -5900,11 +5921,12 @@ function gScene(){
   if(!a.length){ctx.fillStyle='#5b6a60';ctx.font='12px Consolas,monospace';ctx.textAlign='center';ctx.fillText('还没有花 · 从上方种子库种下第一棵',w/2,h*.84);return}
   var n=a.length,cols=Math.max(1,Math.ceil(Math.sqrt(n))),cw=w/(cols+1),pos=[];
   for(var i=0;i<n;i++){
-    var col=i%cols,row=Math.floor(i/cols);
-    var x=cw*(col+1)+Math.sin(i*7.3)*6,y=h*.76+row*22;
+    var p=a[i];
+    var x,y;
+    if(typeof p.x==='number'&&typeof p.y==='number'){x=p.x*w;y=p.y*h}else{var col=i%cols,row=Math.floor(i/cols);x=cw*(col+1)+Math.sin(i*7.3)*6;y=h*.76+row*22}
     var sway=Math.sin(t*.9+(x*.012));
-    gDrawSceneFlower(ctx,a[i],x,y,sway,t);
-    pos.push({id:a[i].sp,x:x,y:y});
+    gDrawSceneFlower(ctx,p,x,y,sway,t);
+    pos.push({id:p.sp,x:x,y:y});
   }
   cv.__pos=pos;
 }
@@ -5921,14 +5943,16 @@ function gDrawSceneFlower(ctx,p,x,y,sway,t){
   ctx.globalAlpha=1;
 }
 function gSceneClick(ev){
-  var cv=document.getElementById('gSceneCv');if(!cv||!cv.__pos)return;
+  var cv=document.getElementById('gSceneCv');if(!cv)return;
   var r=cv.getBoundingClientRect();var mx=(ev.clientX-r.left)/r.width*cv.width,my=(ev.clientY-r.top)/r.height*cv.height;
+  if(G_SEL){gPlantAt(mx/cv.width,my/cv.height);return}
+  if(!cv.__pos)return;
   var best=null,bd=1e9;
   for(var i=0;i<cv.__pos.length;i++){var d=Math.hypot(mx-cv.__pos[i].x,my-cv.__pos[i].y);if(d<bd){bd=d;best=cv.__pos[i]}}
   if(best&&bd<36){var a=gSet();for(var j=0;j<a.length;j++)if(a[j].sp===best.id){var p=a[j],sp=gP(p.sp),stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));toast(sp.n+' · ['+stg+']','生长 '+Math.round((p.g||.5)*100)+'% · 照料 '+(p.c||0)+' · 画风 '+sp.st);break}}
 }
 var gTutSteps=[
-  ['选种种下','初始你只有 1 颗随机种子。在种子库点选它，再点“先选一颗种子”种入花园——种下会消耗这颗种子。更多种子来自探索、照料与星雨','1'],
+  ['拾种落种','初始你只有 1 颗随机种子。在种子库点选它（光标会携带种子），再点击下方【花园实景】任意位置把它种下——种下会消耗这颗种子，落点会生长为花。再点该种子或按 Esc 取消','1'],
   ['照料成长','在共享花园里点“照料”，生长 +12%（每 3 秒一次）；照料也 +1 探索点','2'],
   ['收集种子','种下 / 照料时偶尔会发现新种子；集齐 25 种解锁“守园人 ⚜”','3'],
   ['夜行深处','花 1 探索点踏入“夜行深处”，可能带回传说种子或星尘——也可能一无所获','4'],
@@ -5973,18 +5997,33 @@ function renderMy(){
   box.appendChild(head);
   for(var i=a.length-1;i>=0;i--){var d=gPlantCard(a[i],cnt);box.appendChild(d)}
 }
-function gPlant(){
-  if(!G_SEL){toast('先选一颗种子','在种子库点一种植物');return}
+function gPlant(){if(!G_SEL){toast('先拾取一颗种子','在种子库点一种植物');return}gPlantAt(.5,.7)}
+function gPlantAt(nx,ny){
+  if(!G_SEL){toast('先拾取一颗种子','在种子库点一种植物');return}
   var sid=G_SEL;
-  if(!gSeedTake(sid)){toast('这颗种子已经用完了','去探索或照料，获得新种子');G_SEL=null;gSeedRefresh();return}
+  if(!gSeedTake(sid)){toast('这颗种子已经用完了','去探索或照料，获得新种子');G_SEL=null;gPickOff();gSeedRefresh();return}
   gDiscAdd(sid);
-  var p={sp:sid,t:new Date().getTime(),g:.5,c:0,u:gbName()};
+  var p={sp:sid,t:new Date().getTime(),g:.5,c:0,u:gbName(),x:Math.max(.08,Math.min(.92,nx)),y:Math.max(.2,Math.min(.86,ny))};
   var b=apiBase();
   if(b){try{fetch(b+'/garden_plant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).catch(function(){})}catch(e){}}
-  gAdd(p);G_SEL=null;renderMy();gLoadShared();gSeedRefresh();var me=gbName();var cvd=document.querySelector('#myGarden>div');if(cvd){var r=cvd.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#7dff7a')}
+  gAdd(p);gPickOff();gSeedRefresh();
+  var cv=document.getElementById('gSceneCv');if(cv)gPlantFx(cv.width*p.x,cv.height*p.y,sid);
+  renderMy();gLoadShared();
   gExAdd(1);var pbox=document.getElementById('gExBox');if(pbox)pbox.textContent=gEx();
   (function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.45){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('你的花园里长出一粒新种子','解锁 '+gP(got).n)}})();
-  toast('已种下 '+gP(p.sp).n,'它会慢慢生长，别人也能为它照料');
+  toast('已种下 '+gP(sid).n,'它会慢慢生长，别人也能为它照料');
+}
+function gPlantFx(px,py,sid){
+  var cv=document.getElementById('gSceneCv');if(!cv)return;
+  var wrap=cv.parentNode;
+  var seed=document.createElement('div');seed.style.cssText='position:absolute;left:'+(px-4)+'px;top:'+(py-20)+'px;width:9px;height:9px;background:radial-gradient(circle at 35% 30%,#dccfad,#5a4630);border-radius:50%;pointer-events:none;z-index:2;transition:transform .26s cubic-bezier(.5,0,.7,1)';
+  wrap.appendChild(seed);requestAnimationFrame(function(){seed.style.transform='translateY(20px)'});
+  setTimeout(function(){if(seed.parentNode)seed.parentNode.removeChild(seed);gFx(px,py,'#8a7a5a');gFx(px,py-2,'#6f6246')},260);
+  var sprout=document.createElement('canvas');sprout.width=40;sprout.height=40;
+  sprout.style.cssText='position:absolute;left:'+(px-20)+'px;top:'+(py-34)+'px;pointer-events:none;z-index:2;transform:scale(.12);opacity:0;transition:transform .7s cubic-bezier(.2,1.5,.3,1),opacity .4s';
+  wrap.appendChild(sprout);
+  setTimeout(function(){try{gDraw(sprout,sid,.6)}catch(e){};sprout.style.transform='scale(1)';sprout.style.opacity='1'},260);
+  setTimeout(function(){sprout.style.transition='transform .5s,opacity .5s';sprout.style.transform='scale(.01)';sprout.style.opacity='0';setTimeout(function(){if(sprout.parentNode)sprout.parentNode.removeChild(sprout)},540)},1350);
 }
 var G_CARE={};
 function gCare(id){
