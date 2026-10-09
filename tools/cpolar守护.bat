@@ -1,4 +1,5 @@
 @echo off
+chcp 936 >nul
 title CPOLAR 云端守护
 echo ============================================
 echo   云端守护进程已启动
