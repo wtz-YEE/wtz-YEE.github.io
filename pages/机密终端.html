@@ -254,6 +254,8 @@ baseFresh().then(function(k){
 if(k){lo('当前云端基址：<b>'+esc(ABASE)+'</b>','ok');return}
 baseProbe(ABASE).then(function(ok){if(ok)lo('cloud.txt 不可达 · 沿用当前基址：<b>'+esc(ABASE)+'</b>','warn');else lo('<span class="r">[X]</span> 云端地址获取失败，可用 base &lt;url&gt; 手动设置','bad')})})}
 function help(){lo('可用命令：');lo('<b>help</b> | ? ................ 命令列表');lo('<b>keys</b> | db | 数据库 ...... 内部数据库 · 全部密钥解法');lo('<b>key1</b> .................. 第 1 层 · 密钥');lo('<b>key2</b> | timekey ......... 第 2 层 · 时间密钥（实时）');lo('<b>perm</b> .................. 权限提升 · 三级答案');lo('<b>secret</b> | 9999 ......... 秘技 · LV9999 解锁');lo('<b>verify</b> ................ 双重验证流程');
+lo('<b>garden</b> ................ 花园数据 · 植物成长度（站长）');
+lo('<b>forge</b> ................ 锻造数据 · 武器仓库（站长）');
 lo('<b>cloud</b> | visitors ....... 云端数据库 · 访客名列表');lo('<b>accounts</b> | users ...... 账号数据库 · 查看账号密码');lo('<b>admin</b> &lt;账号&gt; &lt;密码&gt; ... 管理员验证');lo('<b>grant</b>/<b>revoke</b> &lt;账号&gt; .. 授予 / 取消管理员');lo('<b>base</b> [url] ............ 查看 / 设置云端基址（无参数=重新获取）');lo('<b>whoami</b> ................ 档案');lo('<b>clear</b> | cls ............ 清屏');lo('<b>lock</b> .................. 锁定并返回索引');lo('<b>exit</b> | back ........... 返回索引')}
 function keys(){
 lo('========== 内部数据库 · 全部密钥解法 ==========','acc');
@@ -268,6 +270,46 @@ lo('==============================================','acc')}
 function perm(){lo('权限提升问题链：');lo('LV0→1  <b>13</b>（年龄）');lo('LV1→2  <b>扳手</b>（微信头像物品）');lo('LV2→3  <b>81A</b>（CN，大小写不敏感）')}
 function secret(){lo('秘技 · LV9999：','warn');lo('在 <b>2048</b> 游戏界面依次按 ↑ ↓ ↑ ↓ ← → ← →，随后点击「新游戏」。');lo('解锁后权限显示 <span class="r">LV ▓▓▓▓</span>（乱码 9999），所有锁定内容无视权限开放，所有小游戏开启作弊模式')}
 function whoami(){lo('档案编号 CYRENE-07 ｜ 权限等级 S ｜ 加密通道 已建立');lo('这是 wtz 的私人终端——能抵达这里的人，只有你。')}
+
+var P_N={1:"字母·A藤",2:"字母·W芽",3:"字母·梦苗",4:"像素向日葵",5:"像素松树",6:"像素蘑菇",7:"像素仙人掌",8:"像素玫瑰",9:"像素郁金香",10:"几何·三角松",11:"几何·圆环莲",12:"几何·菱形仙人掌",13:"几何·星形花",14:"几何·太阳花",15:"发光菌",16:"墨线竹",17:"水晶缤",18:"星云藤",19:"电路草",20:"泡泡果",21:"火绒草",22:"冰晶叶",23:"时针花",24:"音符兰",25:"心电图草",26:"字母·B枝",27:"字母·C刺",28:"字母·T星",29:"字母·Z环",30:"像素樱桃",31:"像素铃兰",32:"像素竹笋",33:"像素西瓜芽",34:"像素枫",35:"几何·正六花",36:"几何·方晶",37:"几何·三角旗",38:"几何·环菱",39:"几何·双圆",40:"烛光藤",41:"幽光菌",42:"水墨梅",43:"焦墨兰",44:"蓝晶簇",45:"紫晶簇",46:"雪晶花",47:"星尘藤",48:"极光草",49:"暗星花",50:"处理器花",51:"焊点草",52:"皂泡草",53:"气泡果",54:"熔岩芯",55:"焰火簇",56:"霜花",57:"雾凇枝",58:"秒针草",59:"高音符花",60:"低音兰",61:"心电藤",62:"脉冲草",63:"暗影绒",64:"极昼花"};
+var F_B={'w_dagger':"守夜短刃",'w_sword':"学院长剑",'w_hammer':"泰拉巨锤",'w_rifle':"终端步枪",'w_staff':"星尘法杖",'w_bow':"夜行弓",'w_scythe':"花园锄镰",'w_shield':"破碎圣盾",'w_lance':"绯红长枪",'w_shard':"神秘碎片刃"};
+var F_A={'sharp':"锋利",'smite':"亡灵杀手",'bane':"节肢杀手",'knock':"击退",'fire':"火焰附加",'loot':"抢夺",'sweep':"横扫之刃",'unbr':"耐久",'mend':"经验修补",'inf':"无限",'ppr':"弹射物保护",'bpr':"爆炸保护",'fpr':"火焰保护",'prot':"保护",'silk':"精准采集",'fort':"时运",'power':"冲击",'quick':"快速拉弓",'van':"消失诅咒",'check':"签到共鸣",'garden':"花园共鸣",'frag':"碎片共鸣",'walk':"夜行者",'star':"星尘亲和",'cmd':"指挥官",'soul':"吸血之魂",'ice':"霜",'still':"凝滞",'void':"虚空",'hunter':"猎魔"};
+function gardenData(){
+  if(!ATOK){lo('未认证站长：输入 <b>admin &lt;账号&gt; &lt;密码&gt;</b> 验证','bad');return}
+  try{
+    var a=JSON.parse(localStorage.getItem('wz_garden')||'[]');
+    var seeds=JSON.parse(localStorage.getItem('wz_gseeds')||'[]');
+    var disc=JSON.parse(localStorage.getItem('wz_gdisc')||'[]');
+    var ex=parseInt(localStorage.getItem('wz_gex')||'0',10)||0;
+    lo('========== 协作花园 · 数据 ==========','acc');
+    lo('已种植 <b>'+a.length+'</b> 株 · 探索点 <b>'+ex+'</b> · 已发现 <b>'+disc.length+'/'+(Object.keys(P_N).length)+'</b> 种 · 持有种子 <b>'+seeds.length+'</b>');
+    if(!a.length){lo('花园为空：尚未种植任何植物','dim')}
+    for(var i=0;i<a.length;i++){var p=a[i],nm=P_N[p.id]||('#'+p.id),g=Math.max(0,Math.min(100,Math.round((p.g||0)*100)));
+      var bar='';var gb=Math.round(g/10);for(var k=0;k<10;k++)bar+=(k<gb?'█':'·');
+      lo('  '+esc(nm)+'  <span class="g">'+g+'%</span>  <span style="opacity:.5">'+bar+'</span>')}
+    if(seeds.length){lo('持有种子：','dim');lo('  '+seeds.map(function(id){return esc(P_N[id]||('#'+id))}).join(' / '))}
+    lo('==========================================','acc')
+  }catch(e){lo('<span class="r">[X]</span> 读取花园数据失败：'+esc(e.message),'bad')}
+}
+function forgeData(){
+  if(!ATOK){lo('未认证站长：输入 <b>admin &lt;账号&gt; &lt;密码&gt;</b> 验证','bad');return}
+  try{
+    var v=JSON.parse(localStorage.getItem('wz_forge')||'[]');
+    var lap=parseInt(localStorage.getItem('wz_lapis')||'0',10)||0;
+    var ir=parseInt(localStorage.getItem('wz_iron')||'0',10)||0;
+    var bs=parseInt(localStorage.getItem('wz_bookshelf')||'0',10)||0;
+    var lv=parseInt(localStorage.getItem('wz_forge_lv')||'0',10)||0;
+    lo('========== 武器锻造 · 数据 ==========','acc');
+    lo('锻造台 LV'+lv+' · 青金石 <b>'+lap+'</b> · 魔铁锭 <b>'+ir+'</b> · 书架 <b>'+bs+'</b> · 仓库 <b>'+v.length+'</b> 件');
+    if(!v.length){lo('武器仓库为空','dim')}
+    for(var i=0;i<v.length;i++){var w=v[i],bn=F_B[w.b]||w.b;
+      var afs=w.aff||[];var rar=afs.length>=5?'传说':(afs.length>=3?'稀有':(afs.length>=1?'魔法':'普通'));
+      var afn=afs.map(function(x){return F_A[x]||x}).join(' / ')||'未附魔';
+      lo('  <b>'+esc(bn)+'</b>  ['+rar+'] · '+esc(afn)+(w.cost>0?' · 铁砧成本 '+w.cost:''))}
+    lo('======================================','acc')
+  }catch(e){lo('<span class="r">[X]</span> 读取锻造数据失败：'+esc(e.message),'bad')}
+}
+
 function key1(){lo('第 1 层 · 密钥：','acc');lo('问题：wtz 最喜欢的角色是？    <b>答案：cyrene</b>（小写）')}
 function key2c(){lo('第 2 层 · 时间密钥：','acc');lo('公式：<b>日(2位)+时(2位)+(日×7+时×3)%100</b> · 随当前钟点与日期变化');lo('当前值：<span class="g">'+k2()+'</span>')}
 function verify(){V=1;lo('双重验证流程：','acc');lo('第 1 层 · 密钥？ （输入答案，空行取消）','warn')}
@@ -295,6 +337,8 @@ case'perm':case'权限':perm();break;
 case'secret':case'9999':case'秘技':secret();break;
 case'whoami':whoami();break;
 case'verify':verify();break;
+case'garden':case'花园':case'植物':gardenData();break;
+case'forge':case'锻造':case'武器':forgeData();break;
 	case'cloud':case'visitors':case'访客':case'visitor':JB2.cloudCmd();break;
 case'clear':case'cls':cls();break;
 case'lock':sessionStorage.removeItem('wzKey');location.href='../index.html';break;

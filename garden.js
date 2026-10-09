@@ -377,7 +377,8 @@ function gPlantAt(nx,ny){
   var cv=document.getElementById('gSceneCv');if(cv)gPlantFx(cv.width*p.x,cv.height*p.y,sid);
   renderMy();gLoadShared();
   gExAdd(1);var pbox=document.getElementById('gExBox');if(pbox)pbox.textContent=gEx();
-  (function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.45){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('你的花园里长出一粒新种子','解锁 '+gP(got).n)}})();
+  (function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.12){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('你的花园里长出一粒新种子','解锁 '+gP(got).n)}})();
+  gScene();
   toast('已种下 '+gP(sid).n,'它会慢慢生长，别人也能为它照料');
 }
 function gPlantFx(px,py,sid){
@@ -394,11 +395,13 @@ function gPlantFx(px,py,sid){
 }
 var G_CARE={};
 function gCare(id){
-  if(G_CARE[id]&&Date.now()-G_CARE[id]<3000){toast('照料冷却中','3 秒后再照料');return}
+  var lc=0;try{lc=parseInt(localStorage.getItem('wz_care_'+id)||'0',10)||0}catch(e){}
+  if(Date.now()-lc<30000){toast('照料冷却中','约 '+Math.max(1,Math.ceil((30000-(Date.now()-lc))/1000))+' 秒后再照料');return}
+  try{localStorage.setItem('wz_care_'+id,String(Date.now()))}catch(e){}
   G_CARE[id]=Date.now();
   var b=apiBase();if(!b)return;
   fetch(b+'/garden_care',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(j){
-    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();d.style.boxShadow='0 0 18px rgba(255,214,10,.5)';gFx(r.left+r.width/2,r.top+r.height/2,'#ffd60a')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();var _fd=window.fMaybeDrop&&fMaybeDrop();if(_fd){toast('照料时翻出一件武器胚子：'+_fd.n,'已入武器仓库')}(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
+    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();d.style.boxShadow='0 0 18px rgba(255,214,10,.5)';gFx(r.left+r.width/2,r.top+r.height/2,'#ffd60a')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();var _fd=window.fMaybeDrop&&fMaybeDrop();if(_fd){toast('照料时翻出一件武器胚子：'+_fd.n,'已入武器仓库')}(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.08){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})();gScene()}else{toast('照料未生效',(j&&j.msg)||'试试刷新')}
   }).catch(function(){toast('照料失败','云端不可用')});
 }
 function gLoadShared(){
@@ -414,7 +417,8 @@ function gLoadShared(){
         if(star.id===p.id){d.style.borderColor='#ffd60a';d.style.boxShadow='0 0 14px rgba(255,214,10,.4)'}
         if(p.msgs&&p.msgs.length){var mc=document.createElement('div');mc.style.cssText='color:#9aa6ad;font-size:8.5px;margin-top:3px;line-height:1.5;text-align:left';for(var mi=0;mi<p.msgs.length&&mi<2;mi++)mc.innerHTML+='<div>☁ '+p.msgs[mi].u+': '+p.msgs[mi].tx+'</div>';d.appendChild(mc)}
         var bt=document.createElement('div');bt.style.cssText='margin-top:5px;display:flex;gap:4px;justify-content:center';
-        bt.innerHTML='<button onclick="gCare('+p.id+')" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);font-family:Consolas,monospace;font-size:9px;padding:3px 7px;cursor:pointer;transition:.15s" onmouseenter="this.style.background=\'rgba(255,255,255,.08)\'" onmouseleave="this.style.background=\'none\'">照料</button><button onclick="gNote('+p.id+')" style="border:1px solid #4a5560;background:none;color:#9aa6ad;font-family:Consolas,monospace;font-size:9px;padding:3px 7px;cursor:pointer;transition:.15s" onmouseenter="this.style.background=\'rgba(255,255,255,.06)\'" onmouseleave="this.style.background=\'none\'">低语</button>';
+        var _full=(p.g||0)>=.98;
+        bt.innerHTML=(_full?'<span style="color:#ffd60a;font-size:9px">✦ 已盛开 · 无需照料</span>':'<button onclick="gCare('+p.id+')" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);font-family:Consolas,monospace;font-size:9px;padding:3px 7px;cursor:pointer;transition:.15s" onmouseenter="this.style.background=\'rgba(255,255,255,.08)\'" onmouseleave="this.style.background=\'none\'">照料</button>')+'<button onclick="gNote('+p.id+')" style="border:1px solid #4a5560;background:none;color:#9aa6ad;font-family:Consolas,monospace;font-size:9px;padding:3px 7px;cursor:pointer;transition:.15s" onmouseenter="this.style.background=\'rgba(255,255,255,.06)\'" onmouseleave="this.style.background=\'none\'">低语</button>';
         d.appendChild(bt);box.appendChild(d);
       })(list[i]);
     }

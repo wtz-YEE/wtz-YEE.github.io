@@ -16,6 +16,7 @@ SCORE_FILE = os.path.join(_BASE, "scores.json")
 RISK_FILE = os.path.join(_BASE, "risk_words.json")
 BANNED_IP_FILE = os.path.join(_BASE, "banned_ips.json")
 GARDEN_FILE = os.path.join(_BASE, "garden.json")
+FORGE_FILE = os.path.join(_BASE, "forge.json")
 
 import time as _t
 DEL_LOG = []
@@ -953,8 +954,16 @@ def api_garden_care():
     pl = d.get("plants") or []
     for x in pl:
         if str(x.get("id")) == str(p.get("id")):
-            x["g"] = min(1.0, (x.get("g") or 0.5) + 0.12)
+            g = x.get("g") or 0.5
+            if g >= 1.0:
+                return jsonify({"ok": False, "msg": "已盛开 · 无需照料"})
+            lc = x.get("lc") or 0
+            if _t.time() * 1000 - lc < 30000:
+                rem = max(1, int(30 - (_t.time() - lc / 1000.0)))
+                return jsonify({"ok": False, "msg": "照料冷却中 · 约 " + str(rem) + " 秒后"})
+            x["g"] = min(1.0, g + 0.12)
             x["c"] = (x.get("c") or 0) + 1
+            x["lc"] = int(_t.time() * 1000)
             d["care_total"] = (d.get("care_total") or 0) + 1
             _save(GARDEN_FILE, d)
             return jsonify({"ok": True, "care_total": d.get("care_total")})
@@ -1560,6 +1569,28 @@ def api_score_top():
 def api_achievements():
     items = [{"n": n, "h": h} for n, h in ACH_LIST["items"]]
     return jsonify({"ok": True, "base": ACH_LIST["n"], "total": len(items), "items": items})
+
+
+@app.route("/forge_save", methods=["POST"])
+def api_forge_save():
+    p = request.get_json() or {}
+    name = _cur_user(p.get("token"))
+    if not name:
+        return jsonify({"ok": False, "msg": "未登录或登录过期"})
+    d = _load(FORGE_FILE, {})
+    d[name] = p.get("data") or {}
+    _save(FORGE_FILE, d)
+    return jsonify({"ok": True})
+
+
+@app.route("/forge_load", methods=["POST"])
+def api_forge_load():
+    p = request.get_json() or {}
+    name = _cur_user(p.get("token"))
+    if not name:
+        return jsonify({"ok": False, "msg": "未登录或登录过期"})
+    d = _load(FORGE_FILE, {})
+    return jsonify({"ok": True, "data": d.get(name) or {}})
 
 
 @app.route("/shop", methods=["GET", "POST"])
