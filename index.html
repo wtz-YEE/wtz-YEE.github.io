@@ -5251,6 +5251,25 @@ window.fragFx=function(x,y){
   for(i=0;i<16;i++){(function(i){var d=document.createElement('div');var ang=Math.random()*6.283,sp=45+Math.random()*140;d.style.cssText='position:fixed;left:'+(x||0)+'px;top:'+(y||0)+'px;width:'+(3+Math.random()*4)+'px;height:'+(3+Math.random()*4)+'px;background:'+col+';border-radius:50%;pointer-events:none;z-index:2147483500;transition:transform .65s cubic-bezier(.1,.8,.3,1),opacity .65s';document.body.appendChild(d);requestAnimationFrame(function(){d.style.transform='translate('+Math.cos(ang)*sp+'px,'+(Math.sin(ang)*sp-70)+'px)';d.style.opacity='0'});setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},700)})(i)}
   var f=document.createElement('div');f.style.cssText='position:fixed;inset:0;z-index:2147483400;background:'+col+';opacity:.30;pointer-events:none;transition:opacity .5s';document.body.appendChild(f);requestAnimationFrame(function(){f.style.opacity='0'});setTimeout(function(){if(f.parentNode)f.parentNode.removeChild(f)},560);
 };
+window.fragBadge=function(){
+  var ac='#fff';try{ac=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#fff'}catch(e){}
+  var cv=document.createElement('canvas');cv.width=512;cv.height=512;
+  var x=cv.getContext('2d');
+  x.fillStyle='#0d0f11';x.fillRect(0,0,512,512);
+  x.strokeStyle=ac;x.lineWidth=5;
+  x.beginPath();x.arc(256,256,204,0,6.283);x.stroke();
+  x.lineWidth=2;x.beginPath();x.arc(256,256,160,0,6.283);x.stroke();
+  x.save();x.translate(256,196);x.rotate(Math.PI/4);x.fillStyle=ac;x.fillRect(-24,-24,48,48);x.restore();
+  x.fillStyle=ac;x.textAlign='center';x.font='bold 24px Consolas,monospace';
+  x.fillText('WTZ 守夜收集者',256,306);
+  x.font='14px Consolas,monospace';x.fillStyle='#9aa6ad';
+  x.fillText('WORLD FRAGMENTS 22 / 22',256,338);
+  x.font='12px Consolas,monospace';x.fillStyle='#6a767d';
+  var d=new Date();x.fillText(d.getFullYear()+'-'+((d.getMonth()+1<10?'0':'')+(d.getMonth()+1))+'-'+((d.getDate()<10?'0':'')+d.getDate()),256,366);
+  var url=cv.toDataURL('image/png');
+  var a=document.createElement('a');a.href=url;a.download='WTZ-collector-badge.png';document.body.appendChild(a);a.click();setTimeout(function(){if(a.parentNode)a.parentNode.removeChild(a)},400);
+};
+
 window.fragDetail=function(i){
   var on=gotN().indexOf(i)>=0;
   var mask=document.createElement('div');
@@ -5295,7 +5314,8 @@ function open(){
   }
   h+='</div>';
   if(have>=22){
-    h+='<div style="border:1px dashed var(--accent,#fff);padding:14px;color:var(--accent,#fff);font-size:12.5px;line-height:1.9">全部收集完毕。<br>你在服务器最深处找到一行没人删掉的注释：<br><br><span style="color:#8a8a8a"># 这个世界存档还在，他随时可以继续。</span></div>';
+    h+='<div style="border:1px dashed var(--accent,#fff);padding:14px;color:var(--accent,#fff);font-size:12.5px;line-height:1.9">全部收集完毕。<br>你在服务器最深处找到一行没人删掉的注释：<br><br><span style="color:#8a8a8a"># 这个世界存档还在，他随时可以继续。</span></div>'+
+      '<div style="text-align:center;margin-top:16px"><button onclick="fragBadge()" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);padding:11px 26px;font-family:Consolas,monospace;font-size:12px;letter-spacing:.18em;cursor:pointer">⚜ 领取收集者徽章 ↓PNG</button></div>';
   }else{
     h+='<div style="color:#6e6e6e;font-size:11.5px;line-height:1.9">碎片散落在各个页面里，谜语会指向它藏身的地方。<br>找齐 22 枚，最深处有留言。</div>';
   }
@@ -5373,6 +5393,32 @@ if(N){
   b.onclick=function(){open()};
   document.body.appendChild(b);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hide);else hide();
+}
+})();
+
+/* ===== 夜行守夜模式（时间触发） ===== */
+(function(){
+var now=new Date(),h=now.getHours();
+if(h<6||h>=22){
+  var b=document.createElement('button');
+  b.id='nightMark';b.type='button';b.title='守夜人印记 · 每夜一句';
+  b.style.cssText='position:fixed;left:14px;bottom:112px;z-index:2147482100;width:34px;height:34px;background:rgba(8,10,12,.82);border:1px solid var(--cbd,var(--line2,#444));color:var(--accent,#fff);font-size:15px;line-height:1;cursor:pointer;font-family:Consolas,monospace;transition:.2s;opacity:.72';
+  b.textContent='☆';
+  b.onmouseover=function(){b.style.opacity='1';b.style.borderColor='var(--accent,#fff)'};
+  b.onmouseout=function(){b.style.opacity='.72'};
+  b.onclick=function(){
+    var d=new Date();var key=d.getFullYear()+'-'+((d.getMonth()+1<10?'0':'')+(d.getMonth()+1))+'-'+((d.getDate()<10?'0':'')+d.getDate());
+    var hh=0,s=String(key);for(var i=0;i<s.length;i++)hh=(hh*131+s.charCodeAt(i))%100000007;
+    var L=['今夜未知将阵临何物，但守夜人不问。','灯光只照得见面前路，影子从不对你说谎。','如果这夜有心事，就拿它当火把点了。','守夜人不数羊，数过去的灯。','难道你不觉得，黑暗比白天更安静么。','今夜走过你家的那风，也走过我的。','开窗前先听一会，夜有它自己的语言。','如果明天不来，今晚就是最后一夜。'];
+    var txt=L[hh%L.length];
+    var m=document.createElement('div');
+    m.innerHTML='<b style="display:block;letter-spacing:.2em;color:var(--accent,#fff)">☆ 守夜人密语</b><span style="display:block;margin-top:10px;color:#cfd8da;line-height:1.9;font-size:13px">'+txt+'</span><span style="display:block;margin-top:10px;color:#5b5b5b;font-size:11px">'+key+'</span>';
+    m.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2147483200;background:#101214;border:1px solid var(--accent,#fff);padding:22px 28px;font-family:Consolas,monospace;max-width:80vw';
+    m.onclick=function(){if(m.parentNode)m.parentNode.removeChild(m)};
+    document.body.appendChild(m);
+    setTimeout(function(){if(m.parentNode)m.parentNode.removeChild(m)},8000);
+  };
+  document.body.appendChild(b);
 }
 })();
 
