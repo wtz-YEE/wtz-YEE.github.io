@@ -5658,10 +5658,10 @@ function gSeeds(){try{var a=JSON.parse(localStorage.getItem('wz_gseeds')||'null'
 function gSeedAdd(id){try{var a=gSeeds();if(a.indexOf(id)<0)a.push(id);localStorage.setItem('wz_gseeds',JSON.stringify(a))}catch(e){}}
 function gEx(){try{return parseInt(localStorage.getItem('wz_gex')||'0',10)||0}catch(e){return 0}}
 function gExAdd(n){try{localStorage.setItem('wz_gex',String(gEx()+n))}catch(e){}}
-function gDraw(cv,id,g){
+function gDraw(cv,id,g,t){
   var sp=gP(id),c=sp.c,s=cv.width,ctx=cv.getContext('2d');
   ctx.clearRect(0,0,s,s);
-  ctx.save();ctx.translate(s/2,s-4);
+  ctx.save();ctx.translate(s/2,s-4);if(t)ctx.rotate(Math.sin(t*1.7)*.028);
   var h=(s*0.42)*Math.min(1,Math.max(.15,g||.5));
   ctx.strokeStyle=c;ctx.lineWidth=Math.max(1.5,s/40);
   ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-h);ctx.stroke();
@@ -5757,11 +5757,11 @@ function openGarden(){
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">共享花园 · SHARED · 可照料</div>'+
     '<div id="shGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>'+
     '<div style="border-top:1px solid #222;margin:14px 0 12px"></div>'+
-    '<div style="background:radial-gradient(circle at 50% 0%,#0c1018,#06070a);border:1px solid #2c2c2c;border-radius:12px;padding:14px;text-align:center">'+
+    '<div style="background:radial-gradient(1px 1px at 20% 20%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 75% 30%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 40% 65%,rgba(255,255,255,.4),transparent),radial-gradient(circle at 50% 0%,#0d1520,#06070a);border:1px solid #2c2c2c;border-radius:12px;padding:14px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">'+
       '<div style="font-size:12px;letter-spacing:.3em;color:#8a8a8a;margin-bottom:4px">夜行深处 · DEEP NIGHT</div>'+
       '<div style="font-size:10.5px;color:#5b5b5b;line-height:1.7;margin-bottom:10px">一片未名之地。消耗 <b style="color:var(--accent,#fff)">1 探索点</b> 点亮一次，可能带回传说的种子，或一无所获。</div>'+
       '<div id="gExploreBox" style="min-height:18px;margin-bottom:10px;color:#cfd8da;font-size:12px;line-height:1.9"></div>'+
-      '<button id="gExploreBtn" onclick="gExplore()" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);padding:7px 20px;font-family:Consolas,monospace;font-size:11px;letter-spacing:.15em;cursor:pointer;transition:.2s">● 踏入夜行深处</button>'+
+      '<button id="gExploreBtn" onclick="gExplore()" style="border:1px solid var(--accent,#fff);background:rgba(255,255,255,.05);color:var(--accent,#fff);padding:7px 20px;font-family:Consolas,monospace;font-size:11px;letter-spacing:.15em;cursor:pointer;transition:.2s;box-shadow:0 0 12px rgba(120,160,255,.2)" onmouseenter="this.style.boxShadow=\'0 0 18px rgba(120,160,255,.45)\'" onmouseleave="this.style.boxShadow=\'0 0 12px rgba(120,160,255,.2)\'">● 踏入夜行深处</button>'+
     '</div>';
   box.innerHTML=h+'<div style="text-align:right;margin-top:14px"><button id="gClose" style="border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 18px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer">关闭</button></div>';
   mask.appendChild(box);document.body.appendChild(mask);
@@ -5825,7 +5825,8 @@ function gPlantCard(p){
   var sp=gP(p.sp),d=document.createElement('div');
   d.style.cssText='border:1px solid #2e3a32;border-radius:12px;padding:6px;text-align:center;box-sizing:border-box;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.008));box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.25);transform:scale(.92);opacity:0;transition:transform .25s,opacity .25s';setTimeout(function(){d.style.transform='scale(1)';d.style.opacity='1'},10);
   var cv=document.createElement('canvas');cv.width=84;cv.height=84;
-  setTimeout(function(){gDraw(cv,sp.id,p.g||.5)},10);
+  var rm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(rm){setTimeout(function(){gDraw(cv,sp.id,p.g||.5)},10)}else{var _t=Math.random()*6;(function loop(){gDraw(cv,sp.id,p.g||.5,_t);_t+=.03;cv.__raf=requestAnimationFrame(loop)})()}
   d.appendChild(cv);
   var stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));
   var star=G_LEGEND.indexOf(sp.id)>=0?' ★':(G_RARE.indexOf(sp.id)>=0?' ✦':'');
