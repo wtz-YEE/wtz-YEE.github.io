@@ -255,7 +255,8 @@ window.forgeMerge=function(id){if(!FORGE_SEL)return;var o=null;var a=fVault();fo
 window.forgeClear=function(){FORGE_SEL=null;FORGE_MERGE=null;forgeRender()};
 window.fDiscard=fDiscard;
 window.fBlankList=function(){return B.slice()};
-window.fVault=fVault;window.fPower=fPower;window.fRarity=fRarity;window.fAffNames=fAffNames;
+window.fVault=fVault;window.fPower=fPower;window.fRarity=fRarity;window.fAffNames=fAffNames;window.fShow=fShow;
+window.fLapisAdd=fLapisAdd;window.fIronAdd=fIronAdd;window.fBSAdd=fBSAdd;
 window.fMaybeDrop=fMaybeDrop;window.fImportPurchased=function(ids){
   var vault=fVault(),got=[];var have={};for(var i=0;i<vault.length;i++)have[vault[i].b]=1;
   for(var j=0;j<ids.length;j++){var b=ids[j];if(B.some(function(x){return x.id===b})&&!have[b]){vault.push(fNew(b));got.push(b)}}

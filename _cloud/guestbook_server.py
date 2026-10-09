@@ -58,6 +58,9 @@ SHOP = [
     {"id": "w_shield", "type": "weapon", "name": "破碎圣盾", "cost": 120, "desc": "防御胚子 · 裂缝盾"},
     {"id": "w_lance", "type": "weapon", "name": "绯红长枪", "cost": 220, "desc": "长枪 · 绯红配色"},
     {"id": "w_shard", "type": "weapon", "name": "神秘碎片刃", "cost": 500, "desc": "传说胚子 · 裂纹发光"},
+    {"id": "m_lapis", "type": "mat", "name": "青金石 ×3", "cost": 20, "desc": "锻造材料 · 附魔消耗"},
+    {"id": "m_iron", "type": "mat", "name": "魔铁锭 ×2", "cost": 15, "desc": "锻造材料 · 铁砧修复"},
+    {"id": "m_book", "type": "mat", "name": "书架 ×1", "cost": 25, "desc": "锻造材料 · 升级锻造台"},
 ]
 
 FRAGS = [
@@ -1749,15 +1752,16 @@ def api_buy():
     owned = rec.get("items") or []
     if not isinstance(owned, list):
         owned = []
-    if iid in owned:
+    if item["type"] != "mat" and iid in owned:
         return jsonify({"ok": False, "msg": "已经拥有了"})
     pts = int(rec.get("pts") or 0)
     cost = int(item["cost"])
     if pts < cost:
         return jsonify({"ok": False, "msg": "积分不足，还差 %d 分" % (cost - pts), "pts": pts})
     rec["pts"] = pts - cost
-    owned.append(iid)
-    rec["items"] = owned
+    if item["type"] != "mat":
+        owned.append(iid)
+        rec["items"] = owned
     if item["type"] == "title":
         rec["title"] = item["name"]
     elif item["type"] == "frame":

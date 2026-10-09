@@ -3446,6 +3446,14 @@ function openProfile(nm){
     var gsH=gs.map(function(x){return '<div class="pf-row" data-u="'+esc(x.user||x.name)+'"><span class="pf-t">'+esc((x.text||'').slice(0,70))+'</span><div class="pf-m">'+esc(x.time)+'</div></div>'}).join('')||'<div style="color:var(--ink3);font-size:11.5px;padding:6px 0">暂无留言</div>';
     var psH=ps.map(function(x){return '<div class="pf-row" data-pf="p"><span class="pf-t">'+esc((x.text||'').slice(0,70))+'</span><div class="pf-m">'+esc(x.time)+'</div></div>'}).join('')||'<div style="color:var(--ink3);font-size:11.5px;padding:6px 0">暂无发帖</div>';
     var cmH=cm.map(function(x){return '<div class="pf-row"><span class="pf-t">'+esc((x.text||'').slice(0,70))+'</span><div class="pf-m">'+esc(x.time)+'</div></div>'}).join('')||'<div style="color:var(--ink3);font-size:11.5px;padding:6px 0">暂无评论</div>';
+    var _showH='';
+    if(pf.self_&&window.fVault&&window.fBlankList){
+      var _va=fVault(),_sid=localStorage.getItem('wz_show');if(_sid)_sid=_sid.replace(/"/g,'');
+      var _w=null;for(var _i=0;_i<_va.length;_i++)if(_va[_i].id===_sid){_w=_va[_i];break}
+      if(_w){var _bl=fBlankList().filter(function(x){return x.id===_w.b})[0];
+        var _r=window.fRarity?fRarity(_w):'',_pw=window.fPower?fPower(_w):0;
+        _showH='<div class="pf-forge">★ 我的门面武器 · <b>'+(_bl?_bl.n:'未知')+'</b> ['+_r+' · 战力 '+_pw+']</div>';}
+    }
     var achH;
     if(pf.self_){
       var got=ACH20.filter(function(n){return ach.indexOf(n)>=0});
@@ -3458,7 +3466,7 @@ function openProfile(nm){
       '<div class="pf-sub">LV '+lv+' · '+esc(pf.title)+(pf.pt?' <span class="u-title">· ' + esc(pf.pt) + '</span>':'')+'</div>'+
       '<div class="pf-lvbar"><i style="width:'+pct+'%"></i></div>'+
       '<div class="pf-lvt">经验 '+pf.exp+' · '+pct+'%</div>'+bioH+bioEdit+'</div></div>'+
-      '<div class="pf-stats"><span>连签 '+pf.streak+'<i>天</i></span><span>总签 '+(+pf.total||0)+'<i>次</i></span><span>积分 '+pf.pts+'</span><span>注册 '+(pf.days>0?pf.days:'—')+'<i>天</i></span><span>获赞 '+pf.likes+'</span></div>'+
+      '<div class="pf-stats"><span>连签 '+pf.streak+'<i>天</i></span><span>总签 '+(+pf.total||0)+'<i>次</i></span><span>积分 '+pf.pts+'</span><span>注册 '+(pf.days>0?pf.days:'—')+'<i>天</i></span><span>获赞 '+pf.likes+'</span></div>'+_showH+
       '<div class="pf-ckn">近 60 天签到日历</div>'+ckCal(pf.ckdays)+
       '<div class="pf-tabs"><span class="pf-tab on" data-pft="d">动态</span><span class="pf-tab" data-pft="g">留言</span><span class="pf-tab" data-pft="p">帖子</span><span class="pf-tab" data-pft="c">评论</span><span class="pf-tab" data-pft="a">成就</span></div>'+
       '<div class="pf-bd"><div class="pf-pg" data-pg="d">'+dynH+'</div><div class="pf-pg" data-pg="g" style="display:none">'+gsH+'</div><div class="pf-pg" data-pg="p" style="display:none">'+psH+'</div><div class="pf-pg" data-pg="c" style="display:none">'+cmH+'</div><div class="pf-pg" data-pg="a" style="display:none">'+achH+'</div></div>';
@@ -4622,7 +4630,7 @@ function shopItemHtml(x,owned,eq){
   var a='';
   if(!S.user)a='<span class="shop-sub">登录后可购买</span>';
   else if(owned&&eq)a='<span class="shop-eq">已装备</span><button class="shop-btn" data-unequip="'+x.id+'">卸下</button>';
-  else if(owned&&x.type==='weapon')a='<span class="shop-own">已拥有</span><button class="shop-btn prim" onclick="openForge()">锻造</button>';else if(owned)a='<span class="shop-own">已拥有</span><button class="shop-btn prim" data-equip="'+x.id+'">装备</button>';
+  else if(owned&&x.type==='mat')a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'积分不足':'兑换')+'</button>';else if(owned&&x.type==='weapon')a='<span class="shop-own">已拥有</span><button class="shop-btn prim" onclick="openForge()">锻造</button>';else if(owned)a='<span class="shop-own">已拥有</span><button class="shop-btn prim" data-equip="'+x.id+'">装备</button>';
   else a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'积分不足':'兑换')+'</button>';
   return '<div class="shop-item'+(eq?' on':'')+'"><div class="si-h"><span class="si-n">'+esc(x.name)+'</span>'+
     (owned?'<span class="shop-own">已有</span>':'')+'<span class="si-c">'+x.cost+' 积分</span></div>'+
@@ -4634,7 +4642,7 @@ function shopRender(){
   if(pts)pts.textContent=(S.user?(+S.user.pts||0):0)+' 积分';
   if(!_shopCat){bd.innerHTML='<div class="rk-empty">载入中…</div>';return}
   var t=$('shopTabs');
-  if(t)t.innerHTML=[['title','称号'],['frame','头像框'],['weapon','武器']].map(function(x){
+  if(t)t.innerHTML=[['title','称号'],['frame','头像框'],['weapon','武器'],['mat','材料']].map(function(x){
     return '<div class="th-card rt'+(_shopKind===x[0]?' on':'')+'" data-sk="'+x[0]+'"><div class="tn">'+x[1]+'</div></div>';}).join('');
   var list=_shopCat.filter(function(x){return x.type===_shopKind});
   if(!list.length){bd.innerHTML='<div class="rk-empty">暂无商品</div>';return}
@@ -4668,7 +4676,7 @@ function shopBuy(id){
     if(j.frame)S.user.frame=j.frame;
     try{localStorage.setItem(K_SESS,JSON.stringify(S.user))}catch(e){}
     say(j.msg||'已兑换',true);
-    if(_shopKind==='weapon'&&window.fImportPurchased){var _fg=fImportPurchased([id]);if(_fg.length)toast('胚子已入武器仓库','打开锻造台看看吧')}
+    if(_shopKind==='weapon'&&window.fImportPurchased){var _fg=fImportPurchased([id]);if(_fg.length)toast('胚子已入武器仓库','打开锻造台看看吧')}else if(_shopKind==='mat'&&_shopCat){var _mi=null;for(var _k=0;_k<_shopCat.length;_k++)if(_shopCat[_k].id===id){_mi=_shopCat[_k];break}if(_mi){var _amt={m_lapis:3,m_iron:2,m_book:1}[id]||1,_f={m_lapis:'fLapisAdd',m_iron:'fIronAdd',m_book:'fBSAdd'}[id];if(_f&&window[_f])window[_f](_amt);toast('已兑换 '+_mi.name,'已存入锻造仓库')}}
     shopRender();shopBadge();
   }).catch(function(e){say('兑换失败：'+ferr(e.message),false)});
 }
