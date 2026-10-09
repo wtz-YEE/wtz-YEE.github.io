@@ -264,22 +264,22 @@ function applyAuth(){
 }
 function doLogin(){
   var u=$('lu').value.trim(),p=$('lp').value;
-  if(!u||!p) return say('请报上名号与密令',false);
+  if(!u||!p) return say('填账号和密码',false);
   call('/login',{username:u,password:p}).then(function(j){
     if(!j.ok) return say(j.msg||'登录失败',false);
     S.user={username:j.username,is_admin:!!j.is_admin,token:j.token};
     try{ localStorage.setItem(K_SESS,JSON.stringify(S.user)); }catch(e){}
     $('lu').value='';$('lp').value='';
     applyAuth();
-    say('欢迎归来，'+j.username,true);
-  }).catch(function(e){ say('信道已断 · 回声不来：'+ferr(e.message),false); });
+    say('欢迎回来，'+j.username,true);
+  }).catch(function(e){ say('请求失败，服务器摸鱼了：'+ferr(e.message),false); });
 }
 function doLogout(){
   var u=S.user; S.user=null;
   try{ localStorage.removeItem(K_SESS); }catch(e){}
   applyAuth();
   if(u&&u.token) call('/logout',{}).then(function(){},function(){});
-  say('已隐没于幕后',true);
+  say('已退出',true);
 }
 function doRecover(){
   var u=prompt('输入账号以获取安全问题：');
@@ -292,8 +292,8 @@ function doRecover(){
     if(!p) return;
     call('/recover',{username:u.trim(),answer:a.trim(),newpwd:p}).then(function(k){
       say(k.msg||(k.ok?'密码已重置':'重置失败'),!!k.ok);
-    }).catch(function(e){ say('信道已断 · 回声不来：'+ferr(e.message),false); });
-  }).catch(function(e){ say('信道已断 · 回声不来：'+ferr(e.message),false); });
+    }).catch(function(e){ say('请求失败，服务器摸鱼了：'+ferr(e.message),false); });
+  }).catch(function(e){ say('请求失败，服务器摸鱼了：'+ferr(e.message),false); });
 }
 /* 标签 */
 function tagHTML(){ return '<span class="tag" data-t="求助">求助</span><span class="tag" data-t="询问">询问</span><span class="tag" data-t="分享">分享</span>'; }
@@ -318,23 +318,23 @@ function compressImg(file,cb){
   };r.onerror=function(){cb('')};r.readAsDataURL(file);
 }
 function pickImg(){
-  if(!S.user) return say('身份不明 · 恕不接待',false);
+  if(!S.user) return say('请先登录',false);
   $('pf').click();
 }
 function upImg(){
   var f=$('pf').files[0];
   if(!f) return;
-  if(f.size>8*1024*1024) return say('此画过于沉重（超过 8MB）',false);
-  say('正在为画卷塑形…',false);
+  if(f.size>8*1024*1024) return say('图太大（超过 8MB）',false);
+  say('正在压缩…',false);
   compressImg(f,function(data){
-    if(!data) return say('画卷未及展开',false);
+    if(!data) return say('图片读取失败',false);
     call('/upload',{data:data}).then(function(j){
       if(!j.ok) return say(j.msg||'上传失败',false);
       S.img=j.url;
       $('attImg').src=S.api+j.url;
       $('att').style.display='inline-flex';
-      say('画卷已就位',true);
-    }).catch(function(e){ say('画卷遗失在半途：'+ferr(e.message),false); });
+      say('图片搞定',true);
+    }).catch(function(e){ say('上传失败：'+ferr(e.message),false); });
   });
 }
 /* ---------- v2.8 Markdown ---------- */
@@ -417,9 +417,9 @@ function md(s){
 }
 /* 发帖 */
 function send(){
-  if(!S.user) return say('身份不明 · 恕不接待',false);
+  if(!S.user) return say('请先登录',false);
   var t=$('pt').value.trim();
-  if(!t) return say('总得写点什么，哪怕是叹息',false);
+  if(!t) return say('先写点内容',false);
   var anon=document.getElementById('anonChk')?document.getElementById('anonChk').checked:false;
   var capSel=document.getElementById('capSel');var cap=capSel?parseInt(capSel.value||'0')||0:0;
   call('/post_add',{text:t,tags:S.tags,image:S.img,anon:anon,capsule:cap}).then(function(j){
@@ -429,9 +429,9 @@ function send(){
     if(document.getElementById('anonChk'))document.getElementById('anonChk').checked=false;
     if(document.getElementById('capSel'))document.getElementById('capSel').value='0';
     var all=$('tags').querySelectorAll('.tag');all.forEach(function(x){x.classList.remove('on')});
-    say('已刻入石碑',true);
+    say('发布成功',true);
     loadPosts();
-  }).catch(function(e){ say('此语未能刻下：'+ferr(e.message),false); });
+  }).catch(function(e){ say('发布失败：'+ferr(e.message),false); });
 }
 var POST_ALL=null;
 function sortPosts(ps){
@@ -513,30 +513,30 @@ function bindList(){
     var t=e.target;
     var pv=t.closest('[data-pv]');
     if(pv){
-      if(!S.user) return say('未登录者无权落槌',false);
+      if(!S.user) return say('先登录再投票',false);
       var v=pv.getAttribute('data-pvv');
       call('/post_vote',{pid:pv.getAttribute('data-pv'),vote:v}).then(function(j){
         if(!j.ok) return say(j.msg||'操作失败',false);
         loadPosts();
-      }).catch(function(e){ say('仪式未成：'+ferr(e.message),false); });
+      }).catch(function(e){ say('操作失败：'+ferr(e.message),false); });
       return;
     }
     var cvb=t.closest('[data-cv]');
     if(cvb){
-      if(!S.user) return say('未登录者无权落槌',false);
+      if(!S.user) return say('先登录再投票',false);
       call('/comment_vote',{pid:cvb.getAttribute('data-cv'),cid:cvb.getAttribute('data-cvi'),vote:cvb.getAttribute('data-cvv')}).then(function(j){
         if(!j.ok) return say(j.msg||'操作失败',false);
         loadPosts();
-      }).catch(function(e){ say('仪式未成：'+ferr(e.message),false); });
+      }).catch(function(e){ say('操作失败：'+ferr(e.message),false); });
       return;
     }
     var pb=t.closest('[data-pd]');
     if(pb){
-      if(!S.user) return say('身份不明 · 恕不接待',false);
+      if(!S.user) return say('请先登录',false);
       call('/post_del',{id:pb.getAttribute('data-pd')}).then(function(j){
         if(!j.ok) return say(j.msg||'删除失败',false);
-        loadPosts(); say('已抹除',true);
-      }).catch(function(e){ say('未能抹除：'+ferr(e.message),false); });
+        loadPosts(); say('已删除',true);
+      }).catch(function(e){ say('删除失败：'+ferr(e.message),false); });
       return;
     }
     var cm=t.closest('[data-cm]');
@@ -546,26 +546,26 @@ function bindList(){
     }
     var cd=t.closest('[data-cd]');
     if(cd){
-      if(!S.user) return say('身份不明 · 恕不接待',false);
+      if(!S.user) return say('请先登录',false);
       var pid=cd.getAttribute('data-cd'),idx=cd.getAttribute('data-cdi');
       if(!confirm('确认删除这条评论？')) return;
       call('/admin_del_comment',{pid:pid,idx:idx}).then(function(j){
         if(!j.ok) return say(j.msg||'删除失败',false);
-        loadPosts(); say('评论已抹除',true);
-      }).catch(function(e){ say('未能抹除：'+ferr(e.message),false); });
+        loadPosts(); say('评论已删除',true);
+      }).catch(function(e){ say('删除失败：'+ferr(e.message),false); });
       return;
     }
     var cs=t.closest('[data-cs]');
     if(cs){
-      if(!S.user) return say('未登录者不可言说',false);
+      if(!S.user) return say('先登录再评论',false);
       var id=cs.getAttribute('data-cs'),inp=document.querySelector('[data-ci="'+id+'"]');
       var v=inp?inp.value.trim():'';
-      if(!v) return say('空言无法跨越频道',false);
+      if(!v) return say('评论不能为空',false);
       var cano=document.querySelector('[data-cano="'+id+'"]');var anonV=cano?cano.checked:false;
       call('/comment_add',{pid:id,text:v,anon:anonV}).then(function(j){
         if(!j.ok) return say(j.msg||'评论失败',false);
-        say('回声已落定',true); loadPosts();
-      }).catch(function(e){ say('回声被打散：'+ferr(e.message),false); });
+        say('评论成功',true); loadPosts();
+      }).catch(function(e){ say('评论失败：'+ferr(e.message),false); });
       return;
     }
     var im=t.closest('.bd img');
