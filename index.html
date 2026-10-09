@@ -5740,8 +5740,9 @@ function openGarden(){
       '<div style="text-align:right;padding-right:4px"><div style="font-size:11px;color:#8a8a8a">探索点</div><div id="gExBox" style="font-size:16px;color:var(--accent,#fff);font-weight:bold">'+gEx()+'</div></div>'+
     '</div>'+
     '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
-    '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">种子库 · SEEDS · 点选种下</div>'+
-    '<div id="seedGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;margin-bottom:16px"></div>'+
+    '<div id="gWhisper" style="border:1px dashed #3a3a3a;border-radius:8px;padding:8px 10px;margin-bottom:10px;color:#8a8a8a;font-size:11px;line-height:1.6"></div>'+
+    '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">种子库 · SEEDS · 点选种下 · 稀有种藏在深处</div>'+
+    '<div id="gSeedArea"></div>'+
     '<div style="text-align:center;margin-bottom:14px"><button id="gPlantBtn" onclick="gPlant()" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);padding:8px 22px;font-family:Consolas,monospace;font-size:11.5px;letter-spacing:.15em;cursor:pointer">先选一颗种子</button></div>'+
     '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">我的花园 · MY GARDEN</div>'+
@@ -5758,29 +5759,53 @@ function openGarden(){
     '</div>';
   box.innerHTML=h+'<div style="text-align:right;margin-top:14px"><button id="gClose" style="border:1px solid var(--cbd,#3a3a3a);background:none;color:#b8b8b8;padding:6px 18px;font-family:Consolas,monospace;font-size:11.5px;cursor:pointer">关闭</button></div>';
   mask.appendChild(box);document.body.appendChild(mask);
-  var sg=document.getElementById('seedGrid');
-  for(var i=0;i<G_PLANTS.length;i++){
-    (function(sp){
-      var un=gSeeds().indexOf(sp.id)>=0;
-      var d=document.createElement('div');
-      if(un){
-        d.style.cssText='border:1px solid #2c2c2c;border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s';d.onmouseenter=function(){d.style.borderColor='#5a5a5a';d.style.transform='translateY(-2px)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor='#2c2c2c';d.style.transform='none'}};
-        d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:#9aa6ad;font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+'</div>';
-        d.onclick=function(){gPick(d,sp.id)};
-      }else{
-        var tier=G_LEGEND.indexOf(sp.id)>=0?'传说':(G_RARE.indexOf(sp.id)>=0?'稀有':'常见');
-        d.style.cssText='border:1px dashed #3a3a3a;border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;background:rgba(255,255,255,.02);opacity:.6;transition:.18s';
-        d.innerHTML='<div style="height:54px;display:flex;align-items:center;justify-content:center;color:#4a4a4a;font-size:20px">?</div><div style="color:#5b5b5b;font-size:9px;margin-top:4px;line-height:1.4">？？？<br><span style="color:#6e5a2a">'+tier+'</span></div>';
-        d.onclick=function(){toast('未解锁 · '+tier,'种植或照料植物，或踏入夜行深处，可发现它')};
-      }
-      sg.appendChild(d);
-      var cv=d.querySelector('canvas');if(cv)setTimeout(function(){gDraw(cv,sp.id,.9)},10);
-    })(G_PLANTS[i]);
-  }
+  gSeedRefresh();
+  gWhisper();
   renderMy();
   mask.onclick=function(e){if(e.target===mask&&mask.parentNode)mask.parentNode.removeChild(mask)};
   var c=document.getElementById('gClose');if(c)c.onclick=function(){if(mask.parentNode)mask.parentNode.removeChild(mask)};
   gLoadShared();
+}
+function gSeedCard(sp,un){
+  var d=document.createElement('div');
+  if(un){
+    d.style.cssText='border:1px solid #2c2c2c;border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;transition:.18s';d.onmouseenter=function(){d.style.borderColor='#5a5a5a';d.style.transform='translateY(-2px)'};d.onmouseleave=function(){if(d!==(G_SEL&&G_SEL._el)){d.style.borderColor='#2c2c2c';d.style.transform='none'}};
+    d.innerHTML='<canvas width="54" height="54"></canvas><div style="color:#9aa6ad;font-size:9px;margin-top:4px;line-height:1.4">'+sp.n+'</div>';
+    d.onclick=function(){gPick(d,sp.id)};
+  }else{
+    var tier=G_LEGEND.indexOf(sp.id)>=0?'传说':(G_RARE.indexOf(sp.id)>=0?'稀有':'常见');
+    d.style.cssText='border:1px dashed #3a3a3a;border-radius:10px;padding:6px;cursor:pointer;text-align:center;box-sizing:border-box;background:rgba(255,255,255,.02);opacity:.6;transition:.18s';
+    d.innerHTML='<div style="height:54px;display:flex;align-items:center;justify-content:center;color:#4a4a4a;font-size:20px">?</div><div style="color:#5b5b5b;font-size:9px;margin-top:4px;line-height:1.4">？？？<br><span style="color:#6e5a2a">'+tier+'</span></div>';
+    d.onclick=function(){toast('未解锁 · '+tier,'种植或照料植物，或踏入夜行深处，可发现它')};
+  }
+  var cv=d.querySelector('canvas');if(cv)setTimeout(function(){gDraw(cv,sp.id,.9)},10);
+  return d;
+}
+function gSeedGroup(area,title,list){
+  var hd=document.createElement('div');hd.style.cssText='display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px';
+  var got=0;for(var i=0;i<list.length;i++)if(gSeeds().indexOf(list[i].id)>=0)got++;
+  hd.innerHTML='<span style="font-size:11px;letter-spacing:.2em;color:#6e8a86">'+title+'</span><span style="font-size:10px;color:#5b5b5b">'+got+' / '+list.length+'</span>';
+  area.appendChild(hd);
+  var grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px';
+  area.appendChild(grid);
+  for(var i=0;i<list.length;i++)grid.appendChild(gSeedCard(list[i],gSeeds().indexOf(list[i].id)>=0));
+}
+function gSeedRefresh(){
+  var area=document.getElementById('gSeedArea');if(!area)return;
+  var G_SEL_KEEP=G_SEL;
+  area.innerHTML='';
+  var common=[],rare=[],legend=[];
+  for(var i=0;i<G_PLANTS.length;i++){var id=G_PLANTS[i].id;if(G_LEGEND.indexOf(id)>=0)legend.push(G_PLANTS[i]);else if(G_RARE.indexOf(id)>=0)rare.push(G_PLANTS[i]);else common.push(G_PLANTS[i])}
+  gSeedGroup(area,'常见 SEEDS',common);
+  gSeedGroup(area,'稀有 RARE',rare);
+  gSeedGroup(area,'传说 LEGEND',legend);
+  if(G_SEL_KEEP){var card=null;var cs=area.querySelectorAll('canvas');for(var i=0;i<G_PLANTS.length;i++){};var all=area.querySelectorAll('div');for(var i=0;i<all.length;i++){if(all[i].getAttribute&&all[i].getAttribute('data-sel')===''+G_SEL_KEEP){card=all[i];break}}if(!card){var t=area.querySelectorAll('#gSeedArea>div>div>div');for(var i=0;i<t.length;i++){}}}
+}
+function gWhisper(){
+  var w=document.getElementById('gWhisper');if(!w)return;
+  var day=new Date();var h=(day.getDate()*7+day.getMonth()*13+day.getFullYear()*3)%8;
+  var ws=['深处的星尘最偏爱照料得最多的花','电路草的心跳，要从种植开始倾听','时针花只在凝视花园很久后才出现','被照料的花会向你吐露邻近的种子','火绨草藏在最深的黑夜，必须主动探索','冰晶叶在凝结的星尘中等待','每一粒种下的种子，都是一次探索','夜行者深处，有你未见过的生命'];
+  w.textContent='★ 夜行者低语：'+ws[h];
 }
 function gFx(x,y,c){for(var i=0;i<10;i++){(function(i){var d=document.createElement('div');var a=Math.random()*6.283,sp=20+Math.random()*50;d.style.cssText='position:fixed;left:'+x+'px;top:'+y+'px;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px;background:'+c+';border-radius:50%;pointer-events:none;z-index:2147483500;transition:transform .6s,opacity .6s';document.body.appendChild(d);requestAnimationFrame(function(){d.style.transform='translate('+Math.cos(a)*sp+'px,'+(Math.sin(a)*sp-30)+'px)';d.style.opacity='0'});setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},650)})(i)}if(document.readyState==='loading')return}
 var G_SEL=null;
@@ -5795,7 +5820,8 @@ function gPlantCard(p){
   var cv=document.createElement('canvas');cv.width=84;cv.height=84;
   setTimeout(function(){gDraw(cv,sp.id,p.g||.5)},10);
   d.appendChild(cv);
-  var nm=document.createElement('div');nm.style.cssText='color:#e6edef;font-size:10.5px;line-height:1.4';nm.textContent=sp.n;d.appendChild(nm);
+  var stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));
+  var nm=document.createElement('div');nm.style.cssText='color:#e6edef;font-size:10.5px;line-height:1.4';nm.innerHTML=sp.n+' <span style="color:#6e8a86;font-size:9px">['+stg+']</span>';d.appendChild(nm);
   var st=document.createElement('div');st.style.cssText='color:#6a767d;font-size:9px;margin-top:3px';
   var age='';if(p.t){var days=Math.floor((new Date().getTime()-p.t)/86400000);age=days<=0?'今日种下':days+' 天'}st.textContent=((p.u&&p.u!==gbName())?p.u+' · ':'')+(age?age+' · ':'')+Math.round((p.g||.5)*100)+'% · 照料 '+(p.c||0);d.appendChild(st);
   return d;
@@ -5813,7 +5839,7 @@ function gPlant(){
   if(b){try{fetch(b+'/garden_plant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).catch(function(){})}catch(e){}}
   gAdd(p);G_SEL=null;renderMy();gLoadShared();var me=gbName();var cvd=document.querySelector('#myGarden>div');if(cvd){var r=cvd.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#7dff7a')}
   gExAdd(1);var pbox=document.getElementById('gExBox');if(pbox)pbox.textContent=gEx();
-  (function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.45){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();toast('你的花园里长出一粒新种子','解锁 '+gP(got).n)}})();
+  (function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.45){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('你的花园里长出一粒新种子','解锁 '+gP(got).n)}})();
   toast('已种下 '+gP(p.sp).n,'它会慢慢生长，别人也能为它照料');
 }
 var G_CARE={};
@@ -5822,7 +5848,7 @@ function gCare(id){
   G_CARE[id]=Date.now();
   var b=apiBase();if(!b)return;
   fetch(b+'/garden_care',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})}).then(function(r){return r.json()}).then(function(j){
-    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#80ffdb')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
+    if(j&&j.ok){var d=document.querySelector('#shGarden>div');if(d){var r=d.getBoundingClientRect();gFx(r.left+r.width/2,r.top+r.height/2,'#80ffdb')}gLoadShared();toast('照料成功','生长 +12%');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();(function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gSeeds().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.25){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})()}else{toast('照料失败','试试刷新')}
   }).catch(function(){toast('照料失败','云端不可用')});
 }
 function gLoadShared(){
@@ -5855,7 +5881,7 @@ function gExplore(){
     if(legs.length&&Math.random()<.6)got=legs[Math.floor(Math.random()*legs.length)];
     else if(rars.length)got=rars[Math.floor(Math.random()*rars.length)];
     else got=locked[Math.floor(Math.random()*locked.length)];
-    gSeedAdd(got);gProgRefresh();
+    gSeedAdd(got);gProgRefresh();gSeedRefresh();
     box.innerHTML='<div style="color:var(--accent,#fff);font-size:13px;line-height:1.9">黑暗中有一粒种子静静发亮—— <b>'+gP(got).n+'</b> 已加入种子库。</div>';
     gFx(window.innerWidth/2,window.innerHeight/2,'#ffd60a');
   }else if(Math.random()<.5){
