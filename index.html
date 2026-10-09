@@ -1500,7 +1500,35 @@ function ferr(msg){
 </div>
 <div class="sec" id="sec2">
 <div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">02</span><h2>工具</h2><span class="b-code">GRID · 3CARD</span></div>
-<div class="grid two">
+<div class="card is-tool" id="forgeCard" style="cursor:pointer" onclick="openForge()">
+  <div class="spot" aria-hidden="true"></div>
+  <div class="thumb">
+    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+      <rect width="400" height="200" fill="#0A0A0A"/>
+      <g stroke="#2a2a2a" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400"/></g>
+      <g fill="none" stroke="#FFFFFF" stroke-width="2">
+        <rect x="120" y="44" width="100" height="112" rx="6"/>
+        <path d="M120 76 H220 M120 108 H220"/>
+        <path d="M156 30 v14 M184 30 v14"/>
+        <circle cx="170" cy="160" r="12"/>
+        <path d="M170 148 v24 M158 160 h24"/>
+      </g>
+      <g fill="#8f8f8f"><rect x="136" y="84" width="68" height="6"/><rect x="136" y="120" width="40" height="6"/></g>
+      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+        <path d="M118 186 H282" stroke="#444" stroke-width="1"/>
+        <text x="200" y="190" letter-spacing="7">WEAPON FORGE</text>
+      </g>
+    </svg>
+  </div>
+  <div class="card-bd">
+    <div class="c-tag">FORGE · 锻造</div>
+    <h3>武器锻造</h3>
+    <p>附魔 · 铁砧 · 合成，MC 风词缀，胚子商店买</p>
+    <span class="c-go" onclick="event.preventDefault();event.stopPropagation();openForge()">打开锻造台
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</div>
 <div class="card is-tool" id="rankCard" style="cursor:pointer">
   <div class="spot" aria-hidden="true"></div>
   <div class="thumb">
@@ -4594,7 +4622,7 @@ function shopItemHtml(x,owned,eq){
   var a='';
   if(!S.user)a='<span class="shop-sub">登录后可购买</span>';
   else if(owned&&eq)a='<span class="shop-eq">已装备</span><button class="shop-btn" data-unequip="'+x.id+'">卸下</button>';
-  else if(owned)a='<span class="shop-own">已拥有</span><button class="shop-btn prim" data-equip="'+x.id+'">装备</button>';
+  else if(owned&&x.type==='weapon')a='<span class="shop-own">已拥有</span><button class="shop-btn prim" onclick="openForge()">锻造</button>';else if(owned)a='<span class="shop-own">已拥有</span><button class="shop-btn prim" data-equip="'+x.id+'">装备</button>';
   else a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'积分不足':'兑换')+'</button>';
   return '<div class="shop-item'+(eq?' on':'')+'"><div class="si-h"><span class="si-n">'+esc(x.name)+'</span>'+
     (owned?'<span class="shop-own">已有</span>':'')+'<span class="si-c">'+x.cost+' 积分</span></div>'+
@@ -4606,7 +4634,7 @@ function shopRender(){
   if(pts)pts.textContent=(S.user?(+S.user.pts||0):0)+' 积分';
   if(!_shopCat){bd.innerHTML='<div class="rk-empty">载入中…</div>';return}
   var t=$('shopTabs');
-  if(t)t.innerHTML=[['title','称号'],['frame','头像框']].map(function(x){
+  if(t)t.innerHTML=[['title','称号'],['frame','头像框'],['weapon','武器']].map(function(x){
     return '<div class="th-card rt'+(_shopKind===x[0]?' on':'')+'" data-sk="'+x[0]+'"><div class="tn">'+x[1]+'</div></div>';}).join('');
   var list=_shopCat.filter(function(x){return x.type===_shopKind});
   if(!list.length){bd.innerHTML='<div class="rk-empty">暂无商品</div>';return}
@@ -4640,6 +4668,7 @@ function shopBuy(id){
     if(j.frame)S.user.frame=j.frame;
     try{localStorage.setItem(K_SESS,JSON.stringify(S.user))}catch(e){}
     say(j.msg||'已兑换',true);
+    if(_shopKind==='weapon'&&window.fImportPurchased){var _fg=fImportPurchased([id]);if(_fg.length)toast('胚子已入武器仓库','打开锻造台看看吧')}
     shopRender();shopBadge();
   }).catch(function(e){say('兑换失败：'+ferr(e.message),false)});
 }
@@ -5669,6 +5698,7 @@ setInterval(poll,60000);
 </script>
 
 <script src="garden.js"></script>
+<script src="forge.js"></script>
 </body>
 </html>
 

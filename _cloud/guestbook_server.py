@@ -48,6 +48,16 @@ SHOP = [
     {"id": "f_ember", "type": "frame", "name": "余烬头像框", "cost": 160, "desc": "烬火微光 · 暖调"},
     {"id": "f_aurora", "type": "frame", "name": "极光头像框", "cost": 240, "desc": "极夜流光 · 呼吸"},
     {"id": "f_gold", "type": "frame", "name": "鎏金头像框", "cost": 400, "desc": "收藏级 · 金色描边"},
+    {"id": "w_dagger", "type": "weapon", "name": "守夜短刃", "cost": 60, "desc": "近战快刀 · 攻速极高"},
+    {"id": "w_sword", "type": "weapon", "name": "学院长剑", "cost": 90, "desc": "均衡直剑 · 全能胚子"},
+    {"id": "w_hammer", "type": "weapon", "name": "泰拉巨锤", "cost": 140, "desc": "重锤 · 慢而暴击强"},
+    {"id": "w_rifle", "type": "weapon", "name": "终端步枪", "cost": 160, "desc": "远程枪械 · 终端风"},
+    {"id": "w_staff", "type": "weapon", "name": "星尘法杖", "cost": 260, "desc": "法术胚子 · 星尘光效"},
+    {"id": "w_bow", "type": "weapon", "name": "夜行弓", "cost": 240, "desc": "长弓 · 精准远程"},
+    {"id": "w_scythe", "type": "weapon", "name": "花园锄镰", "cost": 80, "desc": "采集向 · 联动花园"},
+    {"id": "w_shield", "type": "weapon", "name": "破碎圣盾", "cost": 120, "desc": "防御胚子 · 裂缝盾"},
+    {"id": "w_lance", "type": "weapon", "name": "绯红长枪", "cost": 220, "desc": "长枪 · 绯红配色"},
+    {"id": "w_shard", "type": "weapon", "name": "神秘碎片刃", "cost": 500, "desc": "传说胚子 · 裂纹发光"},
 ]
 
 FRAGS = [
