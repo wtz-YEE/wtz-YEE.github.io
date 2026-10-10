@@ -18,6 +18,13 @@ header nav a{color:var(--ink3);text-decoration:none;font-family:Consolas,monospa
 header nav a:hover{color:var(--acc);border-color:var(--ln)}
 main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
 .panels{display:grid;grid-template-columns:250px 1fr 300px;gap:16px;align-items:start}
+.obj{position:absolute;min-width:44px;height:48px;padding:3px 7px;border:1.5px solid rgba(255,255,255,.5);border-radius:10px;background:linear-gradient(160deg,#24242c,#101014);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:grab;z-index:5;box-shadow:0 4px 12px rgba(0,0,0,.45);transition:border-color .15s,box-shadow .15s}
+.obj:active{cursor:grabbing}.obj.on{border-color:var(--gold);box-shadow:0 0 12px rgba(255,214,10,.3)}
+.ob-sy{font-size:17px;line-height:1}.ob-nm{font-size:9px;color:rgba(255,255,255,.55);white-space:nowrap}
+.obj .eq-port{position:absolute;right:-7px;top:50%;transform:translateY(-50%)}
+.tmp-line{position:absolute;height:3px;background:linear-gradient(90deg,rgba(255,214,10,.5),rgba(255,214,10,.95));transform-origin:left center;pointer-events:none;z-index:30;border-radius:2px;box-shadow:0 0 8px rgba(255,214,10,.5)}
+.mortar{cursor:grab}.mortar:active{cursor:grabbing}.flask{cursor:grab}.flask:active{cursor:grabbing}.powder{cursor:grab}
+.flask.ov{border-color:var(--gold);box-shadow:0 0 22px rgba(255,214,10,.45),0 4px 12px rgba(0,0,0,.5)}
 @media(max-width:960px){.panels{grid-template-columns:1fr}}
 .panel{position:relative;background:linear-gradient(180deg,#101014,#0a0a0c);border:1px solid rgba(255,255,255,.12);border-radius:2px;padding:16px;box-shadow:inset 0 0 44px rgba(0,0,0,.45),0 10px 26px rgba(0,0,0,.35);overflow:hidden}
 .panel::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,10,.4),transparent)}
@@ -110,24 +117,26 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
 .bn-tip{position:absolute;top:8px;right:10px;left:150px;font-family:Consolas,monospace;font-size:10.5px;letter-spacing:.06em;color:var(--ink3);z-index:5;text-align:right;line-height:1.6}
 .bn-tip b{color:var(--acc)}
 .mortar{position:absolute;left:8%;top:20%;width:126px;height:92px;border:1.5px solid rgba(255,255,255,.5);border-radius:0 0 60% 60%/0 0 88% 88%;background:radial-gradient(120% 90% at 36% 16%,rgba(120,124,138,.4),transparent 42%),radial-gradient(100% 80% at 50% 18%,#1f1f26,#0a0a0c 75%);box-shadow:inset 0 -10px 20px rgba(0,0,0,.6),0 6px 14px rgba(0,0,0,.4);z-index:4}
-.mortar .powder{position:absolute;left:16px;right:16px;bottom:9px;height:6px;border-radius:4px;background:linear-gradient(180deg,#c9a8ff,#8a6bc4);opacity:.9;z-index:3}
+.mortar .powder{position:absolute;left:16px;right:16px;bottom:9px;height:6px;border-radius:4px;background:linear-gradient(180deg,#c9a8ff,#8a6bc4);opacity:.9;z-index:3;transition:background .3s}
 .mortar .pestle{position:absolute;left:-16px;top:2px;width:16px;height:54px;background:linear-gradient(90deg,#d8dde2,#8f99a1);border-radius:6px;transform:rotate(-20deg);z-index:5;cursor:pointer;transition:transform .08s}
 .mortar .pestle:active{transform:rotate(16deg) translateY(7px)}
 .bn-node{position:absolute;width:30px;height:30px;border-radius:50%;border:2px solid var(--ink3);background:#0c0c0e;z-index:5;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink3);font-family:Consolas,monospace;transition:.15s}
 .bn-node:hover{border-color:var(--acc)}
 .bn-node.sel{border-color:var(--gold);box-shadow:0 0 14px rgba(255,214,10,.4);color:var(--gold)}
 .bn-node.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 10px rgba(255,214,10,.25)}
-.bn-line{position:absolute;height:2px;z-index:4;opacity:.85;transform-origin:0 0;background-image:linear-gradient(90deg,rgba(255,214,10,.9) 50%,rgba(201,168,255,.35) 50%);background-size:24px 2px;animation:bnflow 1s linear infinite}
+.bn-port{position:absolute;width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);background:#141418;z-index:6;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,.5);font-family:Consolas,monospace;transition:.15s}.bn-port:hover{border-color:var(--acc);box-shadow:0 0 10px rgba(255,214,10,.3)}.bn-port.sel{border-color:var(--gold);background:#2a2408;box-shadow:0 0 14px rgba(255,214,10,.5);color:var(--gold)}.eq-port{display:inline-block;width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);background:#141418;margin-left:4px;cursor:pointer;transition:.15s;vertical-align:middle}.eq-port:hover{border-color:var(--gold)}.eq-port.on{border-color:var(--gold);background:rgba(255,214,10,.35);box-shadow:0 0 6px rgba(255,214,10,.5)}
+.bn-line{position:absolute;height:3px;z-index:4;opacity:.92;transform-origin:0 0;border-radius:2px;background-image:linear-gradient(90deg,rgba(255,214,10,.95) 40%,rgba(201,168,255,.45) 60%);background-size:18px 3px;animation:bnflow .7s linear infinite;box-shadow:0 0 7px rgba(255,214,10,.3);transition:background .4s}
 @keyframes bnflow{to{background-position:-24px 0}}
 .flask{position:absolute;left:71%;top:16%;width:92px;height:112px;z-index:4}
 .flask .neck{position:absolute;left:39px;top:0;width:14px;height:46px;border:1.5px solid rgba(255,255,255,.55);border-bottom:none;background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(255,255,255,.02) 45%,rgba(255,255,255,.1));box-shadow:inset 2px 0 4px rgba(255,255,255,.04)}
 .flask .bulb{position:absolute;left:3px;top:38px;width:86px;height:74px;border:1.5px solid rgba(255,255,255,.55);border-radius:50% 50% 44% 44%/58% 58% 42% 42%;background:radial-gradient(60% 45% at 32% 24%,rgba(255,255,255,.32),transparent 46%),radial-gradient(80% 60% at 50% 30%,var(--liq2,rgba(201,168,255,.2)),rgba(10,10,12,.9) 70%);box-shadow:inset 0 0 18px rgba(255,255,255,.06),0 4px 12px rgba(0,0,0,.5),0 0 16px rgba(201,168,255,.06);cursor:pointer;transition:.2s;z-index:3}
 .flask .bulb:hover{box-shadow:0 0 24px rgba(255,214,10,.35)}
 .flask .bulb.ready{border-color:var(--gold);box-shadow:0 0 26px rgba(255,214,10,.5)}
-.bn-heat{position:absolute;left:6%;right:34%;bottom:10px;height:56px;border-top:1px dashed rgba(255,255,255,.1);z-index:4}
+.flask .liq-cv{position:absolute;left:5px;top:40px;width:82px;height:70px;border-radius:50% 50% 44% 44%/58% 58% 42% 42%;z-index:4;pointer-events:none}
+.bn-heat{position:absolute;left:6%;right:34%;bottom:94px;height:56px;border-top:1px dashed rgba(255,255,255,.1);z-index:4}
 .bn-heat .flame{position:absolute;left:2px;top:8px;width:44px;height:36px;z-index:3}
 .bn-heat .flame i{position:absolute;left:8px;bottom:0;width:26px;height:0;border-radius:50% 50% 42% 42%;background:radial-gradient(40% 55% at 50% 92%,rgba(255,248,224,.95),transparent 62%),radial-gradient(80% 70% at 50% 100%,var(--gold),#e08a3c 55%,rgba(224,138,60,0) 92%);transition:height .2s;filter:drop-shadow(0 0 6px rgba(255,214,10,.45))}
-.bn-heat input{position:absolute;left:62px;top:24px;width:46%;accent-color:var(--gold);cursor:pointer}
+.bn-heat input{position:absolute;left:62px;top:1px;width:46%;accent-color:var(--gold);cursor:pointer;z-index:6}
 .thermo{position:absolute;right:4%;top:6%;width:12px;height:150px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(90deg,#0a0a0c,#101014);z-index:4;box-shadow:inset 0 0 10px rgba(0,0,0,.6)}
 .thermo i{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,#c9772e,var(--gold));transition:height .2s;box-shadow:0 0 10px rgba(255,214,10,.35)}
 .thermo .tz{position:absolute;left:-22px;width:56px;height:2px;background:var(--gold);z-index:5;opacity:.8;box-shadow:0 0 8px rgba(255,214,10,.6)}
@@ -224,6 +233,25 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
 @keyframes toastIn{from{transform:translate(-50%,14px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 #toast b{color:var(--gold)}
 #toast small{display:block;color:var(--ink3);margin-top:2px}
+/* UI 打磨 v2 */
+.flymat{position:fixed;z-index:2147483003;pointer-events:none;font-family:Georgia,serif;font-weight:700;transition:transform .5s cubic-bezier(.2,.6,.3,1),opacity .5s;text-shadow:0 0 10px rgba(255,214,10,.6);will-change:transform}
+.panel::after{content:"";position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,10,.2),transparent)}
+.shop-head{display:flex;align-items:center;gap:10px;margin:10px 0 6px;padding-bottom:6px;border-bottom:1px dashed var(--ln)}
+.gold{font-size:12px;color:var(--acc);font-family:Consolas,monospace;letter-spacing:.06em}
+.gold b{color:var(--gold);font-size:15px}
+.shop-list{max-height:230px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:2px;scrollbar-width:thin}
+.shop-item{display:flex;align-items:center;gap:6px;border:1px solid var(--ln);border-radius:6px;padding:6px 8px;cursor:pointer;background:linear-gradient(160deg,rgba(255,214,10,.05),transparent);transition:.15s}
+.shop-item:hover{border-color:var(--gold);box-shadow:0 0 10px rgba(255,214,10,.15)}
+.shop-item.lock{opacity:.4;cursor:not-allowed}
+.shop-item .sy{font-size:16px;width:20px}.shop-item .nm{font-size:11px;flex:1;color:var(--ink)}
+.shop-item .pr{font-size:10px;color:var(--acc);font-family:Consolas,monospace;white-space:nowrap}
+.shop-sec{font-size:10px;letter-spacing:.2em;color:var(--ink3);margin:12px 0 4px;font-family:Consolas,monospace;border-left:2px solid var(--gold);padding-left:6px}
+#mask{backdrop-filter:blur(3px)}
+#mask.on #box{animation:boxIn .32s cubic-bezier(.22,1,.36,1)}
+@keyframes boxIn{from{opacity:0;transform:scale(.93) translateY(12px)}to{opacity:1;transform:none}}
+.codex-prog{height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.codex-prog i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#fff3c0);transition:width .4s;box-shadow:0 0 8px rgba(255,214,10,.5)}
+.rec.own{border-left:2px solid rgba(255,214,10,.55);background:rgba(255,214,10,.03)}
 @media(max-width:600px){main{padding:14px 12px 50px}}
 </style>
 </head>
@@ -250,6 +278,8 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
     <p><b>材料出处</b>——原质/元素/基础金属购于主站商店；药草来自花园；银需商店高级兑换；金与贤者之石相关。</p>
   </div>
 </div>
+<div class="shop-head"><span class="gold">♜ 奥金 <b id="goldAmt">0</b></span><button class="op" id="shopToggle" style="margin-left:auto;padding:4px 14px">商店</button></div>
+      <div id="shopBody" style="display:none"></div>
       <div id="whList"></div>
     </section>
     <section class="panel cauldron" id="work">
@@ -264,13 +294,12 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
       <div class="stage-desc" id="stageDesc">从仓库点击材料投入坩埚<br>三原质、四元素、七金属——万物皆可炼</div>
       <div class="ops" id="ops"></div>
 <div id="bench">
-  <span class="bn-step" id="bnStep">STEP 01 // 研磨</span>
+  <span class="bn-step" id="bnStep">BENCH · 自由</span>
   <span class="bn-tip" id="bnTip">点击研杵研磨材料</span>
-  <div class="mortar" id="mortar"><div class="powder" id="powder"></div><div class="pestle" id="pestle"></div></div>
-  <div class="flask" id="flask"><div class="neck"></div><div class="bulb" id="bulb"></div></div>
-  <div class="bn-node" id="n0" style="left:16%;top:52%">M</div>
-  <div class="bn-node" id="n1" style="left:48%;top:40%">•</div>
-  <div class="bn-node" id="n2" style="left:74%;top:52%">B</div>
+  <div class="mortar" id="mortar"><div class="powder" id="powder"></div><div class="pestle" id="pestle"></div><span class="bn-port" id="ptMortar" style="left:100%;top:64%">⇌</span></div>
+  <div class="flask" id="flask"><div class="neck"></div><div class="bulb" id="bulb"></div><canvas class="liq-cv" id="liqCv" width="164" height="140"></canvas><span class="bn-port" id="ptFlask" style="left:-8px;top:14%">⇌</span></div>
+  <div class="bn-port" id="ptHub" style="left:48%;top:40%">✧</div>
+  <div class="bn-node" id="n1" style="display:none">•</div>
   <div class="thermo" id="thermo"><i></i><span class="tv" id="tv">--°C</span><span class="tz" id="tz" style="bottom:46%"></span></div>
   <div class="bn-tag">TEMP · 45-65</div>
   <div class="phmeter" id="phMeter"><span class="lbl" id="phLbl">pH 7.0</span><span class="scale" id="phScale">1······14</span><span class="band" id="phBand" style="display:none"></span><span class="pin" id="phPin" style="left:46%"></span></div>
@@ -449,7 +478,7 @@ var RECIPES=[
  {in:['e_fire','e_water','e_earth','e_air'],dose:{e_fire:1,e_water:1,e_earth:1,e_air:1},prog:[[50,60],[56,100]],ph:[5.4,6.6],win:8,out:'p_citrinitas',known:false,tag:'四元素轮',riddle:'风火水地绕成一圈，露自圆心升起'},
  {in:['m_silver','m_copper'],dose:{m_silver:1,m_copper:2},prog:[[36,60],[44,100]],ph:[6.6,7.4],win:7,out:'p_nigredo',known:false,tag:'月铜之腐',riddle:'月照铜镜，镜面生腐——腐不是终点，是另一种开始'},
  {in:['m_gold','m_lead'],dose:{m_gold:1,m_lead:2},prog:[[94,60],[88,100]],ph:[6.2,6.8],win:10,out:'p_rubedo',known:false,tag:'铅中炼金',riddle:'铅的坟墓里，有什么在呼吸'},
- {in:['m_gold','m_silver','s_mercury'],dose:{m_gold:1,m_silver:1,s_mercury:1},prog:[[96,60],[100,100]],ph:[6.8,7.2],win:12,out:'p_stone',known:false,tag:'日月水三引 · 七宝星环',riddle:'太阳、月亮与水星共赴婚礼——七枚星符在星环上等它们'},,
+ {in:['m_gold','m_silver','s_mercury'],dose:{m_gold:1,m_silver:1,s_mercury:1},prog:[[96,60],[100,100]],ph:[6.8,7.2],win:12,out:'p_stone',known:false,tag:'日月水三引 · 七宝星环',riddle:'太阳、月亮与水星共赴婚礼——七枚星符在星环上等它们'},
  {in:['a_phlogiston','e_skyfire'],dose:{a_phlogiston:1,e_skyfire:1},prog:[[66,60],[78,100]],ph:[2.6,3.4],win:7,out:'pot_heat',known:true,tag:'燃素复燃'},
  {in:['o_rubycore','e_fire'],dose:{o_rubycore:1,e_fire:2},prog:[[72,60],[82,100]],ph:[2.8,3.6],win:7,out:'pot_heat',known:true,tag:'宝石熔心'},
  {in:['h_dragonpepper','e_fire'],dose:{h_dragonpepper:2,e_fire:1},prog:[[60,60],[70,100]],ph:[3.2,4.0],win:8,out:'pot_heat',known:true,tag:'龙息灼喉'},
@@ -499,7 +528,7 @@ var STAGES=[
  {k:'r',n:'红化',la:'RUBEDO',col:'#a02822',liq:'rgba(255,90,70,.75)',desc:'凝固升华——凤凰涅槃，大功告成',op:'凝固·升华'}
 ];
 /* ========== 存档 ========== */
-var A=L('wz_alch',{lv:1,exp:0,mats:Object.assign({},START),rec:['s_sulfur','e_fire'],st:{n:0,a:0,c:0,r:0},stone:0,trans:{},titles:{n:0,a:0,c:0,r:0},main:null});
+var A=L('wz_alch',null);if(!A||typeof A!=='object')A={};if(!A.mats||typeof A.mats!=='object')A.mats=Object.assign({},START);if(!A.rec||!Array.isArray(A.rec))A.rec=['s_sulfur','e_fire'];if(!A.st)A.st={n:0,a:0,c:0,r:0};if(!A.trans)A.trans={};if(!A.titles)A.titles={n:0,a:0,c:0,r:0};if(typeof A.lv!=='number')A.lv=1;if(typeof A.exp!=='number')A.exp=0;if(typeof A.stone!=='number')A.stone=0;if(typeof A.gold!=='number')A.gold=60;if(!A.made)A.made=[];if(!A.qb)A.qb=[];if(!A.buff)A.buff={};if(!A.expLog)A.expLog=[];if(!A.main)A.main=null;
 function save(){W('wz_alch',A)}
 var cur=null,stage=0,qsum=0;
 /* ========== 渲染 ========== */
@@ -528,7 +557,14 @@ function wh(){
    var k=el.getAttribute('data-k');
    if(!(A.mats[k]>0)){toast('空空如也','没有这种材料');return}
    if(cur&&cur.length>=4){toast('坩埚已满','一份四两，再多逾矩');return}
-   A.mats[k]--;cur=cur||[];cur.push(k);qsum=0;save();wh();renderCur();
+   A.mats[k]--;cur=cur||[];cur.push(k);qsum=0;
+   var sy=el.querySelector('.sy'),rr=sy.getBoundingClientRect(),pb=document.querySelector('.pot .body'),pr=pb.getBoundingClientRect();
+   var fl=document.createElement('i');fl.className='flymat';fl.textContent=MATS[k].sy;
+   fl.style.cssText='left:'+(rr.left+rr.width/2)+'px;top:'+(rr.top+rr.height/2)+'px;font-size:15px';
+   document.body.appendChild(fl);
+   requestAnimationFrame(function(){fl.style.transform='translate('+(pr.left+pr.width/2-(rr.left+rr.width/2))+'px,'+(pr.top+pr.height/2-(rr.top+rr.height/2))+'px) scale(.35)';fl.style.opacity='.75'});
+   setTimeout(function(){fl.remove()},540);
+   save();wh();renderCur();
   });
  });
  $$('#whList .mcat').forEach(function(c){
@@ -636,33 +672,25 @@ var EQUIP=[
  {c:'iceb',n:'冰浴',sy:'🧊',need:{e_frostcore:1,e_water:2},fx:'被动·主反应完成即速冷，冷却品质 +10'},
  {c:'astro',n:'星盘',sy:'✨',need:{m_gold:1,m_silver:1,e_skyfire:1},fx:'被动·炼成经验 +15%'}
 ];
-function hasEq(c){return A.eq&&A.eq.indexOf(c)>=0}
+function hasEq(c){if(bench&&bench.on)return bench.eqOn&&bench.eqOn[c]?true:false;return A.eq&&A.eq.indexOf(c)>=0}
 function eqRender(){
  var b=$('#eqs');if(!b)return;
  var onN=0;
  b.innerHTML=EQUIP.map(function(e){
-  var on=hasEq(e.c);if(on)onN++;
+  var crafted=A.eq&&A.eq.indexOf(e.c)>=0;
+  var wired=bench&&bench.on&&bench.eqOn[e.c]?true:false;
+  var on=bench&&bench.on?wired:crafted;if(on)onN++;
   var needStr=Object.keys(e.need).map(function(k){return MATS[k].n+' ×'+e.need[k]}).join(' · ');
-  return '<span class="eq'+(on?' on':'')+'" data-c="'+e.c+'" title="'+e.n+'：'+e.fx+(on?'':' | 打造：'+needStr)+'">'+e.sy+'<i>'+(on?'':'锁')+'</i></span>';
+  return '<span class="eq'+(on?' on':'')+'" data-c="'+e.c+'" title="'+e.n+'：'+e.fx+(crafted?'':' | 打造：'+needStr)+'">'+e.sy+(crafted?'<span class="eq-port'+(wired?' on':'')+'" data-p="eq_'+e.c+'"></span>':'<i>锁</i>')+'</span>';
  }).join('');
  var lb=document.querySelector('.eq-lbl');if(lb)lb.textContent='器材 '+onN+'/'+EQUIP.length;
+ $$('.obj').forEach(function(o){var c=o.dataset.c;var p=o.querySelector('.eq-port');if(p)p.className='eq-port'+(bench.on&&bench.eqOn[c]?' on':'');if(bench.on&&bench.eqOn[c])o.classList.add('on');else o.classList.remove('on')});
  $$('#eqs .eq').forEach(function(el){
-  el.addEventListener('click',function(){
+  el.addEventListener('click',function(ev){
+   if(ev.target.classList&&ev.target.classList.contains('eq-port'))return;
    var e=EQUIP.find(function(x){return x.c===el.getAttribute('data-c')});
-   if(hasEq(e.c)){
-    if(e.c==='tong'&&bench.on&&bench.step==='cool'){
-     if(bench.tongN>=1){toast('坩埚钳','一炉只够使一次——钳子已热');return}
-     bench.tongN++;bench.temp=20;bench.coolT=5;bnRender();toast('坩埚钳','夹出药瓶！冷却达标');return}
-    if(e.c==='rod'&&bench.on&&bench.step==='heat'){
-     if(bench.rodN>=2){toast('搅拌棒','两番搅拌已尽——料液倦了');return}
-     bench.rodN++;var rq=bnReq();bench.phbias=(rq.phLo+rq.phHi)/2-curPh();bnRender();toast('搅拌棒','pH 已校准回目标区间');return}
-    if(e.c==='drop'&&bench.on&&bench.step==='heat'){
-     if(bench.dropN>=2){toast('滴管','两番滴注已尽——试管干了');return}
-     var cur2=cur||[];if(!cur2.length){toast('滴管','坩埚是空的——先投料');return}
-     bench.dropN++;var k=cur2[0];A.mats[k]--;cur2.push(k);qsum=0;save();wh();renderCur();
-     toast('滴管','补投一份 '+MATS[k].n);return
-    }
-    toast(e.n,e.fx);return;
+   if(A.eq&&A.eq.indexOf(e.c)>=0){
+    placeObj(e.c);return;
    }
    var need=Object.keys(e.need),ok=true;
    need.forEach(function(k){if((A.mats[k]||0)<e.need[k])ok=false});
@@ -675,12 +703,12 @@ function eqRender(){
 }
 var cf=0;
 function codex(){
- var h='<div class="codex-bar"><span class="cb-tab'+(cf===0?' on':'')+'" data-f="0">全部</span><span class="cb-tab'+(cf===1?' on':'')+'" data-f="1">已解锁</span><span class="cb-tab'+(cf===2?' on':'')+'" data-f="2">谜语</span><em>'+unlocked()+' / '+RECIPES.length+' 已刻</em></div>';
+ var h='<div class="codex-bar"><span class="cb-tab'+(cf===0?' on':'')+'" data-f="0">全部</span><span class="cb-tab'+(cf===1?' on':'')+'" data-f="1">已解锁</span><span class="cb-tab'+(cf===2?' on':'')+'" data-f="2">谜语</span><em>'+unlocked()+' / '+RECIPES.length+' 已刻</em></div><div class="codex-prog"><i style="width:'+Math.round(unlocked()/RECIPES.length*100)+'%"></i></div>';
  RECIPES.forEach(function(r,i){
   var k=A.rec.indexOf(r.out)>=0||r.known;
   if(cf===1&&!k)return;
   if(cf===2&&r.known)return;
-  h+='<div class="rec'+(k?'':' hid')+'" data-r="'+i+'"><span class="sym">'+r.in.map(function(x){return MATS[x].sy}).join('+')+'</span><span style="flex:1">'+(k?MATS[r.out].n+' · '+r.tag:'？？？')+'</span></div>';
+  h+='<div class="rec'+(k?' own':' hid')+'" data-r="'+i+'"><span class="sym">'+r.in.map(function(x){return MATS[x].sy}).join('+')+'</span><span style="flex:1">'+(k?MATS[r.out].n+' · '+r.tag:'？？？')+'</span>'+(k&&MATS[r.out].r>0?'<span class="star">'+'★'.repeat(MATS[r.out].r)+'</span>':'')+'</div>';
  });
  $('#recList').innerHTML=h;
  $$('#recList .cb-tab').forEach(function(t){
@@ -712,7 +740,7 @@ function titles(){
  var h=t.length?t.map(function(x){return '<div class="title-row"><span class="tk">TITLE</span><span class="'+x[1]+'">'+x[0]+'</span><span style="margin-left:auto;font-size:10px;color:#6a767d">'+x[2]+'</span></div>'}).join(''):'<div class="title-row"><span class="tk">TITLE</span><span style="color:#6a767d">尚无称号 · 先炼一次</span></div>';
  $('#titleList').innerHTML=h;
 }
-function refresh(){wh();renderCur();codex();titles()}
+function refresh(){wh();renderCur();codex();titles();var g=$('#goldAmt');if(g)g.textContent=A.gold;var sb=$('#shopBody');if(sb&&sb.style.display!=='none')shopRender()}
 /* ========== 小游戏 ========== */
 var mini=$('#mini'),prog=$('#prog i'),playing=null,step=0;
 function openMini(t,sub){finishing=false;$('#mTitle').innerHTML=t;$('#mSub').textContent=sub;$('#mask').classList.add('on');mini.innerHTML='';setProg(0)}
@@ -962,7 +990,7 @@ function gameRubedo(){
  playing={kill:function(){clearInterval(iv);mini.removeEventListener('click',tap)}};
 }
 /* ========== 炼金台 · 主玩法（计量 → 两段控温 → pH → 回流 → 掐时） ========== */
-var bench={on:false,step:'idle',grind:0,sel:null,ln:[],err:0,temp:0,dist:0,hits:0,ctr:0,tickN:0,winLeft:0,elapsed:0,coolT:0,iv:null};
+var bench={on:false,grind:0,sel:null,selP:null,ln:[],err:0,temp:0,dist:0,hits:0,ctr:0,tickN:0,winLeft:0,elapsed:0,coolT:0,iv:null,mats:[],gi:0,liq:[],lines:[],eqOn:{},ready:false,cooling:false};
 var BN=$('#bench');
 function curPh(){
  var dm=curDose(),sum=0,n=0;
@@ -970,17 +998,23 @@ function curPh(){
  return (n?sum/n:7)+(bench&&bench.on&&bench.phbias||0);
 }
 function bnRecipe(){var dm=curDose(),kk=kindKey(dm);for(var i=0;i<RECIPES.length;i++){if(kindKey(RECIPES[i].dose)===kk)return RECIPES[i]}return null}
+var CAT_COL={'原质':'#c9a8ff','元素':'#5ec8ff','金属':'#ffd60a','药草':'#7dd3a8','矿石':'#ff9d5c','遗物':'#ff7a6b','中间':'#d8b4ff','成品':'#ffb054','终极':'#ffd700'};
+function matCol(k){var m=MATS[k];if(!m)return'#9aa0b5';return CAT_COL[m.cat]||'#9aa0b5'}
+function hexRgb(h){h=h.replace('#','');return[parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)]}
+function mixCol(keys){if(!keys||!keys.length)return'#17171c';var r=0,g=0,b=0;keys.forEach(function(k){var c=hexRgb(matCol(k));r+=c[0];g+=c[1];b+=c[2]});var n=keys.length;return'rgb('+Math.round(r/n)+','+Math.round(g/n)+','+Math.round(b/n)+')'}
+
 function bnSeg(){return bench.dist<60?0:1}
 function bnReq(){
  var r=bnRecipe(),seg=bnSeg();
  if(!r)return{lo:45,hi:65,phLo:3,phHi:11,win:8,known:false,seg:0};
  return{lo:r.prog[seg][0]-2,hi:r.prog[seg][0]+2,phLo:r.ph[0],phHi:r.ph[1],win:r.win,known:true,seg:seg};
 }
-function bnStepName(){return bench.step==='grind'?'01 // 计量':bench.step==='tube'?'02 // 接管':bench.step==='heat'?'03 // 程控':(bench.step==='cool'?'04 // 回流':'05 // 收成')}
+function bnStepName(){return '自由'}
 function benchStart(){
  if(!cur||!cur.length){toast('坩埚空空','先投料再开台');return}
- bench.on=true;bench.step='grind';bench.grind=0;bench.sel=null;bench.ln=[];bench.err=0;bench.temp=0;bench.dist=0;bench.hits=0;bench.ctr=0;bench.tickN=0;bench.winLeft=0;bench.elapsed=0;bench.coolT=0;bench.rodN=0;bench.dropN=0;bench.tongN=0;bench.pressure=0;
+ bench.on=true;bench.grind=0;bench.sel=null;bench.ln=[];bench.lines=[];bench.err=0;bench.temp=0;bench.dist=0;bench.hits=0;bench.ctr=0;bench.tickN=0;bench.winLeft=0;bench.elapsed=0;bench.coolT=0;bench.rodN=0;bench.dropN=0;bench.tongN=0;bench.pressure=0;bench.mats=(cur||[]).slice();bench.gi=0;bench.liq=[];bench.eqOn={};bench.ready=false;bench.cooling=false;bench.selP=null;$$('.bn-line').forEach(function(l){if(l.parentNode)l.parentNode.removeChild(l)});$$('.bn-port,.eq-port').forEach(function(x){x.classList.remove('sel')});liqStart();
  BN.classList.add('on');$('#stageBadge').textContent='BENCH';
+ setTimeout(function(){try{if(BN&&window.innerWidth<1300)BN.scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}},160);
  $('.pot').style.opacity=.3;$('#slots').style.opacity=.3;$('#ops').style.opacity=.3;
  if(bench.iv)clearInterval(bench.iv);
  bench.iv=setInterval(bnTick,120);
@@ -1001,15 +1035,17 @@ function phQ(rq){
  return 10;
 }
 function bnRender(){
- var rq=bnReq(),t='';
- if(bench.step==='grind')t='点击研杵研磨 · 研磨度 <b>'+bench.grind+'%</b>';
- else if(bench.step==='tube')t='连接管路：点 <b>M</b> → <b>•</b> → <b>B</b>（'+bench.ln.length+'/2）';
- else if(bench.step==='heat')t=(rq.known?'第 '+(rq.seg+1)+' 段目标 <b>'+rq.lo+'-'+rq.hi+'°C</b> · 蒸馏 '+Math.round(bench.dist)+'%':'未知配比 · 保守 45-65 · 蒸馏 '+Math.round(bench.dist)+'%')+(bench.temp>45?' · 压力 <b style="color:'+(bench.pressure>80?'#ff7a6b':'#ffd60a')+'">'+Math.round(bench.pressure)+'%</b>':'')+(rq.known?'':'<br><i style="opacity:.75">'+bnPhen()+'</i>');
- else if(bench.step==='cool')t='降温回流 · 火源拉低，等药液冷却 <b>'+Math.round(bench.temp)+'°C</b> → 目标 <25°C';
- else if(bench.step==='bottle')t='收成窗口 <b>'+bench.winLeft.toFixed(1)+'s</b> · 超时变质';
- $('#bnStep').innerHTML='STEP '+bnStepName();
+ var rq=bnReq(),t='',st='自由';
+ if(bench.gi<bench.mats.length){var gm=bench.mats[bench.gi];st='研磨';t='研磨 '+(bench.gi+1)+'/'+bench.mats.length+' · <b>'+(gm?MATS[gm].n:'')+'</b> · 研磨度 <b>'+bench.grind+'%</b>'+(bench.grind>=100?' · <b style="color:var(--gold)">点研钵倒入</b>':'')}
+ else if(!bench.liq.length){st='空台';t='研钵已空 · 瓶中无液 · 点火无用'}
+ else if(bench.ready){st='收成';t='收成窗口 <b>'+bench.winLeft.toFixed(1)+'s</b> · 点击烧瓶收成 · 超时变质'}
+ else if(bench.cooling){st='回流';t='降温回流 · 冷却 <b>'+Math.round(bench.temp)+'°C</b> → 目标 <25°C · 蒸馏 '+Math.round(bench.dist)+'%'}
+ else{st='蒸馏';t=(rq.known?'第 '+(rq.seg+1)+' 段目标 <b>'+rq.lo+'-'+rq.hi+'°C</b> · 蒸馏 '+Math.round(bench.dist)+'%':'未知配比 · 保守 45-65 · 蒸馏 '+Math.round(bench.dist)+'%')+(bench.temp>45?' · 压力 <b style="color:'+(bench.pressure>80?'#ff7a6b':'#ffd60a')+'">'+Math.round(bench.pressure)+'%</b>':'')+(rq.known?'':'<br><i style="opacity:.75">'+bnPhen()+'</i>')}
+ $('#bnStep').innerHTML='BENCH · '+st;
  $('#bnTip').innerHTML=t;
  $('#powder').style.height=Math.max(4,bench.grind/100*26)+'px';
+ var _pc=(bench.mats[bench.gi]?matCol(bench.mats[bench.gi]):'#c9a8ff');
+ $('#powder').style.background='linear-gradient(180deg,'+_pc+','+_pc+')';
  $('#flame i').style.height=(bench.temp/100*34)+'px';
  $('#thermo i').style.height=(bench.temp/100*132)+'px';
  $('#tv').textContent=Math.round(bench.temp)+'°C';
@@ -1026,47 +1062,66 @@ function bnRender(){
  var inB=rq.known&&ph>=rq.phLo&&ph<=rq.phHi;
  $('#phPin').style.background=inB?'var(--gold)':'#ff7a6b';
  $('#phPin').style.boxShadow=inB?'0 0 8px var(--gold)':'0 0 8px #ff7a6b';
- if(bench.step==='bottle')$('#bulb').classList.add('ready');else $('#bulb').classList.remove('ready');
+ if(bench.ready)$('#bulb').classList.add('ready');else $('#bulb').classList.remove('ready');
+}
+function liqStart(){
+ var cv=document.getElementById('liqCv');if(!cv)return;
+ var c=cv.getContext('2d');if(!c)return;
+ var t0=Date.now();
+ var draw=function(){
+  if(!bench.on||!cv.isConnected){c.clearRect(0,0,164,140);return}
+  c.clearRect(0,0,164,140);
+  var col=bench.liq&&bench.liq.length?mixCol(bench.liq):'rgba(22,22,28,.5)';
+  var ph=bench.liq?Math.min(1,0.12+bench.liq.length*0.22):0.06;
+  if(bench.ready&&bench.winLeft<=0)ph=Math.max(0,ph-0.18);
+  if(bench.liq.length&&bench.dist>=100)ph=Math.max(0.05,ph-0.3);
+  var t=Date.now()-t0,baseY=140-140*ph;
+  c.beginPath();c.moveTo(0,140);
+  for(var x=0;x<=164;x+=4){var wave=Math.sin(x/18+t/260)*(bench.temp>30?2.8:(bench.temp>10?1.5:0.7));c.lineTo(x,baseY+wave)}
+  c.lineTo(164,140);c.closePath();
+  c.fillStyle=col;c.globalAlpha=0.85;c.fill();c.globalAlpha=1;
+  if(bench.temp>40&&Math.random()<0.28){
+   var bx=18+Math.random()*120,by=baseY+4+Math.random()*12;
+   c.beginPath();c.arc(bx,by,1.6+Math.random()*2.4,0,7);c.fillStyle='rgba(255,255,255,.45)';c.fill();
+  }
+  if(bench.lines.length>=2){
+   var px=(t%1100)/1100*120+8;
+   c.beginPath();c.arc(px,baseY-5,2.6,0,7);c.fillStyle='rgba(255,214,10,.85)';c.fill();
+  }
+  requestAnimationFrame(draw);
+ };
+ draw();
 }
 function bnTick(){
  if(!bench.on)return;
- if(bench.step==='heat'){
-  var r=+$('#heatRange').value,rq=bnReq(),ph=curPh();
-  bench.temp+=(r-bench.temp)*(hasEq('bunsen')?0.12:(hasEq('lid')?0.06:0.08));bench.tickN++;
-  bench.pressure=Math.max(0,Math.min(100,bench.pressure+((bench.temp-55)*0.02)*(affKind('press')?1.3:1)));
-  if(bench.temp<=55)bench.pressure=Math.max(0,bench.pressure-0.6);
-  var spd=1;
-  if(rq.known){var c=(rq.phLo+rq.phHi)/2,span=(rq.phHi-rq.phLo)/2;if(Math.abs(ph-c)>span)spd=0.5}
-  if(bench.temp>=rq.lo&&bench.temp<=rq.hi){
-   bench.hits++;bench.dist+=1.1*spd*(affKind('spd')?(A.buff&&A.buff.pot_flow?1.21:1.1):1)*(bnSeg()===1&&hasEq('bunsen')?1.15:1);bench.err=Math.max(0,bench.err-1);
-   var c=(rq.lo+rq.hi)/2;
-   if(Math.abs(bench.temp-c)<=1.5)bench.ctr++;
-  }else{
-   bench.err++;
-   if(bench.temp>((hasEq('lid')?96:92)+(affKind('lid')?4:0))&&bench.err>18){clearInterval(bench.iv);bench.iv=null;bnFail('坩埚过热 · 药液蒸干')}
-   else if(bench.temp<14&&bench.err>30){clearInterval(bench.iv);bench.iv=null;bnFail('火候不足 · 反应停滞')}
-  }
-  if(bench.dist>=100){
-   bench.step='cool';bench.coolT=0;if(hasEq('iceb'))bench.temp=24;
-   clearInterval(bench.iv);bench.iv=setInterval(bnTick,120);
-   bnRender();toast('主反应完成','降温回流 · 待药液冷却至 25°C 以下');
-  }
- }else if(bench.step==='cool'){
-  var r=+$('#heatRange').value;
-  bench.temp+=(r-bench.temp)*0.08;bench.coolT+=0.12;
-  if(bench.temp<25&&bench.coolT>0.5){
-   bench.step='bottle';bench.winLeft=bnReq().win+(hasEq('wax')?2:0);bench.elapsed=0;
-   clearInterval(bench.iv);bench.iv=setInterval(bnTick,100);
-   bnRender();toast('药液已冷','收成窗口 '+bnReq().win+'s 内点击烧瓶');
-  }else if(bench.coolT>(hasEq('cond')?28:14)){
-   bench.step='bottle';bench.winLeft=bnReq().win+(hasEq('wax')?2:0);bench.elapsed=0;
-   clearInterval(bench.iv);bench.iv=setInterval(bnTick,100);
-   bnRender();toast('余温未散','勉强装瓶 · 品质受损');
-  }
- }else if(bench.step==='bottle'){
+ if(bench.ready){
   bench.winLeft-=0.1;bench.elapsed+=0.1;
   if(bench.winLeft<=-(bnReq().win+(hasEq('wax')?2:0))){clearInterval(bench.iv);bench.iv=null;bnFail('过反应 · 药液变质');return}
   if(bench.winLeft<=0){$('#bnTip').innerHTML='收成窗口已过 · 药液变质中 <b>'+Math.abs(bench.winLeft).toFixed(1)+'s</b>';$('#bulb').classList.remove('ready');$('#bulb').style.opacity=.5}
+  bnRender();return
+ }
+ if(!bench.liq.length){if(bench.temp>0)bench.temp=Math.max(0,bench.temp-2);bnRender();return}
+ var r=+$('#heatRange').value,rq=bnReq(),ph=curPh();
+ bench.temp+=(r-bench.temp)*(hasEq('bunsen')?0.12:(hasEq('lid')?0.06:0.08));bench.tickN++;
+ bench.pressure=Math.max(0,Math.min(100,bench.pressure+((bench.temp-55)*0.02)*(affKind('press')?1.3:1)));
+ if(bench.temp<=55)bench.pressure=Math.max(0,bench.pressure-0.6);
+ if(rq.known&&bench.temp>=rq.lo&&bench.temp<=rq.hi){
+  bench.hits++;
+  var spd=1;
+  if(Math.abs(ph-(rq.phLo+rq.phHi)/2)>(rq.phHi-rq.phLo)/2)spd=0.5;
+  bench.dist+=1.1*spd*(affKind('spd')?(A.buff&&A.buff.pot_flow?1.21:1.1):1)*(bnSeg()===1&&hasEq('bunsen')?1.15:1);bench.err=Math.max(0,bench.err-1);
+  if(Math.abs(bench.temp-(rq.lo+rq.hi)/2)<=1.5)bench.ctr++;
+ }else{
+  var alld=bench.gi>=bench.mats.length;
+  if(r>0&&alld)bench.err++;
+  if(alld&&bench.temp>((hasEq('lid')?96:92)+(affKind('lid')?4:0))&&bench.err>18){clearInterval(bench.iv);bench.iv=null;bnFail('坩埚过热 · 药液蒸干');return}
+  else if(alld&&bench.temp<14&&bench.err>30){clearInterval(bench.iv);bench.iv=null;bnFail('火候不足 · 反应停滞');return}
+ }
+ if(bench.dist>=100&&!bench.cooling){bench.cooling=true;bench.coolT=0;if(hasEq('iceb'))bench.temp=24;toast('主反应完成','降温回流 · 待药液冷却至 25°C 以下')}
+ if(bench.cooling){
+  bench.coolT+=0.12;
+  if(bench.temp<25&&bench.coolT>0.5){bench.ready=true;bench.winLeft=bnReq().win+(hasEq('wax')?2:0);toast('药液已冷','收成窗口 '+bench.winLeft+'s 内点击烧瓶')}
+  else if(bench.coolT>(hasEq('cond')?28:14)){bench.ready=true;bench.winLeft=bnReq().win+(hasEq('wax')?2:0);toast('余温未散','勉强装瓶 · 品质受损')}
  }
  bnRender();
 }
@@ -1082,32 +1137,180 @@ function drawLine(a,b){
  BN.appendChild(l);
 }
 eqRender();
+var placed={};
+function placeObj(c){
+ var ex=document.getElementById('obj-'+c);
+ if(ex){
+  var portId='eq_'+c;
+  bench.lines=bench.lines.filter(function(L){return L[0]!==portId&&L[1]!==portId});
+  bench.ln=bench.ln.filter(function(L){return L[0]!==portId&&L[1]!==portId});
+  delete bench.eqOn[c];
+  ex.remove();delete placed[c];syncLines();eqRender();toast((EQUIP.find(function(x){return x.c===c})||{n:c}).n,'已从台上收回');return
+ }
+ var e=EQUIP.find(function(x){return x.c===c});
+ var o=document.createElement('div');o.className='obj';o.id='obj-'+c;o.dataset.c=c;
+ var nn=Object.keys(placed).length;
+ o.innerHTML='<span class="ob-sy">'+e.sy+'</span><span class="ob-nm">'+e.n+'</span><span class="eq-port'+(bench.on&&bench.eqOn[c]?' on':'')+'" data-p="eq_'+c+'"></span>';
+ o.style.left=(28+nn*13)+'%';o.style.top=(18+nn*10)+'%';
+ document.getElementById('bench').appendChild(o);
+ placed[c]=1;eqRender();
+}
+function useEq(c){
+ if(!bench.on){toast('炼金台未开','先投料开台');return}
+ var e=EQUIP.find(function(x){return x.c===c});
+ if(!e)return;
+ if(!bench.eqOn[c]){toast(e.n,'未接线 · 拖拽端口接线后生效');return}
+ if(c==='tong'&&bench.cooling){
+  if(bench.tongN>=1){toast('坩埚钳','一炉只够使一次——钳子已热');return}
+  bench.tongN++;bench.temp=20;bench.coolT=5;bnRender();toast('坩埚钳','夹出药瓶！冷却达标');return}
+ if(c==='rod'&&bench.liq.length){
+  if(bench.rodN>=2){toast('搅拌棒','两番搅拌已尽——料液倦了');return}
+  bench.rodN++;var rq=bnReq();bench.phbias=(rq.phLo+rq.phHi)/2-curPh();bnRender();toast('搅拌棒','pH 已校准回目标区间');return}
+ if(c==='drop'&&bench.liq.length){
+  if(bench.dropN>=2){toast('滴管','两番滴注已尽——试管干了');return}
+  var cur2=cur||[];if(!cur2.length){toast('滴管','坩埚是空的——先投料');return}
+  bench.dropN++;var k=cur2[0];A.mats[k]--;cur2.push(k);qsum=0;save();wh();renderCur();
+  toast('滴管','补投一份 '+MATS[k].n);return}
+ toast(e.n,e.fx);
+}
 $('#pestle').addEventListener('click',function(){
- if(!bench.on||bench.step!=='grind')return;
- bench.grind=Math.min(100,bench.grind+Math.round((bench.grind<60?(hasEq('brush')?24:18):10)*(affKind('grind')?1.1:1)));bnRender();
- if(bench.grind>=100){bench.step='tube';bnRender();toast('研磨完毕','粉末细腻 · 开始接管')}
+ if(window.__pmoved){window.__pmoved=false;return}
+ if(!bench.on)return;
+ if(bench.gi>=bench.mats.length){toast('研钵已空','全部材料已研磨入瓶');return}
+ var mk=bench.mats[bench.gi];
+ bench.grind=Math.min(100,bench.grind+Math.round((bench.grind<60?(hasEq('brush')?24:18):10)*(affKind('grind')?1.1:1)));
+ if(bench.grind>=100)toast('研磨完毕',(mk?MATS[mk].n:'')+' 已成粉末 · 点研钵倒入瓶中');
+ bnRender();
 });
-['n0','n1','n2'].forEach(function(id,i){
- $('#'+id).addEventListener('click',function(){
-  if(!bench.on||bench.step!=='tube')return;
-  var e=$('#'+id),ns=$$('.bn-node');
-  if(bench.sel===null){bench.sel=i;ns.forEach(function(x){x.classList.remove('sel')});e.classList.add('sel');return}
-  var from=bench.sel,to=i;bench.sel=null;ns.forEach(function(x){x.classList.remove('sel')});
-  if(from===to){bench.err++;toast('管路自身成环','毫无意义');return}
-  var ok=(from===0&&to===1)||(from===1&&to===2);
-  if(from===2||(from===1&&to===0)){bench.err++;toast('方向不对','药液只能从研钵流向烧瓶');return}
-  if(!ok){bench.err++;toast('管路不通','按 M → • → B 的顺序连接');return}
-  bench.ln.push([from,to]);
-  ns[from].classList.add('on');ns[to].classList.add('on');
-  drawLine(ns[from],ns[to]);
-  if(bench.ln.length===2){bench.step='heat';bnRender();toast('管路接妥','药液开始流动 · 点火程控')}
- });
+$('#mortar').addEventListener('click',function(){
+ if(!bench.on)return;
+ if(bench.grind<100){toast('研钵','还没有可倒的粉末 · 先研磨');return}
+ toast('研钵','研磨物留在研钵里 · <b>拖研钵到烧瓶</b>倒入');
 });
+function ptEl(id){
+ if(id.indexOf('eq_')===0){
+  var o=document.getElementById('obj-'+id.slice(3));
+  var p=o&&o.querySelector('.eq-port');if(p)return p;
+  return document.querySelector('.eq[data-c="'+id.slice(3)+'"] .eq-port');
+ }
+ return document.getElementById(id);
+}
+function wirePorts(a,id){
+ var dup=-1;bench.lines.forEach(function(L,i){if((L[0]===a&&L[1]===id)||(L[0]===id&&L[1]===a))dup=i});
+ if(dup>=0){
+  bench.lines.splice(dup,1);bench.ln.splice(dup,1);
+  if(a.indexOf('eq_')===0)delete bench.eqOn[a.slice(3)];
+  if(id.indexOf('eq_')===0)delete bench.eqOn[id.slice(3)];
+  syncLines();eqRender();toast('管线已拆除','自由了');return
+ }
+ bench.lines.push([a,id]);bench.ln.push([a,id]);
+ if(a.indexOf('eq_')===0)bench.eqOn[a.slice(3)]=true;
+ if(id.indexOf('eq_')===0)bench.eqOn[id.slice(3)]=true;
+ syncLines();eqRender();
+ var hit=(a.indexOf('eq_')===0||id.indexOf('eq_')===0);
+ toast('管线接妥',hit?'器材已激活 · 效果生效':(a==='ptMortar'&&id==='ptFlask'?'研钵 → 烧瓶 直连':'已接线'),'ok');
+ bnRender();
+}
+function pourMortar(){
+ if(!bench.on)return;
+ if(bench.gi>=bench.mats.length){toast('研钵已空','全部材料已入瓶');return}
+ if(bench.grind<100){toast('尚未磨细','先把 '+(MATS[bench.mats[bench.gi]]?MATS[bench.mats[bench.gi]].n:'')+' 研磨到 100%');return}
+ var m2=bench.mats[bench.gi];
+ bench.liq.push(m2);bench.gi++;bench.grind=0;
+ if(bench.gi>=bench.mats.length)toast('药液已成','全部粉末入瓶 · 现在自由接管 / 点火');
+ else toast('已入瓶中',(m2?MATS[m2].n:'')+' 入瓶 · 研磨下一味');
+ bnRender();
+}
+var D=null,tmpL=null;
+function posLine(port,ev){
+ var b=document.getElementById('bench').getBoundingClientRect();
+ var p=port.getBoundingClientRect();
+ var sx=p.left-b.left+p.width/2,sy=p.top-b.top+p.height/2;
+ var ex=(ev?ev.clientX:p.left+p.width/2)-b.left,ey=(ev?ev.clientY:p.top+p.height/2)-b.top;
+ var dx=ex-sx,dy=ey-sy,len=Math.max(1,Math.hypot(dx,dy));
+ tmpL.style.left=sx+'px';tmpL.style.top=sy+'px';tmpL.style.width=len+'px';
+ tmpL.style.transform='rotate('+Math.atan2(dy,dx)+'rad)';
+}
+document.addEventListener('pointerdown',function(e){
+ var el=e.target;
+ var port=el.classList&&el.classList.contains('eq-port')?el:(el.closest&&el.closest('.bn-port'));
+ if(port){
+  if(!bench.on){toast('炼金台未开','先投料开台');return}
+  e.preventDefault();e.stopPropagation();
+  var id=port.getAttribute('data-p')||port.id;
+  if(!id){var pe=port.closest('.eq');id=pe?'eq_'+pe.getAttribute('data-c'):id}
+  D={t:'port',id:id,el:port};
+  tmpL=document.createElement('div');tmpL.className='tmp-line';
+  document.getElementById('bench').appendChild(tmpL);
+  posLine(port,e);return
+ }
+ var obj=el.closest&&el.closest('.obj');
+ if(obj){
+  e.preventDefault();e.stopPropagation();
+  D={t:'obj',el:obj,sx:e.clientX,sy:e.clientY,dx:parseFloat(obj.style.left)||30,dy:parseFloat(obj.style.top)||20};return
+ }
+ var mv=el.closest&&el.closest('#mortar');
+ if(mv&&bench.on){if(e.target.id==='pestle')return;e.preventDefault();D={t:'obj',el:mv,sx:e.clientX,sy:e.clientY,dx:parseFloat(mv.style.left)||8,dy:parseFloat(mv.style.top)||20};return}
+ var fk=el.closest&&el.closest('#flask');
+ if(fk&&bench.on){if(e.target.id==='ptFlask')return;e.preventDefault();D={t:'obj',el:fk,sx:e.clientX,sy:e.clientY,dx:parseFloat(fk.style.left)||71,dy:parseFloat(fk.style.top)||16};return}
+});
+document.addEventListener('pointermove',function(e){
+ if(!D)return;
+ if(D.t==='port'){posLine(D.el,e);return}
+ if(D.t==='obj'){var bw=document.getElementById('bench').getBoundingClientRect();var nx=Math.min(90,Math.max(2,D.dx+(e.clientX-D.sx)/bw.width*100));var ny=Math.min(74,Math.max(4,D.dy+(e.clientY-D.sy)/bw.height*100));D.el.style.left=nx+'%';D.el.style.top=ny+'%';
+  if(D.el.classList.contains('mortar')){var fr=document.getElementById('flask').getBoundingClientRect();var mr=D.el.getBoundingClientRect();var ov=!(mr.right<fr.left+10||mr.left>fr.right-10||mr.bottom<fr.top+10||mr.top>fr.bottom-10);document.getElementById('flask').classList.toggle('ov',ov)}
+  syncLines();return}
+});
+document.addEventListener('pointerup',function(e){
+ if(!D)return;
+ if(D.t==='port'){
+  var src=D.id;D=null;
+  tmpL&&tmpL.remove();tmpL=null;
+  $$('.bn-port,.eq-port').forEach(function(x){x.classList.remove('sel')});
+  var el=document.elementFromPoint(e.clientX,e.clientY);
+  var port=el&&(el.classList&&el.classList.contains('eq-port')?el:(el.closest&&el.closest('.bn-port')));
+  if(!port)return;
+  var id=port.getAttribute('data-p')||port.id;
+  if(!id){var pe=port.closest('.eq');id=pe?'eq_'+pe.getAttribute('data-c'):id}
+  if(src===id)return;
+  wirePorts(src,id);return
+ }
+ if(D.t==='mat'){
+  D=null;
+  var el=document.elementFromPoint(e.clientX,e.clientY);
+  if(el&&el.closest&&el.closest('#flask'))pourMortar();
+  return
+ }
+ if(D.t==='obj'){
+  var el=D.el,moved=Math.hypot(e.clientX-D.sx,e.clientY-D.sy)>6;
+  var isM=el.classList.contains('mortar');
+  var c=el.classList.contains('obj')?el.dataset.c:null;
+  D=null;
+  if(isM){
+   document.getElementById('flask').classList.remove('ov');
+   if(moved&&bench.grind>=100){
+    var fr=document.getElementById('flask').getBoundingClientRect();
+    var mr=el.getBoundingClientRect();
+    var ov=!(mr.right<fr.left+10||mr.left>fr.right-10||mr.bottom<fr.top+10||mr.top>fr.bottom-10);
+    if(ov){pourMortar();el.style.left='8%';el.style.top='20%';return}
+   }
+   if(moved)window.__pmoved=true;
+   if(!moved){toast('研钵','研磨物留在研钵里 · <b>拖研钵到烧瓶</b>倒入');return}
+   return
+  }
+  if(!moved&&c)useEq(c);
+  return
+ }
+});
+function syncLines(){
+ $$('.bn-line').forEach(function(l){if(l.parentNode)l.parentNode.removeChild(l)});
+ bench.lines.forEach(function(L){var e1=ptEl(L[0]),e2=ptEl(L[1]);if(e1&&e2)drawLine(e1,e2)});
+}
 $('#bulb').addEventListener('click',function(){
- if(!bench.on||bench.step!=='bottle')return;
+ if(!bench.on||!bench.ready)return;
  var rq=bnReq();
- var grindQ=bench.grind>=100?100:Math.round(bench.grind*0.9);
- var tubeQ=Math.max(70,100-bench.err*8);
+ var grindQ=(bench.mats&&bench.gi>=bench.mats.length)?100:Math.round((bench.grind||0)*0.9);
+ var tubeQ=Math.max(60,100-bench.err*8)+(bench.lines.length>=2?8:0)+(bench.lines.some(function(L){return L[0].indexOf('eq_')===0||L[1].indexOf('eq_')===0})?4:0);
  var heatQ=Math.min(100,Math.round((bench.hits/(bench.tickN||1))*65+(bench.ctr/(bench.tickN||1))*35));
  var phv=phQ(rq);
  var coolQ=bench.coolT<=(hasEq('cond')?12:6)?100:(bench.coolT<=(hasEq('cond')?20:10)?80:60);
@@ -1132,6 +1335,32 @@ $('#bulb').addEventListener('click',function(){
 });
 $('#bnReset').addEventListener('click',function(){benchExit();setTimeout(benchStart,60)});
 $('#bnExit').addEventListener('click',function(){benchExit()});
+function matPrice(k){var m=MATS[k];if(!m)return -1;var b={原质:5,元素:5,金属:12,药草:16,矿石:22,遗物:34,中间:24}[m.cat]||10;return b+(m.r||0)*(m.cat==='遗物'?18:8)}
+function potPrice(k){var m=MATS[k];return 26+(m.r||0)*24}
+function shopRender(){
+ var b=$('#shopBody');if(!b)return;
+ var h='<div class="shop-sec">◈ 购买材料</div><div class="shop-list">';
+ var buy=[];Object.keys(MATS).forEach(function(k){var m=MATS[k];if(m.cat==='成品'||m.cat==='终极')return;var p=matPrice(k);if(p>0)buy.push([k,m,p])});
+ buy.sort(function(a,c){return (MATS[a[0]].r||0)-(MATS[c[0]].r||0)});
+ buy.forEach(function(x){var k=x[0],m=x[1],p=x[2];var can=A.gold>=p;h+='<div class="shop-item'+(can?'':' lock')+'" data-b="'+k+'"><span class="sy">'+m.sy+'</span><span class="nm">'+m.n+'</span><span class="pr">'+p+'奥金</span></div>'});
+ h+='</div><div class="shop-sec">⚗ 出售药剂</div><div class="shop-list">';
+ var sell=[];Object.keys(A.mats||{}).forEach(function(k){var m=MATS[k];if(!m||m.cat!=='成品')return;if((A.mats[k]||0)>0)sell.push([k,m,A.mats[k]])});
+ if(!sell.length)h+='<div style="font-size:10.5px;color:var(--ink3);padding:6px">还没有可出售的药剂 · 先炼一炉</div>';
+ sell.forEach(function(x){var k=x[0],m=x[1],n=x[2];var p=potPrice(k);h+='<div class="shop-item" data-s="'+k+'"><span class="sy">'+m.sy+'</span><span class="nm">'+m.n+' ×'+n+'</span><span class="pr">+'+p+'奥金</span></div>'});
+ h+='</div>';
+ b.innerHTML=h;
+}
+$('#shopToggle').addEventListener('click',function(){
+ var b=$('#shopBody');var on=b.style.display!=='none';
+ b.style.display=on?'none':'block';this.classList.toggle('on',!on);
+ if(!on){shopRender();b.scrollIntoView({block:'nearest'})}
+});
+$('#shopBody').addEventListener('click',function(e){
+ var t=e.target.closest('.shop-item');if(!t)return;
+ var bk=t.getAttribute('data-b'),sk=t.getAttribute('data-s');
+ if(bk){var p=matPrice(bk);if(A.gold<p){toast('奥金不足','还差 '+(p-A.gold)+' 奥金');return}A.gold-=p;A.mats[bk]=(A.mats[bk]||0)+1;save();refresh();toast('购得',MATS[bk].n+' +1','ok');return}
+ if(sk){var p=potPrice(sk);if(!(A.mats[sk]>0))return;A.mats[sk]--;A.gold+=p;save();refresh();toast('售出',MATS[sk].n+' 换 '+p+' 奥金','ok')}
+});
 /* ========== 典籍 & 炼金笔记 ========== */
 $('#gToggle').addEventListener('click',function(){
  var b=$('#gBody'),t=this;

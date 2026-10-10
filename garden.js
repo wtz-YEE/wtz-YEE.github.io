@@ -183,12 +183,12 @@ function openGarden(){
     '<div style="text-align:center;margin-bottom:14px"><button id="gPlantBtn" onclick="gPlant()" style="border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);padding:8px 22px;font-family:Consolas,monospace;font-size:11.5px;letter-spacing:.15em;cursor:pointer">🌱 落种 · 点击花园种植</button></div>'+
     '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">花园实景 · GARDEN VIEW · 点击一朵花</div>'+
-    '<div style="position:relative;border:1px solid #2c2c2c;border-radius:12px;overflow:hidden;margin-bottom:12px"><canvas id="gSceneCv" width="760" height="200" style="width:100%;display:block"></canvas></div>'+
+    '<div style="position:relative;border:1px solid #2c2c2c;border-radius:12px;overflow:hidden;margin-bottom:12px"><canvas id="gSceneCv" width="760" height="200" style="width:100%;aspect-ratio:760/200;display:block;max-height:260px"></canvas></div>'+
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">我的花园 · MY GARDEN</div>'+
     '<div id="myGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:16px"></div>'+
     '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">共享花园 · SHARED · 可照料</div>'+
-    '<div style="position:relative;border:1px solid #2c2c2c;border-radius:12px;overflow:hidden;margin-bottom:10px"><canvas id="gSharedCv" width="760" height="200" style="width:100%;display:block"></canvas></div>'+
+    '<div style="position:relative;border:1px solid #2c2c2c;border-radius:12px;overflow:hidden;margin-bottom:10px"><canvas id="gSharedCv" width="760" height="200" style="width:100%;aspect-ratio:760/200;display:block;max-height:260px"></canvas></div>'+
     '<div id="shGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>'+
     '<div style="border-top:1px solid #222;margin:14px 0 12px"></div>'+
     '<div style="background:radial-gradient(1px 1px at 20% 20%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 75% 30%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 40% 65%,rgba(255,255,255,.4),transparent),radial-gradient(circle at 50% 0%,#0d1520,#06070a);border:1px solid #2c2c2c;border-radius:12px;padding:14px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">'+
@@ -360,7 +360,9 @@ function gSceneClick(ev){
   if(!cv.__pos)return;
   var best=null,bd=1e9;
   for(var i=0;i<cv.__pos.length;i++){var d=Math.hypot(mx-cv.__pos[i].x,my-cv.__pos[i].y);if(d<bd){bd=d;best=cv.__pos[i]}}
-  if(best&&bd<36){var a=gSet();for(var j=0;j<a.length;j++)if(a[j].sp===best.id){var p=a[j],sp=gP(p.sp),stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));toast(sp.n+' · ['+stg+']','花语：'+(G_FLORA[sp.st]||'一切生长皆有回应')+' · 照料 '+(p.c||0)+' · 画风 '+sp.st);break}}
+  if(best&&bd<36){var a=gSet();for(var j=0;j<a.length;j++)if(a[j].sp===best.id){var p=a[j],sp=gP(p.sp),stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));var extra='';
+    if((p.g||.5)>=.98){var _gpk=0;try{_gpk=parseInt(localStorage.getItem('wz_gpick')||'0',10)||0}catch(e){};if(Date.now()-_gpk>30000){try{localStorage.setItem('wz_gpick',String(Date.now()))}catch(e){};gExAdd(1);var _pb=document.getElementById('gExBox');if(_pb)_pb.textContent=gEx();extra=' · 采撷星光 · 探索点 +1'}else{extra=' · 星光采撷冷却中'}}
+    toast(sp.n+' · ['+stg+']','花语：'+(G_FLORA[sp.st]||'一切生长皆有回应')+' · 照料 '+(p.c||0)+' · 画风 '+sp.st+extra);break}}
   else{var _r=cv.getBoundingClientRect();var _d=document.createElement('div');_d.style.cssText='position:absolute;left:'+(mx/cv.width*_r.width-13)+'px;top:'+(my/cv.height*_r.height-13)+'px;width:26px;height:26px;border:1px solid rgba(160,200,255,.45);border-radius:50%;pointer-events:none;z-index:2;transform:scale(.2);opacity:.65;transition:transform .7s,opacity .7s';cv.parentNode.appendChild(_d);requestAnimationFrame(function(){_d.style.transform='scale(1)';_d.style.opacity='0'});setTimeout(function(){if(_d.parentNode)_d.parentNode.removeChild(_d)},740)}
 }
 var G_SHARED=[];var gSharedRaf=0;
@@ -425,7 +427,7 @@ function gPlantCard(p,cnt){
 function renderMy(){
   var box=document.getElementById('myGarden');if(!box)return;
   var a=gSet(),now=Date.now(),ch=false;
-  for(var i=0;i<a.length;i++){var dt=(now-(a[i].t||now))/86400000;if(dt>1){var ng=Math.min(1,(a[i].g||.5)+dt*0.02);if(ng!==(a[i].g||.5)){a[i].g=ng;ch=true}}}
+  for(var i=0;i<a.length;i++){var dt=(now-(a[i].t||now))/86400000;if(dt>0.3){var ng=Math.min(1,(a[i].g||.5)+dt*0.04);if(ng!==(a[i].g||.5)){a[i].g=ng;ch=true}}}
   if(ch){try{localStorage.setItem('wz_garden',JSON.stringify(a))}catch(e){}}
   var cnt={};for(var i=0;i<a.length;i++){var st=gP(a[i].sp).st;cnt[st]=(cnt[st]||0)+1}
   box.innerHTML='';
@@ -455,7 +457,7 @@ function gPlantAt(nx,ny){
   for(var _ci=0;_ci<_crowd.length;_ci++){if(Math.hypot(_crowd[_ci].x-nx,_crowd[_ci].y-ny)<0.055){toast('这里已经开了一株花','挪一挪，给新生命腾个地方');return}}
   if(!gSeedTake(sid)){toast('这颗种子已经用完了','去探索或照料，获得新种子');G_SEL=null;gPickOff();gSeedRefresh();return}
   gDiscAdd(sid);
-  var p={sp:sid,t:new Date().getTime(),g:.6,c:0,u:gbName(),x:Math.max(.08,Math.min(.92,nx)),y:Math.max(.2,Math.min(.86,ny))};
+  var p={sp:sid,t:new Date().getTime(),g:.35,c:0,u:gbName(),x:Math.max(.08,Math.min(.92,nx)),y:Math.max(.2,Math.min(.86,ny))};
   var b=apiBase();
   if(b){try{fetch(b+'/garden_plant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).catch(function(){})}catch(e){}}
   gAdd(p);gPickOff();gSeedRefresh();
@@ -485,7 +487,7 @@ function gCareSelf(idx){
   if((a[idx].g||.5)>=1){toast('已盛开 · 无需照料','这株花正沐浴星光');return}
   var key='wz_careself_'+a[idx].t;
   var lc=0;try{lc=parseInt(localStorage.getItem(key)||'0',10)||0}catch(e){}
-  if(Date.now()-lc<30000){toast('照料冷却中','约 '+Math.max(1,Math.ceil((30000-(Date.now()-lc))/1000))+' 秒后再照料');return}
+  if(Date.now()-lc<86400000){toast('照料冷却中','约 '+Math.max(1,Math.ceil((86400000-(Date.now()-lc))/86400000))+' 天后照料');return}
   try{localStorage.setItem(key,String(Date.now()))}catch(e){}
   var elx=gBuffNow('pot_elixir');
   a[idx].g=Math.min(1,(a[idx].g||.5)+0.12*(elx?2:1));a[idx].c=(a[idx].c||0)+1;
@@ -499,7 +501,7 @@ function gCareSelf(idx){
 var G_CARE={};
 function gCare(id){
   var lc=0;try{lc=parseInt(localStorage.getItem('wz_care_'+id)||'0',10)||0}catch(e){}
-  if(Date.now()-lc<30000){toast('照料冷却中','约 '+Math.max(1,Math.ceil((30000-(Date.now()-lc))/1000))+' 秒后再照料');return}
+  if(Date.now()-lc<86400000){toast('照料冷却中','约 '+Math.max(1,Math.ceil((86400000-(Date.now()-lc))/86400000))+' 天后照料');return}
   try{localStorage.setItem('wz_care_'+id,String(Date.now()))}catch(e){}
   G_CARE[id]=Date.now();
   var b=apiBase();if(!b)return;
@@ -564,6 +566,12 @@ var gTree=[
   {id:6,ly:2,ty:2,n:'荒茠王座',re:'legend',pa:3},
   {id:7,ly:3,ty:1,n:'传说的余烬',re:'boss',pa:4},
   {id:8,ly:3,ty:1,n:'星核残响',re:'boss',pa:6},
+  {id:9,ly:3,ty:2,n:'苔光回廊',re:'rare',pa:5},
+  {id:10,ly:3,ty:2,n:'露珠星图',re:'dust',pa:5},
+  {id:11,ly:4,ty:2,n:'夜的图书馆',re:'boss',pa:9},
+  {id:12,ly:4,ty:2,n:'深空哨所',re:'boss',pa:10},
+  {id:13,ly:4,ty:1,n:'晨昏线',re:'rare',pa:7},
+  {id:14,ly:4,ty:1,n:'无人之境',re:'boss',pa:8}
 ];
 function gTrek(){try{return JSON.parse(localStorage.getItem('wz_gtrek')||'[]')}catch(e){return[]}}
 function gTrekSave(a){try{localStorage.setItem('wz_gtrek',JSON.stringify(a))}catch(e){}}
@@ -597,7 +605,10 @@ function gTreeRender(){
           else if(av===1){el.style.cssText+='border:1px solid var(--accent,#fff);background:rgba(120,160,255,.12);color:#e6edef;cursor:pointer;box-shadow:0 0 10px rgba(120,160,255,.25)';el.onmouseenter=function(){this.style.transform='translateY(-2px)'};el.onmouseleave=function(){this.style.transform='none'};el.onclick=function(){gTreeGo(nd.id)}}
           else el.style.cssText+='border:1px dashed #2c2c2c;background:rgba(255,255,255,.02);color:#5b5b5b;opacity:.6';
           var dn=(av===2?'已点亮':(av===1?(nd.ty===2?'大节点 · 2 点':'小节点 · 1 点'):'未解锁'));
-          el.innerHTML='<div style="font-size:10px;color:'+(av===2?'var(--accent,#fff)':av===1?'#ffd60a':'#6a767d')+'">'+nd.n+'</div><div style="font-size:8px;color:#8a8a8a;margin-top:2px">'+dn+'</div>';
+          var up=nd.ly>1?'<div style="position:absolute;top:-10px;left:50%;width:1px;height:10px;background:rgba(255,255,255,.14)"></div>':'';
+          var hasC=false;for(var _j=0;_j<gTree.length;_j++)if(gTree[_j].pa===nd.id)hasC=true;
+          var dn2=hasC?'<div style="position:absolute;bottom:-3px;left:50%;width:1px;height:8px;background:rgba(255,255,255,.12)"></div>':'';
+          el.innerHTML=up+'<div style="font-size:10px;color:'+(av===2?'var(--accent,#fff)':av===1?'#ffd60a':'#6a767d')+'">'+nd.n+'</div><div style="font-size:8px;color:#8a8a8a;margin-top:2px">'+dn+'</div>'+dn2;
           cell.appendChild(el);
         })(nd,av);
       }

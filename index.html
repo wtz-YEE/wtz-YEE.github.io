@@ -1300,6 +1300,7 @@ function ferr(msg){
     <div class="bt-foot"><span>ARCHIVE OS</span><span id="btFoot">BOOTING…</span></div>
   </div>
 </div>
+<script>(function(){try{setTimeout(function(){var b=document.getElementById('boot');if(b&&b.style.display!=='none'&&!document.body.classList.contains('ready')){b.style.display='none';document.body.classList.add('ready')}},7000)}catch(e){}})()</script>
 
 <canvas id="fx" style="position:fixed;inset:0;z-index:6;pointer-events:none;display:none;transition:opacity .9s ease"></canvas>
 <div id="fxTag" style="position:fixed;right:16px;bottom:14px;z-index:7;display:none;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ink2);border:1px solid var(--line);padding:6px 12px;background:rgba(7,9,10,.85);backdrop-filter:blur(6px);opacity:0;transition:opacity .9s ease">[ HOLIDAY ] <span id="fxTagN"></span></div>
@@ -3737,16 +3738,15 @@ function autoCloud(){
     var apis=parseApis(t||'').filter(function(x){return x.indexOf('36c3116e')<0});
     if(!apis.length) return;
     S.apis=apis;
-    S.api=apis[0];
-    try{ localStorage.setItem(K_API,apis.join('\n')); }catch(e){}
-    updateModeLabel();
-    say(apis.length>1?('已接入多云端 · '+apis.length+' 台主机'):('已自动接入云端 · '+apis[0]),true);
-    loadGuestBook();
-    loadNotes();
-    hitCloud();
-    if(S.user) pmRefreshConversations();
-    autoRelogin();
-    ntRefresh();
+    pickAlive(apis).then(function(al){
+     var a=al||apis[0];S.api=a;
+     try{ localStorage.setItem(K_API,apis.join('\n')); }catch(e){}
+     updateModeLabel();
+     say(apis.length>1?('已接入多云端 · '+apis.length+' 台主机'):('已自动接入云端 · '+a),true);
+     loadGuestBook();loadNotes();hitCloud();
+     if(S.user) pmRefreshConversations();
+     autoRelogin();ntRefresh();
+    });
   }).catch(function(){});
 }
 
@@ -3756,6 +3756,9 @@ function cloudProbe(u){
   return fetch(u+'/health',{cache:'no-store',signal:c.signal}).then(function(r){
     return r.ok?r.json().then(function(j){return !!(j&&j.ok)}).catch(function(){return false}):false;
   }).catch(function(){return false}).then(function(v){clearTimeout(t);return v});
+}
+function pickAlive(apis){
+ return Promise.all((apis||[]).map(function(u){return cloudProbe(u).then(function(ok){return ok?u:null})})).then(function(rs){for(var i=0;i<rs.length;i++)if(rs[i])return rs[i];return apis&&apis[0]?apis[0]:null});
 }
 function cloudRecover(){
   var cur=S.api;
@@ -3770,9 +3773,10 @@ function cloudRecover(){
       S.apis=apis;
       S.api=apis[0];
       try{ localStorage.setItem(K_API,apis.join('\n')); }catch(e){}
+      pickAlive(apis).then(function(al){if(al)S.api=al});
       if(!ch) return false;
       updateModeLabel();
-      say('云端地址已更新 · '+apis[0],true);
+      say('云端地址已更新 · '+S.api,true);
       loadGuestBook();
       loadNotes();
       autoRelogin();
@@ -4983,12 +4987,15 @@ barIv=setInterval(function(){
 },200);
 /* 6. glitch + 3D 翻转转场 */
 function flip(){
-  clearInterval(barIv);
-  document.getElementById('boot').classList.add('gl');
-  setTimeout(function(){document.querySelector('#boot .bt').classList.add('flip')},240);
+  clearTimeout(bail);clearInterval(barIv);
+  var b=document.getElementById('boot');if(!b)return;
+  b.classList.add('gl');
+  var bt=b.querySelector('.bt');if(bt)bt.classList.add('flip');
   setTimeout(hideBoot,940);
 }
+var bail=setTimeout(flip,5600);
 boot.addEventListener('click',flip);
+boot.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();flip()}});
 }
 if(sessionStorage.getItem('wzBoot')==='1'||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
 boot.style.display='none';document.body.classList.add('ready');
