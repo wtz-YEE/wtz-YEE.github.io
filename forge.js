@@ -502,9 +502,10 @@ function hmOps(v){var bl=fBlank(v.b),L=3+(bl.atk>=10?1:0)+(bl.spd>=10?1:0);if(L>
   var s=hmHs(v.id),o=[],i,p=0;
   for(i=0;i<L;i++){p=(p*1103515245+12345)>>>0;var k=i===0?p%4:(i===1?4+p%4:p%8);o.push(HMOP[k].id)}
   return o}
-function hmQ(){var L=FH.ops.length,n=FH.n-Math.floor((FH.combo||0)/3);return n<=L+1?'S':n<=L+3?'A':n<=L+6?'B':'C'}
-function hmBudget(){var L=FH.ops.length,n=FH.n-Math.floor((FH.combo||0)/3);var cur=hmQ(),b={'S':L+1,'A':L+3,'B':L+6}[cur],sp=b-n;return sp>=0?('最多再点 '+sp+' 次保持 '+cur):('已超 '+cur+' 上限')}
-function hmQN(q){return q==='S'?'S · 极品':q==='A'?'A · 上乘':q==='B'?'B · 合格':'C · 粗坯'}
+function hmQ(){var L=FH.ops.length,n=FH.n;return n<=L+1?'S':n<=L+3?'A':n<=L+6?'B':'C'}
+function hmBudget(){var L=FH.ops.length,n=FH.n;var cur=hmQ(),b={'S':L+1,'A':L+3,'B':L+6}[cur],sp=b-n;return sp>=0?('最多再点 '+sp+' 次保持 '+cur):('已超 '+cur+' 上限')}
+function fHmMatch(){if(!FH||FH.seq.length!==FH.ops.length)return false;for(var i=0;i<FH.ops.length;i++)if(FH.seq[i]!==FH.ops[i])return false;return true}
+function hmQN(q){return q==='S'?'完美 · S':q==='A'?'精良 · A':q==='B'?'合格 · B':'粗糙 · C'}
 function hmAffClass(v,cls,q){if(FH&&FH.str>=10&&q==='S')q='B';
   var pool=[];
   for(var i=0;i<AF.length;i++){var af=AF[i];
@@ -518,6 +519,7 @@ function hmAffClass(v,cls,q){if(FH&&FH.str>=10&&q==='S')q='B';
   return pool.length?pool[Math.floor(Math.random()*pool.length)].id:null}
 function fStat(){var s=jg('wz_forge_stat',{h:0,ok:0,s:0,b:99});return s}
 function fStatAdd(k,v){var s=fStat();s[k]=v;js('wz_forge_stat',s);return s}
+function fHmRank(){var o=fStat().ok||0;return '· '+((o>=31)?'铸剑宗师':(o>=16)?'铸剑师':(o>=6)?'铁匠':(o>=1)?'学徒':'生手')}
 function hmV(){var a=fVault();for(var i=0;i<a.length;i++)if(a[i].id===FH.vid)return a[i];return null}
 function fHmStart(id){
   var v=null,a=fVault(),i;
@@ -525,8 +527,8 @@ function fHmStart(id){
   if(!v)return;
   if(v.aff.length>0)return toast('已是成品','用「锻造/升阶」继续强化');
   var rw=fBlank(v.b).rar,wd=rw==='传说'?8:rw==='稀有'?14:rw==='魔法'?20:26;
-  FH={vid:id,ops:hmOps(v),cur:0,pos:20,tgt:[50-wd/2,50+wd/2],n:0,str:0,st:0,fold:0,foldN:0,t:100,sp:0,tmr:null,h:0,hold:0,combo:0};
-  var gm=jg('wz_forge_hm',0);if(!gm){js('wz_forge_hm',1);setTimeout(function(){toast('锻打规则','按谱点击推进·点错清空重来·操作越少品质越高(S>A>B>C)；应力满14裂坯；顺序走完自动成型→折叠→淬火→开刃',2200)},300)}
+  FH={vid:id,ops:hmOps(v),cur:0,pos:20,tgt:[50-wd/2,50+wd/2],n:0,str:0,st:0,fold:0,foldN:0,t:100,sp:0,tmr:null,h:0,hold:0,combo:0,seq:[],wm:100,edge:0};
+  var gm=jg('wz_forge_hm',0);if(!gm){js('wz_forge_hm',1);setTimeout(function(){toast('锻打规则','趁热打铁：温度随操作下降，渐冷则位移减半·应力加剧；最后连续按谱收尾即成型(TFC式)；高温成型额外词缀；应力满裂坯；成型后→折叠→淬火→开刃',2600)},300)}
   var m=document.createElement('div');m.id='fHmMask';
   m.style.cssText='position:fixed;inset:0;z-index:2147483999;background:radial-gradient(ellipse at 50% 60%,rgba(30,16,8,.55),rgba(4,6,8,.94));display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px)';
   var bx=document.createElement('div');bx.id='fHmBox';bx.style.cssText='background:linear-gradient(160deg,#15191c,#0d1012 55%,#180f0b);border:1px solid #3a3128;border-radius:12px;padding:22px;width:min(660px,94vw);max-height:88vh;overflow:auto;font-family:Consolas,monospace;color:#f0f0f0;position:relative;box-shadow:0 0 46px rgba(255,120,40,.1),inset 0 0 90px rgba(120,60,20,.05);animation:fHmPop .28s ease-out';
@@ -556,7 +558,7 @@ function fHmHtml(){
   h+='<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;margin-bottom:2px">'+
     '<div style="font-size:16px;font-weight:bold;text-shadow:0 0 12px '+sc+'66">'+esc(fWName(v))+'</div>'+
     '<div style="font-size:10px;color:'+sc+';border:1px solid '+sc+'66;border-radius:20px;padding:2px 10px;text-shadow:0 0 8px '+sc+'55">'+(FH.st===0?'锻打':FH.st===1?'折叠':FH.st===2?'淬火':FH.st===3?'开刃':'成品')+'</div></div>';
-  h+='<div style="font-size:10px;color:#8a8a8a;margin-bottom:10px">'+bl.t+' · 品质 '+hmQN(q)+'（有效 '+(FH.n-Math.floor((FH.combo||0)/3))+' / 谱 '+FH.ops.length+'）'+(FH.st===0?('<br><span style="color:#ffd60a;text-shadow:0 0 8px rgba(255,214,10,.4)">连击 ×'+(FH.combo||0)+'</span>（每3连击抵1次） · '+hmBudget()):'')+'</div>';
+  h+='<div style="font-size:10px;color:#8a8a8a;margin-bottom:10px">'+bl.t+' · 品质 '+hmQN(q)+'（锻打 '+FH.n+' / 谱 '+FH.ops.length+'）'+(FH.st===0?(' · '+hmBudget()):'')+' <span style="color:#ffd60a">'+fHmRank()+'</span></div>';
   if(FH.st===0){
     h+='<div style="position:relative;height:30px;background:linear-gradient(90deg,#171009,#2a1c10 50%,#171009);border:1px solid #4a3620;border-radius:6px;margin:10px 0;box-shadow:inset 0 0 18px rgba(120,60,20,.18)">';
     h+='<div class="fhm-flash" style="position:absolute;top:0;bottom:0;left:'+FH.tgt[0]+'%;width:'+(FH.tgt[1]-FH.tgt[0])+'%;background:linear-gradient(180deg,rgba(255,214,10,.3),rgba(255,120,40,.1));border:1px solid rgba(255,214,10,.5);border-radius:4px;box-shadow:0 0 16px rgba(255,183,3,.35)"></div>';
@@ -565,10 +567,12 @@ function fHmHtml(){
     h+='<div class="fhm-ptr" style="position:absolute;top:-5px;left:'+FH.pos+'%;transform:translateX(-50%);color:#fff;font-size:17px;text-shadow:0 0 10px rgba(255,255,255,.6)">▼</div></div>';
     h+='<div style="font-size:9px;color:#6e8a86;margin-bottom:6px">金色窗口 '+Math.round(FH.tgt[1]-FH.tgt[0])+' 宽 · 对准中央 · 操作越少品质越高（S>A>B>C）'+(FH.hold?' · <span style="color:#4fa8ff">夹持锁定 1 拍</span>':'')+(FH.str>=10?' · <span style="color:#ff5c7a">⚠ 应力高 · 词缀池受限</span>':'')+'</div>';
     h+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0">';
-    for(var i=0;i<FH.ops.length;i++){var on=i===FH.cur,dn=i<FH.cur,op=hmOp(FH.ops[i]);
-      h+='<div class="fhm-step" style="border:1px solid '+(dn?'#55e08a':on?'#ffd60a':'#3a3a3a')+';background:'+(dn?'rgba(85,224,138,.14)':on?'rgba(255,214,10,.14)':'none')+';border-radius:6px;padding:4px 9px;font-size:10px;color:'+(dn?'#55e08a':on?'#ffd60a':'#8a8a8a')+';'+(on?'box-shadow:0 0 10px rgba(255,214,10,.3);animation:fHmPulse 1.2s infinite':'')+'">'+(dn?'✓ ':'')+op.n+(on?' ◀':'')+'</div>'}
+    var pt=['末步','次末','三末','四末','五末'];
+    for(var i=0;i<FH.ops.length;i++){var ok=i<FH.seq.length&&FH.seq[i]===FH.ops[i],bd=i<FH.seq.length&&FH.seq[i]!==FH.ops[i],op=hmOp(FH.ops[i]);
+      h+='<div class="fhm-step" style="border:1px solid '+(ok?'#55e08a':bd?'#ff5c7a':'#3a3a3a')+';background:'+(ok?'rgba(85,224,138,.14)':bd?'rgba(255,92,122,.12)':'none')+';border-radius:6px;padding:3px 9px;font-size:10px;color:'+(ok?'#55e08a':bd?'#ff5c7a':'#8a8a8a')+';'+(i===FH.seq.length?'box-shadow:0 0 10px rgba(255,214,10,.3);animation:fHmPulse 1.2s infinite':'')+'"><div style="font-size:8px;opacity:.7;margin-bottom:2px">'+pt[i]+'</div>'+(ok?'✓ ':'')+op.n+(i===FH.seq.length?' ◀':'')+'</div>'}
     h+='</div>';
-    h+='<div style="font-size:10px;color:#8a8a8a;margin:4px 0">按谱点击 · 点错清空重来 · 辅助操作可穿插微调：</div>';
+    h+='<div style="font-size:10px;color:#8a8a8a;margin:4px 0">自由锻打调位 · 最后连续按谱收尾即成型（红=偏离谱，继续按到对齐即可） · 辅助可穿插：</div>';
+    h+='<div style="font-size:9px;color:#6e8a86;margin:0 0 6px">最近手法：'+(FH.seq.length?FH.seq.slice(-3).map(function(x){return hmOp(x).n}).join(' · '):'——')+'</div>';
     h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">';
     for(var j=0;j<8;j++){var o=HMOP[j];
       var ds=o.d>0?'→+'+o.d:'←'+o.d;
@@ -585,12 +589,14 @@ function fHmHtml(){
     h+='<button onclick="fHmCalm()" class="fhm-b" style="border:1px solid #55e08a;background:linear-gradient(180deg,rgba(85,224,138,.08),rgba(0,0,0,.15));color:#55e08a;font-size:11px;padding:5px 12px;border-radius:6px">静置 · 消应力 <span style="font-size:8px;color:#6e8a86">[S]</span></button>';
     h+='<span style="font-size:9px;color:#6e8a86">顺序走完自动成型 · 指针在金色窗口得满分，脱靶降一档</span>';
     h+='</div>';
-    h+='<div style="margin-top:8px;font-size:10px;color:#8a8a8a">应力 <span style="color:'+(FH.str>=12?'#ff5c7a':'#55e08a')+'">'+FH.str+'/14</span>：</div>';
-    h+='<div style="height:8px;background:#2a2a2a;border-radius:4px;overflow:hidden;margin:3px 0 10px"><div style="height:100%;width:'+Math.min(100,FH.str/14*100)+'%;background:linear-gradient(90deg,#55e08a,#ffb703,#ff5c7a);transition:width .15s"></div></div>';
+    h+='<div style="margin-top:6px;font-size:10px;color:#8a8a8a">温度 <span style="color:'+(FH.wm<40?'#5c7cff':'#ff7a4d')+'">'+FH.wm+'</span>'+(FH.wm<40?' · 渐冷，锤击乏力':' · 趁热打铁！')+'：</div>';
+    h+='<div style="height:8px;background:#2a2a2a;border-radius:4px;overflow:hidden;margin:3px 0 10px'+(FH.wm<40?';border:1px solid #5c7cff;box-shadow:0 0 12px rgba(92,124,255,.35)':'')+'"><div style="height:100%;width:'+FH.wm+'%;background:linear-gradient(90deg,#5c7cff,#ff9d5c,#ff4d4d);transition:width .15s"></div></div>';
+    h+='<div style="font-size:10px;color:#8a8a8a">应力 <span style="color:'+(FH.str>=14+2*FH.ops.length-4?'#ff5c7a':'#55e08a')+'">'+FH.str+'/'+(14+2*FH.ops.length)+'</span>：</div>';
+    h+='<div style="height:8px;background:#2a2a2a;border-radius:4px;overflow:hidden;margin:3px 0 10px"><div style="height:100%;width:'+Math.min(100,FH.str/(14+2*FH.ops.length)*100)+'%;background:linear-gradient(90deg,#55e08a,#ffb703,#ff5c7a);transition:width .15s"></div></div>';
     h+='<button onclick="fHmClose()" style="border:1px solid #666;background:none;color:#999;font-size:11px;padding:3px 10px;cursor:pointer;border-radius:5px">放弃（保留胚子）</button>';
   }else if(FH.st===1){
     h+='<div style="font-size:11px;color:'+sc+';margin:8px 0;text-shadow:0 0 8px '+sc+'55">折叠 '+(FH.foldN+1)+'/2 · 决定词缀方向</div>';
-    h+='<div style="font-size:10px;color:#8a8a8a;margin-bottom:6px">当前趋势：'+(FH.fold>0?'锋利(攻击系)':FH.fold<0?'韧性(防御系)':'均衡(待定)')+'</div>';
+    h+='<div style="font-size:10px;color:#8a8a8a;margin-bottom:6px">当前趋势：'+(FH.fold>0?'锋利(攻击系)':FH.fold<0?'韧性(防御系)':'均衡(待定)')+'</div>'+(FH.foldN===1?'<div style="font-size:9px;color:#6e8a86;margin-bottom:4px">再折一次将自动进入淬火 · 温度决定词缀系</div>':'');
     h+='<button onclick="fHmFold(0)" class="fhm-b" style="border:1px solid #4fa8ff;background:linear-gradient(180deg,rgba(79,168,255,.08),rgba(0,0,0,.15));color:#4fa8ff;font-size:12px;padding:11px 18px;border-radius:6px;margin:6px">对折 → 韧性（防御系）</button>';
     h+='<button onclick="fHmFold(1)" class="fhm-b" style="border:1px solid #ff5c7a;background:linear-gradient(180deg,rgba(255,92,122,.08),rgba(0,0,0,.15));color:#ff5c7a;font-size:12px;padding:11px 18px;border-radius:6px;margin:6px">错折 → 锋利（攻击系）</button>';
   }else if(FH.st===2){
@@ -612,7 +618,7 @@ function fHmHtml(){
     h+='<button onclick="fHmClose()" class="fhm-b" style="border:1px solid #55e08a;background:linear-gradient(180deg,rgba(85,224,138,.2),rgba(0,0,0,.15));color:#55e08a;font-size:12px;padding:7px 18px;border-radius:6px;font-weight:bold;margin-top:12px">收下 · 入库</button>';
     h+='<button onclick="fHmNext()" class="fhm-b" style="border:1px solid #ffb703;background:linear-gradient(180deg,rgba(255,183,3,.14),rgba(0,0,0,.15));color:#ffb703;font-size:12px;padding:7px 18px;border-radius:6px;font-weight:bold;margin-top:12px;margin-left:8px">再造一把</button>';
   }
-  h+='<div style="font-size:9px;color:#4a4a4a;margin-top:8px">锻打次数越少品质越高，词缀池越稀有 · 淬火/折叠/开刃各添一条词缀</div>';
+  h+='<div style="font-size:9px;color:#4a4a4a;margin-top:8px">锻打次数越少品质越高 · 高温成型额外词缀 · 渐冷锤击乏力（位移减半·应力加剧） · 淬火/折叠/开刃各添一条词缀</div>';
   return h;
 }
 var AC=null;
@@ -637,39 +643,39 @@ function fHmOp(id){
   var a=document.activeElement;if(a&&a.blur)a.blur();
   if(!FH||FH.st!==0)return;var o=hmOp(id);if(!o)return;
   FH.n++;FH.str+=2;
+  FH.wm=Math.max(0,FH.wm-6);var cold=FH.wm<40;if(cold)FH.str+=2;
+  if(cold&&FH.wm===34)toast('金属渐冷！','锤击乏力·位移减半·应力加剧——用「升温」保温',1800);
   var lk=FH.hold>0;if(lk)FH.hold--;
   if(id==='cool'){if(!lk)FH.pos+=Math.round((50-FH.pos)*0.25)}
-  else if(id==='heat'){if(FH.h>=6){toast('过热！','升温到上限，静置降温');FH.h=0}else{FH.h=(FH.h||0)+1;if(!lk)FH.pos=Math.max(0,Math.min(100,FH.pos+FH.h))}}
+  else if(id==='heat'){if(FH.h>=6){toast('过热！','升温到上限，静置降温');FH.h=0}else{FH.h=(FH.h||0)+1;if(!lk){FH.wm=Math.min(100,FH.wm+12);FH.pos=Math.max(0,Math.min(100,FH.pos+FH.h))}}}
   else if(id==='hold'){FH.hold=1;FH.h=0}
-  else{if(!lk)FH.pos=Math.max(0,Math.min(100,FH.pos+o.d))}
-  if(FH.cur<FH.ops.length){
-    if(id===FH.ops[FH.cur]){FH.cur++;FH.combo=(FH.combo||0)+1}
-    else if(id!=='cool'&&id!=='heat'&&id!=='hold'){FH.cur=0;FH.combo=0;fHmSnd('bad');toast('顺序错乱！','已推进的操作全部作废，从第 1 步重新开始')}
-  }
+  else{var dd=cold?Math.round(o.d/2):o.d;if(!lk)FH.pos=Math.max(0,Math.min(100,FH.pos+dd))}
+  var ed=FH.pos<=4||FH.pos>=96;if(ed&&!FH.edge){FH.edge=1;FH.str+=2;toast('敲过头了！','指针逼近边界，应力加剧——别把坯子打飞',1400)}if(!ed)FH.edge=0;
+  if(o.d!==0){FH.seq.push(id);if(FH.seq.length>FH.ops.length)FH.seq.shift();if(fHmMatch()){fHmFinish();return}}
   fHmFX();fHmSnd('hit');
-  if(FH.str>=14){
+  if(FH.str>=14+2*FH.ops.length){
     var v=hmV();if(v&&!v.aff.length){v.aff.push(hmAffClass(v,'any','C'));v.q='C';fSaveV(v)}
     var st=fStat();st.h++;js('wz_forge_stat',st);
     FH.st=4;fHmSnd('crack');var bx=document.getElementById('fHmBox');if(bx)bx.classList.add('fhm-crack');toast('裂坯！','锻打中断，成品降为 C 品质');fBurst(500,300,'#ff5c7a',26);fHmR();return;
   }
-  if(FH.cur>=FH.ops.length){fHmFinish();return}
   fHmR();
 }
-function fHmCalm(){var a=document.activeElement;if(a&&a.blur)a.blur();if(!FH||FH.st!==0)return;FH.n++;FH.str=Math.max(0,FH.str-5);fHmR()}
+function fHmCalm(){var a=document.activeElement;if(a&&a.blur)a.blur();if(!FH||FH.st!==0)return;FH.n++;FH.str=Math.max(0,FH.str-5);FH.wm=Math.max(0,FH.wm-12);fHmR()}
 function fHmFinish(){
-  if(!FH||FH.st!==0)return;if(FH.cur<FH.ops.length)return;
-  var v=hmV(),q=hmQ(),off=0;if(!v)return;
+  if(!FH||FH.st!==0)return;if(!fHmMatch())return;
+  var v=hmV(),q=hmQ(),off=0,hot=0;if(!v)return;
   if(FH.pos<FH.tgt[0]||FH.pos>FH.tgt[1]){off=1;q=q==='S'?'A':q==='A'?'B':q==='B'?'C':'C'}
   v.aff.push(hmAffClass(v,'any',q));v.q=q;fSaveV(v);
-  var st=fStat();st.h++;st.ok++;if(q==='S')st.s++;var ef=FH.n-Math.floor((FH.combo||0)/3);if(ef<st.b)st.b=ef;js('wz_forge_stat',st);
-  FH.st=1;FH.foldN=0;fHmSnd('done');if(q==='S')fBurst(500,300,'#ffd60a',26);toast('成型！','品质 '+hmQN(q)+(off?' · 脱靶降档':'')+' · 下一步折叠');fBurst(500,300,q==='S'?'#ff5c7a':q==='A'?'#ffb703':'#ffd60a',18);fHmR();
+  if(FH.wm>=60){v.aff.push(hmAffClass(v,q==='S'?'攻击':'any',q));fSaveV(v);hot=1}
+  var st=fStat();st.h++;st.ok++;if(q==='S')st.s++;var ef=FH.n;if(ef<st.b)st.b=ef;js('wz_forge_stat',st);
+  FH.st=1;FH.foldN=0;fHmSnd('done');if(q==='S')fBurst(500,300,'#ffd60a',26);toast('成型！','品质 '+hmQN(q)+(off?' · 脱靶降档':'')+(hot?' · 趁热打铁，额外词缀':'')+' · 下一步折叠');fBurst(500,300,q==='S'?'#ff5c7a':q==='A'?'#ffb703':'#ffd60a',18);fHmR();
 }
 function fHmFold(k){
   if(!FH||FH.st!==1)return;FH.fold+=(k?1:-1);FH.foldN++;
   if(FH.foldN>=2){
     var v=hmV(),q=v.q||'B';
     v.aff.push(hmAffClass(v,FH.fold>0?'攻击':FH.fold<0?'防御':'效用',q));fSaveV(v);
-    FH.st=2;FH.t=100;FH.tmr=setInterval(function(){if(FH){FH.t=Math.max(0,FH.t-0.8);var e=document.getElementById('fHmT');if(e)e.textContent=Math.round(FH.t);if(FH.t<=0)clearInterval(FH.tmr);if(FH.t<15&&!FH.cold){FH.cold=1;toast('快过冷了','低温将落入效用系')}}},40);
+    FH.st=2;FH.t=100;FH.tmr=setInterval(function(){if(FH){FH.t=Math.max(0,FH.t-1.6);var e=document.getElementById('fHmT');if(e)e.textContent=Math.round(FH.t);if(FH.t<=0)clearInterval(FH.tmr);if(FH.t<15&&!FH.cold){FH.cold=1;toast('快过冷了','低温将落入效用系')}}},40);
     fBurst(300,300,FH.fold>0?'#ff5c7a':'#4fa8ff',14);fHmSnd('fold');
     toast('折叠完成','方向 '+(FH.fold>0?'锋利(攻击系)':FH.fold<0?'韧性(防御系)':'均衡(效用系)')+' · 下一步淬火');
   }
@@ -680,7 +686,7 @@ function fHmQuench(){
   var v=hmV(),q=v.q||'B';
   v.aff.push(hmAffClass(v,FH.t>60?'攻击':FH.t>=40?'防御':'效用',q));fSaveV(v);
   fBurst(300,300,'#4fa8ff',16);fHmSnd('quench');
-  FH.st=3;FH.sp=0;FH.tmr=setInterval(function(){if(FH){FH.sp=Math.min(100,FH.sp+0.6);var e=document.getElementById('fHmSp');if(e)e.textContent=Math.round(FH.sp);if(FH.sp>=100)clearInterval(FH.tmr)}},40);
+  FH.st=3;FH.sp=0;FH.tmr=setInterval(function(){if(FH){FH.sp+=0.6;if(FH.sp>=100)FH.sp=0;var e=document.getElementById('fHmSp');if(e)e.textContent=Math.round(FH.sp)}},40);
   toast('淬火完成','落点 '+(FH.t>60?'高温':FH.t>=40?'中温':'低温')+' · 下一步开刃');fHmR();
 }
 function fHmBlade(){

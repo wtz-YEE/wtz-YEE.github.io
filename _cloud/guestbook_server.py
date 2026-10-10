@@ -62,6 +62,10 @@ SHOP = [
     {"id": "m_lapis", "type": "mat", "name": "青金石 ×3", "cost": 20, "desc": "锻造材料 · 附魔消耗"},
     {"id": "m_iron", "type": "mat", "name": "魔铁锭 ×2", "cost": 15, "desc": "锻造材料 · 铁砧修复"},
     {"id": "m_book", "type": "mat", "name": "书架 ×1", "cost": 25, "desc": "锻造材料 · 升级锻造台"},
+    {"id": "m_seed", "type": "mat", "name": "神秘花种 ×1", "cost": 30, "desc": "随机解锁花园种子 · 夜行里长出的"},
+    {"id": "m_deep", "type": "mat", "name": "夜色提灯", "cost": 50, "desc": "花园探索点 +3 · 照亮更深的夜行"},
+    {"id": "m_slag", "type": "mat", "name": "锻炉余烬 ×1", "cost": 18, "desc": "锻造经验 +10 · 炉火没烧完的部分"},
+    {"id": "m_quill", "type": "mat", "name": "学徒刻印 ×1", "cost": 45, "desc": "锻造经验 +30 · 学艺先刻印"},
 ]
 
 FRAGS = [
@@ -424,6 +428,18 @@ def _cur_user(tok):
 def _is_root(cu, us):
     return cu == ROOT or bool((us.get(cu) or {}).get("is_root"))
 
+def _admins():
+    us = _load(USER_FILE, {})
+    out = {}
+    for k, v in us.items():
+        if k == "__sessions":
+            continue
+        if k == ROOT or v.get("is_root"):
+            out[k] = "root"
+        elif v.get("is_admin"):
+            out[k] = "admin"
+    return out
+
 def _now():
     return _time.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -542,7 +558,9 @@ def api_guests():
         on = after
     except Exception:
         on = 0
-    return jsonify({"ok": True, "list": g, "online": on})
+    adm = _admins()
+    g = [x for x in g if not x.get("hide")]
+    return jsonify({"ok": True, "list": g, "online": on, "admins": adm})
 
 @app.route("/guests_new", methods=["GET", "POST"])
 def api_guests_new():
@@ -571,7 +589,8 @@ def api_guests_new():
     except Exception:
         on = 0
     deleted = [d["id"] for d in DEL_LOG if d["t"] > _t.time() - 600]
-    return jsonify({"ok": True, "list": nl, "online": on, "deleted": deleted, "total": len(g)})
+    nl = [x for x in nl if not x.get("hide")]
+    return jsonify({"ok": True, "list": nl, "online": on, "deleted": deleted, "total": len(g), "admins": _admins()})
 
 
 @app.route("/guest_add", methods=["POST"])
@@ -601,6 +620,14 @@ def api_guest_add():
     g.append({"id": nid, "user": cu, "name": nm, "text": txt, "time": _now(), "avatar": av, "image": im, "reply_to": rt})
     _save(GUESTBOOK_FILE, g)
     _add_exp(_load(USER_FILE, {}), cu, 5)
+    try:
+        us2 = _load(USER_FILE, {})
+        for m in re.finditer(r"@([\w\u4e00-\u9fa5]{1,16})", txt):
+            t2 = m.group(1)
+            if t2 in us2 and t2 != "__sessions" and t2 != cu:
+                _push_notify(t2, cu, "at", "留言 #" + str(nid) + " 提到了你：" + str(txt)[:60])
+    except Exception:
+        pass
     return jsonify({"ok": True, "id": nid})
 
 @app.route("/post_get", methods=["GET", "POST"])
@@ -927,7 +954,7 @@ def api_garden_plant():
     pl = d.get("plants") or []
     nid = d.get("seq", 0) + 1
     pl.append({"id": nid, "sp": int(p.get("sp") or 1), "u": str(p.get("u") or "游客")[:16],
-               "g": 0.5, "c": 0, "t": int(_t.time() * 1000), "msgs": []})
+               "g": 0.6, "c": 0, "t": int(_t.time() * 1000), "msgs": []})
     d["plants"] = pl[-200:]
     d["seq"] = nid
     _save(GARDEN_FILE, d)
@@ -1026,6 +1053,33 @@ def api_change_pwd():
     _save(USER_FILE, us)
     return jsonify({"ok": True, "msg": "密码已修改"})
 
+@app.route("/guest_report", methods=["POST"])
+def api_guest_report():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录后再举报"})
+    g = _load(GUESTBOOK_FILE, [])
+    t = None
+    for x in g:
+        if int(x.get("id", 0) or 0) == int(p.get("id") or 0):
+            t = x
+            break
+    if not t:
+        return jsonify({"ok": False, "msg": "留言不存在"})
+    if t.get("user") == cu:
+        return jsonify({"ok": False, "msg": "不能举报自己的留言"})
+    rp = t.setdefault("reporters", [])
+    if cu in rp:
+        return jsonify({"ok": False, "msg": "这条你已经举报过了"})
+    rp.append(cu)
+    if len(rp) >= 3:
+        t["hide"] = True
+        _audit("system", "report_hide", "留言 #" + str(t.get("id") or ""), "举报达3次自动隐藏 · 举报人: " + ",".join(rp))
+    _save(GUESTBOOK_FILE, g)
+    return jsonify({"ok": True, "n": len(rp), "hidden": bool(t.get("hide"))})
+
+
 @app.route("/guest_del", methods=["POST"])
 def api_guest_del():
     p = request.get_json() or {}
@@ -1051,6 +1105,7 @@ def api_guest_del():
         del DEL_LOG[:100]
     return jsonify({"ok": True, "msg": "已删除"})
 
+import hashlib as _hl
 import base64 as _b64
 import uuid as _uuid
 from flask import send_from_directory
@@ -1593,9 +1648,22 @@ def api_forge_load():
     return jsonify({"ok": True, "data": d.get(name) or {}})
 
 
+def _daily_off():
+    try:
+        h = int(_hl.md5(("prts" + _time.strftime("%Y%m%d")).encode()).hexdigest(), 16)
+        pool = [x for x in SHOP if x["type"] in ("title", "frame", "weapon")]
+        ids = set()
+        if len(pool) >= 2:
+            for k in range(2):
+                ids.add(pool[(h >> (k * 5)) % len(pool)]["id"])
+        return {i: 0.7 for i in ids}
+    except Exception:
+        return {}
+
+
 @app.route("/shop", methods=["GET", "POST"])
 def api_shop():
-    return jsonify({"ok": True, "list": [dict(x) for x in SHOP]})
+    return jsonify({"ok": True, "list": [dict(x) for x in SHOP], "daily": _daily_off()})
 
 
 TFRAG_MIN = 30
@@ -1786,7 +1854,7 @@ def api_buy():
     if item["type"] != "mat" and iid in owned:
         return jsonify({"ok": False, "msg": "已经拥有了"})
     pts = int(rec.get("pts") or 0)
-    cost = int(item["cost"])
+    cost = int(round(int(item["cost"]) * _daily_off().get(iid, 1)))
     if pts < cost:
         return jsonify({"ok": False, "msg": "积分不足，还差 %d 分" % (cost - pts), "pts": pts})
     rec["pts"] = pts - cost
@@ -2315,7 +2383,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/guest_report", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch")
 
 @app.before_request
 def _rate():
