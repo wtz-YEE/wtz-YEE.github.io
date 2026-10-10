@@ -151,6 +151,14 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
 .phmeter .pin{position:absolute;top:0;bottom:0;width:2px;background:var(--acc);z-index:4;box-shadow:0 0 8px var(--acc)}
 .phmeter .lbl{position:absolute;top:-16px;left:0;font-family:Consolas,monospace;font-size:9px;color:var(--ink3);letter-spacing:.16em}
 
+.eqbar{position:absolute;left:12px;right:12px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:4;pointer-events:none}
+.eq-lbl{font-family:Consolas,monospace;font-size:9px;color:var(--ink3);letter-spacing:.14em;pointer-events:none}
+.eqs{display:flex;gap:4px;flex-wrap:wrap;pointer-events:auto}
+.eq{width:34px;height:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1px solid var(--ln);background:rgba(255,255,255,.02);color:var(--ink2);font-size:16px;cursor:pointer;transition:.2s;position:relative}
+.eq i{font-size:7px;font-style:normal;color:var(--ink3);letter-spacing:.06em}
+.eq.on{border-color:rgba(255,214,10,.6);background:rgba(255,214,10,.08);color:var(--acc);box-shadow:0 0 10px rgba(255,214,10,.12)}
+.eq.on:hover{transform:translateY(-2px)}
+.eq:not(.on):hover{border-color:rgba(255,214,10,.4)}
 /* toast */
 .thermo .tv{position:absolute;left:-36px;top:-18px;font-family:Consolas,monospace;font-size:10px;color:var(--gold);white-space:nowrap;text-shadow:0 0 6px rgba(255,214,10,.4);pointer-events:none}
 #toast.new{border-color:rgba(255,214,10,.95);box-shadow:0 0 26px rgba(255,214,10,.25)}
@@ -272,12 +280,13 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
   </div>
   <div class="bn-distill" id="bnDistill"><i></i></div>
   <div class="bn-val"><button id="bnReset">重来</button><button id="bnExit">退出</button></div>
+  <div class="eqbar"><span class="eq-lbl">器材</span><span class="eqs" id="eqs"></span></div>
 </div>
     </section>
     <section class="panel" id="codex">
       <h2><i>🜔</i> 配方图鉴</h2>
       <div id="recList"></div>
-      <button class="op g-note" id="gNote" style="width:100%;margin-bottom:10px">☰ 炼金笔记</button>
+      <div style="display:flex;gap:6px;margin-bottom:10px"><button class="op g-note" id="gNote" style="flex:1">☰ 笔记</button><button class="op g-note" id="gExp" style="flex:1">✎ 日记</button><button class="op g-note" id="gAff" style="flex:1">♜ 图谱</button></div>
 <h2 style="margin-top:16px"><i>★</i> 称号</h2>
       <div id="titleList"></div>
     </section>
@@ -322,10 +331,10 @@ var MATS={
  p_citrinitas:{n:'黄金之露',sy:'◒',s:5,m:4,a:5,cat:'中间',src:'黄化',r:1},
  p_rubedo:{n:'红化精华',sy:'◑',s:6,m:4,a:6,cat:'中间',src:'红化',r:1},
  p_stone:{n:'贤者之石',sy:'★',s:10,m:10,a:10,cat:'终极',src:'大功业',r:3},
- pot_heat:{n:'炽热药剂',sy:'⚗',s:8,m:2,a:2,cat:'成品',src:'配方',r:1,use:'点燃花园暖炉 · 可兑商店金币'},
- pot_flow:{n:'流动药剂',sy:'⚘',s:2,m:8,a:2,cat:'成品',src:'配方',r:1,use:'加速锻造淬火 · 可兑商店金币'},
- pot_ward:{n:'坚固药剂',sy:'🛡',s:2,m:2,a:8,cat:'成品',src:'配方',r:1,use:'加固仓库藏品 · 可兑商店金币'},
- pot_elixir:{n:'万能灵药',sy:'☤',s:5,m:5,a:5,cat:'成品',src:'配方',r:2,use:'花园之泉 · 植物瞬间饱满'},
+ pot_heat:{n:'炽热药剂',sy:'⚗',s:8,m:2,a:2,cat:'成品',src:'配方',r:1,use:'点燃花园暖炉 · 可兑商店金币',drink:'炉火在血脉中燃起——下一炉经验 ×1.5'},
+ pot_flow:{n:'流动药剂',sy:'⚘',s:2,m:8,a:2,cat:'成品',src:'配方',r:1,use:'加速锻造淬火 · 可兑商店金币',drink:'身轻如风——下一炉蒸馏加速 10%'},
+ pot_ward:{n:'坚固药剂',sy:'🛡',s:2,m:2,a:8,cat:'成品',src:'配方',r:1,use:'加固仓库藏品 · 可兑商店金币',drink:'金石铸身——下一炉失误材料全返'},
+ pot_elixir:{n:'万能灵药',sy:'☤',s:5,m:5,a:5,cat:'成品',src:'配方',r:2,use:'花园之泉 · 植物瞬间饱满',drink:'万灵入体——+150 经验，下一炉品质 +10'},
 a_ether:{n:'以太之息',sy:'◇',s:3,m:9,a:4,cat:'原质',src:'商店·异象',r:1,how:'商店 40 金币 · 或「风息」与「火种」于炼金台合成'},
 a_sultears:{n:'硫之泪',sy:'⚗',s:7,m:4,a:2,cat:'原质',src:'商店·蒸馏',r:1,how:'商店 30 金币 · 硫磺过量蒸馏时凝结'},
 a_mercuryshadow:{n:'汞之影',sy:'☿',s:2,m:9,a:3,cat:'原质',src:'午夜异象',r:1,how:'商店 45 金币 · 午夜（0-1 点）开炼金台异象可见'},
@@ -503,13 +512,14 @@ function wh(){
   h+='<div class="mcat" data-c="'+c+'"><span>'+c+'</span><em>'+ids.length+'</em><b>'+(ci<2?'▾':'▸')+'</b></div><div class="mwrap" data-w="'+c+'"'+(ci<2?'':' style="display:none"')+'>';
   ids.forEach(function(k){
    var m=MATS[k],q=A.mats[k]||0;
-   h+='<div class="mrow" data-k="'+k+'" '+(q>0?'':'style="opacity:.45"')+'><span class="sy">'+m.sy+'</span><span class="nm">'+m.n+'</span>'+(m.r>0?'<span class="star">'+'★'.repeat(m.r)+'</span>':'')+'<i class="get" title="获取方式">ℹ</i>'+props(m)+'<span class="qt">×'+q+'</span></div>';
+   h+='<div class="mrow" data-k="'+k+'" '+(q>0?'':'style="opacity:.45"')+'><span class="sy">'+m.sy+'</span><span class="nm">'+m.n+'</span>'+(m.r>0?'<span class="star">'+'★'.repeat(m.r)+'</span>':'')+'<i class="get" title="获取方式">ℹ</i>'+(m.drink&&q>0?'<b class="drink" title="饮下">饮</b>':'')+props(m)+'<span class="qt">×'+q+'</span></div>';
   });
   h+='</div>';
  });
  $('#whList').innerHTML=h;
  $$('#whList .mrow').forEach(function(el){
   el.addEventListener('click',function(e){
+   if(e.target.classList.contains('drink')){drink(el.getAttribute('data-k'));return}
    if(e.target.classList.contains('get')){
     var k=el.getAttribute('data-k');
     toast(MATS[k].n+' · 获取方式','<span style="line-height:1.6">'+MATS[k].how+'</span>');
@@ -556,7 +566,7 @@ function renderCur(){
   $('#stageBadge').textContent=stage>=4?'MAGNUM OPUS':s.la;
   var dm={};(cur||[]).forEach(function(k){dm[k]=(dm[k]||0)+1});
   var dl=Object.keys(dm).map(function(k){return MATS[k].n+(dm[k]>1?' ×'+dm[k]:'')}).join(' + ');
-  $('#stageDesc').innerHTML='<span style="color:'+s.col+'">'+s.n+'</span> · '+s.desc+'<br><span style="opacity:.6">'+dl+'</span>';
+  $('#stageDesc').innerHTML='<span style="color:'+s.col+'">'+s.n+'</span> · '+s.desc+'<br><span style="opacity:.6">'+dl+'</span>'+(affList().length?'<br><small style="opacity:.8">亲合：'+affList().map(function(a){return '<b style="color:'+(a[0]==='相克'?'#ff7a6b':'#ffd60a')+'">'+a[0]+'</b> '+a[1]}).join(' · ')+'</small>':'');
   var ops='<button class="op hot" id="opBench">⚗ 炼金台</button><button class="op" id="opGo">◇ 进阶仪式 →</button>';
   if(stage>0)ops+='<button class="op" id="opBack">← 回炉重炼</button>';
   ops+='<button class="op" id="opClear" style="opacity:.5">清空坩埚</button>';
@@ -575,10 +585,93 @@ function renderCur(){
   if(hb)hb.addEventListener('click',function(){toast('炼金箴言','三原质是万物之骨，火水地风是万物之息<br>试试 硫+火、水银+风、盐+地')});
  }
 }
+function drink(k){
+ var m=MATS[k];
+ if(!(A.mats[k]>0)){toast('空空如也',m.n+' 一瓶都没有');return}
+ A.mats[k]--;A.buff=Object.assign({},A.buff||{});
+ A.buff[k]=(A.buff[k]||0)+1;save();wh();
+ toast('饮下 · '+m.n,m.drink,'ok');
+}
+function useBuff(k){if(A.buff&&A.buff[k]>0){A.buff[k]--;if(!A.buff[k])delete A.buff[k];save();return true}return false}
+function affList(){
+ var dm=curDose(),out=[];
+ if(dm.e_fire&&dm.e_air)out.push(['升腾','蒸馏加速','spd']);
+ if(dm.e_water&&dm.e_earth)out.push(['沉淀','研磨加速','grind']);
+ if((dm.m_gold||dm.m_goldpure)&&dm.e_fire)out.push(['熔融','高温更稳','lid']);
+ if(dm.e_fire&&dm.e_water)out.push(['相克','pH 波动加剧','ph']);
+ if(dm.e_air&&dm.e_earth)out.push(['相克','压力波动加剧','press']);
+ return out;
+}
+function affKind(k){return affList().some(function(a){return a[2]===k})}
+function bnPhen(){
+ var t=bench.temp,ph=curPh();
+ var cold=t<38,hot=t>80,acid=ph<4,alk=ph>9;
+ if(cold&&acid)return '药液幽蓝沉寂——寒意与酸息交织';
+ if(cold&&alk)return '药液凝滞微浑——低温下碱气不散';
+ if(hot&&acid)return '药液沸腾泛金——酸性蒸汽扑鼻';
+ if(hot&&alk)return '药液翻涌起雾——碱雾灼目';
+ if(cold)return '药液细泡不起——火候不足，反应未醒';
+ if(hot)return '药液急沸——注意压力';
+ return '药液微温冒细泡——'+(ph<6?'偏酸':'偏碱')+'的气息';
+}
 function recipeReq(r){
  var dose=Object.keys(r.dose).map(function(k){return MATS[k].n+'×'+r.dose[k]}).join('+');
  var pr=r.prog.map(function(x){return x[0]+'°C'}).join(' → ');
  return dose+' · '+pr+' · pH '+r.ph[0]+'-'+r.ph[1]+' · '+r.win+'s 收成';
+}
+var EQUIP=[
+ {c:'tong',n:'坩埚钳',sy:'⚓',need:{m_iron:2,e_fire:1},fx:'冷却步骤点击——立即夹出降温，冷却品质满分'},
+ {c:'rod',n:'搅拌棒',sy:'🥢',need:{o_moonstone:1,e_air:1},fx:'加热步骤点击——pH 校准回配方区间中心'},
+ {c:'drop',n:'滴管',sy:'💧',need:{e_flowsand:2,e_fire:1},fx:'加热步骤点击——补投 1 份已投材料（自动选第一种）'},
+ {c:'cond',n:'冷凝管',sy:'🌀',need:{o_obsidian:1,e_water:2},fx:'被动·回流冷却判定窗口翻倍，更难冷却超标'},
+ {c:'filter',n:'滤纸',sy:'🗒',need:{h_rosemary:2,e_water:1},fx:'被动·装瓶滤去杂质，品质 +5'},
+ {c:'mesh',n:'石棉网',sy:'▦',need:{o_obsidian:1,m_copper:1},fx:'被动·受热均匀，品质 +2'},
+ {c:'lid',n:'坩埚盖',sy:'◐',need:{m_copper:2,e_earth:1},fx:'被动·保温：升温更稳、过热线更宽容'},
+ {c:'scale',n:'天平',sy:'⚖',need:{m_gold:1,m_iron:1},fx:'被动·剂量失衡时材料全额返还'},
+ {c:'sandb',n:'沙浴',sy:'🏖',need:{e_flowsand:3,e_earth:1},fx:'被动·低温段稳定，品质 +2'},
+ {c:'siphon',n:'虹吸管',sy:'⏳',need:{o_emeraldbreath:1,e_voidwind:1},fx:'被动·配比失手时材料全额返还'},
+ {c:'brush',n:'研钵刷',sy:'🪥',need:{h_rosemary:3},fx:'被动·研磨低速段每击 +24'},
+ {c:'wax',n:'蜡封',sy:'🕯',need:{h_moonlight:2,m_tin:1},fx:'被动·收成窗口 +2s，过反应线也延后 2s'},
+ {c:'bunsen',n:'酒精喷灯',sy:'🔥',need:{h_firebloom:2,m_iron:1},fx:'被动·二段蒸馏提速 ×1.2，升温更快更烈'},
+ {c:'iceb',n:'冰浴',sy:'🧊',need:{e_frostcore:1,e_water:2},fx:'被动·主反应完成即速冷，冷却品质 +10'},
+ {c:'astro',n:'星盘',sy:'✨',need:{m_gold:1,m_silver:1,e_skyfire:1},fx:'被动·炼成经验 +15%'}
+];
+function hasEq(c){return A.eq&&A.eq.indexOf(c)>=0}
+function eqRender(){
+ var b=$('#eqs');if(!b)return;
+ var onN=0;
+ b.innerHTML=EQUIP.map(function(e){
+  var on=hasEq(e.c);if(on)onN++;
+  var needStr=Object.keys(e.need).map(function(k){return MATS[k].n+' ×'+e.need[k]}).join(' · ');
+  return '<span class="eq'+(on?' on':'')+'" data-c="'+e.c+'" title="'+e.n+'：'+e.fx+(on?'':' | 打造：'+needStr)+'">'+e.sy+'<i>'+(on?'':'锁')+'</i></span>';
+ }).join('');
+ var lb=document.querySelector('.eq-lbl');if(lb)lb.textContent='器材 '+onN+'/'+EQUIP.length;
+ $$('#eqs .eq').forEach(function(el){
+  el.addEventListener('click',function(){
+   var e=EQUIP.find(function(x){return x.c===el.getAttribute('data-c')});
+   if(hasEq(e.c)){
+    if(e.c==='tong'&&bench.on&&bench.step==='cool'){
+     if(bench.tongN>=1){toast('坩埚钳','一炉只够使一次——钳子已热');return}
+     bench.tongN++;bench.temp=20;bench.coolT=5;bnRender();toast('坩埚钳','夹出药瓶！冷却达标');return}
+    if(e.c==='rod'&&bench.on&&bench.step==='heat'){
+     if(bench.rodN>=2){toast('搅拌棒','两番搅拌已尽——料液倦了');return}
+     bench.rodN++;var rq=bnReq();bench.phbias=(rq.phLo+rq.phHi)/2-curPh();bnRender();toast('搅拌棒','pH 已校准回目标区间');return}
+    if(e.c==='drop'&&bench.on&&bench.step==='heat'){
+     if(bench.dropN>=2){toast('滴管','两番滴注已尽——试管干了');return}
+     var cur2=cur||[];if(!cur2.length){toast('滴管','坩埚是空的——先投料');return}
+     bench.dropN++;var k=cur2[0];A.mats[k]--;cur2.push(k);qsum=0;save();wh();renderCur();
+     toast('滴管','补投一份 '+MATS[k].n);return
+    }
+    toast(e.n,e.fx);return;
+   }
+   var need=Object.keys(e.need),ok=true;
+   need.forEach(function(k){if((A.mats[k]||0)<e.need[k])ok=false});
+   if(!ok){toast('器材缺失',need.map(function(k){return MATS[k].n+' ×'+e.need[k]}).join(' · ')+' 不足<br><small>'+need.map(function(k){return MATS[k].how||MATS[k].src||'来源未知'}).join(' · ')+'</small>');return}
+   need.forEach(function(k){A.mats[k]-=e.need[k]});
+   if(!A.eq)A.eq=[];A.eq.push(e.c);save();wh();eqRender();
+   toast('打造完成 · '+e.n,e.fx,'ok');
+  });
+ });
 }
 var cf=0;
 function codex(){
@@ -614,6 +707,8 @@ function titles(){
  if(A.stone>=3)t.push(['大功业者 · Magister','t-purple','三次贤者之石']);
  if(A.stone>=7)t.push(['衔尾蛇之主','t-red','七次贤者之石']);
  if(Object.keys(A.trans).length>=7)t.push(['点石成金之人','t-gold','转化七种材料']);
+ if(A.eq&&A.eq.length>=15)t.push(['百器之主 · Omniarius','t-gold','集齐全部反应器材']);
+ if(A.made>=50)t.push(['百炼成钢 · Ferrum','t-red','炼成五十炉']);
  var h=t.length?t.map(function(x){return '<div class="title-row"><span class="tk">TITLE</span><span class="'+x[1]+'">'+x[0]+'</span><span style="margin-left:auto;font-size:10px;color:#6a767d">'+x[2]+'</span></div>'}).join(''):'<div class="title-row"><span class="tk">TITLE</span><span style="color:#6a767d">尚无称号 · 先炼一次</span></div>';
  $('#titleList').innerHTML=h;
 }
@@ -872,7 +967,7 @@ var BN=$('#bench');
 function curPh(){
  var dm=curDose(),sum=0,n=0;
  Object.keys(dm).forEach(function(k){var m=MATS[k];if(m.ph===undefined)return;sum+=m.ph*dm[k];n+=dm[k]});
- return n?sum/n:7;
+ return (n?sum/n:7)+(bench&&bench.on&&bench.phbias||0);
 }
 function bnRecipe(){var dm=curDose(),kk=kindKey(dm);for(var i=0;i<RECIPES.length;i++){if(kindKey(RECIPES[i].dose)===kk)return RECIPES[i]}return null}
 function bnSeg(){return bench.dist<60?0:1}
@@ -884,7 +979,7 @@ function bnReq(){
 function bnStepName(){return bench.step==='grind'?'01 // 计量':bench.step==='tube'?'02 // 接管':bench.step==='heat'?'03 // 程控':(bench.step==='cool'?'04 // 回流':'05 // 收成')}
 function benchStart(){
  if(!cur||!cur.length){toast('坩埚空空','先投料再开台');return}
- bench.on=true;bench.step='grind';bench.grind=0;bench.sel=null;bench.ln=[];bench.err=0;bench.temp=0;bench.dist=0;bench.hits=0;bench.ctr=0;bench.tickN=0;bench.winLeft=0;bench.elapsed=0;bench.coolT=0;
+ bench.on=true;bench.step='grind';bench.grind=0;bench.sel=null;bench.ln=[];bench.err=0;bench.temp=0;bench.dist=0;bench.hits=0;bench.ctr=0;bench.tickN=0;bench.winLeft=0;bench.elapsed=0;bench.coolT=0;bench.rodN=0;bench.dropN=0;bench.tongN=0;bench.pressure=0;
  BN.classList.add('on');$('#stageBadge').textContent='BENCH';
  $('.pot').style.opacity=.3;$('#slots').style.opacity=.3;$('#ops').style.opacity=.3;
  if(bench.iv)clearInterval(bench.iv);
@@ -909,7 +1004,7 @@ function bnRender(){
  var rq=bnReq(),t='';
  if(bench.step==='grind')t='点击研杵研磨 · 研磨度 <b>'+bench.grind+'%</b>';
  else if(bench.step==='tube')t='连接管路：点 <b>M</b> → <b>•</b> → <b>B</b>（'+bench.ln.length+'/2）';
- else if(bench.step==='heat')t=(rq.known?'第 '+(rq.seg+1)+' 段目标 <b>'+rq.lo+'-'+rq.hi+'°C</b> · 蒸馏 '+Math.round(bench.dist)+'%':'未知配比 · 保守 45-65 · 蒸馏 '+Math.round(bench.dist)+'%');
+ else if(bench.step==='heat')t=(rq.known?'第 '+(rq.seg+1)+' 段目标 <b>'+rq.lo+'-'+rq.hi+'°C</b> · 蒸馏 '+Math.round(bench.dist)+'%':'未知配比 · 保守 45-65 · 蒸馏 '+Math.round(bench.dist)+'%')+(bench.temp>45?' · 压力 <b style="color:'+(bench.pressure>80?'#ff7a6b':'#ffd60a')+'">'+Math.round(bench.pressure)+'%</b>':'')+(rq.known?'':'<br><i style="opacity:.75">'+bnPhen()+'</i>');
  else if(bench.step==='cool')t='降温回流 · 火源拉低，等药液冷却 <b>'+Math.round(bench.temp)+'°C</b> → 目标 <25°C';
  else if(bench.step==='bottle')t='收成窗口 <b>'+bench.winLeft.toFixed(1)+'s</b> · 超时变质';
  $('#bnStep').innerHTML='STEP '+bnStepName();
@@ -937,20 +1032,22 @@ function bnTick(){
  if(!bench.on)return;
  if(bench.step==='heat'){
   var r=+$('#heatRange').value,rq=bnReq(),ph=curPh();
-  bench.temp+=(r-bench.temp)*0.08;bench.tickN++;
+  bench.temp+=(r-bench.temp)*(hasEq('bunsen')?0.12:(hasEq('lid')?0.06:0.08));bench.tickN++;
+  bench.pressure=Math.max(0,Math.min(100,bench.pressure+((bench.temp-55)*0.02)*(affKind('press')?1.3:1)));
+  if(bench.temp<=55)bench.pressure=Math.max(0,bench.pressure-0.6);
   var spd=1;
   if(rq.known){var c=(rq.phLo+rq.phHi)/2,span=(rq.phHi-rq.phLo)/2;if(Math.abs(ph-c)>span)spd=0.5}
   if(bench.temp>=rq.lo&&bench.temp<=rq.hi){
-   bench.hits++;bench.dist+=1.1*spd;bench.err=Math.max(0,bench.err-1);
+   bench.hits++;bench.dist+=1.1*spd*(affKind('spd')?(A.buff&&A.buff.pot_flow?1.21:1.1):1)*(bnSeg()===1&&hasEq('bunsen')?1.15:1);bench.err=Math.max(0,bench.err-1);
    var c=(rq.lo+rq.hi)/2;
    if(Math.abs(bench.temp-c)<=1.5)bench.ctr++;
   }else{
    bench.err++;
-   if(bench.temp>92&&bench.err>18){clearInterval(bench.iv);bench.iv=null;bnFail('坩埚过热 · 药液蒸干')}
+   if(bench.temp>((hasEq('lid')?96:92)+(affKind('lid')?4:0))&&bench.err>18){clearInterval(bench.iv);bench.iv=null;bnFail('坩埚过热 · 药液蒸干')}
    else if(bench.temp<14&&bench.err>30){clearInterval(bench.iv);bench.iv=null;bnFail('火候不足 · 反应停滞')}
   }
   if(bench.dist>=100){
-   bench.step='cool';bench.coolT=0;
+   bench.step='cool';bench.coolT=0;if(hasEq('iceb'))bench.temp=24;
    clearInterval(bench.iv);bench.iv=setInterval(bnTick,120);
    bnRender();toast('主反应完成','降温回流 · 待药液冷却至 25°C 以下');
   }
@@ -958,17 +1055,17 @@ function bnTick(){
   var r=+$('#heatRange').value;
   bench.temp+=(r-bench.temp)*0.08;bench.coolT+=0.12;
   if(bench.temp<25&&bench.coolT>0.5){
-   bench.step='bottle';bench.winLeft=bnReq().win;bench.elapsed=0;
+   bench.step='bottle';bench.winLeft=bnReq().win+(hasEq('wax')?2:0);bench.elapsed=0;
    clearInterval(bench.iv);bench.iv=setInterval(bnTick,100);
    bnRender();toast('药液已冷','收成窗口 '+bnReq().win+'s 内点击烧瓶');
-  }else if(bench.coolT>14){
-   bench.step='bottle';bench.winLeft=bnReq().win;bench.elapsed=0;
+  }else if(bench.coolT>(hasEq('cond')?28:14)){
+   bench.step='bottle';bench.winLeft=bnReq().win+(hasEq('wax')?2:0);bench.elapsed=0;
    clearInterval(bench.iv);bench.iv=setInterval(bnTick,100);
    bnRender();toast('余温未散','勉强装瓶 · 品质受损');
   }
  }else if(bench.step==='bottle'){
   bench.winLeft-=0.1;bench.elapsed+=0.1;
-  if(bench.winLeft<=-bnReq().win){clearInterval(bench.iv);bench.iv=null;bnFail('过反应 · 药液变质');return}
+  if(bench.winLeft<=-(bnReq().win+(hasEq('wax')?2:0))){clearInterval(bench.iv);bench.iv=null;bnFail('过反应 · 药液变质');return}
   if(bench.winLeft<=0){$('#bnTip').innerHTML='收成窗口已过 · 药液变质中 <b>'+Math.abs(bench.winLeft).toFixed(1)+'s</b>';$('#bulb').classList.remove('ready');$('#bulb').style.opacity=.5}
  }
  bnRender();
@@ -984,9 +1081,10 @@ function drawLine(a,b){
  l.style.width=len+'px';l.style.left=x1+'px';l.style.top=y1+'px';l.style.transform='rotate('+ang+'deg)';
  BN.appendChild(l);
 }
+eqRender();
 $('#pestle').addEventListener('click',function(){
  if(!bench.on||bench.step!=='grind')return;
- bench.grind=Math.min(100,bench.grind+(bench.grind<60?18:10));bnRender();
+ bench.grind=Math.min(100,bench.grind+Math.round((bench.grind<60?(hasEq('brush')?24:18):10)*(affKind('grind')?1.1:1)));bnRender();
  if(bench.grind>=100){bench.step='tube';bnRender();toast('研磨完毕','粉末细腻 · 开始接管')}
 });
 ['n0','n1','n2'].forEach(function(id,i){
@@ -1012,10 +1110,20 @@ $('#bulb').addEventListener('click',function(){
  var tubeQ=Math.max(70,100-bench.err*8);
  var heatQ=Math.min(100,Math.round((bench.hits/(bench.tickN||1))*65+(bench.ctr/(bench.tickN||1))*35));
  var phv=phQ(rq);
- var coolQ=bench.coolT<=6?100:(bench.coolT<=10?80:60);
- var timeQ=bench.elapsed<=rq.win?100:Math.max(40,100-Math.floor((bench.elapsed-rq.win)/rq.win*60));
+ var coolQ=bench.coolT<=(hasEq('cond')?12:6)?100:(bench.coolT<=(hasEq('cond')?20:10)?80:60);
+ if(hasEq('iceb'))coolQ=Math.min(100,coolQ+8);
+ var timeQ=bench.elapsed<=rq.win+(hasEq('wax')?2:0)?100:Math.max(40,100-Math.floor((bench.elapsed-rq.win-(hasEq('wax')?2:0))/(rq.win+(hasEq('wax')?2:0))*60));
  var q=Math.round(grindQ*0.2+tubeQ*0.12+heatQ*0.3+phv*0.18+coolQ*0.1+timeQ*0.1);
+ if(hasEq('filter'))q+=4;
+ if(hasEq('mesh'))q+=2;
+ if(hasEq('sandb'))q+=2;
+ if(affKind('ph'))phv=Math.max(0,phv-5);
+ if(bench.pressure>80)q-=Math.min(20,Math.round((bench.pressure-80)/2));
+ if(A.buff&&A.buff.pot_elixir)q+=10;
  if(!rq.known)q=Math.min(q,70);
+ q=Math.min(100,q);
+ if(A.buff&&A.buff.pot_elixir)useBuff('pot_elixir');
+ if(A.buff&&A.buff.pot_flow)useBuff('pot_flow');
  var st=JSON.parse(localStorage.getItem('wz_alch')||'{}');
  if(!st.qb)st.qb=[];st.qb.push({t:Date.now(),q:q,mat:cur.slice(),w:bench.elapsed,ph:Math.round(curPh()*10)/10});
  if(st.qb.length>30)st.qb.shift();
@@ -1045,6 +1153,37 @@ $('#gNote').addEventListener('click',function(){
  $('#mini').innerHTML='<div style="padding:4px">'+rows+'</div>';
 });
 
+$('#gExp').addEventListener('click',function(){
+ var st=JSON.parse(localStorage.getItem('wz_alch')||'{}');
+ var q=st.expLog||[];
+ if(!q.length){toast('实验日记空白','还没试过任何组合——先投一炉') ;return}
+ var rows=q.slice(0,20).map(function(x){
+  var mat=(x.mats||[]).map(function(k){return MATS[k]?MATS[k].sy:''}).join('');
+  var res=x.out?(MATS[x.out]?MATS[x.out].n+' ✓':'炼成 ✓'):(x.tag==='剂量失衡'?'剂量失衡 ✗':'坩埚空响 ✗');
+  var d=new Date(x.t);
+  return '<div class="note-row"><span class="'+(x.out?'nq':'nbad')+'">'+(x.out?'✓':'✗')+'</span><span>'+mat+'</span><span style="color:var(--ink3)">'+res+'</span><small>'+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes()+'</small></div>';
+ }).join('');
+ openMini('实验日记 · 试炼留痕','最近二十组 · 材料 → 结果');
+ $('#mini').innerHTML='<div style="padding:4px">'+rows+'</div>';
+});
+$('#gAff').addEventListener('click',function(){
+ openMini('元素亲合图谱','五行生克——投料前的参谋');
+ $('#mini').innerHTML='<div style="padding:6px"><div style="position:relative;width:210px;height:210px;margin:0 auto">'+
+  '<svg width="210" height="210" style="position:absolute;inset:0">'+
+  '<line x1="105" y1="16" x2="185" y2="58" stroke="rgba(255,214,10,.85)" stroke-width="1.5"/><text x="150" y="30" fill="rgba(255,214,10,.9)" font-size="7" font-family="Consolas,monospace">升腾</text>'+
+  '<line x1="105" y1="194" x2="25" y2="152" stroke="rgba(255,214,10,.85)" stroke-width="1.5"/><text x="38" y="176" fill="rgba(255,214,10,.9)" font-size="7" font-family="Consolas,monospace">沉淀</text>'+
+  '<line x1="25" y1="152" x2="105" y2="16" stroke="rgba(255,214,10,.7)" stroke-width="1.5" stroke-dasharray="3 3"/><text x="42" y="80" fill="rgba(255,214,10,.85)" font-size="7" font-family="Consolas,monospace">熔融</text>'+
+  '<line x1="185" y1="58" x2="185" y2="152" stroke="rgba(255,122,107,.9)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="178" y="108" fill="rgba(255,122,107,.9)" font-size="7" font-family="Consolas,monospace">相克</text>'+
+  '<line x1="25" y1="152" x2="185" y2="58" stroke="rgba(255,122,107,.7)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="92" y="108" fill="rgba(255,122,107,.8)" font-size="7" font-family="Consolas,monospace">相克</text>'+
+  '</svg>'+
+  '<div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:30px;height:30px;border:1px solid #ff7a6b;border-radius:50%;background:#1a0f0f;display:flex;align-items:center;justify-content:center;font-size:14px">🔥</div>'+
+  '<div style="position:absolute;top:44px;right:0;width:30px;height:30px;border:1px solid var(--gold);border-radius:50%;background:#101018;display:flex;align-items:center;justify-content:center;font-size:14px">🌬</div>'+
+  '<div style="position:absolute;bottom:44px;right:0;width:30px;height:30px;border:1px solid #4fa8ff;border-radius:50%;background:#0b1320;display:flex;align-items:center;justify-content:center;font-size:14px">💧</div>'+
+  '<div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:30px;height:30px;border:1px solid #8a9a5b;border-radius:50%;background:#12140c;display:flex;align-items:center;justify-content:center;font-size:14px">🌍</div>'+
+  '<div style="position:absolute;bottom:44px;left:0;width:30px;height:30px;border:1px solid #ffd60a;border-radius:50%;background:#141205;display:flex;align-items:center;justify-content:center;font-size:14px">🏆</div>'+
+  '</div>'+
+  '<div style="font-size:9.5px;color:var(--ink3);line-height:1.8;margin-top:8px">金线 = 相生（投料时获得加成）<br><span style="color:#ff7a6b">红虚线 = 相克（pH 波动加剧 / 压力波动加剧）</span><br>火+风·升腾=蒸馏加速｜水+地·沉淀=研磨加速｜金+火·熔融=过热线放宽</div></div>';
+});
 /* ========== 氛围动效：坩埚蒸汽 + 金星粒子 ========== */
 setInterval(function(){
  var pot=document.querySelector('.pot');
@@ -1078,8 +1217,12 @@ function matchRecipe(fromBench){
   var r=RECIPES[ri],out=r.out,doseOk=true;
   Object.keys(r.dose).forEach(function(k){if(dm[k]!==r.dose[k])doseOk=false});
   if(!doseOk){
-   var back=0;cur.forEach(function(k){if(Math.random()<.5){A.mats[k]++;back++}});
-   A.exp+=8;save();cur=null;stage=0;qsum=0;refresh();
+   var back=0;cur.forEach(function(k){if(hasEq('scale')||(A.buff&&A.buff.pot_ward)||Math.random()<.5){A.mats[k]++;back++}});
+   A.exp+=8;
+   if(!A.expLog)A.expLog=[];
+   A.expLog.unshift({t:Date.now(),mats:(cur||[]).slice(),out:null,tag:'剂量失衡'});
+   if(A.expLog.length>40)A.expLog.pop();
+   save();cur=null;stage=0;qsum=0;refresh();
    toast('剂量失衡','同源异量——此配比无从谈火候 · 经验 +8'+(back?' · 返还材料 ×'+back:''));
    return;
   }
@@ -1088,15 +1231,30 @@ function matchRecipe(fromBench){
   var first=A.rec.indexOf(out)<0;
   if(first)A.rec.push(out);
   A.made=(A.made||0)+1;
+  var byp='',rr=Math.random();
+  if(rr<.18)byp='a_wasteash';
+  else if(rr<.3)byp='a_phlogiston';
+  else if(rr<.42)byp='m_verdigris';
+  if(byp)A.mats[byp]=(A.mats[byp]||0)+1;
   var exp=30+qsum+(MATS[out].r||0)*20;
+  if(hasEq('astro'))exp=Math.round(exp*1.15);
+  if(A.buff&&A.buff.pot_heat){exp=Math.round(exp*1.5);useBuff('pot_heat')}
+  if(A.buff&&A.buff.pot_elixir){exp+=150;useBuff('pot_elixir')}
   A.exp+=exp;maybeLv();
   if(!fromBench)A.st[STAGES[Math.min(stage,3)].k]++;
+  if(!A.expLog)A.expLog=[];
+  A.expLog.unshift({t:Date.now(),mats:(cur||[]).slice(),out:out,tag:r.tag});
+  if(A.expLog.length>40)A.expLog.pop();
   save();cur=null;stage=0;qsum=0;refresh();
-  toast('炼制完成 · '+MATS[out].n,r.tag+(first?' · 新配方刻入图鉴':'')+' · 经验 +'+exp,first?'new':null);
+  toast('炼制完成 · '+MATS[out].n,r.tag+(first?' · 新配方刻入图鉴':'')+' · 经验 +'+exp+(byp?' · 炉底留下 '+MATS[byp].n:''),first?'new':null);
   if(first)fxRune();
  }else{
-  var back=0;cur.forEach(function(k){if(Math.random()<.5){A.mats[k]++;back++}});
-  A.exp+=10;A.st[STAGES[Math.min(stage,3)].k]++;save();cur=null;stage=0;qsum=0;refresh();
+  var back=0;cur.forEach(function(k){if(hasEq('siphon')||(A.buff&&A.buff.pot_ward)||Math.random()<.5){A.mats[k]++;back++}});
+  A.exp+=10;A.st[STAGES[Math.min(stage,3)].k]++;
+  if(!A.expLog)A.expLog=[];
+  A.expLog.unshift({t:Date.now(),mats:(cur||[]).slice(),out:null,tag:'坩埚空响'});
+  if(A.expLog.length>40)A.expLog.pop();
+  save();cur=null;stage=0;qsum=0;refresh();
   toast('坩埚空响','此组合未生奇物 · 经验 +10'+(back?' · 返还材料 ×'+back:''));
  }
 }

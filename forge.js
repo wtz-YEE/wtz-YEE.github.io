@@ -681,10 +681,12 @@ function fHmFold(k){
   }
   fHmR();
 }
+function fBuff(k){try{var a=JSON.parse(localStorage.getItem('wz_alch')||'{}');if(a.buff&&a.buff[k]>0){a.buff[k]--;if(!a.buff[k])delete a.buff[k];localStorage.setItem('wz_alch',JSON.stringify(a));return true}}catch(e){}return false}
 function fHmQuench(){
   if(!FH||FH.st!==2)return;if(FH.tmr){clearInterval(FH.tmr);FH.tmr=null}
   var v=hmV(),q=v.q||'B';
-  v.aff.push(hmAffClass(v,FH.t>60?'攻击':FH.t>=40?'防御':'效用',q));fSaveV(v);
+  v.aff.push(hmAffClass(v,FH.t>60?'攻击':FH.t>=40?'防御':'效用',q));
+  if(fBuff('pot_flow')){v.aff.push('流动之痕 · 淬火加速');fSaveV(v);toast('流动药剂生效','淬火额外铭刻「流动之痕」')}else{fSaveV(v)}
   fBurst(300,300,'#4fa8ff',16);fHmSnd('quench');
   FH.st=3;FH.sp=0;FH.tmr=setInterval(function(){if(FH){FH.sp+=0.6;if(FH.sp>=100)FH.sp=0;var e=document.getElementById('fHmSp');if(e)e.textContent=Math.round(FH.sp)}},40);
   toast('淬火完成','落点 '+(FH.t>60?'高温':FH.t>=40?'中温':'低温')+' · 下一步开刃');fHmR();
@@ -849,7 +851,7 @@ window.fBlankList=function(){return B.slice()};
 window.fVault=fVault;window.fPower=fPower;window.fRarity=fRarity;window.fAffNames=fAffNames;window.fShow=fShow;window.fComboName=fComboName;
 window.fLapisAdd=fLapisAdd;window.fIronAdd=fIronAdd;window.fBSAdd=fBSAdd;
 window.fPlantPlot=fPlantPlot;window.fHarvestPlot=fHarvestPlot;window.fPlotP=fPlotP;
-window.fExpAdd=fExpAdd;window.fEnchPool=fEnchPool;window.FORGE_SEL=function(){return FORGE_SEL};window.fRename=fRename;window.fHmSnd=fHmSnd;window.fHmNext=fHmNext;window.fHmStart=fHmStart;window.fHmOp=fHmOp;window.fHmCalm=fHmCalm;window.fHmFinish=fHmFinish;window.fHmFold=fHmFold;window.fHmQuench=fHmQuench;window.fHmBlade=fHmBlade;window.fHmClose=fHmClose;window.fHmR=fHmR;window.FH=function(){return FH};window.fConvert=fConvert;window.fConvDo=fConvDo;window.fEnchantTarget=fEnchantTarget;window.fEnchantDo=fEnchantDo;window.fAscend=fAscend;window.fSyncOut=fSyncOut;window.fSyncIn=fSyncIn;window.fExp=fExp;window.fElv=fElv;window.fLexAdd=fLexAdd;
+window.fExpAdd=fExpAdd;window.fEnchPool=fEnchPool;window.FORGE_SEL=function(){return FORGE_SEL};window.fRename=fRename;window.fHmSnd=fHmSnd;window.fHmNext=fHmNext;window.fHmStart=fHmStart;window.fHmOp=fHmOp;window.fHmCalm=fHmCalm;window.fHmFinish=fHmFinish;window.fHmFold=fHmFold;window.fHmQuench=fHmQuench;window.fBuff=fBuff;window.fHmBlade=fHmBlade;window.fHmClose=fHmClose;window.fHmR=fHmR;window.FH=function(){return FH};window.fConvert=fConvert;window.fConvDo=fConvDo;window.fEnchantTarget=fEnchantTarget;window.fEnchantDo=fEnchantDo;window.fAscend=fAscend;window.fSyncOut=fSyncOut;window.fSyncIn=fSyncIn;window.fExp=fExp;window.fElv=fElv;window.fLexAdd=fLexAdd;
 window.fFiltT=fFiltT;window.fFiltR=fFiltR;window.fFiltQ=fFiltQ;window.fFiltS=fFiltS;window.fFiltClear=fFiltClear;
 window.fMaybeDrop=fMaybeDrop;window.fImportPurchased=function(ids){
   var vault=fVault(),got=[];var have={};for(var i=0;i<vault.length;i++)have[vault[i].b]=1;

@@ -478,6 +478,8 @@ function gPlantFx(px,py,sid){
   setTimeout(function(){try{gDraw(sprout,sid,.6)}catch(e){};sprout.style.transform='scale(1)';sprout.style.opacity='1'},260);
   setTimeout(function(){sprout.style.transition='transform .5s,opacity .5s';sprout.style.transform='scale(.01)';sprout.style.opacity='0';setTimeout(function(){if(sprout.parentNode)sprout.parentNode.removeChild(sprout)},540)},1350);
 }
+function gBuffNow(k){try{var a=JSON.parse(localStorage.getItem('wz_alch')||'{}');return !!(a.buff&&a.buff[k]>0)}catch(e){return false}}
+function gBuffTake(k){try{var a=JSON.parse(localStorage.getItem('wz_alch')||'{}');if(a.buff&&a.buff[k]>0){a.buff[k]--;if(!a.buff[k])delete a.buff[k];localStorage.setItem('wz_alch',JSON.stringify(a));return true}}catch(e){}return false}
 function gCareSelf(idx){
   var a=gSet();if(!a[idx])return;
   if((a[idx].g||.5)>=1){toast('已盛开 · 无需照料','这株花正沐浴星光');return}
@@ -485,12 +487,14 @@ function gCareSelf(idx){
   var lc=0;try{lc=parseInt(localStorage.getItem(key)||'0',10)||0}catch(e){}
   if(Date.now()-lc<30000){toast('照料冷却中','约 '+Math.max(1,Math.ceil((30000-(Date.now()-lc))/1000))+' 秒后再照料');return}
   try{localStorage.setItem(key,String(Date.now()))}catch(e){}
-  a[idx].g=Math.min(1,(a[idx].g||.5)+0.12);a[idx].c=(a[idx].c||0)+1;
+  var elx=gBuffNow('pot_elixir');
+  a[idx].g=Math.min(1,(a[idx].g||.5)+0.12*(elx?2:1));a[idx].c=(a[idx].c||0)+1;
+  if(elx)gBuffTake('pot_elixir');
   try{localStorage.setItem('wz_garden',JSON.stringify(a))}catch(e){}
-  gFx(window.innerWidth/2,window.innerHeight/2,'#ffd60a');
+  gFx(window.innerWidth/2,window.innerHeight/2,elx?'#ffd60a':'#7dd3a8');
   var _fd=window.fMaybeDrop&&fMaybeDrop();if(_fd){toast('照料时翻出一件武器胚子：'+_fd.n,'已入武器仓库')}
   (function(){var rars=[];for(var i=0;i<G_RARE.length;i++){if(gDisc().indexOf(G_RARE[i])<0)rars.push(G_RARE[i])}if(rars.length&&Math.random()<.015){var got=rars[Math.floor(Math.random()*rars.length)];gSeedAdd(got);gProgRefresh();gSeedRefresh();toast('照料时发现了新种子','解锁 '+gP(got).n)}})();
-  renderMy();gScene();toast('照料成功','生长 +12%');
+  renderMy();gScene();toast('照料成功','生长 +'+(elx?'24':'12')+'%'+(elx?' · 灵药催发':''),elx?'ok':null);
 }
 var G_CARE={};
 function gCare(id){
