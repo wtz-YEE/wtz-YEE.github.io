@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>武器锻造 · WTZ</title>
+<style>
+:root{--bg:#040405;--panel:#0b0b0d;--line2:rgba(255,255,255,.14);--cbd:rgba(255,255,255,.14);--accent:#fff;--ink:#e6edef;--ink3:#6a767d;--gold:#ffd60a}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",sans-serif;min-height:100vh;overflow-x:hidden}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.05;background:radial-gradient(rgba(255,255,255,.8) 1px,transparent 1px);background-size:20px 20px}
+header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 22px;background:rgba(4,4,5,.86);border-bottom:1px solid var(--line2);backdrop-filter:blur(6px)}
+header .logo{font-family:Consolas,monospace;font-size:12px;letter-spacing:.22em;color:var(--ink3)}
+header nav{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+header nav a{color:var(--ink3);text-decoration:none;font-family:Consolas,monospace;font-size:11px;letter-spacing:.1em;padding:5px 10px;border:1px solid transparent;transition:.18s}
+header nav a:hover{color:var(--accent);border-color:var(--line2)}
+main{max-width:760px;margin:0 auto;padding:56px 24px;text-align:center}
+main h1{font-size:26px;letter-spacing:.16em;font-weight:600;margin:0 0 10px}
+main h1 b{color:var(--gold)}
+main p{color:var(--ink3);font-size:12.5px;line-height:1.8;letter-spacing:.05em;margin:0 0 34px}
+#openBtn{display:inline-block;font-family:Consolas,monospace;font-size:13px;letter-spacing:.2em;color:var(--accent);background:transparent;border:1px solid var(--line2);padding:13px 30px;cursor:pointer;transition:.2s;position:relative}
+#openBtn:hover{border-color:var(--accent);box-shadow:0 0 24px rgba(255,255,255,.1)}
+#openBtn::before{content:"⚒ ";letter-spacing:.2em}
+.hint{margin-top:26px;font-size:10.5px;color:var(--ink3);letter-spacing:.14em;opacity:.7}
+@media(max-width:600px){main{padding:40px 16px}main h1{font-size:20px}}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">ARCHIVE // FORGE</span>
+  <nav>
+    <a href="../index.html">◈ 主站</a>
+    <a href="花园.html">🌱 花园</a>
+  </nav>
+</header>
+<main>
+  <h1>武器<b>锻造</b></h1>
+  <p>胚子 · 锻打 · 附魔 · 淬火折叠 —— 一锤一锤，敲出你的词缀<br>材料与胚子可在主站商店兑换，锻打谱需按序完成</p>
+  <button id="openBtn" type="button">开启锻造台</button>
+  <div class="hint">提示：胚子商店买 · 材料园种 · 锻打次数越少品质越高</div>
+</main>
+<script src="_shared.js"></script>
+<script src="../forge.js"></script>
+<script>
+(function(){
+  var b=document.getElementById('openBtn');
+  b.addEventListener('click',function(){if(window.openForge)openForge()});
+  setTimeout(function(){if(window.openForge)openForge()},650);
+})();
+</script>
+</body>
+</html>

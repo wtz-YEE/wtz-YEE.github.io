@@ -66,6 +66,15 @@ SHOP = [
     {"id": "m_deep", "type": "mat", "name": "夜色提灯", "cost": 50, "desc": "花园探索点 +3 · 照亮更深的夜行"},
     {"id": "m_slag", "type": "mat", "name": "锻炉余烬 ×1", "cost": 18, "desc": "锻造经验 +10 · 炉火没烧完的部分"},
     {"id": "m_quill", "type": "mat", "name": "学徒刻印 ×1", "cost": 45, "desc": "锻造经验 +30 · 学艺先刻印"},
+    {"id": "m_sulfur", "type": "mat", "name": "硫·原质 ×1", "cost": 8, "desc": "炼金材料 · 灵魂之火 🜍"},
+    {"id": "m_mercury", "type": "mat", "name": "水银·原质 ×1", "cost": 8, "desc": "炼金材料 · 流动之魂 ☿"},
+    {"id": "m_salt", "type": "mat", "name": "盐·原质 ×1", "cost": 8, "desc": "炼金材料 · 固定之形 🜔"},
+    {"id": "m_fire", "type": "mat", "name": "火·元素 ×1", "cost": 6, "desc": "炼金材料 · 燃烧之源 △"},
+    {"id": "m_water", "type": "mat", "name": "水·元素 ×1", "cost": 6, "desc": "炼金材料 · 溶解之力 ▽"},
+    {"id": "m_earth", "type": "mat", "name": "地·元素 ×1", "cost": 6, "desc": "炼金材料 · 沉降之基 □"},
+    {"id": "m_air", "type": "mat", "name": "风·元素 ×1", "cost": 6, "desc": "炼金材料 · 蒸腾之气 ○"},
+    {"id": "m_silver", "type": "mat", "name": "银·行星金属 ×1", "cost": 60, "desc": "炼金材料 · 月之金属 · 贤者之路 ☽"},
+    {"id": "m_rose", "type": "mat", "name": "火焰玫瑰 ×1", "cost": 40, "desc": "炼金药草 · 花园亦可种 🌹"},
 ]
 
 FRAGS = [

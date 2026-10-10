@@ -163,7 +163,8 @@ function openGarden(){
   box.style.cssText='width:min(820px,96vw);max-height:90vh;overflow-y:auto;background:radial-gradient(120% 60% at 50% -10%,rgba(130,170,255,.14),transparent 60%),radial-gradient(1px 1px at 18% 22%,rgba(255,255,255,.8),transparent),radial-gradient(1px 1px at 62% 12%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 84% 30%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 38% 40%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 72% 52%,rgba(255,255,255,.45),transparent),radial-gradient(1px 1px at 8% 60%,rgba(255,255,255,.4),transparent),linear-gradient(180deg,#080c18 0%,#0f1524 38%,#0d1a13 74%,#14251a 100%);border:1px solid var(--cbd,#3a3a3a);padding:20px 22px;box-sizing:border-box;font-family:Consolas,monospace;border-radius:14px';
   var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:13px;letter-spacing:.3em;color:var(--accent,#fff)">❀ COLLABORATIVE GARDEN</span><span style="color:#6e8a86;font-size:11px;letter-spacing:.2em">● NIGHT GARDEN ●</span></div>'+
     '<div style="font-size:11px;color:#8a8a8a;margin-bottom:12px">协作种植花园 · 64 种植物 · 多画风 · 星夜之下，万物生长</div>'+
-    '<div style="margin-bottom:12px"><button id="gTutBtn" onclick="gTut()" style="border:1px solid #4a5560;background:none;color:#9aa6ad;font-family:Consolas,monospace;font-size:10.5px;letter-spacing:.1em;padding:5px 14px;cursor:pointer;transition:.18s" onmouseenter="this.style.borderColor=\'var(--accent,#fff)\'" onmouseleave="this.style.borderColor=\'#4a5560\'">🌱 玩法教程</button></div>'+
+    '<div style="margin-bottom:12px"><button id="gTutBtn" onclick="gTut()" style="border:1px solid #4a5560;background:none;color:#9aa6ad;font-family:Consolas,monospace;font-size:10.5px;letter-spacing:.1em;padding:5px 14px;cursor:pointer;transition:.18s" onmouseenter="this.style.borderColor=\'var(--accent,#fff)\'" onmouseleave="this.style.borderColor=\'#4a5560\'">🌱 玩法教程</button></div>'
+    +'<div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span style="font-size:10px;color:#6e8a86;letter-spacing:.2em">场景主题</span>'+G_THEMES.map(function(th){return '<button id="gth_'+th.id+'" onclick="gThemeSet('+th.id+')" style="border:1px solid '+(gTheme().id===th.id?'var(--accent,#fff)':'#2c2c2c')+';background:none;color:'+(gTheme().id===th.id?'var(--accent,#fff)':'#8a8a8a')+';font-family:Consolas,monospace;font-size:10px;letter-spacing:.08em;padding:4px 10px;cursor:pointer;transition:.15s">'+th.n+'</button>'}).join('')+'</div>'+
     '<div id="gTut" style="display:none;border:1px dashed #3a3a3a;border-radius:10px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,.02);color:#b8c0c4;font-size:11px;line-height:1.9"></div>'+
     '<div style="height:2px;background:linear-gradient(90deg,transparent,var(--accent,#fff),transparent);opacity:.5;margin-bottom:14px"></div>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">'+
@@ -187,6 +188,7 @@ function openGarden(){
     '<div id="myGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:16px"></div>'+
     '<div style="border-top:1px solid #222;margin-bottom:12px"></div>'+
     '<div style="font-size:11px;letter-spacing:.2em;color:#6e8a86;margin-bottom:8px">共享花园 · SHARED · 可照料</div>'+
+    '<div style="position:relative;border:1px solid #2c2c2c;border-radius:12px;overflow:hidden;margin-bottom:10px"><canvas id="gSharedCv" width="760" height="200" style="width:100%;display:block"></canvas></div>'+
     '<div id="shGarden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px"></div>'+
     '<div style="border-top:1px solid #222;margin:14px 0 12px"></div>'+
     '<div style="background:radial-gradient(1px 1px at 20% 20%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 75% 30%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 40% 65%,rgba(255,255,255,.4),transparent),radial-gradient(circle at 50% 0%,#0d1520,#06070a);border:1px solid #2c2c2c;border-radius:12px;padding:14px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">'+
@@ -207,6 +209,7 @@ function openGarden(){
   mask.onclick=function(e){if(e.target===mask){hClose()}};
   var c=document.getElementById('gClose');if(c)c.onclick=hClose;
   var sc=document.getElementById('gSceneCv');if(sc)sc.onclick=gSceneClick;
+  var sc2=document.getElementById('gSharedCv');if(sc2)sc2.onclick=gSharedSceneClick;
   gLoadShared();
 }
 function gSeedCard(sp,un,count){
@@ -276,16 +279,42 @@ function gCursorMove(ev){if(G_CURSOR){G_CURSOR.style.left=(ev.clientX+12)+'px';G
 function gCursorOff(){if(G_CURSOR&&G_CURSOR.parentNode)G_CURSOR.parentNode.removeChild(G_CURSOR);G_CURSOR=null;document.removeEventListener('mousemove',gCursorMove);document.body.style.cursor=''}
 var gAniCv=[];var gAniOn=false;
 function gAniAdd(cv,id,g){gAniCv.push({cv:cv,id:id,g:g,t:Math.random()*6});if(!gAniOn){gAniOn=true;(function loop(){var k=0;for(var i=0;i<gAniCv.length;i++){var o=gAniCv[i];if(o.cv&&o.cv.isConnected){o.t+=.03;try{gDraw(o.cv,o.id,o.g,o.t)}catch(e){}gAniCv[k++]=o}}gAniCv.length=k;if(gAniCv.length)requestAnimationFrame(loop);else gAniOn=false})()}}
+var G_THEMES=[
+{id:0,n:'星空',bg:['#0a0e1a','#13211d','#1b3021'],st:'rgba(255,255,255,',moonC:'rgba(255,255,255,.05)',fall:'meteor',fallC:'rgba(255,255,255,',fire:'rgba(210,255,120,',grass:'#12271c'},
+{id:1,n:'草地',bg:['#7ec8e3','#a9d8a2','#5da84f'],st:'rgba(255,255,255,',moonC:'rgba(255,214,10,.25)',fall:'none',fallC:'rgba(255,255,255,',fire:'rgba(120,200,90,',grass:'#3d7a2f'},
+{id:2,n:'晨雾',bg:['#b8c6d8','#e8d9c8','#8fa3a0'],st:'rgba(255,255,255,',moonC:'rgba(255,255,255,.12)',fall:'mist',fallC:'rgba(230,240,230,',fire:'rgba(200,220,180,',grass:'#6d8a6a'},
+{id:3,n:'黄昏',bg:['#4a3158','#b25b4a','#e8a06a'],st:'rgba(255,235,200,',moonC:'rgba(255,200,150,.18)',fall:'birds',fallC:'rgba(40,30,30,',fire:'rgba(255,190,110,',grass:'#5d3a28'},
+{id:4,n:'樱花',bg:['#f3d7e4','#f9e3ee','#e8b7d0'],st:'rgba(255,255,255,',moonC:'rgba(255,255,255,.18)',fall:'petal',fallC:'rgba(255,150,190,',fire:'rgba(255,170,210,',grass:'#8aae6a'},
+{id:5,n:'雪原',bg:['#2c4056','#4a6a86','#8faec6'],st:'rgba(220,235,255,',moonC:'rgba(220,235,255,.22)',fall:'snow',fallC:'rgba(230,242,255,',fire:'rgba(190,220,240,',grass:'#e8f0f6'},
+{id:6,n:'深红',bg:['#1a0a0e','#3a1420','#5a1f2a'],st:'rgba(255,180,180,',moonC:'rgba(255,120,120,.15)',fall:'ember',fallC:'rgba(255,150,120,',fire:'rgba(255,140,120,',grass:'#3a1418'},
+{id:7,n:'极光',bg:['#081018','#0c2030','#12301f'],st:'rgba(200,240,255,',moonC:'rgba(160,255,220,.14)',fall:'aurora',fallC:'rgba(160,255,220,',fire:'rgba(120,255,180,',grass:'#12301f'}
+];
+function gTheme(){try{var v=parseInt(localStorage.getItem('wz_gtheme')||'0',10)||0;return G_THEMES[v]||G_THEMES[0]}catch(e){return G_THEMES[0]}}
+function gThemeSet(i){try{localStorage.setItem('wz_gtheme',String(i))}catch(e){};gScene();var sc2=document.getElementById('gSharedCv');if(sc2)gSharedScene();var els=document.querySelectorAll('[id^=gth_]');for(var k=0;k<els.length;k++){els[k].style.borderColor=els[k].id==='gth_'+i?'var(--accent,#fff)':'#2c2c2c';els[k].style.color=els[k].id==='gth_'+i?'var(--accent,#fff)':'#8a8a8a'}toast('场景主题已切换',G_THEMES[i].n)}
+function gSceneBg(ctx,w,h,t){
+  var th=gTheme();
+  var grd=ctx.createLinearGradient(0,0,0,h);grd.addColorStop(0,th.bg[0]);grd.addColorStop(.62,th.bg[1]);grd.addColorStop(1,th.bg[2]);ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
+  for(var i=0;i<42;i++){var sx=((i*137)%w),sy=((i*73)%(h*.5));ctx.fillStyle=th.st+((i%10)/15+.05)+')';ctx.fillRect(sx,sy,1.3,1.3)}
+  ctx.fillStyle=th.moonC;ctx.beginPath();ctx.arc(w*.82,h*.16,20,0,6.283);ctx.fill();
+  var ft=th.fall;
+  if(ft==='meteor'){if(Math.floor(t/9)%2===0){var _mt=(t%9)/9,_mxx=w*(.12+_mt*.78),_myy=h*.10+Math.sin(_mt*3.1)*h*.04;ctx.strokeStyle=th.fallC+(0.14+0.3*(1-_mt))+')';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(_mxx-30,_myy-10);ctx.lineTo(_mxx+4,_myy+2);ctx.stroke()}}
+  else if(ft==='petal'){for(var i=0;i<14;i++){var px=((i*113+t*14*(1+i%3))%w),py=((i*97+t*9)%(h*.6)),ph=Math.sin(t*2+i*1.3)*4;ctx.fillStyle='rgba(255,150,190,'+(0.3+0.2*Math.sin(t*1.5+i))+')';ctx.beginPath();ctx.ellipse(px,py+ph,2.4,1.3,0,0,6.283);ctx.fill()}}
+  else if(ft==='snow'){for(var i=0;i<26;i++){var sx2=((i*131+t*6*(1+i%4))%w),sy2=((i*79+t*8)%h);ctx.fillStyle='rgba(230,242,255,'+(0.35+0.25*Math.sin(t*1.6+i*1.7))+')';ctx.beginPath();ctx.arc(sx2,sy2,1.3,0,6.283);ctx.fill()}}
+  else if(ft==='ember'){for(var i=0;i<10;i++){var ex=((i*149+t*7)%w),ey=h-((i*83+t*11)%(h*.6));ctx.fillStyle='rgba(255,150,120,'+(0.25+0.2*Math.sin(t*2+i*2.1))+')';ctx.beginPath();ctx.arc(ex,ey,1.2,0,6.283);ctx.fill()}}
+  else if(ft==='mist'){for(var i=0;i<6;i++){var mx2=((i*181+t*3)%(w+120))-60,my2=h*.5+Math.sin(t*.5+i*1.2)*h*.3;ctx.fillStyle='rgba(230,240,230,'+(0.05+0.04*Math.sin(t*.8+i*1.9))+')';ctx.beginPath();ctx.ellipse(mx2,my2,60,14,0,0,6.283);ctx.fill()}}
+  else if(ft==='birds'){var _bt=(t%6)/6;if(Math.floor(t/6)%2===0){for(var i=0;i<3;i++){var bx=w*(.15+_bt*.7+i*.04),by=h*.12+Math.sin(_bt*6+i*1.7)*6;ctx.strokeStyle='rgba(40,30,30,.4)';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(bx-4,by);ctx.quadraticCurveTo(bx-1,by-2,bx,by);ctx.quadraticCurveTo(bx+1,by-2,bx+4,by);ctx.stroke()}}}
+  else if(ft==='aurora'){ctx.strokeStyle='rgba(80,255,180,.14)';ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(-20,h*.3);ctx.quadraticCurveTo(w*.3,h*.1+Math.sin(t*.6)*6,w*.55,h*.25);ctx.quadraticCurveTo(w*.75,h*.38,w+20,h*.15);ctx.stroke();ctx.strokeStyle='rgba(120,160,255,.10)';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(-20,h*.5);ctx.quadraticCurveTo(w*.35,h*.3+Math.sin(t*.8+1.4)*8,w*.6,h*.42);ctx.quadraticCurveTo(w*.8,h*.52,w+20,h*.4);ctx.stroke();for(var i=0;i<16;i++){var ax=((i*167+t*5)%w),ay=h*.18+Math.sin(t*1.3+i*2.4)*h*.12;ctx.fillStyle='rgba(160,255,220,'+(0.3+0.2*Math.sin(t*2.2+i))+')';ctx.beginPath();ctx.arc(ax,ay,1.1,0,6.283);ctx.fill()}}
+  for(var i=0;i<6;i++){var fx=((i*157+t*9)%w),fy=h*.42+Math.sin(t*.7+i*1.31)*h*.18;ctx.fillStyle=th.fire+(0.22+0.14*Math.sin(t*2.2+i*1.7))+')';ctx.beginPath();ctx.arc(fx,fy,1.6,0,6.283);ctx.fill()}
+  ctx.fillStyle=th.grass;for(var i=0;i<12;i++){var gh=(i%3)*3;ctx.fillRect(i*(w/12),h*.74-gh,w/12,gh+4)}
+}
 var gSceneRaf=0;
-function gAniStop(){gAniCv.length=0;gAniOn=false;if(gSceneRaf){cancelAnimationFrame(gSceneRaf);gSceneRaf=0}}
+function gAniStop(){gAniCv.length=0;gAniOn=false;if(gSceneRaf){cancelAnimationFrame(gSceneRaf);gSceneRaf=0}if(gSharedRaf){cancelAnimationFrame(gSharedRaf);gSharedRaf=0}}
 function gSceneLoop(){gScene();gSceneRaf=requestAnimationFrame(gSceneLoop)}
 function gScene(){
   var cv=document.getElementById('gSceneCv');if(!cv)return;
   var a=gSet(),ctx=cv.getContext('2d'),w=cv.width,h=cv.height,t=Date.now()/1000;
   ctx.clearRect(0,0,w,h);
-  var grd=ctx.createLinearGradient(0,0,0,h);grd.addColorStop(0,'#0a0e1a');grd.addColorStop(.62,'#13211d');grd.addColorStop(1,'#1b3021');ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
-  for(var i=0;i<42;i++){var sx=((i*137)%w),sy=((i*73)%(h*.5));ctx.fillStyle='rgba(255,255,255,'+((i%10)/15+.05)+')';ctx.fillRect(sx,sy,1.3,1.3)}
-  ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.arc(w*.82,h*.16,20,0,6.283);ctx.fill();
+  gSceneBg(ctx,w,h,t);
   if(gDisc().length>=64){ctx.fillStyle='rgba(255,214,10,.5)';for(var _rk=0;_rk<14;_rk++){var _ra=_rk/14*6.283+t*.25,_rr=26+7*Math.sin(_ra*3+t*1.1);ctx.beginPath();ctx.arc(w*.82+Math.cos(_ra)*_rr,h*.16+Math.sin(_ra)*_rr,1.5,0,6.283);ctx.fill()}}
   if(Math.floor(t/9)%2===0){var _mt=(t%9)/9,_mxx=w*(.12+_mt*.78),_myy=h*.10+Math.sin(_mt*3.1)*h*.04;ctx.strokeStyle='rgba(255,255,255,'+(0.14+0.3*(1-_mt))+')';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(_mxx-30,_myy-10);ctx.lineTo(_mxx+4,_myy+2);ctx.stroke()}
   for(var i=0;i<6;i++){var fx=((i*157+t*9)%w),fy=h*.42+Math.sin(t*.7+i*1.31)*h*.18;ctx.fillStyle='rgba(210,255,120,'+(0.22+0.14*Math.sin(t*2.2+i*1.7))+')';ctx.beginPath();ctx.arc(fx,fy,1.6,0,6.283);ctx.fill()}
@@ -333,6 +362,33 @@ function gSceneClick(ev){
   for(var i=0;i<cv.__pos.length;i++){var d=Math.hypot(mx-cv.__pos[i].x,my-cv.__pos[i].y);if(d<bd){bd=d;best=cv.__pos[i]}}
   if(best&&bd<36){var a=gSet();for(var j=0;j<a.length;j++)if(a[j].sp===best.id){var p=a[j],sp=gP(p.sp),stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));toast(sp.n+' · ['+stg+']','花语：'+(G_FLORA[sp.st]||'一切生长皆有回应')+' · 照料 '+(p.c||0)+' · 画风 '+sp.st);break}}
   else{var _r=cv.getBoundingClientRect();var _d=document.createElement('div');_d.style.cssText='position:absolute;left:'+(mx/cv.width*_r.width-13)+'px;top:'+(my/cv.height*_r.height-13)+'px;width:26px;height:26px;border:1px solid rgba(160,200,255,.45);border-radius:50%;pointer-events:none;z-index:2;transform:scale(.2);opacity:.65;transition:transform .7s,opacity .7s';cv.parentNode.appendChild(_d);requestAnimationFrame(function(){_d.style.transform='scale(1)';_d.style.opacity='0'});setTimeout(function(){if(_d.parentNode)_d.parentNode.removeChild(_d)},740)}
+}
+var G_SHARED=[];var gSharedRaf=0;
+function gSharedLoop(){gSharedScene();gSharedRaf=requestAnimationFrame(gSharedLoop)}
+function gSharedScene(){
+  var cv=document.getElementById('gSharedCv');if(!cv)return;
+  var ctx=cv.getContext('2d'),w=cv.width,h=cv.height,t=Date.now()/1000;
+  ctx.clearRect(0,0,w,h);
+  gSceneBg(ctx,w,h,t);
+  if(!G_SHARED.length){cv.__spos=[];ctx.fillStyle='#5b6a60';ctx.font='12px Consolas,monospace';ctx.textAlign='center';ctx.fillText('云端花园还空 · 大家种下的花会开在这里',w/2,h*.84);return}
+  var pos=[];
+  for(var i=0;i<G_SHARED.length;i++){
+    var p=G_SHARED[i],g=p.g||.5,sp=gP(p.sp);
+    var x=w*(0.08+(((p.id*37)%100)/100)*0.84),y=h*(0.2+(((p.id*53)%70)/100)*0.62);
+    var sway=Math.sin(t*.9+(x*.012));
+    gDrawSceneFlower(ctx,p,x,y,sway,t);
+    pos.push({id:p.id,x:x,y:y});
+  }
+  cv.__spos=pos;
+}
+function gSharedSceneClick(ev){
+  var cv=document.getElementById('gSharedCv');if(!cv)return;
+  var r=cv.getBoundingClientRect();var mx=(ev.clientX-r.left)/r.width*cv.width,my=(ev.clientY-r.top)/r.height*cv.height;
+  if(!cv.__spos)return;
+  var best=null,bd=1e9;
+  for(var i=0;i<cv.__spos.length;i++){var d=Math.hypot(mx-cv.__spos[i].x,my-cv.__spos[i].y);if(d<bd){bd=d;best=cv.__spos[i]}}
+  if(best&&bd<36){for(var j=0;j<G_SHARED.length;j++)if(G_SHARED[j].id===best.id){var p=G_SHARED[j],sp=gP(p.sp),stg=(p.g||.5)>.9?'光':((p.g||.5)>.6?'花':((p.g||.5)>.3?'株':'苗'));toast(sp.n+' · ['+stg+']','花语：'+(G_FLORA[sp.st]||'一切生长皆有回应')+' · 照料 '+(p.c||0)+(p.u?' · '+p.u:''));break}}
+  else{var _d=document.createElement('div');_d.style.cssText='position:absolute;left:'+(mx/cv.width*r.width-13)+'px;top:'+(my/cv.height*r.height-13)+'px;width:26px;height:26px;border:1px solid rgba(160,200,255,.45);border-radius:50%;pointer-events:none;z-index:2;transform:scale(.2);opacity:.65;transition:transform .7s,opacity .7s';cv.parentNode.appendChild(_d);requestAnimationFrame(function(){_d.style.transform='scale(1)';_d.style.opacity='0'});setTimeout(function(){if(_d.parentNode)_d.parentNode.removeChild(_d)},740)}
 }
 var gTutSteps=[
   ['拾种落种','初始你只有 1 颗随机种子。在种子库点选它（光标会携带种子），再点击下方【花园实景】任意位置把它种下——种下会消耗这颗种子，落点会生长为花。再点该种子或按 Esc 取消','1'],
@@ -449,10 +505,11 @@ function gCare(id){
 }
 function gLoadShared(){
   var b=apiBase();var box=document.getElementById('shGarden');if(!box)return;
-  if(!b){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">当前未连接云端，仅本地花园可用。</div>';return}
+  if(!b){G_SHARED=[];gSharedScene();box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">当前未连接云端，仅本地花园可用。</div>';return}
   fetch(b+'/garden_get').then(function(r){return r.json()}).then(function(j){
     var list=(j&&j.plants)||[];list.sort(function(a,b){return (b.c||0)-(a.c||0)||((b.t||0)-(a.t||0))});box.innerHTML='';
     gStarRefresh((j&&j.care_total)||0);
+    G_SHARED=list.slice(0,24);gSharedScene();if(!gSharedRaf)gSharedRaf=requestAnimationFrame(gSharedLoop);
     if(!list.length){box.innerHTML='<div style="color:#5b5b5b;font-size:11.5px;padding:10px 0">还没人种下。来种第一棵。</div>';return}
     var star=list.reduce(function(m,x){return (x.c||0)>(m.c||0)?x:m});
     for(var i=0;i<list.length;i++){

@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>炼金工坊 · WTZ</title>
+<style>
+:root{--bg:#040405;--panel:#0b0b0d;--ln:rgba(255,255,255,.14);--acc:#fff;--ink:#e6edef;--ink3:#6a767d;--gold:#ffd60a;--warn:#e08a3c}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:radial-gradient(130% 100% at 50% -20%,rgba(255,214,10,.05),transparent 55%),radial-gradient(100% 80% at 50% 110%,rgba(60,50,30,.12),transparent 60%),var(--bg);color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",sans-serif;min-height:100vh;overflow-x:hidden;animation:pageIn .6s ease}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.05;background:radial-gradient(rgba(255,255,255,.8) 1px,transparent 1px);background-size:20px 20px}
+header{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:12px 22px;background:rgba(4,4,5,.9);border-bottom:1px solid var(--ln);backdrop-filter:blur(6px)}
+.logo{font-family:Consolas,monospace;font-size:12px;letter-spacing:.22em;color:var(--ink3)}
+.logo b{color:var(--gold)}
+header nav{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+header nav a{color:var(--ink3);text-decoration:none;font-family:Consolas,monospace;font-size:11px;letter-spacing:.1em;padding:5px 10px;border:1px solid transparent;transition:.18s}
+header nav a:hover{color:var(--acc);border-color:var(--ln)}
+main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
+.panels{display:grid;grid-template-columns:250px 1fr 300px;gap:16px;align-items:start}
+@media(max-width:960px){.panels{grid-template-columns:1fr}}
+.panel{position:relative;background:linear-gradient(180deg,#101014,#0a0a0c);border:1px solid rgba(255,255,255,.12);border-radius:2px;padding:16px;box-shadow:inset 0 0 44px rgba(0,0,0,.45),0 10px 26px rgba(0,0,0,.35);overflow:hidden}
+.panel::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,10,.4),transparent)}
+.panel h2{font-family:Consolas,monospace;font-size:11px;letter-spacing:.34em;color:#8d959b;margin:0 0 12px;font-weight:400}
+.panel h2 i{color:var(--gold);font-style:normal}
+/* 仓库 */
+.mcat{font-family:Consolas,monospace;font-size:10px;letter-spacing:.18em;color:var(--ink3);margin:10px 0 6px;border-top:1px dashed rgba(255,255,255,.08);padding-top:8px}
+.mrow{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid transparent;cursor:pointer;transition:.15s;font-size:12.5px}
+.mrow:hover{border-color:var(--ln);background:rgba(255,255,255,.03)}
+.mrow .sy{width:24px;text-align:center;font-size:15px;color:var(--gold)}
+.mrow .nm{flex:1}
+.mrow .qt{font-family:Consolas,monospace;font-size:11px;color:var(--ink3)}
+.mrow .pt{width:34px;display:flex;gap:2px;align-items:center;justify-content:flex-end}
+.mrow .pt i{width:4px;height:8px;display:block}
+.pt-s{background:#e0c25a}.pt-m{background:#b8c2cc}.pt-a{background:#9a8f73}
+/* 坩埚 */
+.cauldron{border:1px solid var(--ln);position:relative;padding:20px;min-height:340px;transition:background .8s;background:radial-gradient(120% 70% at 50% 0%,var(--cglow,transparent),transparent 55%)}
+.stage-badge{position:absolute;top:14px;right:14px;font-family:Consolas,monospace;font-size:10px;letter-spacing:.24em;color:var(--ink3)}
+.cauldron .pot{position:relative;width:220px;height:150px;margin:24px auto 0}
+.pot .body{position:absolute;inset:0;border-radius:50% 50% 46% 46%/60% 60% 40% 40%;border:1.5px solid rgba(255,255,255,.65);background:radial-gradient(90% 70% at 50% 30%,var(--liq,rgba(30,30,34,.9)),#050507 75%);box-shadow:inset 0 0 26px rgba(0,0,0,.6),inset 0 -6px 12px rgba(0,0,0,.5),0 0 22px rgba(255,214,10,.06)}
+.pot .rim{position:absolute;top:0;left:-14px;right:-14px;height:20px;border:1.5px solid rgba(255,255,255,.65);border-radius:50%;background:linear-gradient(180deg,#141416,#0b0b0d);box-shadow:0 4px 10px rgba(0,0,0,.5)}
+.pot .leg{position:absolute;bottom:-8px;width:26px;height:24px;border:2px solid var(--acc);border-top:none;border-radius:0 0 8px 8px;background:#0d0d0f}
+.pot .leg.l{left:38px}.pot .leg.r{right:38px}
+.pot .bub{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--liq,#888);opacity:0;animation:none;box-shadow:0 0 6px rgba(255,255,255,.25)}
+.slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.slot{min-width:86px;padding:6px 10px;border:1px dashed rgba(255,255,255,.2);font-size:11px;color:var(--ink3);text-align:center;font-family:Consolas,monospace;letter-spacing:.06em}
+.slot.f{color:var(--ink);border-color:var(--ln)}
+.stage-desc{margin:10px 0 14px;font-size:12px;color:var(--ink3);line-height:1.7;text-align:center}
+.ops{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.op{padding:9px 16px;font-family:Consolas,monospace;font-size:11.5px;letter-spacing:.12em;background:transparent;border:1px solid var(--ln);color:var(--ink);cursor:pointer;transition:.18s}
+.op:hover{border-color:var(--acc)}
+.op:disabled{opacity:.28;cursor:not-allowed}
+.op.hot{background:rgba(255,214,10,.08);border-color:var(--gold);color:var(--gold)}
+/* 图鉴 & 称号 */
+.rec{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px dashed rgba(255,255,255,.07);font-size:12px}
+.rec .sym{width:26px;text-align:center;color:var(--gold)}
+.rec.hid{opacity:.38}
+.title-row{display:flex;align-items:center;gap:8px;padding:6px 8px;font-size:12.5px;border:1px solid var(--ln);margin-bottom:6px}
+.title-row .tk{font-family:Consolas,monospace;font-size:10px;color:var(--ink3);letter-spacing:.12em}
+.t-gold{color:var(--gold)}.t-purple{color:#c9a8ff}.t-red{color:#ff7a6b}.t-gray{color:#aab4ba}
+/* 弹层（小游戏） */
+#mask{position:fixed;inset:0;z-index:2147483000;background:rgba(4,5,6,.9);display:none;align-items:center;justify-content:center}
+#mask.on{display:flex}
+#box{width:min(560px,94vw);background:linear-gradient(180deg,#0f0f14,#0a0a0c);border:1px solid rgba(255,214,10,.25);border-radius:3px;padding:22px;position:relative;box-shadow:0 0 90px rgba(0,0,0,.75),inset 0 0 46px rgba(0,0,0,.45),0 0 24px rgba(255,214,10,.05)}
+#box h3{margin:0 0 4px;font-family:Georgia,"Times New Roman",serif;font-size:15px;letter-spacing:.16em;color:var(--acc);text-shadow:0 0 18px rgba(255,214,10,.25)}
+#box h3 b{color:var(--gold)}
+#box .sub{font-size:11px;color:var(--ink3);margin-bottom:14px}
+#box .cl{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--ink3);font-size:18px;cursor:pointer}
+#box .cl:hover{color:var(--acc)}
+#mini{min-height:220px;position:relative;overflow:hidden;border:1px solid var(--ln);background:#060607}
+#mini .tip{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:11px;color:var(--ink3);letter-spacing:.1em;z-index:5}
+.pick{position:absolute;width:22px;height:22px;border-radius:50%;cursor:pointer;background:#141416;z-index:4}
+.pick.dirt{background:#17171a}
+.pick.dirt::after{content:"";position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle,#3a3a40,#151517 70%)}
+.pick.good{background:#c9a8ff;box-shadow:0 0 16px rgba(201,168,255,.75),inset 0 0 8px rgba(255,255,255,.35)}
+.pick.good::after{content:"";position:absolute;inset:7px;border-radius:50%;background:radial-gradient(circle,#e6dcff,#8a6bc4 70%)}
+.drop{position:absolute;width:10px;height:10px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:linear-gradient(180deg,#f2f4ff,#9fb4d8);z-index:4;box-shadow:0 0 8px rgba(190,215,255,.5)}
+.duo{position:absolute;width:64px;height:64px;border-radius:50%;border:2px solid var(--acc);z-index:4;transition:left .02s linear}
+.duo.s{background:rgba(224,194,90,.25);box-shadow:0 0 18px rgba(224,194,90,.45)}.duo.m{background:rgba(184,194,204,.25);box-shadow:0 0 18px rgba(184,194,204,.4)}
+.snake{position:absolute;z-index:4;text-align:center;font-size:15px;color:var(--gold);letter-spacing:2px;cursor:pointer}
+.snake .gap{display:inline-block;width:18px;height:18px;border:1px dashed var(--gold);border-radius:50%;vertical-align:middle;color:transparent}
+.ring-slot{position:absolute;width:56px;height:56px;border:1px dashed rgba(255,255,255,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--ink3);z-index:4}
+.ring-slot.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 18px rgba(255,214,10,.25)}
+#prog{height:3px;background:rgba(255,255,255,.07);margin-top:14px;border-radius:2px;overflow:hidden}
+#prog i{display:block;height:100%;width:0;background:var(--gold);transition:width .15s}
+/* v2 小游戏 */
+.collector{position:absolute;bottom:14px;width:54px;height:12px;border:1px solid var(--acc);background:rgba(255,255,255,.06);z-index:5;left:50%;transform:translateX(-50%);border-radius:2px;box-shadow:0 0 14px rgba(255,255,255,.08)}
+.cdrop{position:absolute;width:9px;height:9px;border-radius:50%;z-index:4}
+.cdrop.ok{background:linear-gradient(180deg,#f4f7ff,#a8bde0);box-shadow:0 0 12px rgba(190,215,255,.75)}
+.cdrop.bad{background:radial-gradient(circle,#2a2a30,#101014);box-shadow:0 0 6px rgba(0,0,0,.6)}
+.numq{position:absolute;top:8px;left:0;right:0;text-align:center;font-family:Consolas,monospace;font-size:22px;color:var(--acc);letter-spacing:.08em;z-index:6}
+.numq b{color:var(--gold)}
+.ring{position:absolute;width:160px;height:160px;border:1px solid rgba(255,255,255,.22);border-radius:50%;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:inset 0 0 34px rgba(255,255,255,.04),0 0 22px rgba(255,214,10,.05)}
+.tick{position:absolute;width:20px;height:20px;text-align:center;font-family:Consolas,monospace;font-size:11px;color:var(--ink3);z-index:5;line-height:20px;transition:color .2s}
+.tick.on{color:var(--gold);text-shadow:0 0 10px rgba(255,214,10,.6)}
+.hand{position:absolute;width:78px;height:2px;background:linear-gradient(90deg,var(--gold),rgba(255,214,10,.05));z-index:5;left:50%;top:50%;transform-origin:0 50%;transition:transform .05s linear;box-shadow:0 0 14px rgba(255,214,10,.55)}
+.hand .dot{position:absolute;right:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.pick.crow{background:transparent;border:none;font-size:17px;text-align:center;color:var(--gold);cursor:pointer;width:26px;height:26px;text-shadow:0 0 10px rgba(255,214,10,.5);animation:crowfly 1.1s linear forwards}
+@keyframes crowfly{0%{transform:translateX(0)}100%{transform:translateX(38px)}}
+.cdrop.silver{background:linear-gradient(180deg,#ffe9a8,#e0b64a);box-shadow:0 0 10px rgba(255,214,10,.6)}
+#mini .fog{position:absolute;inset:0;background:radial-gradient(80% 50% at 50% 100%,rgba(226,238,248,.16),transparent 70%);z-index:8;pointer-events:none;animation:fogpulse .7s ease}
+@keyframes fogpulse{0%{opacity:0}45%{opacity:1}100%{opacity:0}}
+.trace{position:absolute;height:2px;background:repeating-linear-gradient(90deg,rgba(255,214,10,.55) 0 6px,transparent 6px 12px);z-index:3;transform-origin:0 50%;opacity:.55}
+.duo.salt{background:rgba(154,143,115,.3);border-color:#9a8f73}
+/* 炼金台 · 主玩法 */
+#bench{display:none;position:relative;height:400px;border:1px solid var(--ln);background:linear-gradient(180deg,#08080a,#050506);margin-top:14px;overflow:hidden;border-radius:2px}
+#bench.on{display:block}
+.bn-step{position:absolute;top:8px;left:10px;font-family:Consolas,monospace;font-size:10px;letter-spacing:.2em;color:var(--ink3);z-index:5}
+.bn-step b{color:var(--gold)}
+.bn-tip{position:absolute;top:8px;right:10px;left:150px;font-family:Consolas,monospace;font-size:10.5px;letter-spacing:.06em;color:var(--ink3);z-index:5;text-align:right;line-height:1.6}
+.bn-tip b{color:var(--acc)}
+.mortar{position:absolute;left:8%;top:20%;width:126px;height:92px;border:1.5px solid rgba(255,255,255,.5);border-radius:0 0 60% 60%/0 0 88% 88%;background:radial-gradient(120% 90% at 36% 16%,rgba(120,124,138,.4),transparent 42%),radial-gradient(100% 80% at 50% 18%,#1f1f26,#0a0a0c 75%);box-shadow:inset 0 -10px 20px rgba(0,0,0,.6),0 6px 14px rgba(0,0,0,.4);z-index:4}
+.mortar .powder{position:absolute;left:16px;right:16px;bottom:9px;height:6px;border-radius:4px;background:linear-gradient(180deg,#c9a8ff,#8a6bc4);opacity:.9;z-index:3}
+.mortar .pestle{position:absolute;left:-16px;top:2px;width:16px;height:54px;background:linear-gradient(90deg,#d8dde2,#8f99a1);border-radius:6px;transform:rotate(-20deg);z-index:5;cursor:pointer;transition:transform .08s}
+.mortar .pestle:active{transform:rotate(16deg) translateY(7px)}
+.bn-node{position:absolute;width:30px;height:30px;border-radius:50%;border:2px solid var(--ink3);background:#0c0c0e;z-index:5;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink3);font-family:Consolas,monospace;transition:.15s}
+.bn-node:hover{border-color:var(--acc)}
+.bn-node.sel{border-color:var(--gold);box-shadow:0 0 14px rgba(255,214,10,.4);color:var(--gold)}
+.bn-node.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 10px rgba(255,214,10,.25)}
+.bn-line{position:absolute;height:2px;z-index:4;opacity:.85;transform-origin:0 0;background-image:linear-gradient(90deg,rgba(255,214,10,.9) 50%,rgba(201,168,255,.35) 50%);background-size:24px 2px;animation:bnflow 1s linear infinite}
+@keyframes bnflow{to{background-position:-24px 0}}
+.flask{position:absolute;left:71%;top:16%;width:92px;height:112px;z-index:4}
+.flask .neck{position:absolute;left:39px;top:0;width:14px;height:46px;border:1.5px solid rgba(255,255,255,.55);border-bottom:none;background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(255,255,255,.02) 45%,rgba(255,255,255,.1));box-shadow:inset 2px 0 4px rgba(255,255,255,.04)}
+.flask .bulb{position:absolute;left:3px;top:38px;width:86px;height:74px;border:1.5px solid rgba(255,255,255,.55);border-radius:50% 50% 44% 44%/58% 58% 42% 42%;background:radial-gradient(60% 45% at 32% 24%,rgba(255,255,255,.32),transparent 46%),radial-gradient(80% 60% at 50% 30%,var(--liq2,rgba(201,168,255,.2)),rgba(10,10,12,.9) 70%);box-shadow:inset 0 0 18px rgba(255,255,255,.06),0 4px 12px rgba(0,0,0,.5),0 0 16px rgba(201,168,255,.06);cursor:pointer;transition:.2s;z-index:3}
+.flask .bulb:hover{box-shadow:0 0 24px rgba(255,214,10,.35)}
+.flask .bulb.ready{border-color:var(--gold);box-shadow:0 0 26px rgba(255,214,10,.5)}
+.bn-heat{position:absolute;left:6%;right:34%;bottom:10px;height:56px;border-top:1px dashed rgba(255,255,255,.1);z-index:4}
+.bn-heat .flame{position:absolute;left:2px;top:8px;width:44px;height:36px;z-index:3}
+.bn-heat .flame i{position:absolute;left:8px;bottom:0;width:26px;height:0;border-radius:50% 50% 42% 42%;background:radial-gradient(40% 55% at 50% 92%,rgba(255,248,224,.95),transparent 62%),radial-gradient(80% 70% at 50% 100%,var(--gold),#e08a3c 55%,rgba(224,138,60,0) 92%);transition:height .2s;filter:drop-shadow(0 0 6px rgba(255,214,10,.45))}
+.bn-heat input{position:absolute;left:62px;top:24px;width:46%;accent-color:var(--gold);cursor:pointer}
+.thermo{position:absolute;right:4%;top:6%;width:12px;height:150px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(90deg,#0a0a0c,#101014);z-index:4;box-shadow:inset 0 0 10px rgba(0,0,0,.6)}
+.thermo i{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,#c9772e,var(--gold));transition:height .2s;box-shadow:0 0 10px rgba(255,214,10,.35)}
+.thermo .tz{position:absolute;left:-22px;width:56px;height:2px;background:var(--gold);z-index:5;opacity:.8;box-shadow:0 0 8px rgba(255,214,10,.6)}
+.bn-distill{position:absolute;left:6%;right:6%;bottom:72px;height:4px;background:rgba(255,255,255,.07);z-index:4}
+.bn-distill i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9a8ff,var(--gold));transition:width .12s}
+.bn-val{position:absolute;right:4%;bottom:10px;display:flex;gap:8px;z-index:5}
+.bn-val button{padding:6px 12px;font-family:Consolas,monospace;font-size:10.5px;letter-spacing:.1em;background:transparent;border:1px solid var(--ln);color:var(--ink3);cursor:pointer;transition:.15s}
+.bn-val button:hover{border-color:var(--acc);color:var(--acc)}
+.bn-tag{position:absolute;right:6%;top:44%;font-family:Consolas,monospace;font-size:10px;color:var(--ink3);letter-spacing:.14em;z-index:3;writing-mode:vertical-rl}
+.phmeter{position:absolute;left:6%;top:8%;width:150px;height:30px;border:1px solid var(--ln);background:#060607;z-index:4;cursor:default}
+.phmeter{background:linear-gradient(180deg,#0c0c10,#08080a);box-shadow:inset 0 0 12px rgba(0,0,0,.5)}
+.phmeter .scale{position:absolute;inset:0;padding:2px 3px;font-family:Consolas,monospace;font-size:8px;color:var(--ink3);display:flex;justify-content:space-between;align-items:center;letter-spacing:0}
+.phmeter .scale::before{content:"";position:absolute;inset:7px 4px 8px;background:repeating-linear-gradient(90deg,transparent 0 calc(100%/14 - 1px),rgba(255,255,255,.12) calc(100%/14 - 1px) calc(100%/14));pointer-events:none}
+.phmeter .band{position:absolute;top:3px;bottom:3px;background:rgba(255,214,10,.22);border:1px solid var(--gold);z-index:3}
+.phmeter .pin{position:absolute;top:0;bottom:0;width:2px;background:var(--acc);z-index:4;box-shadow:0 0 8px var(--acc)}
+.phmeter .lbl{position:absolute;top:-16px;left:0;font-family:Consolas,monospace;font-size:9px;color:var(--ink3);letter-spacing:.16em}
+
+.phmeter{position:absolute;left:6%;top:8%;width:150px;height:30px;border:1px solid var(--ln);background:#060607;z-index:4;cursor:default}
+.phmeter .scale{position:absolute;inset:0;padding:2px 3px;font-family:Consolas,monospace;font-size:8px;color:var(--ink3);display:flex;justify-content:space-between;align-items:center;letter-spacing:0}
+.phmeter .band{position:absolute;top:3px;bottom:3px;background:rgba(255,214,10,.22);border:1px solid var(--gold);z-index:3}
+.phmeter .pin{position:absolute;top:0;bottom:0;width:2px;background:var(--acc);z-index:4;box-shadow:0 0 8px var(--acc)}
+.phmeter .lbl{position:absolute;top:-16px;left:0;font-family:Consolas,monospace;font-size:9px;color:var(--ink3);letter-spacing:.16em}
+
+/* toast */
+.thermo .tv{position:absolute;left:-36px;top:-18px;font-family:Consolas,monospace;font-size:10px;color:var(--gold);white-space:nowrap;text-shadow:0 0 6px rgba(255,214,10,.4);pointer-events:none}
+#toast.new{border-color:rgba(255,214,10,.95);box-shadow:0 0 26px rgba(255,214,10,.25)}
+#toast.new b{color:#ffd60a}
+.codex-bar{display:flex;align-items:center;gap:6px;margin-bottom:10px;font-family:Consolas,monospace;font-size:10px}
+.codex-bar em{margin-left:auto;color:var(--ink3);font-style:normal;letter-spacing:.08em}
+.cb-tab{padding:4px 8px;border:1px solid var(--ln);color:var(--ink3);cursor:pointer;transition:.2s}
+.cb-tab.on{border-color:var(--gold);color:var(--acc);background:rgba(255,214,10,.07)}
+.cb-tab:hover{border-color:rgba(255,214,10,.5)}
+
+.mcat{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:6px 0 2px;border:1px solid var(--ln);border-left:2px solid var(--gold);font-family:Consolas,monospace;font-size:11px;letter-spacing:.2em;color:var(--ink2);cursor:pointer;background:rgba(255,255,255,.02);transition:.2s}
+.mcat:hover{background:rgba(255,214,10,.06);border-left-color:var(--acc)}
+.mcat em{margin-left:auto;font-style:normal;font-size:10px;color:var(--ink3)}
+.mcat b{font-size:10px;color:var(--gold);transition:.2s}
+.mwrap{margin-bottom:2px}
+.star{color:var(--gold);font-size:8px;letter-spacing:0;margin-right:4px;text-shadow:0 0 6px rgba(255,214,10,.5)}
+.get{margin-left:auto;font-style:normal;font-size:11px;color:var(--ink3);cursor:pointer;transition:.2s;padding:0 3px}
+.get:hover{color:var(--gold);text-shadow:0 0 8px rgba(255,214,10,.6)}
+
+.grimoire{border:1px solid var(--ln);margin-bottom:14px;background:rgba(255,255,255,.02)}
+.g-toggle{padding:9px 10px;font-family:Consolas,monospace;font-size:11px;letter-spacing:.24em;color:var(--gold);cursor:pointer;border-bottom:1px solid transparent;transition:.2s}
+.g-toggle:hover{background:rgba(255,214,10,.06)}
+.g-toggle.on{border-bottom-color:var(--ln)}
+.g-body{padding:10px 12px;font-size:11.5px;color:var(--ink3);line-height:1.8}
+.g-body p{margin:0 0 8px}
+.g-body b{color:var(--acc)}
+.slot.f{cursor:pointer;transition:.15s}
+.slot.f:hover{border-color:var(--gold);color:var(--acc);background:rgba(255,214,10,.05)}
+.g-note{width:100%}
+.note-row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-bottom:1px dashed rgba(255,255,255,.07);font-size:12px;font-family:Consolas,monospace}
+.note-row .nq{color:var(--gold);font-weight:700}
+.note-row .nbad{color:#ff7a6b;font-weight:700}
+.note-row small{color:var(--ink3);margin-left:auto}
+.note-empty{text-align:center;color:var(--ink3);padding:30px 0;font-size:12px}
+
+/* 打磨 · 动效与反馈 */
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.op{position:relative;overflow:hidden}
+.op::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,214,10,.14) 50%,transparent 70%);transform:translateX(-130%);transition:transform .55s}
+.op:hover::after{transform:translateX(130%)}
+.op:active{transform:scale(.96)}
+.rec:hover{background:rgba(255,214,10,.05)}
+.pot .body::after{content:"";position:absolute;left:8%;right:8%;top:16%;height:5px;border-radius:50%;background:radial-gradient(55% 100% at 50% 50%,rgba(255,255,255,.32),transparent 75%);filter:blur(1px);animation:liqSheen 3.4s ease-in-out infinite;pointer-events:none}
+@keyframes liqSheen{0%,100%{transform:translateX(-6%);opacity:.45}50%{transform:translateX(6%);opacity:1}}
+.fxdot{position:fixed;width:4px;height:4px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);z-index:2147483002;pointer-events:none;animation:boomMove .75s cubic-bezier(.17,.67,.35,1) forwards}
+@keyframes boomMove{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+#box.fx-fail{animation:failShake .45s ease}
+@keyframes failShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+#box.fx-fail::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 40% at 50% 50%,rgba(160,40,34,.3),transparent);animation:failGlow .45s ease;z-index:9;pointer-events:none}
+@keyframes failGlow{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+#prog i{background:linear-gradient(90deg,var(--gold),#fff3c0,var(--gold));background-size:200% 100%;animation:progSheen 1.6s linear infinite}
+@keyframes progSheen{to{background-position:-200% 0}}
+.steam{position:absolute;width:9px;height:16px;border-radius:50%;background:radial-gradient(50% 50% at 50% 50%,rgba(220,230,240,.55),transparent);filter:blur(3px);animation:steamRise 2.6s ease-out infinite;pointer-events:none;z-index:6}
+@keyframes steamRise{0%{transform:translateY(8px) scale(.55);opacity:0}25%{opacity:.55}100%{transform:translateY(-60px) scale(1.5);opacity:0}}
+.spark{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--gold);pointer-events:none;animation:sparkUp 1.8s ease-out forwards;z-index:2;box-shadow:0 0 8px var(--gold)}
+@keyframes sparkUp{0%{transform:translateY(0) scale(1);opacity:0}18%{opacity:.95}100%{transform:translateY(-80px) scale(.4);opacity:0}}
+
+#toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);z-index:2147483001;background:#101012;border:1px solid var(--ln);padding:10px 22px;font-size:12.5px;display:none;max-width:90vw;box-shadow:0 4px 30px rgba(0,0,0,.5);animation:toastIn .28s cubic-bezier(.22,1,.36,1)}
+#toast.ok{border-color:rgba(255,214,10,.55)}
+#toast.ok b{color:var(--gold)}
+#toast.bad{border-color:rgba(160,40,34,.7)}
+#toast.bad b{color:#ff7a6b}
+@keyframes toastIn{from{transform:translate(-50%,14px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+#toast b{color:var(--gold)}
+#toast small{display:block;color:var(--ink3);margin-top:2px}
+@media(max-width:600px){main{padding:14px 12px 50px}}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">ARCHIVE // <b>ALCHEMIA</b></span>
+  <nav>
+    <a href="../index.html">◈ 主站</a>
+    <a href="花园.html">🌱 花园</a>
+    <a href="锻造.html">⚒ 锻造</a>
+  </nav>
+</header>
+<main>
+  <div class="panels">
+    <section class="panel" id="warehouse">
+      <h2><i>☿</i> 材料仓库</h2>
+<div class="grimoire" id="grimoire">
+  <div class="g-toggle" id="gToggle">◈ 炼金典籍</div>
+  <div class="g-body" id="gBody" style="display:none">
+    <p><b>三原质</b>——硫🜍为性（火性热烈）、汞☿为灵（流变不居）、盐🜔为体（凝固成物）：万物之骨。</p>
+    <p><b>四元素</b>——火△、水▽、地□、风○：万物之息。原质溶于元素，方成药剂。</p>
+    <p><b>七金属</b>——金☉、银☽、铜♀、铁♂、锡♃、铅♄、水银☿：行星映射人间。</p>
+    <p><b>四阶段</b>——黑化腐旧、白化洗髓、黄化结合、红化升华：一次完整的大功业。</p>
+    <p><b>材料出处</b>——原质/元素/基础金属购于主站商店；药草来自花园；银需商店高级兑换；金与贤者之石相关。</p>
+  </div>
+</div>
+      <div id="whList"></div>
+    </section>
+    <section class="panel cauldron" id="work">
+      <span class="stage-badge" id="stageBadge">STANDBY</span>
+      <div class="pot">
+        <div class="rim"></div>
+        <div class="body"></div>
+        <div class="leg l"></div>
+        <div class="leg r"></div>
+      </div>
+      <div class="slots" id="slots"></div>
+      <div class="stage-desc" id="stageDesc">从仓库点击材料投入坩埚<br>三原质、四元素、七金属——万物皆可炼</div>
+      <div class="ops" id="ops"></div>
+<div id="bench">
+  <span class="bn-step" id="bnStep">STEP 01 // 研磨</span>
+  <span class="bn-tip" id="bnTip">点击研杵研磨材料</span>
+  <div class="mortar" id="mortar"><div class="powder" id="powder"></div><div class="pestle" id="pestle"></div></div>
+  <div class="flask" id="flask"><div class="neck"></div><div class="bulb" id="bulb"></div></div>
+  <div class="bn-node" id="n0" style="left:16%;top:52%">M</div>
+  <div class="bn-node" id="n1" style="left:48%;top:40%">•</div>
+  <div class="bn-node" id="n2" style="left:74%;top:52%">B</div>
+  <div class="thermo" id="thermo"><i></i><span class="tv" id="tv">--°C</span><span class="tz" id="tz" style="bottom:46%"></span></div>
+  <div class="bn-tag">TEMP · 45-65</div>
+  <div class="phmeter" id="phMeter"><span class="lbl" id="phLbl">pH 7.0</span><span class="scale" id="phScale">1······14</span><span class="band" id="phBand" style="display:none"></span><span class="pin" id="phPin" style="left:46%"></span></div>
+  <div class="bn-heat" id="heat">
+    <div class="flame" id="flame"><i></i></div>
+    <input type="range" id="heatRange" min="0" max="100" value="0">
+  </div>
+  <div class="bn-distill" id="bnDistill"><i></i></div>
+  <div class="bn-val"><button id="bnReset">重来</button><button id="bnExit">退出</button></div>
+</div>
+    </section>
+    <section class="panel" id="codex">
+      <h2><i>🜔</i> 配方图鉴</h2>
+      <div id="recList"></div>
+      <button class="op g-note" id="gNote" style="width:100%;margin-bottom:10px">☰ 炼金笔记</button>
+<h2 style="margin-top:16px"><i>★</i> 称号</h2>
+      <div id="titleList"></div>
+    </section>
+  </div>
+</main>
+<div id="mask"><div id="box">
+  <button class="cl" id="closeBtn" type="button">✕</button>
+  <h3 id="mTitle">—</h3>
+  <div class="sub" id="mSub"></div>
+  <div id="mini"></div>
+  <div id="prog"><i></i></div>
+</div></div>
+<div id="toast"></div>
+<script src="_shared.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)},$$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+var S=function(o){return JSON.stringify(o)},L=function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}};
+var W=function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+function toast(t,sub,cls){var e=$('#toast');e.className=cls||'';e.innerHTML='<b>'+t+'</b>'+(sub?'<small>'+sub+'</small>':'');e.style.display='block';clearTimeout(e._t);e._t=setTimeout(function(){e.style.display='none'},2600)}
+/* ========== 数据 ========== */
+var MATS={
+ s_sulfur:{n:'硫',sy:'🜍',s:9,m:1,a:2,cat:'原质',src:'商店·初始',r:0,ph:2},
+ s_mercury:{n:'水银',sy:'☿',s:2,m:9,a:1,cat:'原质',src:'商店·初始',r:0,ph:7},
+ s_salt:{n:'盐',sy:'🜔',s:1,m:2,a:9,cat:'原质',src:'商店·初始',r:0,ph:7},
+ e_fire:{n:'火',sy:'△',s:7,m:3,a:1,cat:'元素',src:'商店·初始',r:0,ph:3},
+ e_water:{n:'水',sy:'▽',s:2,m:5,a:4,cat:'元素',src:'商店·初始',r:0,ph:7},
+ e_earth:{n:'地',sy:'□',s:3,m:1,a:7,cat:'元素',src:'商店·初始',r:0,ph:8},
+ e_air:{n:'风',sy:'○',s:4,m:6,a:1,cat:'元素',src:'商店·初始',r:0,ph:7},
+ m_gold:{n:'金',sy:'☉',s:5,m:5,a:5,cat:'金属',src:'贤者·兑换',r:3,ph:7},
+ m_silver:{n:'银',sy:'☽',s:3,m:7,a:4,cat:'金属',src:'商店·高级',r:1,ph:7},
+ m_copper:{n:'铜',sy:'♀',s:4,m:4,a:6,cat:'金属',src:'商店',r:0,ph:7},
+ m_iron:{n:'铁',sy:'♂',s:6,m:2,a:8,cat:'金属',src:'商店',r:0,ph:7},
+ m_tin:{n:'锡',sy:'♃',s:2,m:3,a:6,cat:'金属',src:'商店',r:0,ph:7},
+ m_lead:{n:'铅',sy:'♄',s:1,m:1,a:9,cat:'金属',src:'商店',r:0,ph:6},
+ h_rose:{n:'火焰玫瑰',sy:'🌹',s:6,m:3,a:2,cat:'药草',src:'花园',r:1,ph:5},
+ h_moon:{n:'月光草',sy:'🌙',s:2,m:7,a:3,cat:'药草',src:'花园',r:1,ph:8},
+ h_frost:{n:'霜雪莲',sy:'❄',s:3,m:4,a:6,cat:'药草',src:'花园',r:1,ph:6},
+ p_nigredo:{n:'第一原质',sy:'◼',s:3,m:3,a:4,cat:'中间',src:'黑化',r:1},
+ p_albedo:{n:'白液',sy:'◻',s:2,m:6,a:4,cat:'中间',src:'白化',r:1},
+ p_citrinitas:{n:'黄金之露',sy:'◒',s:5,m:4,a:5,cat:'中间',src:'黄化',r:1},
+ p_rubedo:{n:'红化精华',sy:'◑',s:6,m:4,a:6,cat:'中间',src:'红化',r:1},
+ p_stone:{n:'贤者之石',sy:'★',s:10,m:10,a:10,cat:'终极',src:'大功业',r:3},
+ pot_heat:{n:'炽热药剂',sy:'⚗',s:8,m:2,a:2,cat:'成品',src:'配方',r:1,use:'点燃花园暖炉 · 可兑商店金币'},
+ pot_flow:{n:'流动药剂',sy:'⚘',s:2,m:8,a:2,cat:'成品',src:'配方',r:1,use:'加速锻造淬火 · 可兑商店金币'},
+ pot_ward:{n:'坚固药剂',sy:'🛡',s:2,m:2,a:8,cat:'成品',src:'配方',r:1,use:'加固仓库藏品 · 可兑商店金币'},
+ pot_elixir:{n:'万能灵药',sy:'☤',s:5,m:5,a:5,cat:'成品',src:'配方',r:2,use:'花园之泉 · 植物瞬间饱满'},
+a_ether:{n:'以太之息',sy:'◇',s:3,m:9,a:4,cat:'原质',src:'商店·异象',r:1,how:'商店 40 金币 · 或「风息」与「火种」于炼金台合成'},
+a_sultears:{n:'硫之泪',sy:'⚗',s:7,m:4,a:2,cat:'原质',src:'商店·蒸馏',r:1,how:'商店 30 金币 · 硫磺过量蒸馏时凝结'},
+a_mercuryshadow:{n:'汞之影',sy:'☿',s:2,m:9,a:3,cat:'原质',src:'午夜异象',r:1,how:'商店 45 金币 · 午夜（0-1 点）开炼金台异象可见'},
+a_saltcrystal:{n:'盐之晶',sy:'🜔',s:3,m:3,a:8,cat:'原质',src:'静置结晶',r:1,how:'商店 25 金币 · 盐卤静置七日自然结晶'},
+a_philosalt:{n:'哲人之盐',sy:'◈',s:4,m:4,a:8,cat:'原质',src:'贤者兑换',r:2,how:'贤者之石兑换（1 石 = 1 份）'},
+a_phlogiston:{n:'燃素',sy:'🔥',s:9,m:3,a:1,cat:'原质',src:'煅烧',r:1,how:'火焰花 ×3 于炼金台煅烧得'},
+a_wasteash:{n:'荒芜之灰',sy:'🪨',s:4,m:1,a:5,cat:'原质',src:'失败残渣',r:0,how:'炼金失败时坩埚自然留下'},
+a_firstfire:{n:'初火之烬',sy:'✦',s:8,m:2,a:3,cat:'原质',src:'对战胜利',r:2,how:'与作者对战获得首胜'},
+a_coldmist:{n:'冷光之雾',sy:'🌫',s:2,m:6,a:4,cat:'原质',src:'节气·白露',r:1,how:'白露节气当天开炼金台'},
+a_chaosseed:{n:'混沌之种',sy:'🌀',s:5,m:5,a:5,cat:'原质',src:'彩蛋·9999',r:2,how:'2048 彩蛋解锁后 · 9999 权限商店'},
+e_skyfire:{n:'天火之精',sy:'△',s:9,m:4,a:2,cat:'元素',src:'商店·惊蛰',r:1,how:'商店 20 金币 · 或惊蛰日雷雨后获得'},
+e_abysstear:{n:'渊水之泪',sy:'▽',s:2,m:7,a:5,cat:'元素',src:'花园·湖心',r:1,how:'商店 20 金币 · 或花园「深渊」主题湖心采集'},
+e_heartearth:{n:'大地之心',sy:'□',s:4,m:2,a:9,cat:'元素',src:'夜行·探索',r:1,how:'商店 20 金币 · 或夜行深处探索大节点'},
+e_stormeye:{n:'风暴之眼',sy:'○',s:5,m:9,a:1,cat:'元素',src:'论坛热度',r:1,how:'商店 20 金币 · 或论坛帖子被顶 10 次'},
+e_flowsand:{n:'流火之砂',sy:'⏳',s:7,m:5,a:3,cat:'元素',src:'锻造飞溅',r:1,how:'锻造武器时砂轮飞溅收集'},
+e_frostcore:{n:'霜雪之芯',sy:'❄',s:3,m:3,a:7,cat:'元素',src:'花园·霜冻',r:1,how:'花园「霜冻」主题种植冰晶莲收获'},
+e_thundercrys:{n:'雷鸣之晶',sy:'⚡',s:6,m:8,a:2,cat:'元素',src:'签到·雷雨',r:2,how:'签到 7 天解锁 · 雷雨夜登录'},
+e_erosiondew:{n:'蚀雾之滴',sy:'💧',s:2,m:6,a:5,cat:'元素',src:'白化·银露',r:1,how:'白化阶段收集「银露」转化'},
+e_voidwind:{n:'空无之风',sy:'🌬',s:1,m:9,a:2,cat:'元素',src:'在线时长',r:1,how:'在线时长累计 10 小时'},
+e_stariron:{n:'星陨之铁',sy:'⭐',s:7,m:3,a:6,cat:'元素',src:'密文·星谜',r:2,how:'密文解码器破解任意「星」字谜'},
+m_whitegold:{n:'白金星',sy:'☉',s:8,m:6,a:5,cat:'金属',src:'商店·高级',r:2,how:'商店 120 金币 · 或金 ×3 高温淬炼'},
+m_verdigris:{n:'铜之绿锈',sy:'♀',s:3,m:4,a:5,cat:'金属',src:'花园·潮湿',r:0,how:'铜在潮湿花园放置 3 天自然生锈'},
+m_ironblood:{n:'铁之血',sy:'♂',s:6,m:2,a:6,cat:'金属',src:'锻造·败血',r:1,how:'锻造失败 3 次后铁砧渗血'},
+m_tinwhite:{n:'锡之白',sy:'♃',s:3,m:5,a:4,cat:'金属',src:'商店',r:0,how:'商店 12 金币'},
+m_leadheavy:{n:'铅之重',sy:'♄',s:2,m:1,a:9,cat:'金属',src:'商店',r:0,how:'商店 15 金币'},
+m_goldpure:{n:'金之精',sy:'☉',s:9,m:5,a:6,cat:'金属',src:'贤者兑换',r:3,how:'贤者之石兑换（2 石 = 1）· 或铅中炼金配方'},
+m_silvertear:{n:'银之泪',sy:'☽',s:4,m:8,a:5,cat:'金属',src:'满月·夜露',r:2,how:'满月之夜花园浇水（月下银露）'},
+m_mercurycore:{n:'水银之髓',sy:'☿',s:4,m:10,a:2,cat:'金属',src:'商店·精炼',r:2,how:'商店 80 金币 · 或汞之影 ×3 精炼'},
+m_mythril:{n:'秘银',sy:'✨',s:6,m:7,a:6,cat:'金属',src:'锻造·拆刃',r:3,how:'锻造「秘银剑」后收回剑刃'},
+m_darksteel:{n:'玄铁',sy:'⚫',s:8,m:3,a:7,cat:'金属',src:'夜行·矿脉',r:2,how:'夜行深处「玄铁矿脉」节点'},
+m_redcopper:{n:'赤铜',sy:'🔶',s:6,m:5,a:3,cat:'金属',src:'锻造·三把',r:1,how:'锻造 3 把武器解锁'},
+m_frostiron:{n:'寒铁',sy:'🧊',s:5,m:3,a:8,cat:'金属',src:'冬至·刷新',r:2,how:'冬至日商店刷新上架'},
+o_lapis:{n:'青金石',sy:'💎',s:4,m:5,a:7,cat:'矿脉',src:'花园·青金石花',r:1,how:'花园种植「青金石花」开花即得 · 4 天后凋零'},
+o_rubycore:{n:'红宝石之核',sy:'🔴',s:9,m:3,a:4,cat:'矿脉',src:'花园·血藤',r:2,how:'花园「血藤」成熟后挖根茎'},
+o_sapphireeye:{n:'蓝宝石之瞳',sy:'🔵',s:3,m:9,a:5,cat:'矿脉',src:'锻造·镶嵌',r:2,how:'锻造「霜之刃」时镶嵌所得'},
+o_emeraldbreath:{n:'祖母绿之息',sy:'🟢',s:5,m:6,a:6,cat:'矿脉',src:'花园·照料',r:2,how:'花园「翡翠藤」连续照料 10 天'},
+o_moonstone:{n:'月长石',sy:'🌙',s:3,m:8,a:4,cat:'矿脉',src:'满月·收获',r:1,how:'满月时花园「月光」主题收获'},
+o_sunstone:{n:'日长石',sy:'☀',s:8,m:4,a:5,cat:'矿脉',src:'夏至·领取',r:1,how:'夏至正午登录领取'},
+o_obsidian:{n:'黑曜石',sy:'⬛',s:6,m:1,a:8,cat:'矿脉',src:'夜行·黑柱',r:1,how:'夜行深处「黑曜石柱」节点'},
+o_amethyst:{n:'紫水晶',sy:'🟣',s:5,m:7,a:5,cat:'矿脉',src:'白化·完美',r:2,how:'白化阶段 3 次完美通关（品质 ≥90）'},
+o_amber:{n:'琥珀',sy:'🟠',s:5,m:4,a:4,cat:'矿脉',src:'花园·琥珀松',r:1,how:'花园「琥珀松」流脂 7 天'},
+o_malachite:{n:'孔雀石',sy:'🟩',s:4,m:3,a:6,cat:'矿脉',src:'炼金·合成',r:1,how:'铜 ×2 + 地 ×2 于炼金台合成'},
+o_meteor:{n:'陨铁',sy:'☄',s:7,m:5,a:7,cat:'矿脉',src:'星陨之夜',r:2,how:'「星陨之夜」节日彩蛋掉落'},
+o_dragoncrys:{n:'龙晶',sy:'🐉',s:10,m:4,a:8,cat:'矿脉',src:'对战·二阶段',r:3,how:'与作者对战第二阶段胜利 · 或 9999 权限商店'},
+h_mandrake:{n:'曼德拉草',sy:'🌿',s:5,m:4,a:6,cat:'药草',src:'花园·尖叫草',r:1,how:'花园种植「尖叫草」——拔取时请大喊'},
+h_moonlight:{n:'月辉草',sy:'🌙',s:3,m:9,a:3,cat:'药草',src:'花园·月辉',r:1,how:'花园「月辉」主题下浇水'},
+h_firebloom:{n:'火焰花',sy:'🌺',s:9,m:3,a:2,cat:'药草',src:'花园·炽阳',r:1,how:'花园「炽阳」主题下浇水'},
+h_icelotus:{n:'冰晶莲',sy:'🪷',s:2,m:4,a:9,cat:'药草',src:'花园·霜冻',r:1,how:'花园「霜冻」主题下种植'},
+h_dragonpepper:{n:'龙息椒',sy:'🌶',s:8,m:5,a:2,cat:'药草',src:'花园·烈焰',r:1,how:'花园「烈焰」主题连续照料 5 天'},
+h_mistmushroom:{n:'雾隐菇',sy:'🍄',s:3,m:6,a:4,cat:'药草',src:'花园·迷雾',r:1,how:'花园「迷雾」主题阴天收获'},
+h_stardustherb:{n:'星尘草',sy:'✨',s:4,m:8,a:3,cat:'药草',src:'花园·星空',r:2,how:'花园「星空」主题夜间收获'},
+h_bloodvine:{n:'血藤',sy:'🩸',s:7,m:3,a:5,cat:'药草',src:'花园·猩红',r:1,how:'花园「猩红」主题浇灌「红水」'},
+h_shadowmoss:{n:'影苔',sy:'🟤',s:3,m:5,a:5,cat:'药草',src:'花园·暗影',r:1,how:'花园「暗影」主题角落生长'},
+h_silverbane:{n:'圣银草',sy:'☾',s:5,m:8,a:4,cat:'药草',src:'花园·银壶',r:1,how:'花园「月光」主题银壶浇水'},
+h_marigold:{n:'金盏花',sy:'🌼',s:6,m:5,a:4,cat:'药草',src:'花园·晨曦',r:1,how:'花园「晨曦」主题收获'},
+h_purplevine:{n:'紫藤灵',sy:'🪻',s:5,m:7,a:3,cat:'药草',src:'花园·紫夜',r:1,how:'花园「紫夜」主题攀爬藤蔓'},
+h_dreamlotus:{n:'睡莲之梦',sy:'🥀',s:3,m:7,a:5,cat:'药草',src:'花园·湖泊',r:1,how:'花园「湖泊」主题午夜收获'},
+h_thornheart:{n:'荆棘之心',sy:'🥀',s:6,m:3,a:6,cat:'药草',src:'花园·荆棘',r:1,how:'花园「荆棘」主题照料 14 天'},
+h_rosemary:{n:'芝华草',sy:'🌾',s:4,m:5,a:5,cat:'药草',src:'花园·初始',r:0,how:'花园初始草种随机开花'},
+t_springbud:{n:'春分之芽',sy:'🌱',s:4,m:5,a:4,cat:'时令',src:'节气·春分',r:1,how:'春分当天登录 · 商店刷新'},
+t_solstflame:{n:'夏至之焰',sy:'🔥',s:9,m:3,a:3,cat:'时令',src:'节气·夏至',r:1,how:'夏至当天登录 · 商店刷新'},
+t_autumnfruit:{n:'秋分之实',sy:'🍂',s:4,m:4,a:7,cat:'时令',src:'节气·秋分',r:1,how:'秋分当天登录 · 商店刷新'},
+t_winterice:{n:'冬至之冰',sy:'🧊',s:2,m:3,a:9,cat:'时令',src:'节气·冬至',r:1,how:'冬至当天登录 · 商店刷新'},
+t_awakenthunder:{n:'惊蛰之雷',sy:'⚡',s:7,m:7,a:2,cat:'时令',src:'节气·惊蛰',r:1,how:'惊蛰当天开炼金台异象'},
+t_grainear:{n:'芒种之穗',sy:'🌾',s:4,m:4,a:5,cat:'时令',src:'节气·芒种',r:1,how:'芒种当天花园播种'},
+t_whitedew:{n:'白露之珠',sy:'💧',s:2,m:8,a:4,cat:'时令',src:'节气·白露',r:1,how:'白露当天花园收集晨露'},
+t_hoarfrost:{n:'霜降之霜',sy:'❄',s:3,m:2,a:8,cat:'时令',src:'节气·霜降',r:1,how:'霜降当天锻造台冷却所得'},
+b_phoenixfeather:{n:'凤凰之羽',sy:'🪶',s:9,m:6,a:4,cat:'异兽',src:'红化·完美',r:3,how:'红化阶段一次完美（品质 ≥95）——凤凰献羽'},
+b_dragonscale:{n:'龙鳞',sy:'🐲',s:8,m:4,a:8,cat:'异兽',src:'对战·三阶段',r:3,how:'与作者对战第三阶段胜利'},
+b_unicornhorn:{n:'独角兽之角',sy:'🦄',s:5,m:9,a:6,cat:'异兽',src:'花园·圣光',r:3,how:'花园「圣光」主题极稀有事件（0.5%）'},
+b_ninetailfur:{n:'九尾之毛',sy:'🦊',s:6,m:8,a:5,cat:'异兽',src:'白化·三银露',r:2,how:'白化阶段 3 次接住银露（无迟缓失误）'},
+b_rocwing:{n:'鲲鹏之翼',sy:'🕊',s:7,m:7,a:5,cat:'异兽',src:'夜行·风暴层',r:2,how:'夜行深处「风暴层」节点'},
+b_qilinwhisker:{n:'麒麟之须',sy:'🦌',s:6,m:6,a:6,cat:'异兽',src:'连续·三十日',r:3,how:'连续 30 天登录'},
+b_xuanshell:{n:'玄武之甲',sy:'🐢',s:4,m:3,a:10,cat:'异兽',src:'锻造·拆盾',r:3,how:'锻造「玄武盾」后拆解'},
+b_vermilionseed:{n:'朱雀之火种',sy:'🔥',s:10,m:4,a:2,cat:'异兽',src:'夏至·对战',r:3,how:'夏至当天与作者对战胜利'},
+b_whitetigerfang:{n:'白虎之牙',sy:'🐯',s:9,m:3,a:7,cat:'异兽',src:'锻造·猎取',r:2,how:'锻造「白虎爪」时猎取'},
+b_owleye:{n:'夜枭之眼',sy:'🦉',s:4,m:7,a:4,cat:'异兽',src:'论坛·三帖',r:2,how:'守夜人论坛发帖 3 篇（守夜之眼注视）'},
+i_nigredoash:{n:'黑化之烬',sy:'⚫',s:5,m:2,a:6,cat:'仪式',src:'完成·黑化',r:1,how:'完成黑化阶段——灰烬自留'},
+i_albedodew:{n:'白化之露',sy:'⚪',s:3,m:8,a:4,cat:'仪式',src:'完成·白化',r:1,how:'完成白化阶段——晨露自凝'},
+i_citrinitasgold:{n:'黄化之金',sy:'🟡',s:7,m:5,a:4,cat:'仪式',src:'完成·黄化',r:1,how:'完成黄化阶段——金芒自现'},
+i_rubedoblood:{n:'红化之血',sy:'🔴',s:8,m:3,a:5,cat:'仪式',src:'完成·红化',r:1,how:'完成红化阶段——血珀自凝'},
+i_sagetear:{n:'贤者之泪',sy:'💧',s:6,m:9,a:4,cat:'仪式',src:'炼成·贤者',r:2,how:'贤者之石炼成时余泪'},
+i_magisterseal:{n:'大功业之证',sy:'🏅',s:7,m:7,a:7,cat:'仪式',src:'三石·大功业',r:2,how:'三次贤者之石——大功业者'},
+i_ouroborosring:{n:'衔尾蛇之环',sy:'♾',s:8,m:8,a:8,cat:'仪式',src:'七石·衔尾蛇',r:3,how:'七次贤者之石——衔尾蛇之主'},
+i_midassand:{n:'点石成金之砂',sy:'✨',s:6,m:6,a:6,cat:'仪式',src:'转化·七种',r:2,how:'转化七种材料——点石成金之人'},
+i_sevenstar:{n:'七芒星之尘',sy:'🌟',s:5,m:5,a:5,cat:'仪式',src:'星环·七方位',r:2,how:'星环仪式归位 7 方位——尘自落'},
+i_abrahamseal:{n:'亚伯拉罕之契',sy:'📜',s:4,m:4,a:4,cat:'仪式',src:'卡塞尔·契约',r:2,how:'签订亚伯拉罕血统契（卡塞尔学院官网）'},
+g_nightwatch:{n:'守夜人之印',sy:'🕯',s:4,m:4,a:4,cat:'信物',src:'论坛·注册',r:1,how:'守夜人论坛注册并发言'},
+g_guestlike:{n:'留言者的赞',sy:'👍',s:3,m:3,a:3,cat:'信物',src:'留言·十赞',r:1,how:'留言板收到 10 个赞'},
+g_forumscroll:{n:'论坛之帖',sy:'📜',s:3,m:4,a:3,cat:'信物',src:'论坛·一帖',r:1,how:'守夜人论坛发帖 1 篇'},
+g_checkinseal:{n:'签到之章',sy:'🗓',s:2,m:2,a:5,cat:'信物',src:'签到·三日',r:1,how:'签到 3 天'},
+g_riddlekey:{n:'谜题之钥',sy:'🔑',s:4,m:6,a:4,cat:'信物',src:'谜题·连五',r:2,how:'每日谜题连续答对 5 天'},
+g_guestshadow:{n:'访客之影',sy:'👥',s:2,m:5,a:4,cat:'信物',src:'访客墙·十人',r:1,how:'访客墙累计 10 位访客'},
+g_achstar:{n:'成就之星',sy:'⭐',s:5,m:5,a:5,cat:'信物',src:'成就·隐藏',r:2,how:'解锁任意隐藏成就'},
+g_passrune:{n:'密码之符',sy:'🔣',s:4,m:7,a:3,cat:'信物',src:'机密·验证',r:2,how:'机密终端通过站长验证'},
+g_battleseal:{n:'对战之证',sy:'⚔',s:7,m:4,a:5,cat:'信物',src:'对战·任意',r:2,how:'与作者对战任意阶段'},
+g_easteregg:{n:'彩蛋之核',sy:'🥚',s:3,m:3,a:3,cat:'信物',src:'2048·秘技',r:2,how:'2048 菜单秘技触发'},
+t_elixirprim:{n:'万灵药原质',sy:'☤',s:8,m:8,a:8,cat:'终极',src:'三原质合',r:3,how:'三原质合配方 · 品质 ≥90'},
+t_cosmictear:{n:'宇宙之泪',sy:'🌌',s:9,m:9,a:9,cat:'终极',src:'对战·终胜',r:3,how:'与作者对战最终胜利——世界尽头的泪水'},
+t_eternalsand:{n:'永恒之砂',sy:'⌛',s:8,m:8,a:8,cat:'终极',src:'全功业·刷新',r:3,how:'四阶段 + 贤者 + 大功业齐备后商店终极刷新'},
+t_goldcrown:{n:'黄金冠冕',sy:'👑',s:9,m:7,a:9,cat:'终极',src:'终极·锻造',r:3,how:'贤者之石 ×3 于锻造台打制'},
+};
+var START={s_sulfur:3,s_mercury:3,s_salt:3,e_fire:2,e_water:2,e_earth:2,e_air:2,m_iron:1,m_copper:1,m_tin:1};
+var RECIPES=[
+ {in:['s_sulfur','e_fire'],dose:{s_sulfur:2,e_fire:1},prog:[[58,60],[72,100]],ph:[2.3,3.1],win:8,out:'pot_heat',known:true,tag:'硫引火种'},
+ {in:['s_mercury','e_air'],dose:{s_mercury:2,e_air:1},prog:[[30,60],[40,100]],ph:[6.6,7.4],win:6,out:'pot_flow',known:true,tag:'汞乘风起'},
+ {in:['s_salt','e_earth'],dose:{s_salt:2,e_earth:1},prog:[[70,60],[62,100]],ph:[7.2,7.8],win:10,out:'pot_ward',known:true,tag:'盐镇大地'},
+ {in:['s_sulfur','s_mercury','s_salt'],dose:{s_sulfur:1,s_mercury:1,s_salt:1},prog:[[88,60],[96,100]],ph:[3.4,4.6],win:11,out:'pot_elixir',known:false,tag:'三原质合',riddle:'灵魂、精神与身体——三位老熟人齐聚一桌，握手言和，万灵药成'},
+ {in:['h_rose','s_sulfur'],dose:{h_rose:1,s_sulfur:2},prog:[[62,60],[68,100]],ph:[3.0,4.0],win:7,out:'pot_heat',known:false,tag:'玫瑰之血',riddle:'带刺的红遇上燃烧的魂——玫瑰的血会烫手'},
+ {in:['h_moon','s_mercury'],dose:{h_moon:1,s_mercury:2},prog:[[26,60],[34,100]],ph:[7.2,7.6],win:6,out:'pot_flow',known:false,tag:'月光为引',riddle:'月光洒在银瓶上，汲水的人步履不停'},
+ {in:['h_frost','s_salt'],dose:{h_frost:1,s_salt:2},prog:[[18,60],[26,100]],ph:[6.4,7.0],win:9,out:'pot_ward',known:false,tag:'霜雪凝甲',riddle:'冰与盐筑的墙——冻住的不止是伤口'},
+ {in:['e_fire','e_water','e_earth','e_air'],dose:{e_fire:1,e_water:1,e_earth:1,e_air:1},prog:[[50,60],[56,100]],ph:[5.4,6.6],win:8,out:'p_citrinitas',known:false,tag:'四元素轮',riddle:'风火水地绕成一圈，露自圆心升起'},
+ {in:['m_silver','m_copper'],dose:{m_silver:1,m_copper:2},prog:[[36,60],[44,100]],ph:[6.6,7.4],win:7,out:'p_nigredo',known:false,tag:'月铜之腐',riddle:'月照铜镜，镜面生腐——腐不是终点，是另一种开始'},
+ {in:['m_gold','m_lead'],dose:{m_gold:1,m_lead:2},prog:[[94,60],[88,100]],ph:[6.2,6.8],win:10,out:'p_rubedo',known:false,tag:'铅中炼金',riddle:'铅的坟墓里，有什么在呼吸'},
+ {in:['m_gold','m_silver','s_mercury'],dose:{m_gold:1,m_silver:1,s_mercury:1},prog:[[96,60],[100,100]],ph:[6.8,7.2],win:12,out:'p_stone',known:false,tag:'日月水三引 · 七宝星环',riddle:'太阳、月亮与水星共赴婚礼——七枚星符在星环上等它们'},,
+ {in:['a_phlogiston','e_skyfire'],dose:{a_phlogiston:1,e_skyfire:1},prog:[[66,60],[78,100]],ph:[2.6,3.4],win:7,out:'pot_heat',known:true,tag:'燃素复燃'},
+ {in:['o_rubycore','e_fire'],dose:{o_rubycore:1,e_fire:2},prog:[[72,60],[82,100]],ph:[2.8,3.6],win:7,out:'pot_heat',known:true,tag:'宝石熔心'},
+ {in:['h_dragonpepper','e_fire'],dose:{h_dragonpepper:2,e_fire:1},prog:[[60,60],[70,100]],ph:[3.2,4.0],win:8,out:'pot_heat',known:true,tag:'龙息灼喉'},
+ {in:['a_mercuryshadow','e_voidwind'],dose:{a_mercuryshadow:1,e_voidwind:1},prog:[[28,60],[36,100]],ph:[6.8,7.4],win:6,out:'pot_flow',known:true,tag:'影随风逝'},
+ {in:['o_moonstone','e_abysstear'],dose:{o_moonstone:1,e_abysstear:1},prog:[[24,60],[32,100]],ph:[7.0,7.6],win:6,out:'pot_flow',known:true,tag:'月沉渊底'},
+ {in:['a_saltcrystal','o_obsidian'],dose:{a_saltcrystal:1,o_obsidian:1},prog:[[74,60],[84,100]],ph:[7.4,8.0],win:10,out:'pot_ward',known:true,tag:'盐封黑曜'},
+ {in:['m_frostiron','e_frostcore'],dose:{m_frostiron:1,e_frostcore:1},prog:[[16,60],[24,100]],ph:[6.6,7.2],win:9,out:'pot_ward',known:true,tag:'寒铁凝霜'},
+ {in:['a_philosalt','a_mercuryshadow','e_voidwind'],dose:{a_philosalt:1,a_mercuryshadow:1,e_voidwind:1},prog:[[90,60],[96,100]],ph:[3.6,4.4],win:11,out:'pot_elixir',known:true,tag:'哲人三味'},
+ {in:['h_moonlight','m_silvertear'],dose:{h_moonlight:2,m_silvertear:1},prog:[[30,60],[38,100]],ph:[7.2,7.8],win:7,out:'pot_flow',known:true,tag:'月下银露'},
+ {in:['h_marigold','e_fire'],dose:{h_marigold:2,e_fire:1},prog:[[56,60],[66,100]],ph:[3.4,4.2],win:8,out:'pot_heat',known:true,tag:'金盏燃香'},
+ {in:['h_firebloom'],dose:{h_firebloom:3},prog:[[88,60],[94,100]],ph:[2.4,3.2],win:8,out:'a_phlogiston',known:true,tag:'煅花为燃'},
+ {in:['a_mercuryshadow'],dose:{a_mercuryshadow:3},prog:[[92,60],[96,100]],ph:[7.0,7.6],win:6,out:'m_mercurycore',known:true,tag:'影凝成髓'},
+ {in:['m_gold'],dose:{m_gold:3},prog:[[96,60],[100,100]],ph:[6.8,7.4],win:10,out:'m_whitegold',known:true,tag:'金中取白金'},
+ {in:['m_copper','e_water'],dose:{m_copper:2,e_water:1},prog:[[34,60],[42,100]],ph:[6.2,6.8],win:9,out:'m_verdigris',known:true,tag:'湿铜生锈'},
+ {in:['m_iron','e_fire'],dose:{m_iron:2,e_fire:1},prog:[[70,60],[80,100]],ph:[3.6,4.4],win:7,out:'e_flowsand',known:true,tag:'铁火流砂'},
+ {in:['h_icelotus','e_water'],dose:{h_icelotus:1,e_water:2},prog:[[12,60],[20,100]],ph:[6.4,7.0],win:9,out:'e_frostcore',known:true,tag:'莲冰凝芯'},
+ {in:['m_copper','e_earth'],dose:{m_copper:2,e_earth:2},prog:[[44,60],[52,100]],ph:[7.2,7.8],win:10,out:'o_malachite',known:true,tag:'铜地成翠'},
+ {in:['o_malachite','a_saltcrystal'],dose:{o_malachite:1,a_saltcrystal:1},prog:[[52,60],[60,100]],ph:[6.6,7.4],win:10,out:'o_emeraldbreath',known:true,tag:'翠息更浓'},
+ {in:['h_rosemary','e_earth'],dose:{h_rosemary:2,e_earth:1},prog:[[46,60],[54,100]],ph:[6.8,7.6],win:9,out:'o_amber',known:true,tag:'草泥凝珀'},
+ {in:['m_tin','e_air'],dose:{m_tin:2,e_air:1},prog:[[26,60],[34,100]],ph:[6.6,7.2],win:7,out:'m_tinwhite',known:true,tag:'锡风淬白'},
+ {in:['o_obsidian','m_leadheavy'],dose:{o_obsidian:1,m_leadheavy:2},prog:[[40,60],[48,100]],ph:[5.8,6.4],win:9,out:'p_nigredo',known:true,tag:'黑曜铅蚀'},
+ {in:['h_silverbane','m_silvertear'],dose:{h_silverbane:2,m_silvertear:1},prog:[[22,60],[30,100]],ph:[7.4,7.8],win:8,out:'p_albedo',known:true,tag:'银草洗髓'},
+ {in:['o_amber','e_skyfire'],dose:{o_amber:1,e_skyfire:1},prog:[[58,60],[68,100]],ph:[5.6,6.4],win:9,out:'p_citrinitas',known:true,tag:'琥珀融光'},
+ {in:['b_phoenixfeather','e_fire'],dose:{b_phoenixfeather:1,e_fire:2},prog:[[86,60],[94,100]],ph:[2.8,3.4],win:8,out:'p_rubedo',known:true,tag:'凤凰火浴'},
+ {in:['i_nigredoash','e_abysstear'],dose:{i_nigredoash:1,e_abysstear:2},prog:[[38,60],[46,100]],ph:[5.4,6.0],win:10,out:'p_nigredo',known:false,tag:'烬落深渊',riddle:'余烬浸入深渊之泪——腐是旧形的安眠'},
+ {in:['i_albedodew','o_moonstone'],dose:{i_albedodew:1,o_moonstone:2},prog:[[18,60],[26,100]],ph:[7.4,7.8],win:9,out:'p_albedo',known:false,tag:'露映月石',riddle:'一滴白露照见月石——净不是洗，是照'},
+ {in:['g_nightwatch','i_albedodew'],dose:{g_nightwatch:1,i_albedodew:2},prog:[[36,60],[44,100]],ph:[7.0,7.6],win:8,out:'b_owleye',known:false,tag:'守夜之眼',riddle:'守夜人点燃白烛——影子里睁开第三只眼'},
+ {in:['p_stone','e_abysstear'],dose:{p_stone:1,e_abysstear:2},prog:[[94,60],[98,100]],ph:[6.6,7.0],win:10,out:'i_sagetear',known:false,tag:'贤者落泪',riddle:'石亦有情——当它浸入深渊，落下的是叹息'},
+ {in:['o_amethyst','m_goldpure'],dose:{o_amethyst:1,m_goldpure:1},prog:[[76,60],[84,100]],ph:[6.0,6.8],win:9,out:'g_achstar',known:false,tag:'紫金成星',riddle:'紫水晶与真金共舞——第五颗星亮起'},
+ {in:['g_battleseal','e_flowsand'],dose:{g_battleseal:1,e_flowsand:2},prog:[[64,60],[72,100]],ph:[4.6,5.4],win:8,out:'b_whitetigerfang',known:false,tag:'战砂磨牙',riddle:'对战之证磨于流沙——白虎的牙在沙中作响'},
+ {in:['g_riddlekey','o_moonstone'],dose:{g_riddlekey:1,o_moonstone:2},prog:[[48,60],[56,100]],ph:[7.0,7.6],win:8,out:'g_passrune',known:false,tag:'钥照月开',riddle:'谜题之钥对准月石——密文显形'},
+ {in:['b_ninetailfur','e_voidwind'],dose:{b_ninetailfur:1,e_voidwind:2},prog:[[32,60],[40,100]],ph:[6.8,7.4],win:7,out:'i_midassand',known:false,tag:'尾风成砂',riddle:'九尾扫过虚空——金色砂砾自风中沉淀'},
+ {in:['i_ouroborosring','m_goldpure'],dose:{i_ouroborosring:1,m_goldpure:2},prog:[[98,60],[100,100]],ph:[6.8,7.4],win:12,out:'t_goldcrown',known:false,tag:'蛇环加冕',riddle:'衔尾蛇环住真金——王冠自环中升起'},
+ {in:['i_midassand','o_meteor'],dose:{i_midassand:1,o_meteor:1},prog:[[92,60],[98,100]],ph:[6.4,7.0],win:11,out:'t_eternalsand',known:false,tag:'砂星永恒',riddle:'点石之砂与陨铁相拥——时间在砂中凝固'},
+ {in:['m_goldpure','m_silvertear','s_mercury'],dose:{m_goldpure:1,m_silvertear:1,s_mercury:1},prog:[[97,60],[100,100]],ph:[6.8,7.2],win:12,out:'t_elixirprim',known:false,tag:'金月水灵',riddle:'金、月、水星三婚——万灵药的原质在杯中成形'},
+ {in:['o_dragoncrys','e_fire'],dose:{o_dragoncrys:1,e_fire:3},prog:[[90,60],[100,100]],ph:[2.2,3.0],win:9,out:'t_cosmictear',known:false,tag:'龙火焚泪',riddle:'龙晶焚于火——世界尽头的泪水在焰心凝结'},
+ {in:['a_chaosseed','e_stariron'],dose:{a_chaosseed:1,e_stariron:2},prog:[[50,60],[58,100]],ph:[5.8,6.6],win:10,out:'p_stone',known:false,tag:'混沌星胎',riddle:'混沌之种吞下星铁——石在混乱中自凝'},
+ {in:['h_stardustherb','g_easteregg'],dose:{h_stardustherb:2,g_easteregg:1},prog:[[42,60],[50,100]],ph:[7.0,7.6],win:9,out:'o_meteor',known:false,tag:'星尘破壳',riddle:'星尘草缠绕彩蛋之核——流星自壳中坠落'},
+ {in:['b_unicornhorn','i_abrahamseal'],dose:{b_unicornhorn:1,i_abrahamseal:2},prog:[[84,60],[92,100]],ph:[6.4,7.0],win:11,out:'t_elixirprim',known:false,tag:'圣契角礼',riddle:'圣角抵上契约之书——字迹化为灵药'},
+ {in:['g_easteregg','a_chaosseed','o_dragoncrys'],dose:{g_easteregg:1,a_chaosseed:1,o_dragoncrys:1},prog:[[60,60],[70,100]],ph:[5.2,6.0],win:10,out:'t_cosmictear',known:false,tag:'三重彩蛋',riddle:'蛋、种、龙晶三者同炉——宇宙的玩笑在鼎中沸腾'}
+
+];
+var STAGES=[
+ {k:'n',n:'黑化',la:'NIGREDO',col:'#1a1a1e',liq:'rgba(28,28,34,.9)',desc:'煅烧腐化——旧形死灭，杂质焚尽',op:'煅烧·腐化'},
+ {k:'a',n:'白化',la:'ALBEDO',col:'#dde3ec',liq:'rgba(232,238,248,.85)',desc:'蒸馏净化——月华洗髓，提纯再生',op:'蒸馏·净化'},
+ {k:'c',n:'黄化',la:'CITRINITAS',col:'#d9b13a',liq:'rgba(255,214,90,.8)',desc:'发酵结合——阴阳联合，近于完成',op:'发酵·结合'},
+ {k:'r',n:'红化',la:'RUBEDO',col:'#a02822',liq:'rgba(255,90,70,.75)',desc:'凝固升华——凤凰涅槃，大功告成',op:'凝固·升华'}
+];
+/* ========== 存档 ========== */
+var A=L('wz_alch',{lv:1,exp:0,mats:Object.assign({},START),rec:['s_sulfur','e_fire'],st:{n:0,a:0,c:0,r:0},stone:0,trans:{},titles:{n:0,a:0,c:0,r:0},main:null});
+function save(){W('wz_alch',A)}
+var cur=null,stage=0,qsum=0;
+/* ========== 渲染 ========== */
+function props(m){return '<div class="pt"><i class="pt-s" style="height:'+(m.s*8)+'px" title="硫 '+m.s+'"></i><i class="pt-m" style="height:'+(m.m*8)+'px" title="汞 '+m.m+'"></i><i class="pt-a" style="height:'+(m.a*8)+'px" title="盐 '+m.a+'"></i></div>'}
+function wh(){
+ var cats=['原质','元素','金属','矿脉','药草','时令','异兽','仪式','信物','中间','成品','终极'],h='';
+ cats.forEach(function(c,ci){
+  var ids=Object.keys(MATS).filter(function(k){return MATS[k].cat===c});
+  if(!ids.length)return;
+  h+='<div class="mcat" data-c="'+c+'"><span>'+c+'</span><em>'+ids.length+'</em><b>'+(ci<2?'▾':'▸')+'</b></div><div class="mwrap" data-w="'+c+'"'+(ci<2?'':' style="display:none"')+'>';
+  ids.forEach(function(k){
+   var m=MATS[k],q=A.mats[k]||0;
+   h+='<div class="mrow" data-k="'+k+'" '+(q>0?'':'style="opacity:.45"')+'><span class="sy">'+m.sy+'</span><span class="nm">'+m.n+'</span>'+(m.r>0?'<span class="star">'+'★'.repeat(m.r)+'</span>':'')+'<i class="get" title="获取方式">ℹ</i>'+props(m)+'<span class="qt">×'+q+'</span></div>';
+  });
+  h+='</div>';
+ });
+ $('#whList').innerHTML=h;
+ $$('#whList .mrow').forEach(function(el){
+  el.addEventListener('click',function(e){
+   if(e.target.classList.contains('get')){
+    var k=el.getAttribute('data-k');
+    toast(MATS[k].n+' · 获取方式','<span style="line-height:1.6">'+MATS[k].how+'</span>');
+    return;
+   }
+   var k=el.getAttribute('data-k');
+   if(!(A.mats[k]>0)){toast('空空如也','没有这种材料');return}
+   if(cur&&cur.length>=4){toast('坩埚已满','一份四两，再多逾矩');return}
+   A.mats[k]--;cur=cur||[];cur.push(k);qsum=0;save();wh();renderCur();
+  });
+ });
+ $$('#whList .mcat').forEach(function(c){
+  c.addEventListener('click',function(){
+   var w=document.querySelector('.mwrap[data-w="'+c.getAttribute('data-c')+'"]');
+   if(!w)return;
+   var on=w.style.display!=='none';
+   w.style.display=on?'none':'block';
+   c.querySelector('b').textContent=on?'▸':'▾';
+  });
+ });
+}
+function renderCur(){
+ var h='';
+ var dm={};
+ (cur||[]).forEach(function(k){dm[k]=(dm[k]||0)+1});
+ var keys=Object.keys(dm);
+ for(var i=0;i<4;i++){
+  var k=keys[i],n=k?dm[k]:0;
+  h+='<div class="slot'+(k?' f':'')+'">'+(k?MATS[k].sy+' '+MATS[k].n+(n>1?' ×'+n:''):'空')+'</div>';
+ }
+ $('#slots').innerHTML=h;
+ $$('#slots .slot.f').forEach(function(sl){
+  sl.title='点击撤回一份';
+  sl.addEventListener('click',function(){
+   if(bench&&bench.on)return;
+   var k=cur&&cur[cur.length-1];
+   if(!k)return;
+   cur.pop();A.mats[k]++;qsum=0;save();wh();renderCur();
+   toast('撤回 '+MATS[k].n,'材料已返还');
+  });
+ });
+ var s=STAGES[stage];
+ if(cur&&cur.length){
+  $('#stageBadge').textContent=stage>=4?'MAGNUM OPUS':s.la;
+  var dm={};(cur||[]).forEach(function(k){dm[k]=(dm[k]||0)+1});
+  var dl=Object.keys(dm).map(function(k){return MATS[k].n+(dm[k]>1?' ×'+dm[k]:'')}).join(' + ');
+  $('#stageDesc').innerHTML='<span style="color:'+s.col+'">'+s.n+'</span> · '+s.desc+'<br><span style="opacity:.6">'+dl+'</span>';
+  var ops='<button class="op hot" id="opBench">⚗ 炼金台</button><button class="op" id="opGo">◇ 进阶仪式 →</button>';
+  if(stage>0)ops+='<button class="op" id="opBack">← 回炉重炼</button>';
+  ops+='<button class="op" id="opClear" style="opacity:.5">清空坩埚</button>';
+  $('#ops').innerHTML=ops;
+  $('#opBench').addEventListener('click',function(){benchStart()});
+  $('#opGo').addEventListener('click',function(){playGame()});
+  var bb=$('#opBack');if(bb)bb.addEventListener('click',function(){stage--;qsum-=50;if(qsum<0)qsum=0;renderCur()});
+  var cc=$('#opClear');if(cc)cc.addEventListener('click',function(){cur.forEach(function(k){A.mats[k]++});cur=null;stage=0;qsum=0;save();wh();renderCur()});
+  $('#work').style.setProperty('--cglow',s.col+'26');
+  $('#work').style.setProperty('--liq',s.liq);
+ }else{
+  $('#stageBadge').textContent='STANDBY';
+  $('#stageDesc').innerHTML='从仓库点击材料投入坩埚<br>三原质、四元素、七金属——万物皆可炼';
+  $('#ops').innerHTML='<button class="op" id="opHint">❓ 配方提示</button>';
+  var hb=$('#opHint');
+  if(hb)hb.addEventListener('click',function(){toast('炼金箴言','三原质是万物之骨，火水地风是万物之息<br>试试 硫+火、水银+风、盐+地')});
+ }
+}
+function recipeReq(r){
+ var dose=Object.keys(r.dose).map(function(k){return MATS[k].n+'×'+r.dose[k]}).join('+');
+ var pr=r.prog.map(function(x){return x[0]+'°C'}).join(' → ');
+ return dose+' · '+pr+' · pH '+r.ph[0]+'-'+r.ph[1]+' · '+r.win+'s 收成';
+}
+var cf=0;
+function codex(){
+ var h='<div class="codex-bar"><span class="cb-tab'+(cf===0?' on':'')+'" data-f="0">全部</span><span class="cb-tab'+(cf===1?' on':'')+'" data-f="1">已解锁</span><span class="cb-tab'+(cf===2?' on':'')+'" data-f="2">谜语</span><em>'+unlocked()+' / '+RECIPES.length+' 已刻</em></div>';
+ RECIPES.forEach(function(r,i){
+  var k=A.rec.indexOf(r.out)>=0||r.known;
+  if(cf===1&&!k)return;
+  if(cf===2&&r.known)return;
+  h+='<div class="rec'+(k?'':' hid')+'" data-r="'+i+'"><span class="sym">'+r.in.map(function(x){return MATS[x].sy}).join('+')+'</span><span style="flex:1">'+(k?MATS[r.out].n+' · '+r.tag:'？？？')+'</span></div>';
+ });
+ $('#recList').innerHTML=h;
+ $$('#recList .cb-tab').forEach(function(t){
+  t.addEventListener('click',function(){
+   cf=+t.getAttribute('data-f');codex();
+  });
+ });
+ $$('#recList .rec').forEach(function(el){
+  el.addEventListener('click',function(){
+   var r=RECIPES[+el.getAttribute('data-r')];
+   if(A.rec.indexOf(r.out)<0&&!r.known){toast('？？？', r.riddle||'谜语尚未刻下') ;return}
+   toast(MATS[r.out].n, r.tag+' · '+recipeReq(r)+(MATS[r.out].use?' · <small>'+MATS[r.out].use+'</small>':''));
+  });
+ });
+}
+function unlocked(){return RECIPES.filter(function(r){return r.known||A.rec.indexOf(r.out)>=0}).length}
+function titles(){
+ var t=[];
+ if(A.titles.n>0)t.push(['腐化之手 · Nigredo','t-gray','完成黑化']);
+ if(A.titles.a>0)t.push(['月之净者 · Albedo','t-gray','完成白化']);
+ if(A.titles.c>0)t.push(['黄金见证者 · Citrinitas','t-gray','完成黄化']);
+ if(A.titles.r>0)t.push(['凤凰之子 · Rubedo','t-gray','完成红化']);
+ if(A.stone>0)t.push(['贤者','t-gold','炼成贤者之石']);
+ if(A.stone>=3)t.push(['大功业者 · Magister','t-purple','三次贤者之石']);
+ if(A.stone>=7)t.push(['衔尾蛇之主','t-red','七次贤者之石']);
+ if(Object.keys(A.trans).length>=7)t.push(['点石成金之人','t-gold','转化七种材料']);
+ var h=t.length?t.map(function(x){return '<div class="title-row"><span class="tk">TITLE</span><span class="'+x[1]+'">'+x[0]+'</span><span style="margin-left:auto;font-size:10px;color:#6a767d">'+x[2]+'</span></div>'}).join(''):'<div class="title-row"><span class="tk">TITLE</span><span style="color:#6a767d">尚无称号 · 先炼一次</span></div>';
+ $('#titleList').innerHTML=h;
+}
+function refresh(){wh();renderCur();codex();titles()}
+/* ========== 小游戏 ========== */
+var mini=$('#mini'),prog=$('#prog i'),playing=null,step=0;
+function openMini(t,sub){finishing=false;$('#mTitle').innerHTML=t;$('#mSub').textContent=sub;$('#mask').classList.add('on');mini.innerHTML='';setProg(0)}
+function closeMini(){if(playing&&playing.kill)playing.kill();playing=null;$('#mask').classList.remove('on');mini.innerHTML=''}
+function setProg(p){prog.style.width=Math.max(0,Math.min(100,p))+'%'}
+$('#closeBtn').addEventListener('click',closeMini);
+$('#mask').addEventListener('click',function(e){if(e.target===this)closeMini()});
+var finishing=false;
+function finish(ok,pct){
+ if(finishing)return;finishing=true;
+ if(playing&&playing.kill)playing.kill();playing=null;
+ if(ok){qsum+=Math.round(pct);A.titles[STAGES[stage].k]++;save();toast('阶段完成 · '+STAGES[stage].n, '品质 +'+Math.round(pct),'ok');stage++;fxBoom();}
+ else{toast('操作失手', '材料尚存，可再试','bad');fxFail();}
+ if(stage>=4){closeMini();matchRecipe();return}
+ closeMini();renderCur();
+}
+function playGame(){
+ var s=STAGES[stage],k=s.k;
+ if(k==='n')return gameNigredo();
+ if(k==='a')return gameAlbedo();
+ if(k==='c')return gameCitrinitas();
+ if(k==='r')return gameRubedo();
+}
+function fxBoom(){
+ var box=$('#box');if(!box||box.style.display==='none')return;
+ var b=box.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2;
+ for(var i=0;i<14;i++){
+  var d=document.createElement('i');d.className='fxdot';
+  var a=Math.random()*Math.PI*2,dist=60+Math.random()*95;
+  d.style.left=cx+'px';d.style.top=cy+'px';
+  d.style.setProperty('--dx',(Math.cos(a)*dist)+'px');
+  d.style.setProperty('--dy',(Math.sin(a)*dist)+'px');
+  document.body.appendChild(d);
+  (function(x){setTimeout(function(){if(x.parentNode)x.remove()},800)})(d);
+ }
+}
+function fxFail(){
+ var box=$('#box');if(!box)return;
+ box.classList.remove('fx-fail');void box.offsetWidth;box.classList.add('fx-fail');
+ setTimeout(function(){box.classList.remove('fx-fail')},500);
+}
+function fxRune(){
+ var wk=$('#work');if(!wk)return;
+ var b=wk.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2;
+ for(var i=0;i<10;i++){
+  var d=document.createElement('i');d.className='fxdot';
+  var a=Math.random()*Math.PI*2,dist=40+Math.random()*70;
+  d.style.left=cx+'px';d.style.top=cy+'px';
+  d.style.setProperty('--dx',(Math.cos(a)*dist)+'px');
+  d.style.setProperty('--dy',(Math.sin(a)*dist)+'px');
+  document.body.appendChild(d);
+  (function(x){setTimeout(function(){if(x.parentNode)x.remove()},800)})(d);
+ }
+}
+/* ① 黑化 · 乌鸦分食（反应+观察+惩罚管理） */
+function gameNigredo(){
+ openMini('黑化 · 乌鸦分食','杂质点中 +1 · 乌鸦飞过点中 +2 · 误啄紫精华扣 2——连误两次触发焦糊（惩罚加重）· 限时 12 秒集 8 分');
+ var got=0,need=8,life=100,t0=Date.now(),misStreak=0,scorch=false,scorchT=0;
+ var iv=setInterval(function(){
+  if(!$('#mask').classList.contains('on')){clearInterval(iv);return}
+  var el=Date.now()-t0;
+  if(el>=12000){clearInterval(iv);finish(false);return}
+  setProg(Math.max(0,100-el/100));
+  if(scorchT>0){scorchT-=1;if(scorchT<=0){scorch=false;toast('焦糊退散','火候回稳')}}
+  if(mini.children.length<10){
+   var d=document.createElement('div');
+   var roll=Math.random();
+   if(roll<.12){d.className='pick crow';d.textContent='🦅'}
+   else d.className='pick '+(Math.random()<.18?'good':'dirt');
+   d.style.left=(4+Math.random()*90)+'%';d.style.top=(6+Math.random()*60)+'%';
+   d.addEventListener('click',function(){
+    if(d._dead)return;d._dead=1;d.remove();
+    if(d.className.indexOf('crow')>=0){got+=2;setProg(got/need*100);toast('啄中乌鸦！','+2 分')}
+    else if(d.className.indexOf('good')>=0){
+     misStreak++;life-=scorch?26:18;setProg(Math.max(0,life));
+     toast('误啄精华！','品质受损');
+     if(misStreak>=2){scorch=true;scorchT=8;misStreak=0;toast('焦糊！','3 秒内误啄惩罚加重')}
+    }else{misStreak=0;got++;setProg(got/need*100)}
+    if(got>=need){clearInterval(iv);finish(true,50+life*.5)}
+    else if(life<=0){clearInterval(iv);finish(false)}
+   });
+   mini.appendChild(d);
+   var live=el<4000?1300:el<8000?1050:850;
+   (function(x){setTimeout(function(){if(x.parentNode)x.remove()},live)})(d);
+  }
+ },200);
+ playing={kill:function(){clearInterval(iv)}};
+}
+/* ② 白化 · 移动蒸馏（操作+抉择+干扰） */
+function gameAlbedo(){
+ openMini('白化 · 移动蒸馏','←→ 或点击移动收集瓶——接精华露（亮）+1、银露（金）+2 但迟缓 2s、黑露（暗）-1——连续 5 接纯净触发连击加成');
+ var got=0,need=6,bad=0,badMax=3,miss=0,missMax=3,cx=50,spd=2.6,spdN=0,silverT=0,fogT=0,combo=0,bonus=0;
+ var col=document.createElement('div');col.className='collector';mini.appendChild(col);
+ function mv(x){cx=Math.max(6,Math.min(94,x));col.style.left=cx+'%'}
+ mini.addEventListener('click',function(e){
+  var r=mini.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*100;
+  mv(px);
+ });
+ var kb=function(e){if(e.key==='ArrowLeft')mv(cx-7);if(e.key==='ArrowRight')mv(cx+7)};
+ window.addEventListener('keydown',kb);
+ var iv=setInterval(function(){
+  if(!$('#mask').classList.contains('on')){clearInterval(iv);return}
+  spdN++;if(spdN<=3)spd+=.5;else if(spdN%2===0)spd+=.35;
+  if(silverT>0){silverT--;spd=Math.max(1.5,spd-.06)}
+  fogT--;
+  if(fogT<=0&&Math.random()<.09){
+   fogT=7;var fg=document.createElement('div');fg.className='fog';
+   mini.appendChild(fg);setTimeout(function(){if(fg.parentNode)fg.remove()},700);
+  }
+  var roll=Math.random();
+  var d=document.createElement('div');
+  d.className='cdrop '+(roll<.22?'bad':roll<.52?'silver':'ok');
+  d.style.left=(8+Math.random()*84)+'%';d.style.top='-10px';
+  mini.appendChild(d);
+  var t=setInterval(function(){
+   if(!d.parentNode){clearInterval(t);return}
+   var y=parseFloat(d.style.top||'-10');
+   var jx=fogT>6.3?(Math.random()-.5)*4:0;
+   var py=y+spd;d.style.top=py+'px';
+   var dx=Math.abs(parseFloat(d.style.left)+jx-cx);
+   if(py>178&&dx<6){
+    clearInterval(t);d.remove();
+    if(d.className.indexOf('bad')>=0){bad++;combo=0;setProg(got/need*100);toast('接住黑露 · 纯度下降','余 '+bad+' 次失误')}
+    else if(d.className.indexOf('silver')>=0){got+=2;silverT=20;combo++;setProg(got/need*100)}
+    else{got++;combo++;setProg(got/need*100)}
+    if(combo>=5){combo=0;bonus+=2;toast('纯净连击！','+2 品质')}
+    if(got>=need){clearInterval(iv);finish(true,60+Math.max(0,40-bad*12)+bonus)}
+    else if(bad>=badMax||miss>=missMax){clearInterval(iv);finish(false)}
+   }else if(py>186){
+    clearInterval(t);d.remove();
+    if(d.className.indexOf('ok')>=0||d.className.indexOf('silver')>=0){miss++;combo=0;toast('精华漏接','余 '+miss+' 次漏接')}
+    if(miss>=missMax){clearInterval(iv);finish(false)}
+   }
+  },22);
+ },1500);
+ playing={kill:function(){clearInterval(iv);window.removeEventListener('keydown',kb)}};
+}
+/* ③ 黄化 · 结合预判（操作+计算+轨迹） */
+function gameCitrinitas(){
+ openMini('黄化 · 结合预判','硫速与汞速已示——虚线为预测轨迹，心算相遇时刻，双圆将合（间距 <16%）时点击锁定');
+ var n=0,need=4;
+ function round(){
+  if(n>=need)return;
+  var boost=n>=2?1.4:1;
+  var v1=(2+Math.floor(Math.random()*5))*boost,v2=(2+Math.floor(Math.random()*5))*boost,done=false;
+  var a=document.createElement('div');a.className='duo s';
+  var b=document.createElement('div');b.className='duo m';
+  var x1=6,x2=88,y=18+Math.random()*38;
+  a.style.left=x1+'%';a.style.top=y+'%';b.style.left=x2+'%';b.style.top=y+'%';
+  var tr1=document.createElement('div');tr1.className='trace';
+  tr1.style.left=(x1+8)+'%';tr1.style.top=(y+4)+'%';tr1.style.width=Math.min(40,v1*4)+'%';
+  tr1.style.transform='rotate(0deg)';
+  var tr2=document.createElement('div');tr2.className='trace';
+  tr2.style.left=(x2-6)+'%';tr2.style.top=(y+4)+'%';tr2.style.width=Math.min(40,v2*4)+'%';
+  tr2.style.transform='rotate(180deg)';
+  var q=document.createElement('div');q.className='numq';
+  q.innerHTML='硫速 <b>'+Math.round(v1)+'</b> · 汞速 <b>'+Math.round(v2)+'</b>'+(n>=2?'<span style="font-size:10px;color:var(--warn)"> 提速</span>':'');
+  mini.appendChild(tr1);mini.appendChild(tr2);mini.appendChild(q);mini.appendChild(a);mini.appendChild(b);
+  var iv=setInterval(function(){
+   if(!$('#mask').classList.contains('on')){clearInterval(iv);return}
+   var p1=parseFloat(a.style.left),p2=parseFloat(b.style.left);
+   a.style.left=(p1+v1*0.35)+'%';b.style.left=(p2-v2*0.35)+'%';
+   if(p2-p1<=0&&!done){done=true;clearInterval(iv);q.remove();a.remove();b.remove();tr1.remove();tr2.remove();toast('双圆错过','预判晚了');setTimeout(round,700)}
+  },22);
+  setTimeout(function(){tr1.style.opacity=0;tr2.style.opacity=0},800);
+  var tap=function(){
+   if(done)return;
+   var p1=parseFloat(a.style.left),p2=parseFloat(b.style.left),gap=p2-p1;
+   var win=8+(v1+v2)*2;
+   if(gap<=0){done=true;clearInterval(iv);q.remove();a.remove();b.remove();tr1.remove();tr2.remove();toast('太晚 · 已错过','再算快点');setTimeout(round,700);return}
+   if(gap<win){
+    done=true;clearInterval(iv);q.remove();a.remove();b.remove();tr1.remove();tr2.remove();
+    var score=Math.max(40,100-(gap/win)*60);
+    setProg((n+1)/need*100);n++;
+    if(score<70)toast('结合略偏 · 提前量再准些','品质略损');
+    if(n>=need)finish(true,60+score*.35);
+    else setTimeout(round,650);
+   }else{
+    toast(gap<win+20?'再近一点':'还远 · 心算相遇：'+Math.round(82/(v1+v2)/0.35/45)+' 秒后','硫速 '+Math.round(v1)+' · 汞速 '+Math.round(v2));
+   }
+  };
+  mini.addEventListener('click',tap);
+  setTimeout(function(){mini.removeEventListener('click',tap);if(!done&&$('#mask').classList.contains('on')){clearInterval(iv);q.remove();a.remove();b.remove();tr1.remove();tr2.remove();setTimeout(round,600)}},22000);
+ }
+ setTimeout(round,500);
+ playing={kill:function(){}};
+}
+/* ④ 红化 · 升华指针（反应+操作+计算+变速） */
+function gameRubedo(){
+ openMini('红化 · 升华指针','心算（后期含两步算式）→ 锁定答案刻度 → 指针扫过瞬间点击——末题指针会突然逆转方向');
+ var got=0,need=5,lives=3,ang=0,t0=Date.now(),qd=0,spds=[42,56,72,88,104],dir=1,flipT=-1;
+ var ring=document.createElement('div');ring.className='ring';mini.appendChild(ring);
+ var hand=document.createElement('div');hand.className='hand';hand.innerHTML='<span class="dot"></span>';mini.appendChild(hand);
+ var q=document.createElement('div');q.className='numq';mini.appendChild(q);
+ var cx=0,cy=0,r=72;
+ setTimeout(function(){var b=ring.getBoundingClientRect();cx=b.left+b.width/2;cy=b.top+b.height/2},80);
+ var ticks=[];
+ for(var i=0;i<10;i++){var t=document.createElement('div');t.className='tick';t.textContent=i;ticks.push(t);mini.appendChild(t)}
+ function qn(){
+  var ans=0,expr='';
+  if(got>=2&&Math.random()<.6){
+   var a=2+Math.floor(Math.random()*4),b=2+Math.floor(Math.random()*4);
+   if(Math.random()<.5){expr='('+a+'+'+b+')×2';ans=((a+b)*2)%10}
+   else{expr=a+'×'+b;ans=(a*b)%10}
+  }else{
+   var a=3+Math.floor(Math.random()*5),c=Math.floor(Math.random()*3);
+   if(Math.random()<.55){var b2=3+Math.floor(Math.random()*4);expr=a+' + '+b2;ans=(a+b2)%10}
+   else{expr=a+' - '+c;ans=a-c;if(ans<0)ans+=10}
+  }
+  q.innerHTML=expr+' = ? &nbsp;<span style="font-size:12px;color:var(--ink3)">答落刻度 <b style="color:var(--gold)">'+ans+'</b></span>';
+  return ans;
+ }
+ var ans=qn();
+ var iv=setInterval(function(){
+  if(!$('#mask').classList.contains('on')){clearInterval(iv);return}
+  if(qd>=3&&flipT<0){flipT=30;toast('指针将逆转！','留意扫过时机')}
+  if(flipT>0){flipT--;if(flipT===0){dir=-1;toast('逆转！','指针反向扫过')}}
+  ang+=spds[qd]*0.05*dir;if(ang<0)ang+=360;if(ang>=360)ang-=360;
+  hand.style.transform='rotate('+ang+'deg)';
+  for(var i=0;i<10;i++){
+   var a2=Math.PI/180*((i*36)-90),px=cx+r*Math.cos(a2),py=cy+r*Math.sin(a2);
+   ticks[i].style.left=(px-10)+'px';ticks[i].style.top=(py-10)+'px';
+   if(i===ans)ticks[i].classList.add('on');else ticks[i].classList.remove('on');
+  }
+  var ttl=(360/spds[qd]+2.5)*1000;
+  setProg(Math.max(0,100-(Date.now()-t0)/ttl*100));
+  if(Date.now()-t0>ttl){
+   lives--;
+   if(lives<=0){clearInterval(iv);finish(false);return}
+   t0=Date.now();qd=Math.min(qd+1,spds.length-1);ans=qn();dir=1;flipT=-1;
+   toast('超时 · 余 '+lives+' 次','指针更快了');
+  }
+ },50);
+ var tap=function(){
+  var cur=Math.round(((ang%360)+90)/36)%10;
+  var d=Math.abs(cur-ans);if(d>5)d=10-d;
+  if(d<=1){
+   got++;setProg(got/need*100);t0=Date.now();qd=Math.min(qd+1,spds.length-1);dir=1;flipT=-1;
+   if(got>=need){clearInterval(iv);finish(true,70+got*6)}
+   else{ans=qn();toast('升华 · 余 '+(need-got)+' 题','指针更快了')}
+  }else{
+   lives--;toast('刺偏 · 余 '+lives+' 次','指针正指刻度 '+cur);
+   if(lives<=0){clearInterval(iv);finish(false)}
+  }
+ };
+ mini.addEventListener('click',tap);
+ playing={kill:function(){clearInterval(iv);mini.removeEventListener('click',tap)}};
+}
+/* ========== 炼金台 · 主玩法（计量 → 两段控温 → pH → 回流 → 掐时） ========== */
+var bench={on:false,step:'idle',grind:0,sel:null,ln:[],err:0,temp:0,dist:0,hits:0,ctr:0,tickN:0,winLeft:0,elapsed:0,coolT:0,iv:null};
+var BN=$('#bench');
+function curPh(){
+ var dm=curDose(),sum=0,n=0;
+ Object.keys(dm).forEach(function(k){var m=MATS[k];if(m.ph===undefined)return;sum+=m.ph*dm[k];n+=dm[k]});
+ return n?sum/n:7;
+}
+function bnRecipe(){var dm=curDose(),kk=kindKey(dm);for(var i=0;i<RECIPES.length;i++){if(kindKey(RECIPES[i].dose)===kk)return RECIPES[i]}return null}
+function bnSeg(){return bench.dist<60?0:1}
+function bnReq(){
+ var r=bnRecipe(),seg=bnSeg();
+ if(!r)return{lo:45,hi:65,phLo:3,phHi:11,win:8,known:false,seg:0};
+ return{lo:r.prog[seg][0]-2,hi:r.prog[seg][0]+2,phLo:r.ph[0],phHi:r.ph[1],win:r.win,known:true,seg:seg};
+}
+function bnStepName(){return bench.step==='grind'?'01 // 计量':bench.step==='tube'?'02 // 接管':bench.step==='heat'?'03 // 程控':(bench.step==='cool'?'04 // 回流':'05 // 收成')}
+function benchStart(){
+ if(!cur||!cur.length){toast('坩埚空空','先投料再开台');return}
+ bench.on=true;bench.step='grind';bench.grind=0;bench.sel=null;bench.ln=[];bench.err=0;bench.temp=0;bench.dist=0;bench.hits=0;bench.ctr=0;bench.tickN=0;bench.winLeft=0;bench.elapsed=0;bench.coolT=0;
+ BN.classList.add('on');$('#stageBadge').textContent='BENCH';
+ $('.pot').style.opacity=.3;$('#slots').style.opacity=.3;$('#ops').style.opacity=.3;
+ if(bench.iv)clearInterval(bench.iv);
+ bench.iv=setInterval(bnTick,120);
+ bnRender();
+}
+function benchExit(){
+ if(bench.iv){clearInterval(bench.iv);bench.iv=null}
+ BN.classList.remove('on');bench.on=false;
+ $('.pot').style.opacity='';$('#slots').style.opacity='';$('#ops').style.opacity='';
+ renderCur();
+}
+function phQ(rq){
+ var ph=curPh(),c=(rq.phLo+rq.phHi)/2,span=(rq.phHi-rq.phLo)/2,d=Math.abs(ph-c);
+ if(!rq.known)return 70;
+ if(d<=span)return 100;
+ if(d<=span+1)return 60;
+ if(d<=span+2)return 30;
+ return 10;
+}
+function bnRender(){
+ var rq=bnReq(),t='';
+ if(bench.step==='grind')t='点击研杵研磨 · 研磨度 <b>'+bench.grind+'%</b>';
+ else if(bench.step==='tube')t='连接管路：点 <b>M</b> → <b>•</b> → <b>B</b>（'+bench.ln.length+'/2）';
+ else if(bench.step==='heat')t=(rq.known?'第 '+(rq.seg+1)+' 段目标 <b>'+rq.lo+'-'+rq.hi+'°C</b> · 蒸馏 '+Math.round(bench.dist)+'%':'未知配比 · 保守 45-65 · 蒸馏 '+Math.round(bench.dist)+'%');
+ else if(bench.step==='cool')t='降温回流 · 火源拉低，等药液冷却 <b>'+Math.round(bench.temp)+'°C</b> → 目标 <25°C';
+ else if(bench.step==='bottle')t='收成窗口 <b>'+bench.winLeft.toFixed(1)+'s</b> · 超时变质';
+ $('#bnStep').innerHTML='STEP '+bnStepName();
+ $('#bnTip').innerHTML=t;
+ $('#powder').style.height=Math.max(4,bench.grind/100*26)+'px';
+ $('#flame i').style.height=(bench.temp/100*34)+'px';
+ $('#thermo i').style.height=(bench.temp/100*132)+'px';
+ $('#tv').textContent=Math.round(bench.temp)+'°C';
+ $('#bnDistill i').style.width=Math.min(100,bench.dist)+'%';
+ var tz=$('#tz');
+ if(rq.known){tz.style.top='auto';tz.style.bottom=(rq.lo/100*132)+'px';tz.style.height=Math.max(2,((rq.hi-rq.lo)/100*132))+'px';tz.style.background='var(--gold)'}
+ else{tz.style.bottom='46%';tz.style.height='2px'}
+ var ph=curPh();
+ $('#phLbl').textContent='pH '+ph.toFixed(1);
+ var pb=$('#phBand');
+ if(rq.known){pb.style.display='block';pb.style.left=(rq.phLo/14*100)+'%';pb.style.width=((rq.phHi-rq.phLo)/14*100)+'%'}
+ else{pb.style.display='none'}
+ $('#phPin').style.left=Math.max(0,Math.min(100,ph/14*100))+'%';
+ var inB=rq.known&&ph>=rq.phLo&&ph<=rq.phHi;
+ $('#phPin').style.background=inB?'var(--gold)':'#ff7a6b';
+ $('#phPin').style.boxShadow=inB?'0 0 8px var(--gold)':'0 0 8px #ff7a6b';
+ if(bench.step==='bottle')$('#bulb').classList.add('ready');else $('#bulb').classList.remove('ready');
+}
+function bnTick(){
+ if(!bench.on)return;
+ if(bench.step==='heat'){
+  var r=+$('#heatRange').value,rq=bnReq(),ph=curPh();
+  bench.temp+=(r-bench.temp)*0.08;bench.tickN++;
+  var spd=1;
+  if(rq.known){var c=(rq.phLo+rq.phHi)/2,span=(rq.phHi-rq.phLo)/2;if(Math.abs(ph-c)>span)spd=0.5}
+  if(bench.temp>=rq.lo&&bench.temp<=rq.hi){
+   bench.hits++;bench.dist+=1.1*spd;bench.err=Math.max(0,bench.err-1);
+   var c=(rq.lo+rq.hi)/2;
+   if(Math.abs(bench.temp-c)<=1.5)bench.ctr++;
+  }else{
+   bench.err++;
+   if(bench.temp>92&&bench.err>18){clearInterval(bench.iv);bench.iv=null;bnFail('坩埚过热 · 药液蒸干')}
+   else if(bench.temp<14&&bench.err>30){clearInterval(bench.iv);bench.iv=null;bnFail('火候不足 · 反应停滞')}
+  }
+  if(bench.dist>=100){
+   bench.step='cool';bench.coolT=0;
+   clearInterval(bench.iv);bench.iv=setInterval(bnTick,120);
+   bnRender();toast('主反应完成','降温回流 · 待药液冷却至 25°C 以下');
+  }
+ }else if(bench.step==='cool'){
+  var r=+$('#heatRange').value;
+  bench.temp+=(r-bench.temp)*0.08;bench.coolT+=0.12;
+  if(bench.temp<25&&bench.coolT>0.5){
+   bench.step='bottle';bench.winLeft=bnReq().win;bench.elapsed=0;
+   clearInterval(bench.iv);bench.iv=setInterval(bnTick,100);
+   bnRender();toast('药液已冷','收成窗口 '+bnReq().win+'s 内点击烧瓶');
+  }else if(bench.coolT>14){
+   bench.step='bottle';bench.winLeft=bnReq().win;bench.elapsed=0;
+   clearInterval(bench.iv);bench.iv=setInterval(bnTick,100);
+   bnRender();toast('余温未散','勉强装瓶 · 品质受损');
+  }
+ }else if(bench.step==='bottle'){
+  bench.winLeft-=0.1;bench.elapsed+=0.1;
+  if(bench.winLeft<=-bnReq().win){clearInterval(bench.iv);bench.iv=null;bnFail('过反应 · 药液变质');return}
+  if(bench.winLeft<=0){$('#bnTip').innerHTML='收成窗口已过 · 药液变质中 <b>'+Math.abs(bench.winLeft).toFixed(1)+'s</b>';$('#bulb').classList.remove('ready');$('#bulb').style.opacity=.5}
+ }
+ bnRender();
+}
+function bnFail(m){toast('炼金失败',m);benchExit()}
+function drawLine(a,b){
+ var ar=a.getBoundingClientRect(),br=b.getBoundingClientRect(),bb=BN.getBoundingClientRect();
+ var x1=ar.left+ar.width/2-bb.left,y1=ar.top+ar.height/2-bb.top;
+ var x2=br.left+br.width/2-bb.left,y2=br.top+br.height/2-bb.top;
+ var len=Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+ var ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+ var l=document.createElement('div');l.className='bn-line';
+ l.style.width=len+'px';l.style.left=x1+'px';l.style.top=y1+'px';l.style.transform='rotate('+ang+'deg)';
+ BN.appendChild(l);
+}
+$('#pestle').addEventListener('click',function(){
+ if(!bench.on||bench.step!=='grind')return;
+ bench.grind=Math.min(100,bench.grind+(bench.grind<60?18:10));bnRender();
+ if(bench.grind>=100){bench.step='tube';bnRender();toast('研磨完毕','粉末细腻 · 开始接管')}
+});
+['n0','n1','n2'].forEach(function(id,i){
+ $('#'+id).addEventListener('click',function(){
+  if(!bench.on||bench.step!=='tube')return;
+  var e=$('#'+id),ns=$$('.bn-node');
+  if(bench.sel===null){bench.sel=i;ns.forEach(function(x){x.classList.remove('sel')});e.classList.add('sel');return}
+  var from=bench.sel,to=i;bench.sel=null;ns.forEach(function(x){x.classList.remove('sel')});
+  if(from===to){bench.err++;toast('管路自身成环','毫无意义');return}
+  var ok=(from===0&&to===1)||(from===1&&to===2);
+  if(from===2||(from===1&&to===0)){bench.err++;toast('方向不对','药液只能从研钵流向烧瓶');return}
+  if(!ok){bench.err++;toast('管路不通','按 M → • → B 的顺序连接');return}
+  bench.ln.push([from,to]);
+  ns[from].classList.add('on');ns[to].classList.add('on');
+  drawLine(ns[from],ns[to]);
+  if(bench.ln.length===2){bench.step='heat';bnRender();toast('管路接妥','药液开始流动 · 点火程控')}
+ });
+});
+$('#bulb').addEventListener('click',function(){
+ if(!bench.on||bench.step!=='bottle')return;
+ var rq=bnReq();
+ var grindQ=bench.grind>=100?100:Math.round(bench.grind*0.9);
+ var tubeQ=Math.max(70,100-bench.err*8);
+ var heatQ=Math.min(100,Math.round((bench.hits/(bench.tickN||1))*65+(bench.ctr/(bench.tickN||1))*35));
+ var phv=phQ(rq);
+ var coolQ=bench.coolT<=6?100:(bench.coolT<=10?80:60);
+ var timeQ=bench.elapsed<=rq.win?100:Math.max(40,100-Math.floor((bench.elapsed-rq.win)/rq.win*60));
+ var q=Math.round(grindQ*0.2+tubeQ*0.12+heatQ*0.3+phv*0.18+coolQ*0.1+timeQ*0.1);
+ if(!rq.known)q=Math.min(q,70);
+ var st=JSON.parse(localStorage.getItem('wz_alch')||'{}');
+ if(!st.qb)st.qb=[];st.qb.push({t:Date.now(),q:q,mat:cur.slice(),w:bench.elapsed,ph:Math.round(curPh()*10)/10});
+ if(st.qb.length>30)st.qb.shift();
+ localStorage.setItem('wz_alch',JSON.stringify(st));
+ qsum=q;benchExit();matchRecipe(true);
+});
+$('#bnReset').addEventListener('click',function(){benchExit();setTimeout(benchStart,60)});
+$('#bnExit').addEventListener('click',function(){benchExit()});
+/* ========== 典籍 & 炼金笔记 ========== */
+$('#gToggle').addEventListener('click',function(){
+ var b=$('#gBody'),t=this;
+ var on=b.style.display!=='none';
+ b.style.display=on?'none':'block';
+ t.classList.toggle('on',!on);
+});
+$('#gNote').addEventListener('click',function(){
+ var st=JSON.parse(localStorage.getItem('wz_alch')||'{}');
+ var q=st.qb||[];
+ if(!q.length){toast('炼金笔记空白','还没炼过一炉') ;return}
+ var rows=q.slice(-10).reverse().map(function(x,i){
+  var d=new Date(x.t);
+  var mat=(x.mat||[]).map(function(k){return MATS[k]?MATS[k].sy:''}).join('');
+  var t1=d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+  return '<div class="note-row"><span class="'+(x.q>=80?'nq':'nbad')+'">'+x.q+'</span><span>'+mat+'</span><span style="color:var(--ink3)">用时 '+(x.w?x.w.toFixed(1)+'s':'—')+' · pH '+(x.ph!==undefined?x.ph:'—')+'</span><small>'+t1+'</small></div>';
+ }).join('');
+ openMini('炼金笔记 · 品质卷宗','最近十炉 · 品质 ≥80 金 · <80 红');
+ $('#mini').innerHTML='<div style="padding:4px">'+rows+'</div>';
+});
+
+/* ========== 氛围动效：坩埚蒸汽 + 金星粒子 ========== */
+setInterval(function(){
+ var pot=document.querySelector('.pot');
+ if(!pot||!pot.isConnected||$('#stageBadge').textContent==='STANDBY')return;
+ var st=document.createElement('i');st.className='steam';
+ st.style.left=(18+Math.random()*64)+'%';st.style.bottom='18px';
+ pot.appendChild(st);
+ setTimeout(function(){if(st.parentNode)st.remove()},2600);
+},950);
+setInterval(function(){
+ var wk=document.getElementById('work');
+ if(!wk)return;
+ if(Math.random()<.55){
+  var sk=document.createElement('i');sk.className='spark';
+  var b=wk.getBoundingClientRect();
+  sk.style.left=(Math.random()*b.width)+'px';sk.style.top=(b.height-20+Math.random()*30)+'px';
+  wk.appendChild(sk);
+  setTimeout(function(){if(sk.parentNode)sk.remove()},1800);
+ }
+},520);
+
+/* 完成炼制：配方匹配（计量配比） */
+function curDose(){var dm={};(cur||[]).forEach(function(k){dm[k]=(dm[k]||0)+1});return dm}
+function kindKey(dm){return Object.keys(dm).slice().sort().join('|')}
+function matchRecipe(fromBench){
+ var dm=curDose(),kk=kindKey(dm),ri=-1;
+ RECIPES.forEach(function(r,i){
+  if(kindKey(r.dose)===kk)ri=i;
+ });
+ if(ri>=0){
+  var r=RECIPES[ri],out=r.out,doseOk=true;
+  Object.keys(r.dose).forEach(function(k){if(dm[k]!==r.dose[k])doseOk=false});
+  if(!doseOk){
+   var back=0;cur.forEach(function(k){if(Math.random()<.5){A.mats[k]++;back++}});
+   A.exp+=8;save();cur=null;stage=0;qsum=0;refresh();
+   toast('剂量失衡','同源异量——此配比无从谈火候 · 经验 +8'+(back?' · 返还材料 ×'+back:''));
+   return;
+  }
+  if(out==='p_stone'){stoneRitual();return}
+  A.mats[out]=(A.mats[out]||0)+1;
+  var first=A.rec.indexOf(out)<0;
+  if(first)A.rec.push(out);
+  A.made=(A.made||0)+1;
+  var exp=30+qsum+(MATS[out].r||0)*20;
+  A.exp+=exp;maybeLv();
+  if(!fromBench)A.st[STAGES[Math.min(stage,3)].k]++;
+  save();cur=null;stage=0;qsum=0;refresh();
+  toast('炼制完成 · '+MATS[out].n,r.tag+(first?' · 新配方刻入图鉴':'')+' · 经验 +'+exp,first?'new':null);
+  if(first)fxRune();
+ }else{
+  var back=0;cur.forEach(function(k){if(Math.random()<.5){A.mats[k]++;back++}});
+  A.exp+=10;A.st[STAGES[Math.min(stage,3)].k]++;save();cur=null;stage=0;qsum=0;refresh();
+  toast('坩埚空响','此组合未生奇物 · 经验 +10'+(back?' · 返还材料 ×'+back:''));
+ }
+}
+/* 贤者之石 · 星环仪式 */
+function stoneRitual(){
+ closeMini();
+ var order=['☉','☽','♂','♀','♃','♄','☿'];
+ var poses=[[50,6],[78,22],[92,58],[76,86],[24,86],[8,58],[22,22]];
+ openMini('贤者之石 · 七金属星环','点击中央 ★ 取星辰，再点星环对应方位——日为上，月居次：金☉日位、银☽月位、铁♂火位、铜♀金位、锡♃木位、铅♄土位、水银☿水位');
+ var ok=0,slotsEl=[],pick=document.createElement('div');
+ order.forEach(function(sy,i){
+  var s=document.createElement('div');s.className='ring-slot';s.dataset.sy=sy;
+  s.style.left=poses[i][0]+'%';s.style.top=poses[i][1]+'%';
+  slotsEl.push(s);mini.appendChild(s);
+ });
+ pick.className='pick';pick.id='stonePick';
+ pick.style.left='50%';pick.style.top='96%';
+ pick.textContent='★';pick.style.color='var(--gold)';pick.style.fontSize='16px';pick.style.lineHeight='22px';pick.style.textAlign='center';pick.style.background='#1a1205';
+ mini.appendChild(pick);
+ var seq=order.slice().sort(function(){return Math.random()-.5}),qi=0;
+ pick.addEventListener('click',function(){
+  if(qi>=seq.length){toast('星环已满','七个方位皆有归位');return}
+  pick.textContent=seq[qi++];pick.style.color='var(--gold)';
+  toast('当前星辰 · '+pick.textContent,'点击星环上的对应方位');
+ });
+ slotsEl.forEach(function(s){
+  s.addEventListener('click',function(){
+   if(s.classList.contains('on'))return;
+   if(!pick.textContent||pick.textContent==='★'){toast('先点取星辰','中央的 ★ 会给出当前星符');return}
+   if(s.dataset.sy!==pick.textContent){toast('方位不合','该方位供奉的是 '+s.dataset.sy);return}
+   s.classList.add('on');s.textContent=pick.textContent;
+   ok++;setProg(ok/7*100);
+   if(ok>=7){
+    setTimeout(function(){
+     closeMini();
+     A.stone++;A.mats.p_stone=(A.mats.p_stone||0)+1;A.exp+=200;maybeLv();
+     save();cur=null;stage=0;qsum=0;refresh();
+     toast('大功业 · 贤者之石炼成','★ 获得称号：贤者 · 点石成金');
+    },600);
+   }
+  });
+ });
+ playing={kill:function(){}};
+}
+function maybeLv(){while(A.exp>=A.lv*120){A.exp-=A.lv*120;A.lv++}}
+/* ========== 启动 ========== */
+refresh();
+$('#work').style.setProperty('--cglow','transparent');
+$('#work').style.setProperty('--liq','rgba(30,30,34,.9)');
+})();
+</script>
+</body>
+</html>

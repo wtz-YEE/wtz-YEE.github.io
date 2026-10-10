@@ -1511,7 +1511,35 @@ function ferr(msg){
 </div>
 <div class="sec" id="sec2">
 <div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">02</span><h2>工具</h2><span class="b-code">GRID · 3CARD</span></div>
-<div class="card is-tool" id="forgeCard" style="cursor:pointer" onclick="openForge()">
+<div class="card is-tool" id="gardenCard" style="cursor:pointer" onclick="location.href='pages/花园.html'">
+  <div class="spot" aria-hidden="true"></div>
+  <div class="thumb">
+    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+      <rect width="400" height="200" fill="#0A0A0A"/>
+      <g stroke="#2a2a2a" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400"/></g>
+      <path d="M28 172 H372" stroke="#444" stroke-width="1"/>
+      <g fill="none" stroke="#FFFFFF" stroke-width="2">
+        <path d="M200 100 C180 70 142 62 130 40 M200 100 C220 70 258 62 270 40 M200 100 C170 84 128 100 102 100 M200 100 C230 84 272 100 298 100"/>
+        <path d="M200 100 v46"/>
+        <circle cx="200" cy="90" r="17"/>
+      </g>
+      <g fill="#8f8f8f"><rect x="150" y="146" width="100" height="6"/><rect x="120" y="160" width="160" height="4"/></g>
+      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+        <path d="M116 186 H284" stroke="#444" stroke-width="1"/>
+        <text x="200" y="191" letter-spacing="7">CO-OP GARDEN</text>
+      </g>
+    </svg>
+  </div>
+  <div class="card-bd">
+    <div class="c-tag">GARDEN · 花园</div>
+    <h3>协作花园</h3>
+    <p>64 种植物 · 8 款主题 · 照料生长与夜行探索</p>
+    <span class="c-go" onclick="event.preventDefault();event.stopPropagation();location.href='pages/花园.html'">进入花园
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</div>
+<div class="card is-tool" id="forgeCard" style="cursor:pointer" onclick="location.href='pages/锻造.html'">
   <div class="spot" aria-hidden="true"></div>
   <div class="thumb">
     <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
@@ -1535,7 +1563,37 @@ function ferr(msg){
     <div class="c-tag">FORGE · 锻造</div>
     <h3>武器锻造</h3>
     <p>附魔 · 铁砧 · 合成，MC 风词缀，胚子商店买</p>
-    <span class="c-go" onclick="event.preventDefault();event.stopPropagation();openForge()">打开锻造台
+    <span class="c-go" onclick="event.preventDefault();event.stopPropagation();location.href='pages/锻造.html'">打开锻造台
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</div>
+<div class="card is-tool" id="alchemyCard" style="cursor:pointer" onclick="location.href='pages/炼金.html'">
+  <div class="spot" aria-hidden="true"></div>
+  <div class="thumb">
+    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+      <rect width="400" height="200" fill="#0A0A0A"/>
+      <g stroke="#2a2a2a" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400"/></g>
+      <g fill="none" stroke="#FFFFFF" stroke-width="2">
+        <circle cx="150" cy="112" r="30"/>
+        <path d="M150 82 v-18 M138 64 h24 M150 46 v-8"/>
+        <path d="M150 82 C170 80 180 96 180 112 C180 130 166 144 150 144 C134 144 120 130 120 112 C120 96 130 80 150 82"/>
+        <path d="M180 112 H230 V70 H256"/>
+        <path d="M256 46 v24 M246 46 h20 M256 46 h0"/>
+        <circle cx="256" cy="40" r="6"/>
+      </g>
+      <g fill="#8f8f8f"><circle cx="140" cy="120" r="5"/><circle cx="160" cy="128" r="4"/></g>
+      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+        <path d="M116 186 H284" stroke="#444" stroke-width="1"/>
+        <text x="200" y="191" letter-spacing="7">ALCHEMY WORKSHOP</text>
+      </g>
+    </svg>
+  </div>
+  <div class="card-bd">
+    <div class="c-tag">ALCHEMY · 炼金</div>
+    <h3>炼金工坊</h3>
+    <p>万物转化的法则 · 配方待定，火焰已备</p>
+    <span class="c-go" onclick="event.preventDefault();event.stopPropagation();location.href='pages/炼金.html'">进入炼金
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
     </span>
   </div>
@@ -2910,6 +2968,9 @@ function doResonRipple(n,cardEl){
   }
 }
 var GB_ALL=null;
+var GB_ADMINS={};
+function fLget(k,d){try{var a=JSON.parse(localStorage.getItem(k)||'null');return a==null?d:a}catch(e){return d}}
+function fLset(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function sortGB(list){
   var k=$('gb_sort')?$('gb_sort').value:'new';
   var a=list.slice();
@@ -3470,13 +3531,7 @@ function openProfile(nm){
     var psH=ps.map(function(x){return '<div class="pf-row" data-pf="p"><span class="pf-t">'+esc((x.text||'').slice(0,70))+'</span><div class="pf-m">'+esc(x.time)+'</div></div>'}).join('')||'<div style="color:var(--ink3);font-size:11.5px;padding:6px 0">暂无发帖</div>';
     var cmH=cm.map(function(x){return '<div class="pf-row"><span class="pf-t">'+esc((x.text||'').slice(0,70))+'</span><div class="pf-m">'+esc(x.time)+'</div></div>'}).join('')||'<div style="color:var(--ink3);font-size:11.5px;padding:6px 0">暂无评论</div>';
     var _showH='';
-    if(pf.self_&&window.fVault&&window.fBlankList){
-      var _va=fVault(),_sid=localStorage.getItem('wz_show');if(_sid)_sid=_sid.replace(/"/g,'');
-      var _w=null;for(var _i=0;_i<_va.length;_i++)if(_va[_i].id===_sid){_w=_va[_i];break}
-      if(_w){var _bl=fBlankList().filter(function(x){return x.id===_w.b})[0];
-        var _r=window.fRarity?fRarity(_w):'',_pw=window.fPower?fPower(_w):0;
-        _showH='<div class="pf-forge">★ 我的门面武器 · <b>'+(_bl?_bl.n:'未知')+'</b> ['+_r+' · 战力 '+_pw+']</div>';}
-    }
+    if(pf.self_){var _vn=fLget('wz_forge',[]);if(_vn.length)_showH='<div class="pf-forge">⚒ 武器库已归档 <b>'+_vn.length+'</b> 件 · 门面与锻造见<a href="pages/锻造.html" style="color:var(--accent,#fff)">锻造页</a></div>'}
     var achH;
     if(pf.self_){
       var got=ACH20.filter(function(n){return ach.indexOf(n)>=0});
@@ -4670,7 +4725,7 @@ function shopItemHtml(x,owned,eq){
   var a='';
   if(!S.user)a='<span class="shop-sub">登录后可购买</span>';
   else if(owned&&eq)a='<span class="shop-eq">已装备</span><button class="shop-btn" data-unequip="'+x.id+'">卸下</button>';
-  else if(owned&&x.type==='mat')a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'差 '+miss+' 分':'兑换')+'</button>';else if(owned&&x.type==='weapon')a='<span class="shop-own">已拥有</span><button class="shop-btn prim" onclick="openForge()">锻造</button>';else if(owned)a='<span class="shop-own">已拥有</span><button class="shop-btn prim" data-equip="'+x.id+'">装备</button>';
+  else if(owned&&x.type==='mat')a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'差 '+miss+' 分':'兑换')+'</button>';else if(owned&&x.type==='weapon')a='<span class="shop-own">已拥有</span><button class="shop-btn prim" onclick="location.href=&#39;pages/锻造.html&#39;">锻造</button>';else if(owned)a='<span class="shop-own">已拥有</span><button class="shop-btn prim" data-equip="'+x.id+'">装备</button>';
   else a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'差 '+miss+' 分':'兑换')+'</button>';
   return '<div class="shop-item'+(eq?' on':'')+'"><div class="si-h"><span class="si-n">'+esc(x.name)+'</span>'+
     (off<1?'<span class="shop-sale">今日特供 · 7折</span>':'')+(owned?'<span class="shop-own">已有</span>':'')+
@@ -4722,13 +4777,20 @@ function shopBuy(id,x,y){
     try{localStorage.setItem(K_SESS,JSON.stringify(S.user))}catch(e){}
     say(j.msg||'已兑换',true);
     if(window.fragFx)fragFx(x||innerWidth/2,y||innerHeight/2);
-    if(_shopKind==='weapon'&&window.fImportPurchased){var _fg=fImportPurchased([id]);if(_fg.length)toast('胚子已入武器仓库','打开锻造台看看吧')}else if(_shopKind==='mat'&&_shopCat){var _mi=null;for(var _k=0;_k<_shopCat.length;_k++)if(_shopCat[_k].id===id){_mi=_shopCat[_k];break}if(_mi){var _amt={m_lapis:3,m_iron:2,m_book:1}[id]||1,_f={m_lapis:'fLapisAdd',m_iron:'fIronAdd',m_book:'fBSAdd'}[id];
-      if(id==='m_seed'&&window.gSeedAdd&&window.G_PLANTS){var _pp=window.G_PLANTS.filter(function(p){return window.G_RARE.indexOf(p.id)<0&&window.G_LEGEND.indexOf(p.id)<0});if(_pp.length){window.gSeedAdd(_pp[Math.floor(Math.random()*_pp.length)].id);toast('神秘花种已入花园','随机解锁一颗花种 · 去花园种下')}}
-      else if(id==='m_deep'&&window.gExAdd){window.gExAdd(3);var _eb=document.getElementById('gExBox');if(_eb)_eb.textContent=window.gEx();toast('夜色提灯已点亮','花园探索点 +3')}
-      else if(id==='m_slag'&&window.fExpAdd){window.fExpAdd(10);toast('锻炉余烬已入库','锻造经验 +10')}
-      else if(id==='m_quill'&&window.fExpAdd){window.fExpAdd(30);toast('学徒刻印已入库','锻造经验 +30')}
-      else if(_f&&window[_f]){window[_f](_amt);toast('已兑换 '+_mi.name,'已存入锻造仓库')}
-    }}
+    if(_shopKind==='weapon'){var _v=fLget('wz_forge',[]),_h={};for(var _q=0;_q<_v.length;_q++)_h[_v[_q].b]=1;if(!_h[id]){_v.push({id:'wf'+(fLget('wz_forge_seq',1)),b:id,aff:[],dur:1,cost:0,combo:'',name:null});fLset('wz_forge_seq',fLget('wz_forge_seq',1)+1);fLset('wz_forge',_v)}toast('胚子已入武器仓库','去锻造页打造')}
+    else if(_shopKind==='mat'){
+      if(id==='m_lapis'){fLset('wz_lapis',fLget('wz_lapis',0)+3);toast('已兑换 青金石','已存入锻造仓库')}
+      else if(id==='m_iron'){fLset('wz_iron',fLget('wz_iron',0)+2);toast('已兑换 魔铁锭','已存入锻造仓库')}
+      else if(id==='m_book'){fLset('wz_bookshelf',fLget('wz_bookshelf',0)+1);toast('已兑换 书架','已存入锻造仓库')}
+      else if(id==='m_sulfur'||id==='m_mercury'||id==='m_salt'||id==='m_fire'||id==='m_water'||id==='m_earth'||id==='m_air'||id==='m_silver'||id==='m_rose'){
+        var _mp={m_sulfur:'s_sulfur',m_mercury:'s_mercury',m_salt:'s_salt',m_fire:'e_fire',m_water:'e_water',m_earth:'e_earth',m_air:'e_air',m_silver:'m_silver',m_rose:'h_rose'};
+        try{var _al=JSON.parse(localStorage.getItem('wz_alch')||'{}');_al.mats=_al.mats||{};_al.mats[_mp[id]]=(_al.mats[_mp[id]]||0)+1;localStorage.setItem('wz_alch',JSON.stringify(_al));toast('已兑换 炼金材料','已存入炼金仓库')}catch(e){}
+      }
+      else if(id==='m_seed'){var _pp=[];for(var _s=0;_s<64;_s++){if([6,11,13,15,17,18,21,24,22,23,25].indexOf(_s)<0)_pp.push(_s)}var _sid=_pp[Math.floor(Math.random()*_pp.length)],_sa=fLget('wz_gseeds',[]);_sa.push(_sid);fLset('wz_gseeds',_sa);var _sd=fLget('wz_gdisc',[]);if(_sd.indexOf(_sid)<0){_sd.push(_sid);fLset('wz_gdisc',_sd)}toast('神秘花种已入花园','随机解锁一颗花种 · 去花园页种下')}
+      else if(id==='m_deep'){fLset('wz_gex',fLget('wz_gex',0)+3);toast('夜色提灯已点亮','花园探索点 +3 · 去花园页查看')}
+      else if(id==='m_slag'){fLset('wz_forge_exp',fLget('wz_forge_exp',0)+10);toast('锻炉余烬已入库','锻造经验 +10')}
+      else if(id==='m_quill'){fLset('wz_forge_exp',fLget('wz_forge_exp',0)+30);toast('学徒刻印已入库','锻造经验 +30')}
+    }
     shopRender();shopBadge();
   }).catch(function(e){say('兑换失败：'+ferr(e.message),false)});
 }
@@ -4936,7 +4998,6 @@ var d=new Date(),f=function(n){return(n<10?'0':'')+n};
 document.getElementById('clock').textContent=f(d.getHours())+':'+f(d.getMinutes())+':'+f(d.getSeconds());
 }
 setInterval(clk,1000);clk();
-<script>
 (function(){try{
 var RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 var cd=document.querySelectorAll('.grid .card,.grid3 .card');
@@ -5798,8 +5859,6 @@ setInterval(poll,60000);
 })();
 </script>
 
-<script src="garden.js"></script>
-<script src="forge.js"></script>
 </body>
 </html>
 
