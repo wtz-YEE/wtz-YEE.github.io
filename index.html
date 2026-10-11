@@ -287,7 +287,7 @@ body.inv{--bg:#F2F2F2;--bg2:#E9E9E9;--panel:#EBEBEB;--panel2:#DDDDDD;--line:rgba
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);z-index:95;border:1px solid var(--line2);background:var(--panel2);color:var(--accent2);font-family:var(--mono);font-size:12px;letter-spacing:.16em;padding:10px 18px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-#boot{position:fixed;inset:0;z-index:100;background:#040405;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:20px 20px;display:flex;align-items:center;justify-content:center;transition:opacity .35s}
+#boot{position:fixed;inset:0;z-index:100;background:#040405;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:20px 20px;display:flex;align-items:center;justify-content:center;transition:opacity .35s;animation:bootout 1ms linear 6.8s forwards}
 #boot::before{content:"";position:absolute;inset:0;background:radial-gradient(58% 46% at 50% 44%,rgba(255,255,255,.07),transparent 70%)}
 #boot::after{content:"";position:absolute;left:0;right:0;top:0;height:40px;background:linear-gradient(180deg,rgba(255,255,255,.07),transparent);animation:crtsweep 1.3s linear .2s infinite;pointer-events:none}
 .bt{position:relative;width:min(560px,90vw);border:1px solid var(--line2);background:linear-gradient(170deg,rgba(19,19,21,.98),rgba(9,9,10,.99));padding:22px 26px 18px;box-shadow:0 0 70px rgba(255,255,255,.09),0 0 0 1px rgba(255,255,255,.06);animation:cardin .55s cubic-bezier(.22,1,.36,1) both;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .7s}
@@ -319,6 +319,7 @@ body.inv{--bg:#F2F2F2;--bg2:#E9E9E9;--panel:#EBEBEB;--panel2:#DDDDDD;--line:rgba
 @keyframes fpulse{0%,100%{box-shadow:0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 18px rgba(255,255,255,.16)}}
 @keyframes gshift{to{background-position:44px 44px}}
 @keyframes crtsweep{from{transform:translateY(0)}to{transform:translateY(700%)}}
+@keyframes bootout{to{opacity:0;visibility:hidden;pointer-events:none}}
 
 @media(max-width:560px){
 .hero{padding-top:44px}
@@ -1280,6 +1281,27 @@ function ferr(msg){
 }
 </script>
 <body>
+<script>(function(){
+function pz(){if(window.__pz)return;window.__pz=1;
+try{document.documentElement.style.overflow='hidden'}catch(e){}
+var d=document.createElement('div');d.id='pz';d.style.cssText='position:fixed;inset:0;z-index:2147483646;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column';
+var c=document.createElement('canvas');c.width=window.innerWidth;c.height=window.innerHeight;c.style.cssText='position:absolute;inset:0;width:100%;height:100%';d.appendChild(c);
+var t=document.createElement('div');t.style.cssText='position:relative;z-index:2;color:#f00;font:900 min(6vw,84px) Consolas,monospace;text-shadow:0 0 24px #f00;text-align:center;letter-spacing:.25em';t.innerHTML='&#31070;&#24323;&#20043;&#20154;&#26080;&#27861;&#36827;&#20837;&#27492;&#22320;';d.appendChild(t);
+var sub=document.createElement('div');sub.style.cssText='position:relative;z-index:2;color:#fff;font:13px Consolas;margin-top:16px;opacity:.75;letter-spacing:.2em';sub.textContent='点击退出';d.appendChild(sub);
+document.body.appendChild(d);
+var ac=null;
+function audio(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var n=ac.sampleRate;var b=ac.createBuffer(1,n*2,n);var ch=b.getChannelData(0);for(var i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;var s=ac.createBufferSource();s.buffer=b;s.loop=true;var gn=ac.createGain();gn.gain.value=0.8;var f=ac.createBiquadFilter();f.type='highpass';f.frequency.value=250;var wf=ac.createWaveShaper();var cu=new Float32Array(256);for(var k=0;k<256;k++){var x=k/128-1;cu[k]=Math.tanh(x*7)}wf.curve=cu;s.connect(wf);wf.connect(f);f.connect(gn);gn.connect(ac.destination);s.start();var o=ac.createOscillator();o.type='sawtooth';o.frequency.value=110;var og=ac.createGain();og.gain.value=0.55;o.connect(og);og.connect(ac.destination);o.start();ac.resume()}catch(e){}}
+d.addEventListener('click',function(){audio();out()});d.addEventListener('touchstart',function(){audio();out()});audio();function out(){var f=document.createElement('div');f.style.cssText='position:absolute;inset:0;z-index:9;background:#fff;opacity:0;transition:.3s';d.appendChild(f);requestAnimationFrame(function(){f.style.opacity='1'});setTimeout(function(){try{window.close()}catch(e){}setTimeout(function(){try{document.body.innerHTML='<div style="position:fixed;inset:0;background:#000;color:#f00;display:flex;align-items:center;justify-content:center;font:700 min(5vw,46px) monospace;letter-spacing:.4em;text-align:center">已被驱逐 · 退出本站</div>'}catch(e){}},500)},350)}
+var ctx=c.getContext('2d'),fr=0;
+function glitch(){fr++;ctx.fillStyle='rgba(0,0,0,.15)';ctx.fillRect(0,0,c.width,c.height);for(var i=0;i<14;i++){var y=Math.random()*c.height,h=10+Math.random()*78,x=Math.random()*c.width;ctx.fillStyle='rgba('+(Math.random()>.5?255:0)+','+Math.floor(Math.random()*255)+','+(Math.random()>.5?255:0)+','+(0.4+Math.random()*0.5)+')';ctx.fillRect(x,y,c.width*Math.random(),h)}for(var i=0;i<9;i++){var sx=Math.random()*c.width,sy=Math.random()*c.height;ctx.fillStyle='rgba('+(Math.random()>.5?255:0)+','+Math.floor(Math.random()*255)+','+(Math.random()>.5?255:0)+',.6)';ctx.fillRect(sx,sy,Math.random()*70+10,Math.random()*70+10)}ctx.fillStyle='rgba(255,0,0,.95)';ctx.font='bold '+Math.floor(12+Math.random()*46)+'px monospace';for(var i=0;i<90;i++){ctx.fillText(String.fromCharCode(0x30A0+Math.floor(Math.random()*96)),Math.random()*c.width,Math.random()*c.height)}if(Math.random()<0.3){ctx.fillStyle='rgba(255,255,255,'+(0.05+Math.random()*0.15)+')';ctx.fillRect(0,0,c.width,c.height)}d.style.transform='translate('+Math.floor(Math.random()*42-21)+'px,'+Math.floor(Math.random()*42-21)+'px) skewX('+(Math.random()*14-7)+'deg) scale('+(1+Math.random()*0.07)+')';requestAnimationFrame(glitch)}
+glitch();
+var st=document.createElement('style');st.textContent='@keyframes pzFl{0%{opacity:.1}50%{opacity:.85}100%{opacity:.3}}';document.head.appendChild(st);
+var fl=document.createElement('div');fl.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(255,0,0,.22);pointer-events:none;animation:pzFl .22s steps(2) infinite';document.body.appendChild(fl);
+}
+window.pz=pz;
+var __f=window.fetch;
+window.fetch=function(u,o){return __f(u,o).then(function(r){try{if(r&&r.status===403){var c=r.clone();c.json().then(function(j){if(j&&j.panic)pz()}).catch(function(){})}}catch(e){}return r})};
+})();</script>
 <div id="fixMask" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#0a0a0a;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:Consolas,monospace;text-align:center"><div style="font-size:min(9vw,110px);letter-spacing:.35em;color:#ff5c7a;text-shadow:0 0 34px rgba(255,92,122,.45);font-weight:bold">维修中</div><div style="width:56px;height:2px;background:#ff5c7a;opacity:.5"></div><div id="fixReason" style="font-size:min(1.6vw,16px);color:#8a8a8a;letter-spacing:.22em">系统维护 · 请稍后刷新页面</div><div id="fixEta" style="font-size:min(1.3vw,13px);color:#5a5a5a;letter-spacing:.18em"></div></div><script>(function(){var m=document.getElementById('fixMask');if(!m)return;fetch('https://wtz-YEE.github.io/cloud_fixing.txt?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var ls=String(t||'').split(/\r?\n/);if((ls[0]||'').trim().toLowerCase()==='t'){var rr=document.getElementById('fixReason'),ee=document.getElementById('fixEta');var rs=(ls[1]||'').trim(),es=(ls[2]||'').trim();if(rr) rr.textContent=rs||'系统维护 · 请稍后刷新页面';if(ee) ee.textContent=es?('预计恢复：'+es):'';m.style.display='flex';document.documentElement.style.overflow='hidden';}}).catch(function(){});})();</script>
 
 <div id="updBar" class="hidden">
@@ -2980,6 +3002,7 @@ function sortGB(list){
   else a.sort(function(x,y){return (y.id||0)-(x.id||0)});
   return a;
 }
+var GB_REPORTED={};
 function renderGuests(list, fresh){
   var box=$('guestbookList');
   GB_ALL=list;
@@ -3728,13 +3751,17 @@ function gbSaveConfig(){
 }
 
 /* 启动时自动从 GitHub 读取云端地址（由「一键启动云端.bat」推送） */
+function fetchCloudTxt(){
+  var u0='https://raw.githubusercontent.com/wtz-YEE/wtz-YEE.github.io/main/cloud.txt?t='+Date.now();
+  var u1='https://wtz-YEE.github.io/cloud.txt?t='+Date.now();
+  return fetch(u0,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text()}).catch(function(){
+    return fetch(u1,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text()});
+  });
+}
 function autoCloud(){
   var lb=$('guestbookList');
   if(lb && !S.api) lb.innerHTML='<div class="gb-empty">正在连接云端…</div>';
-  fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now()).then(function(r){
-    if(!r.ok) throw 0;
-    return r.text();
-  }).then(function(t){
+  fetchCloudTxt().then(function(t){
     var apis=parseApis(t||'').filter(function(x){return x.indexOf('36c3116e')<0});
     if(!apis.length) return;
     S.apis=apis;
@@ -3763,10 +3790,7 @@ function pickAlive(apis){
 function cloudRecover(){
   var cur=S.api;
   function fresh(){
-    return fetch('https://wtz-YEE.github.io/cloud.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){
-      if(!r.ok) throw 0;
-      return r.text();
-    }).then(function(t){
+    return fetchCloudTxt().then(function(t){
       var apis=parseApis(t||'').filter(function(x){return x.indexOf('36c3116e')<0});
       if(!apis.length) return false;
       var ch=apis[0]!==cur||apis.length!==(S.apis||[]).length;
@@ -4255,17 +4279,19 @@ function bind(){
 }
 
 /* ---------- 启动 ---------- */
-bind();
-updateModeLabel();
-applyAuth();
-loadGuestBook();
-autoCloud();
+(function(){
+try{bind()}catch(e){}
+try{updateModeLabel()}catch(e){}
+try{applyAuth()}catch(e){}
+try{loadGuestBook()}catch(e){}
+try{autoCloud()}catch(e){}
 if(S.user){
-  pmRefreshConversations();
-  startPoll();
-  applyAuth();
+  try{pmRefreshConversations()}catch(e){}
+  try{startPoll()}catch(e){}
+  try{applyAuth()}catch(e){}
   try{shopBadge()}catch(e){}
 }
+})();
 
 /* 暴露到全局，兼容页面里可能存在的内联调用 */
 window.gbRegister=gbRegister;
@@ -4997,7 +5023,8 @@ var bail=setTimeout(flip,5600);
 boot.addEventListener('click',flip);
 boot.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();flip()}});
 }
-if(sessionStorage.getItem('wzBoot')==='1'||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+var _bk='';try{_bk=sessionStorage.getItem('wzBoot')}catch(e){}
+if(_bk==='1'||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
 boot.style.display='none';document.body.classList.add('ready');
 }else{runBoot();}
 function clk(){
