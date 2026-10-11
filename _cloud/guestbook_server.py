@@ -314,7 +314,9 @@ def login():
         "ok": True,
         "username": uname,
         "is_admin": u["is_admin"],
-        "token": tk
+        "token": tk,
+        "pts": int(u.get("pts") or 0),
+        "items": u.get("items") or []
     })
 
 
@@ -1568,7 +1570,8 @@ def api_me():
     info = _lvl_info(exp)
     ck = rec.get("checkin") or {}
     info.update({"username": cu, "is_admin": bool(rec.get("is_admin")),
-                 "exp": exp, "streak": ck.get("streak") or 0, "total": ck.get("total") or 0})
+                 "exp": exp, "streak": ck.get("streak") or 0, "total": ck.get("total") or 0,
+                 "pts": int(rec.get("pts") or 0), "items": rec.get("items") or []})
     return jsonify({"ok": True, "me": info})
 
 

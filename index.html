@@ -2848,7 +2848,7 @@ function gbLogin(){
   if(!u||!p) return say('填账号和密码',false);
   return call('/login',{username:u,password:p}).then(function(j){
     if(!j.ok) return say(j.msg||'登录失败',false);
-    S.user={username:j.username,is_admin:!!j.is_admin,token:j.token};
+    S.user={username:j.username,is_admin:!!j.is_admin,token:j.token,pts:j.pts,items:j.items||[]};
     try{ localStorage.setItem(K_SESS,JSON.stringify(S.user)); }catch(e){}
     try{ localStorage.setItem('gb_pwd',p); }catch(e){}
     $('gb_pwd').value='';
@@ -3378,13 +3378,13 @@ function pmRefreshConversations(){
 function autoRelogin(){
   if(!S.user||!S.api||!S.user.username) return;
   call('/me',{}).then(function(j){
-    if(j&&j.ok){ cloudApply(); return; }
+    if(j&&j.ok){ S.user.pts=j.me.pts;S.user.items=j.me.items||S.user.items||[];cloudApply(); return; }
     var pw='';
     try{ pw=localStorage.getItem('gb_pwd')||''; }catch(e){}
     if(!pw) return;
     call('/login',{username:S.user.username,password:pw}).then(function(k){
       if(!k||!k.ok) return;
-      S.user={username:k.username,is_admin:!!k.is_admin,token:k.token};
+      S.user={username:k.username,is_admin:!!k.is_admin,token:k.token,pts:k.pts,items:k.items||[]};
       try{ localStorage.setItem(K_SESS,JSON.stringify(S.user)); }catch(e){}
       applyAuth(); loadGuestBook(); pmRefreshConversations(); startPoll(); ntRefresh();
       cloudApply();
