@@ -25,6 +25,13 @@ main p{color:var(--ink3);font-size:12.5px;line-height:1.8;letter-spacing:.05em;m
 .hint{margin-top:26px;font-size:10.5px;color:var(--ink3);letter-spacing:.14em;opacity:.7}
 @media(max-width:600px){main{padding:40px 16px}main h1{font-size:20px}}
 </style>
+<style>
+.abyss-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px auto;max-width:560px;padding:8px 12px;border:1px solid rgba(255,214,10,.35);background:rgba(255,214,10,.05);font-family:Consolas,monospace}
+.abyss-bar .ab-t{font-size:11px;letter-spacing:.14em;color:#ffd60a}
+.abyss-bar .ab-l{flex:1;font-size:11px;color:#9BA9AD}
+.abyss-bar .ab-l b{color:#E6EDEF}
+.abyss-bar .op{padding:4px 14px;cursor:pointer}
+</style>
 </head>
 <body>
 <header>
@@ -37,7 +44,12 @@ main p{color:var(--ink3);font-size:12.5px;line-height:1.8;letter-spacing:.05em;m
 <main>
   <h1>武器<b>锻造</b></h1>
   <p>胚子 · 锻打 · 附魔 · 淬火折叠 —— 一锤一锤，敲出你的词缀<br>材料与胚子可在主站商店兑换，锻打谱需按序完成</p>
-  <button id="openBtn" type="button">开启锻造台</button>
+    <div id="abyssForgeBar" class="abyss-bar" style="display:none">
+    <span class="ab-t">⚔ 沉渊战利品</span>
+    <span id="abyssForgeList" class="ab-l"></span>
+    <button class="op" id="abyssForgeClaim" type="button" style="padding:4px 14px">入库</button>
+  </div>
+<button id="openBtn" type="button">开启锻造台</button>
   <div class="hint">提示：胚子商店买 · 材料园种 · 锻打次数越少品质越高</div>
 </main>
 <script src="_shared.js"></script>
@@ -47,6 +59,41 @@ main p{color:var(--ink3);font-size:12.5px;line-height:1.8;letter-spacing:.05em;m
   var b=document.getElementById('openBtn');
   b.addEventListener('click',function(){if(window.openForge)openForge()});
   setTimeout(function(){if(window.openForge)openForge()},650);
+})();
+</script>
+<script>
+(function(){
+  function pend(){try{return JSON.parse(localStorage.getItem("wz_abyss_forge")||"null")}catch(e){return null}}
+  var MAP={iron:"魔铁锭",book:"附魔书"};
+  function draw(){
+    var bar=document.getElementById("abyssForgeBar"),list=document.getElementById("abyssForgeList");
+    if(!bar||!list)return;
+    var p=pend();var ms=p&&p.mats?p.mats:null;
+    var keys=ms?Object.keys(ms).filter(function(k){return ms[k]>0&&MAP[k]}):[];
+    if(!keys.length){bar.style.display="none";return}
+    bar.style.display="flex";
+    list.innerHTML=keys.map(function(k){return MAP[k]+" <b>×"+ms[k]+"</b>"}).join(" · ");
+  }
+  function claim(){
+    var p=pend();if(!p||!p.mats)return;
+    var ni=0,nb=0;
+    for(var k in p.mats){
+      if(!Object.prototype.hasOwnProperty.call(p.mats,k))continue;
+      var c=Math.max(0,Math.floor(p.mats[k]));if(!c)continue;
+      if(k==="iron"){if(window.fIronAdd)window.fIronAdd(c);ni+=c}
+      else if(k==="book"){if(window.fBSAdd)window.fBSAdd(c);nb+=c}
+    }
+    try{localStorage.setItem("wz_abyss_forge",JSON.stringify({mats:{},t:Date.now()}))}catch(e){}
+    draw();
+    if(typeof toast==="function")toast("已入库：魔铁锭 ×"+ni+" · 附魔书 ×"+nb);
+  }
+  function wire(){
+    var b=document.getElementById("abyssForgeClaim");
+    if(b)b.addEventListener("click",claim);
+    draw();
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",wire);
+  else wire();
 })();
 </script>
 </body>

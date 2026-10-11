@@ -18,8 +18,12 @@ header nav a{color:var(--ink3);text-decoration:none;font-family:Consolas,monospa
 header nav a:hover{color:var(--acc);border-color:var(--ln)}
 main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
 .panels{display:grid;grid-template-columns:250px 1fr 300px;gap:16px;align-items:start}
-.obj{position:absolute;min-width:44px;height:48px;padding:3px 7px;border:1.5px solid rgba(255,255,255,.5);border-radius:10px;background:linear-gradient(160deg,#24242c,#101014);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:grab;z-index:5;box-shadow:0 4px 12px rgba(0,0,0,.45);transition:border-color .15s,box-shadow .15s}
+.obj{position:absolute;min-width:44px;height:48px;padding:3px 7px;border:1.5px solid rgba(255,255,255,.5);border-radius:10px;background:linear-gradient(160deg,#24242c,#101014);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:grab;z-index:5;box-shadow:0 4px 12px rgba(0,0,0,.45);transition:border-color .15s,box-shadow .15s}.obj.mnt{border-color:rgba(255,214,10,.75);box-shadow:0 0 14px rgba(255,214,10,.5),0 4px 12px rgba(0,0,0,.45)}
 .obj:active{cursor:grabbing}.obj.on{border-color:var(--gold);box-shadow:0 0 12px rgba(255,214,10,.3)}
+.obj.vessel{width:96px;height:114px;border-color:var(--gold);box-shadow:0 0 26px rgba(255,214,10,.5),0 4px 14px rgba(0,0,0,.55);background:linear-gradient(165deg,#3c2616,#171014 70%);z-index:4}
+.obj.vessel .ob-sy{font-size:34px;line-height:1}
+.obj.vessel .ob-nm{font-size:10px;color:var(--gold);letter-spacing:1px}
+.obj-liq{position:absolute;left:5px;right:5px;bottom:5px;height:20%;border-radius:7px 7px 4px 4px;opacity:.72;transition:height .25s;pointer-events:none}
 .ob-sy{font-size:17px;line-height:1}.ob-nm{font-size:9px;color:rgba(255,255,255,.55);white-space:nowrap}
 .obj .eq-port{position:absolute;right:-7px;top:50%;transform:translateY(-50%)}
 .tmp-line{position:absolute;height:3px;background:linear-gradient(90deg,rgba(255,214,10,.5),rgba(255,214,10,.95));transform-origin:left center;pointer-events:none;z-index:30;border-radius:2px;box-shadow:0 0 8px rgba(255,214,10,.5)}
@@ -267,6 +271,11 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
 .flymat img.mico{width:18px;height:18px;vertical-align:top}
 .gs-step img.eico{width:30px;height:30px;display:block;margin:0 auto}
 .shop-item .sy img.mico{width:18px;height:18px}
+
+.abyss-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0;padding:8px 10px;border:1px solid rgba(255,214,10,.35);background:rgba(255,214,10,.05)}
+.abyss-bar .ab-t{font-family:Consolas,monospace;font-size:11px;letter-spacing:.14em;color:#ffd60a}
+.abyss-bar .ab-l{flex:1;font-family:Consolas,monospace;font-size:11px;color:#9BA9AD}
+.abyss-bar .ab-l b{color:#E6EDEF}
 </style>
 </head>
 <body>
@@ -294,6 +303,16 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
 </div>
 <div class="shop-head"><span class="gold">♜ 奥金 <b id="goldAmt">0</b></span><button class="op" id="shopToggle" style="margin-left:auto;padding:4px 14px">商店</button></div>
       <div id="shopBody" style="display:none"></div>
+      <div id="abyssPotBar" class="abyss-bar" style="display:none">
+        <span class="ab-t">⚗ 沉渊药剂消耗</span>
+        <span id="abyssPotList" class="ab-l"></span>
+        <button class="op" id="abyssPotClaim" style="padding:4px 14px">确认消耗</button>
+      </div>
+      <div id="abyssBar" class="abyss-bar" style="display:none">
+        <span class="ab-t">⚔ 沉渊战利品</span>
+        <span id="abyssList" class="ab-l"></span>
+        <button class="op" id="abyssClaim" style="padding:4px 14px">全部认领</button>
+      </div>
       <div id="whList"></div>
     </section>
     <section class="panel cauldron" id="work">
@@ -310,9 +329,8 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
 <div id="bench">
   <span class="bn-step" id="bnStep">BENCH · 自由</span>
   <span class="bn-tip" id="bnTip">点击研杵研磨材料</span>
-  <div class="mortar" id="mortar"><div class="powder" id="powder"></div><div class="pestle" id="pestle"></div><span class="bn-port" id="ptMortar" style="left:100%;top:64%">⇌</span></div>
-  <div class="flask" id="flask"><div class="neck"></div><div class="bulb" id="bulb"></div><canvas class="liq-cv" id="liqCv" width="164" height="140"></canvas><span class="bn-port" id="ptFlask" style="left:-8px;top:14%">⇌</span></div>
-  <div class="bn-port" id="ptHub" style="left:48%;top:40%">✧</div>
+  <div class="mortar" id="mortar"><div class="powder" id="powder"></div><div class="pestle" id="pestle"></div></div>
+  <div class="flask" id="flask"><div class="neck"></div><div class="bulb" id="bulb"></div><canvas class="liq-cv" id="liqCv" width="164" height="140"></canvas></div>
   <div class="bn-node" id="n1" style="display:none">•</div>
   <div class="thermo" id="thermo"><i></i><span class="tv" id="tv">--°C</span><span class="tz" id="tz" style="bottom:46%"></span></div>
   <div class="bn-tag">TEMP · 45-65</div>
@@ -503,7 +521,8 @@ var EQC={
  wax:'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke="#d9a15c" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="9.5" y="12" width="5" height="7" rx="1"/><path d="M12 4 V12"/><path d="M12 4 c-2 -1.2 -2 -3 0 -3.4 c2 .4 2 2.2 0 3.4 z"/><path d="M8.4 14 a2 2 0 0 1 2.2 -1.3"/></g></svg>',
  bunsen:'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke="#d9a15c" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 20 H14.5 M10.5 20 V12 H13.5 V20"/><path d="M11 12 H13 V8"/><path d="M12 8 c-2.2 -1.2 -2.2 -3.4 0 -4.6 c2.2 1.2 2.2 3.4 0 4.6 z"/></g></svg>',
  iceb:'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke="#d9a15c" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13 V17 H19 V13"/><path d="M4 13 H20"/><rect x="7.5" y="6.5" width="3.6" height="3.6"/><rect x="12.9" y="6.5" width="3.6" height="3.6"/><path d="M6 15 h4 M14 15 h4"/></g></svg>',
- astro:'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke="#d9a15c" stroke-width="1.3" fill="none" stroke-linecap="round"><circle cx="12" cy="12" r="7.8"/><path d="M12 4.2 V19.8 M4.2 12 H19.8"/><circle cx="12" cy="12" r="1.6" fill="#d9a15c" fill-opacity=".5"/><circle cx="12" cy="5.5" r=".9"/><circle cx="12" cy="18.5" r=".9"/><circle cx="5.5" cy="12" r=".9"/><circle cx="18.5" cy="12" r=".9"/></g></svg>'
+ astro:'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke="#d9a15c" stroke-width="1.3" fill="none" stroke-linecap="round"><circle cx="12" cy="12" r="7.8"/><path d="M12 4.2 V19.8 M4.2 12 H19.8"/><circle cx="12" cy="12" r="1.6" fill="#d9a15c" fill-opacity=".5"/><circle cx="12" cy="5.5" r=".9"/><circle cx="12" cy="18.5" r=".9"/><circle cx="5.5" cy="12" r=".9"/><circle cx="18.5" cy="12" r=".9"/></g></svg>',
+ kiln:'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke="#d9a15c" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8 H18 V19 H6 Z"/><path d="M9.5 8 V19 M14.5 8 V19"/><path d="M8.5 5.5 H15.5"/><path d="M12 11 c-2 -1.1 -2 -3.1 0 -4.2 c2 1.1 2 3.1 0 4.2 z"/><path d="M12 16 c-1.5 -0.8 -1.5 -2.3 0 -3.1 c1.5 0.8 1.5 2.3 0 3.1 z"/></g></svg>'
 };
 function eico(c){var s=EQC[c];if(!s)return c;return '<img class="eico" src="data:image/svg+xml;utf8,'+encodeURIComponent(s)+'">'}
 
@@ -518,7 +537,7 @@ var RECIPES=[
  {in:['e_fire','e_water','e_earth','e_air'],dose:{e_fire:1,e_water:1,e_earth:1,e_air:1},prog:[[50,60],[56,100]],ph:[5.4,6.6],win:8,out:'p_citrinitas',known:false,tag:'四元素轮',riddle:'风火水地绕成一圈，露自圆心升起'},
  {in:['m_silver','m_copper'],dose:{m_silver:1,m_copper:2},prog:[[36,60],[44,100]],ph:[6.6,7.4],win:7,out:'p_nigredo',known:false,tag:'月铜之腐',riddle:'月照铜镜，镜面生腐——腐不是终点，是另一种开始'},
  {in:['m_gold','m_lead'],dose:{m_gold:1,m_lead:2},prog:[[94,60],[88,100]],ph:[6.2,6.8],win:10,out:'p_rubedo',known:false,tag:'铅中炼金',riddle:'铅的坟墓里，有什么在呼吸'},
- {in:['m_gold','m_silver','s_mercury'],dose:{m_gold:1,m_silver:1,s_mercury:1},prog:[[96,60],[100,100]],ph:[6.8,7.2],win:12,out:'i_magnumopus',known:false,tag:'日月水三引 · 大炼成之钥',riddle:'太阳、月亮与水星共赴婚礼——七枚星符在星环上等它们'},
+ {in:['m_gold','m_silver','s_mercury'],dose:{m_gold:1,m_silver:1,s_mercury:1},prog:[[96,60],[100,100]],ph:[6.8,7.2],win:12,out:'i_magnumopus',eq:['kiln'],known:false,tag:'日月水三引 · 大炼成之钥',riddle:'太阳、月亮与水星共赴婚礼——七枚星符在星环上等它们'},
  {in:['a_phlogiston','e_skyfire'],dose:{a_phlogiston:1,e_skyfire:1},prog:[[66,60],[78,100]],ph:[2.6,3.4],win:7,out:'pot_heat',known:true,tag:'燃素复燃'},
  {in:['o_rubycore','e_fire'],dose:{o_rubycore:1,e_fire:2},prog:[[72,60],[82,100]],ph:[2.8,3.6],win:7,out:'pot_heat',known:true,tag:'宝石熔心'},
  {in:['h_dragonpepper','e_fire'],dose:{h_dragonpepper:2,e_fire:1},prog:[[60,60],[70,100]],ph:[3.2,4.0],win:8,out:'pot_heat',known:true,tag:'龙息灼喉'},
@@ -531,7 +550,7 @@ var RECIPES=[
  {in:['h_marigold','e_fire'],dose:{h_marigold:2,e_fire:1},prog:[[56,60],[66,100]],ph:[3.4,4.2],win:8,out:'pot_heat',known:true,tag:'金盏燃香'},
  {in:['h_firebloom'],dose:{h_firebloom:3},prog:[[88,60],[94,100]],ph:[2.4,3.2],win:8,out:'a_phlogiston',known:true,tag:'煅花为燃'},
  {in:['a_mercuryshadow'],dose:{a_mercuryshadow:3},prog:[[92,60],[96,100]],ph:[7.0,7.6],win:6,out:'m_mercurycore',known:true,tag:'影凝成髓'},
- {in:['m_gold'],dose:{m_gold:3},prog:[[96,60],[100,100]],ph:[6.8,7.4],win:10,out:'m_whitegold',known:true,tag:'金中取白金'},
+ {in:['m_gold'],dose:{m_gold:3},prog:[[96,60],[100,100]],ph:[6.8,7.4],win:10,out:'m_whitegold',eq:['kiln'],known:true,tag:'金中取白金'},
  {in:['m_copper','e_water'],dose:{m_copper:2,e_water:1},prog:[[34,60],[42,100]],ph:[6.2,6.8],win:9,out:'m_verdigris',known:true,tag:'湿铜生锈'},
  {in:['m_iron','e_fire'],dose:{m_iron:2,e_fire:1},prog:[[70,60],[80,100]],ph:[3.6,4.4],win:7,out:'e_flowsand',known:true,tag:'铁火流砂'},
  {in:['h_icelotus','e_water'],dose:{h_icelotus:1,e_water:2},prog:[[12,60],[20,100]],ph:[6.4,7.0],win:9,out:'e_frostcore',known:true,tag:'莲冰凝芯'},
@@ -546,17 +565,17 @@ var RECIPES=[
  {in:['i_nigredoash','e_abysstear'],dose:{i_nigredoash:1,e_abysstear:2},prog:[[38,60],[46,100]],ph:[5.4,6.0],win:10,out:'p_nigredo',known:false,tag:'烬落深渊',riddle:'余烬浸入深渊之泪——腐是旧形的安眠'},
  {in:['i_albedodew','o_moonstone'],dose:{i_albedodew:1,o_moonstone:2},prog:[[18,60],[26,100]],ph:[7.4,7.8],win:9,out:'p_albedo',known:false,tag:'露映月石',riddle:'一滴白露照见月石——净不是洗，是照'},
  {in:['g_nightwatch','i_albedodew'],dose:{g_nightwatch:1,i_albedodew:2},prog:[[36,60],[44,100]],ph:[7.0,7.6],win:8,out:'b_owleye',known:false,tag:'守夜之眼',riddle:'守夜人点燃白烛——影子里睁开第三只眼'},
- {in:['p_stone','e_abysstear'],dose:{p_stone:1,e_abysstear:2},prog:[[94,60],[98,100]],ph:[6.6,7.0],win:10,out:'i_sagetear',known:false,tag:'贤者落泪',riddle:'石亦有情——当它浸入深渊，落下的是叹息'},
+ {in:['p_stone','e_abysstear'],dose:{p_stone:1,e_abysstear:2},prog:[[94,60],[98,100]],ph:[6.6,7.0],win:10,out:'i_sagetear',eq:['kiln'],known:false,tag:'贤者落泪',riddle:'石亦有情——当它浸入深渊，落下的是叹息'},
  {in:['o_amethyst','m_goldpure'],dose:{o_amethyst:1,m_goldpure:1},prog:[[76,60],[84,100]],ph:[6.0,6.8],win:9,out:'g_achstar',known:false,tag:'紫金成星',riddle:'紫水晶与真金共舞——第五颗星亮起'},
  {in:['g_battleseal','e_flowsand'],dose:{g_battleseal:1,e_flowsand:2},prog:[[64,60],[72,100]],ph:[4.6,5.4],win:8,out:'b_whitetigerfang',known:false,tag:'战砂磨牙',riddle:'对战之证磨于流沙——白虎的牙在沙中作响'},
  {in:['g_riddlekey','o_moonstone'],dose:{g_riddlekey:1,o_moonstone:2},prog:[[48,60],[56,100]],ph:[7.0,7.6],win:8,out:'g_passrune',known:false,tag:'钥照月开',riddle:'谜题之钥对准月石——密文显形'},
  {in:['b_ninetailfur','e_voidwind'],dose:{b_ninetailfur:1,e_voidwind:2},prog:[[32,60],[40,100]],ph:[6.8,7.4],win:7,out:'i_midassand',known:false,tag:'尾风成砂',riddle:'九尾扫过虚空——金色砂砾自风中沉淀'},
- {in:['i_ouroborosring','m_goldpure'],dose:{i_ouroborosring:1,m_goldpure:2},prog:[[98,60],[100,100]],ph:[6.8,7.4],win:12,out:'t_goldcrown',known:false,tag:'蛇环加冕',riddle:'衔尾蛇环住真金——王冠自环中升起'},
- {in:['i_midassand','o_meteor'],dose:{i_midassand:1,o_meteor:1},prog:[[92,60],[98,100]],ph:[6.4,7.0],win:11,out:'t_eternalsand',known:false,tag:'砂星永恒',riddle:'点石之砂与陨铁相拥——时间在砂中凝固'},
- {in:['m_goldpure','m_silvertear','s_mercury'],dose:{m_goldpure:1,m_silvertear:1,s_mercury:1},prog:[[97,60],[100,100]],ph:[6.8,7.2],win:12,out:'t_elixirprim',known:false,tag:'金月水灵',riddle:'金、月、水星三婚——万灵药的原质在杯中成形'},
- {in:['o_dragoncrys','e_fire'],dose:{o_dragoncrys:1,e_fire:3},prog:[[90,60],[100,100]],ph:[2.2,3.0],win:9,out:'t_cosmictear',known:false,tag:'龙火焚泪',riddle:'龙晶焚于火——世界尽头的泪水在焰心凝结'},
+ {in:['i_ouroborosring','m_goldpure'],dose:{i_ouroborosring:1,m_goldpure:2},prog:[[98,60],[100,100]],ph:[6.8,7.4],win:12,out:'t_goldcrown',eq:['kiln'],known:false,tag:'蛇环加冕',riddle:'衔尾蛇环住真金——王冠自环中升起'},
+ {in:['i_midassand','o_meteor'],dose:{i_midassand:1,o_meteor:1},prog:[[92,60],[98,100]],ph:[6.4,7.0],win:11,out:'t_eternalsand',eq:['kiln'],known:false,tag:'砂星永恒',riddle:'点石之砂与陨铁相拥——时间在砂中凝固'},
+ {in:['m_goldpure','m_silvertear','s_mercury'],dose:{m_goldpure:1,m_silvertear:1,s_mercury:1},prog:[[97,60],[100,100]],ph:[6.8,7.2],win:12,out:'t_elixirprim',eq:['kiln'],known:false,tag:'金月水灵',riddle:'金、月、水星三婚——万灵药的原质在杯中成形'},
+ {in:['o_dragoncrys','e_fire'],dose:{o_dragoncrys:1,e_fire:3},prog:[[90,60],[100,100]],ph:[2.2,3.0],win:9,out:'t_cosmictear',eq:['kiln'],known:false,tag:'龙火焚泪',riddle:'龙晶焚于火——世界尽头的泪水在焰心凝结'},
  {in:['a_chaosseed','e_stariron'],dose:{a_chaosseed:1,e_stariron:2},prog:[[50,60],[58,100]],ph:[5.8,6.6],win:10,out:'i_magnumopus',known:false,tag:'混沌星胎',riddle:'混沌之种吞下星铁——石在混乱中自凝'},
- {in:['h_stardustherb','g_easteregg'],dose:{h_stardustherb:2,g_easteregg:1},prog:[[42,60],[50,100]],ph:[7.0,7.6],win:9,out:'o_meteor',known:false,tag:'星尘破壳',riddle:'星尘草缠绕彩蛋之核——流星自壳中坠落'},
+ {in:['h_stardustherb','e_stariron'],dose:{h_stardustherb:2,e_stariron:1},prog:[[42,60],[50,100]],ph:[7.0,7.6],win:9,out:'o_meteor',known:false,tag:'星尘淬铁',riddle:'星尘草缠上星陨之铁——铁在夜空里烧成流星'},
  {in:['b_unicornhorn','i_abrahamseal'],dose:{b_unicornhorn:1,i_abrahamseal:2},prog:[[84,60],[92,100]],ph:[6.4,7.0],win:11,out:'t_elixirprim',known:false,tag:'圣契角礼',riddle:'圣角抵上契约之书——字迹化为灵药'},
  {in:['g_easteregg','a_chaosseed','o_dragoncrys'],dose:{g_easteregg:1,a_chaosseed:1,o_dragoncrys:1},prog:[[60,60],[70,100]],ph:[5.2,6.0],win:10,out:'t_cosmictear',known:false,tag:'三重彩蛋',riddle:'蛋、种、龙晶三者同炉——宇宙的玩笑在鼎中沸腾'},
  {in:['m_lead','m_iron'],dose:{m_lead:2,m_iron:1},prog:[[40,60],[48,100]],ph:[6.0,6.6],win:9,out:'m_darksteel',eq:['tong'],known:false,tag:'钳取玄铁',riddle:'铁钳夹起熔铅——黑铁在钳口成形'},
@@ -572,7 +591,7 @@ var RECIPES=[
  {in:['h_rosemary','e_water'],dose:{h_rosemary:2,e_water:1},prog:[[34,60],[42,100]],ph:[6.6,7.2],win:8,out:'h_mistmushroom',eq:['brush'],known:false,tag:'刷磨生菇',riddle:'研钵刷拂过芝华与水——迷雾处菇伞破土'},
  {in:['m_tin','s_sulfur'],dose:{m_tin:1,s_sulfur:1},prog:[[50,60],[58,100]],ph:[6.4,7.0],win:8,out:'o_amber',eq:['wax'],known:false,tag:'蜡封凝珀',riddle:'蜡封烛泪裹锡与硫——琥珀在封蜡下凝成'},
  {in:['s_sulfur','e_fire','e_air'],dose:{s_sulfur:1,e_fire:1,e_air:1},prog:[[66,60],[76,100]],ph:[2.6,3.4],win:8,out:'e_skyfire',eq:['bunsen'],known:false,tag:'喷灯引天火',riddle:'喷灯点燃硫火风——天火之精自焰心垂落'},
- {in:['e_water','e_earth'],dose:{e_water:2,e_earth:1},prog:[[14,60],[20,100]],ph:[6.8,7.4],win:9,out:'e_frostcore',eq:['iceb'],known:false,tag:'冰浴凝霜',riddle:'冰浴困住水与地——霜芯自冻液中凝结'},
+ {in:['e_water','e_earth'],dose:{e_water:2,e_earth:1},prog:[[14,60],[20,100]],ph:[6.8,7.4],win:9,out:'e_frostcore',eq:['iceb'],known:true,tag:'冰浴凝霜'},
  {in:['m_silver','s_mercury'],dose:{m_silver:1,s_mercury:1},prog:[[82,60],[90,100]],ph:[7.0,7.6],win:10,out:'e_stariron',eq:['astro'],known:false,tag:'星盘引陨',riddle:'星盘照着银与汞——陨铁自星空坠入坩埚'}
 
 ,,
@@ -653,6 +672,74 @@ var STAGES=[
 /* ========== 存档 ========== */
 var A=L('wz_alch',null);if(!A||typeof A!=='object')A={};if(!A.mats||typeof A.mats!=='object')A.mats=Object.assign({},START);if(!A.rec||!Array.isArray(A.rec))A.rec=['s_sulfur','e_fire'];if(!A.st)A.st={n:0,a:0,c:0,r:0};if(!A.trans)A.trans={};if(!A.titles)A.titles={n:0,a:0,c:0,r:0};if(typeof A.lv!=='number')A.lv=1;if(typeof A.exp!=='number')A.exp=0;if(typeof A.stone!=='number')A.stone=0;if(typeof A.gold!=='number')A.gold=60;if(!A.made)A.made=[];if(!A.qb)A.qb=[];if(!A.buff)A.buff={};if(!A.expLog)A.expLog=[];if(!A.main)A.main=null;
 function save(){W('wz_alch',A)}
+function abyssFragUnlock(){
+  var f={};try{f=JSON.parse(localStorage.getItem('wz_abyss_frags')||'{}')}catch(e){f={}}
+  var got=[];
+  for(var k in f){if(Object.prototype.hasOwnProperty.call(f,k)&&f[k]&&A.rec.indexOf(k)<0){A.rec.push(k);got.push(f[k]||k)}}
+  if(got.length){
+    save();
+    try{localStorage.setItem('wz_abyss_frags','{}')}catch(e){}
+    if(typeof toast==='function')toast('残页揭示了 '+got.length+' 个配方','已解锁：'+got.join('、'));
+  }
+}
+abyssFragUnlock();
+function abyssPend(){try{return L('wz_abyss_pend',null)}catch(e){return null}}
+function abyssDraw(){
+ var bar=document.getElementById('abyssBar'),list=document.getElementById('abyssList');
+ if(!bar||!list)return;
+ var p=abyssPend();
+ var ms=p&&p.mats&&typeof p.mats==='object'?p.mats:null;
+ var keys=ms?Object.keys(ms).filter(function(k){return ms[k]>0&&MATS[k]}):[];
+ if(!keys.length){bar.style.display='none';return}
+ bar.style.display='flex';
+ list.innerHTML=keys.map(function(k){return MATS[k].n+' <b>×'+ms[k]+'</b>'}).join(' · ');
+}
+function abyssClaim(){
+ var p=abyssPend();
+ if(!p||!p.mats)return;
+ var n=0;
+ for(var k in p.mats){if(!Object.prototype.hasOwnProperty.call(p.mats,k))continue;if(!MATS[k])continue;
+  var c=Math.max(0,Math.floor(p.mats[k]));if(!c)continue;
+  A.mats[k]=(A.mats[k]||0)+c;n+=c;}
+ if(n){save();if(typeof wh==='function')wh();}
+ try{localStorage.setItem('wz_abyss_pend',JSON.stringify({mats:{},t:Date.now()}))}catch(e){}
+ abyssDraw();
+ if(typeof toast==='function')toast(n?('已认领 '+n+' 份材料'):'战利品为空');
+}
+function abyssPotPend(){try{return L('wz_abyss_pots',null)}catch(e){return null}}
+function abyssPotDraw(){
+ var bar=document.getElementById('abyssPotBar'),list=document.getElementById('abyssPotList');
+ if(!bar||!list)return;
+ var p=abyssPotPend();
+ var ms=p&&p.pots&&typeof p.pots==='object'?p.pots:null;
+ var keys=ms?Object.keys(ms).filter(function(k){return ms[k]>0&&MATS[k]}):[];
+ if(!keys.length){bar.style.display='none';return}
+ bar.style.display='flex';
+ list.innerHTML=keys.map(function(k){return MATS[k].n+' <b>×'+ms[k]+'</b>'}).join(' · ');
+}
+function abyssPotClaim(){
+ var p=abyssPotPend();
+ if(!p||!p.pots)return;
+ var n=0;
+ for(var k in p.pots){if(!Object.prototype.hasOwnProperty.call(p.pots,k))continue;if(!MATS[k])continue;
+  var c=Math.max(0,Math.floor(p.pots[k]));if(!c)continue;
+  var have=A.mats[k]||0,use=Math.min(have,c);
+  A.mats[k]=have-use;n+=use;}
+ save();
+ try{localStorage.setItem('wz_abyss_pots',JSON.stringify({pots:{},t:Date.now()}))}catch(e){}
+ if(typeof wh==='function')wh();
+ abyssPotDraw();
+ if(typeof toast==='function')toast(n?('已确认消耗 '+n+' 瓶'):'无可消耗药剂');
+}
+function abyssWire(){
+ var b=document.getElementById('abyssClaim');
+ if(b)b.addEventListener('click',abyssClaim);
+ var b2=document.getElementById('abyssPotClaim');
+ if(b2)b2.addEventListener('click',abyssPotClaim);
+ abyssDraw();
+ abyssPotDraw();
+}
+
 var cur=null,stage=0,qsum=0;
 /* ========== 渲染 ========== */
 function props(m){return '<div class="pt"><i class="pt-s" style="height:'+(m.s*8)+'px" title="硫 '+m.s+'"></i><i class="pt-m" style="height:'+(m.m*8)+'px" title="汞 '+m.m+'"></i><i class="pt-a" style="height:'+(m.a*8)+'px" title="盐 '+m.a+'"></i></div>'}
@@ -786,34 +873,33 @@ var EQUIP=[
  {c:'wax',n:'蜡封',sy:'🕯',need:{h_moonlight:2,m_tin:1},fx:'被动·收成窗口 +2s，过反应线也延后 2s'},
  {c:'bunsen',n:'酒精喷灯',sy:'🔥',need:{h_firebloom:2,m_iron:1},fx:'被动·二段蒸馏提速 ×1.2，升温更快更烈'},
  {c:'iceb',n:'冰浴',sy:'🧊',need:{e_frostcore:1,e_water:2},fx:'被动·主反应完成即速冷，冷却品质 +10'},
- {c:'astro',n:'星盘',sy:'✨',need:{m_gold:1,m_silver:1,e_skyfire:1},fx:'被动·炼成经验 +15%'}
+ {c:'astro',n:'星盘',sy:'✨',need:{m_gold:1,m_silver:1,e_skyfire:1},fx:'被动·炼成经验 +15%'},
+ {c:'kiln',n:'高温窑',sy:'🜂',need:{o_obsidian:2,a_phlogiston:2,m_iron:1},fx:'被动·耐高温：蒸干阈值 +58°C，极高温段升温更稳——百器炼金，唯此可承龙火'}
 ];
-function hasEq(c){if(bench&&bench.on)return bench.eqOn&&bench.eqOn[c]?true:false;return A.eq&&A.eq.indexOf(c)>=0}
+var G_MNT={brush:'mortar',rod:'flask',drop:'flask',tong:'flask'};
+function hasEq(c){if(c==='kiln')return bench&&bench.on&&bench.vessel==='kiln';if(c==='brush'||c==='rod'||c==='drop'||c==='tong')return bench&&bench.on&&bench.mnt&&bench.mnt[c]?true:false;return A.eq&&A.eq.indexOf(c)>=0}
 function eqRender(){
  var b=$('#eqs');if(!b)return;
  var onN=0;
  b.innerHTML=EQUIP.map(function(e){
   var crafted=A.eq&&A.eq.indexOf(e.c)>=0;
-  var wired=bench&&bench.on&&bench.eqOn[e.c]?true:false;
-  var on=bench&&bench.on?wired:crafted;if(on)onN++;
+  if(crafted)onN++;
   var needStr=Object.keys(e.need).map(function(k){return MATS[k].n+' ×'+e.need[k]}).join(' · ');
-  return '<span class="eq'+(on?' on':'')+'" data-c="'+e.c+'" title="'+e.n+'：'+e.fx+(crafted?'':' | 打造：'+needStr)+'">'+eico(e.c)+(crafted?'<span class="eq-port'+(wired?' on':'')+'" data-p="eq_'+e.c+'"></span>':'<i>锁</i>')+'</span>';
+  return '<span class="eq'+(crafted?' on':'')+'" data-c="'+e.c+'" title="'+e.n+'：'+e.fx+(crafted?' | 已在工作台':' | 打造：'+needStr)+'">'+eico(e.c)+(crafted?'<i class="ck">✔</i>':'<i>锁</i>')+'</span>';
  }).join('');
  var lb=document.querySelector('.eq-lbl');if(lb)lb.textContent='器材 '+onN+'/'+EQUIP.length;
- $$('.obj').forEach(function(o){var c=o.dataset.c;var p=o.querySelector('.eq-port');if(p)p.className='eq-port'+(bench.on&&bench.eqOn[c]?' on':'');if(bench.on&&bench.eqOn[c])o.classList.add('on');else o.classList.remove('on')});
+ $$('.obj').forEach(function(o){var c=o.dataset.c;if(bench.on&&placed&&placed[c])o.classList.add('on');else o.classList.remove('on')});
  $$('#eqs .eq').forEach(function(el){
-  el.addEventListener('click',function(ev){
-   if(ev.target.classList&&ev.target.classList.contains('eq-port'))return;
+  el.addEventListener('click',function(){
    var e=EQUIP.find(function(x){return x.c===el.getAttribute('data-c')});
-   if(A.eq&&A.eq.indexOf(e.c)>=0){
-    placeObj(e.c);return;
-   }
+   if(!e)return;
+   if(A.eq&&A.eq.indexOf(e.c)>=0){toast(e.n,'已在工作台上 · 直接操作它','ok');return}
    var need=Object.keys(e.need),ok=true;
    need.forEach(function(k){if((A.mats[k]||0)<e.need[k])ok=false});
    if(!ok){toast('器材缺失',need.map(function(k){return MATS[k].n+' ×'+e.need[k]}).join(' · ')+' 不足<br><small>'+need.map(function(k){return MATS[k].how||MATS[k].src||'来源未知'}).join(' · ')+'</small>');return}
    need.forEach(function(k){A.mats[k]-=e.need[k]});
-   if(!A.eq)A.eq=[];A.eq.push(e.c);save();wh();eqRender();
-   toast('打造完成 · '+e.n,e.fx+(RECIPES.some(function(r){return r.eq&&r.eq.indexOf(e.c)>=0})?'<br><small>此器材关联秘方 · 配方图鉴可寻</small>':''),'ok');
+   if(!A.eq)A.eq=[];A.eq.push(e.c);save();wh();placeObj(e.c);eqRender();
+   toast('打造完成 · '+e.n,e.fx+'<br><small>已摆上工作台 · 直接操作它</small>','ok');
   });
  });
 }
@@ -1106,7 +1192,7 @@ function gameRubedo(){
  playing={kill:function(){clearInterval(iv);mini.removeEventListener('click',tap)}};
 }
 /* ========== 炼金台 · 主玩法（计量 → 两段控温 → pH → 回流 → 掐时） ========== */
-var bench={on:false,grind:0,sel:null,selP:null,ln:[],err:0,temp:0,dist:0,hits:0,ctr:0,tickN:0,winLeft:0,elapsed:0,coolT:0,iv:null,mats:[],gi:0,liq:[],lines:[],eqOn:{},ready:false,cooling:false};
+var bench={on:false,grind:0,sel:null,selP:null,err:0,temp:0,dist:0,hits:0,ctr:0,tickN:0,winLeft:0,elapsed:0,coolT:0,iv:null,mats:[],gi:0,liq:[],ready:false,cooling:false,mnt:{}};
 var BN=$('#bench');
 function curPh(){
  var dm=curDose(),sum=0,n=0;
@@ -1128,7 +1214,7 @@ function bnReq(){
 function bnStepName(){return '自由'}
 function benchStart(){
  if(!cur||!cur.length){toast('坩埚空空','先投料再开台');return}
- bench.on=true;bench.grind=0;bench.sel=null;bench.ln=[];bench.lines=[];bench.err=0;bench.temp=0;bench.dist=0;bench.hits=0;bench.ctr=0;bench.tickN=0;bench.winLeft=0;bench.elapsed=0;bench.coolT=0;bench.rodN=0;bench.dropN=0;bench.tongN=0;bench.pressure=0;bench.mats=(cur||[]).slice();bench.gi=0;bench.liq=[];bench.eqOn={};bench.ready=false;bench.cooling=false;bench.selP=null;$$('.bn-line').forEach(function(l){if(l.parentNode)l.parentNode.removeChild(l)});$$('.bn-port,.eq-port').forEach(function(x){x.classList.remove('sel')});liqStart();
+ bench.on=true;bench.grind=0;bench.sel=null;bench.err=0;bench.temp=0;bench.dist=0;bench.hits=0;bench.ctr=0;bench.tickN=0;bench.winLeft=0;bench.elapsed=0;bench.coolT=0;bench.rodN=0;bench.dropN=0;bench.tongN=0;bench.pressure=0;bench.mats=(cur||[]).slice();bench.gi=0;bench.liq=[];bench.ready=false;bench.cooling=false;bench.selP=null;bench.mnt={};liqStart();
  BN.classList.add('on');$('#stageBadge').textContent='BENCH';
  setTimeout(function(){try{if(BN&&window.innerWidth<1300)BN.scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}},160);
  $('.pot').style.opacity=.3;$('#slots').style.opacity=.3;$('#ops').style.opacity=.3;
@@ -1154,7 +1240,7 @@ function bnRender(){
  var rq=bnReq(),t='',st='自由';
  if(bench.gi<bench.mats.length){var gm=bench.mats[bench.gi];st='研磨';t='研磨 '+(bench.gi+1)+'/'+bench.mats.length+' · <b>'+(gm?MATS[gm].n:'')+'</b> · 研磨度 <b>'+bench.grind+'%</b>'+(bench.grind>=100?' · <b style="color:var(--gold)">点研钵倒入</b>':'')}
  else if(!bench.liq.length){st='空台';t='研钵已空 · 瓶中无液 · 点火无用'}
- else if(bench.ready){st='收成';t='收成窗口 <b>'+bench.winLeft.toFixed(1)+'s</b> · 点击烧瓶收成 · 超时变质'}
+ else if(bench.ready){st='收成';t='收成窗口 <b>'+bench.winLeft.toFixed(1)+'s</b> · 点击'+(bench.vessel==='kiln'?'高温窑':'烧瓶')+'收成 · 超时变质'}
  else if(bench.cooling){st='回流';t='降温回流 · 冷却 <b>'+Math.round(bench.temp)+'°C</b> → 目标 <25°C · 蒸馏 '+Math.round(bench.dist)+'%'}
  else{st='蒸馏';t=(rq.known?'第 '+(rq.seg+1)+' 段目标 <b>'+rq.lo+'-'+rq.hi+'°C</b> · 蒸馏 '+Math.round(bench.dist)+'%':'未知配比 · 保守 45-65 · 蒸馏 '+Math.round(bench.dist)+'%')+(bench.temp>45?' · 压力 <b style="color:'+(bench.pressure>80?'#ff7a6b':'#ffd60a')+'">'+Math.round(bench.pressure)+'%</b>':'')+(rq.known?'':'<br><i style="opacity:.75">'+bnPhen()+'</i>')}
  $('#bnStep').innerHTML='BENCH · '+st;
@@ -1200,9 +1286,9 @@ function liqStart(){
    var bx=18+Math.random()*120,by=baseY+4+Math.random()*12;
    c.beginPath();c.arc(bx,by,1.6+Math.random()*2.4,0,7);c.fillStyle='rgba(255,255,255,.45)';c.fill();
   }
-  if(bench.lines.length>=2){
-   var px=(t%1100)/1100*120+8;
-   c.beginPath();c.arc(px,baseY-5,2.6,0,7);c.fillStyle='rgba(255,214,10,.85)';c.fill();
+  if(bench.vessel==='kiln'){
+   var ko=document.getElementById('obj-kiln');
+   if(ko){var lq=ko.querySelector('.obj-liq');if(!lq){lq=document.createElement('div');lq.className='obj-liq';ko.appendChild(lq)}lq.style.background=col;lq.style.height=Math.round(ph*100)+'%'}
   }
   requestAnimationFrame(draw);
  };
@@ -1230,7 +1316,7 @@ function bnTick(){
  }else{
   var alld=bench.gi>=bench.mats.length;
   if(r>0&&alld)bench.err++;
-  if(alld&&bench.temp>((hasEq('lid')?96:92)+(affKind('lid')?4:0))&&bench.err>18){clearInterval(bench.iv);bench.iv=null;bnFail('坩埚过热 · 药液蒸干');return}
+  if(alld&&bench.temp>((hasEq('lid')?96:92)+(affKind('lid')?4:0)+(hasEq('kiln')?58:0))&&bench.err>18){clearInterval(bench.iv);bench.iv=null;bnFail('坩埚过热 · 药液蒸干'+(hasEq('kiln')?'':'<br><small>打造「高温窑」可承受极高温，蒸干阈值 +58°C</small>'));return}
   else if(alld&&bench.temp<14&&bench.err>30){clearInterval(bench.iv);bench.iv=null;bnFail('火候不足 · 反应停滞');return}
  }
  if(bench.dist>=100&&!bench.cooling){bench.cooling=true;bench.coolT=0;if(hasEq('iceb'))bench.temp=24;toast('主反应完成','降温回流 · 待药液冷却至 25°C 以下')}
@@ -1242,40 +1328,24 @@ function bnTick(){
  bnRender();
 }
 function bnFail(m){toast('炼金失败',m);benchExit()}
-function drawLine(a,b){
- var ar=a.getBoundingClientRect(),br=b.getBoundingClientRect(),bb=BN.getBoundingClientRect();
- var x1=ar.left+ar.width/2-bb.left,y1=ar.top+ar.height/2-bb.top;
- var x2=br.left+br.width/2-bb.left,y2=br.top+br.height/2-bb.top;
- var len=Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
- var ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
- var l=document.createElement('div');l.className='bn-line';
- l.style.width=len+'px';l.style.left=x1+'px';l.style.top=y1+'px';l.style.transform='rotate('+ang+'deg)';
- BN.appendChild(l);
-}
+function drawLine(){}
 eqRender();
 var placed={};
 function placeObj(c){
- var ex=document.getElementById('obj-'+c);
- if(ex){
-  var portId='eq_'+c;
-  bench.lines=bench.lines.filter(function(L){return L[0]!==portId&&L[1]!==portId});
-  bench.ln=bench.ln.filter(function(L){return L[0]!==portId&&L[1]!==portId});
-  delete bench.eqOn[c];
-  ex.remove();delete placed[c];syncLines();eqRender();toast((EQUIP.find(function(x){return x.c===c})||{n:c}).n,'已从台上收回');return
- }
- var e=EQUIP.find(function(x){return x.c===c});
+ var e=EQUIP.find(function(x){return x.c===c});if(!e)return;
+ if(document.getElementById('obj-'+c)){toast(e.n,'已在工作台上');return}
  var o=document.createElement('div');o.className='obj';o.id='obj-'+c;o.dataset.c=c;
  var nn=Object.keys(placed).length;
- o.innerHTML='<span class="ob-sy">'+eico(c)+'</span><span class="ob-nm">'+e.n+'</span><span class="eq-port'+(bench.on&&bench.eqOn[c]?' on':'')+'" data-p="eq_'+c+'"></span>';
- o.style.left=(28+nn*13)+'%';o.style.top=(18+nn*10)+'%';
+ o.innerHTML='<span class="ob-sy">'+eico(c)+'</span><span class="ob-nm">'+e.n+'</span>';
+ o.style.left=(24+nn*11)+'%';o.style.top=(16+nn*8)+'%';
  document.getElementById('bench').appendChild(o);
- placed[c]=1;eqRender();
+ placed[c]=1;
 }
 function useEq(c){
  if(!bench.on){toast('炼金台未开','先投料开台');return}
  var e=EQUIP.find(function(x){return x.c===c});
  if(!e)return;
- if(!bench.eqOn[c]){toast(e.n,'未接线 · 拖拽端口接线后生效');return}
+ if(!hasEq(c)){toast(e.n,(c==='brush'||c==='rod'||c==='drop'||c==='tong')?'拖到 '+(G_MNT[c]==='mortar'?'研钵':'烧瓶')+' 旁，自动吸附后再点它':'打造 '+e.n+'，它才会摆上工作台');return}
  if(c==='tong'&&bench.cooling){
   if(bench.tongN>=1){toast('坩埚钳','一炉只够使一次——钳子已热');return}
   bench.tongN++;bench.temp=20;bench.coolT=5;bnRender();toast('坩埚钳','夹出药瓶！冷却达标');return}
@@ -1303,30 +1373,8 @@ $('#mortar').addEventListener('click',function(){
  if(bench.grind<100){toast('研钵','还没有可倒的粉末 · 先研磨');return}
  toast('研钵','研磨物留在研钵里 · <b>拖研钵到烧瓶</b>倒入');
 });
-function ptEl(id){
- if(id.indexOf('eq_')===0){
-  var o=document.getElementById('obj-'+id.slice(3));
-  var p=o&&o.querySelector('.eq-port');if(p)return p;
-  return document.querySelector('.eq[data-c="'+id.slice(3)+'"] .eq-port');
- }
- return document.getElementById(id);
-}
-function wirePorts(a,id){
- var dup=-1;bench.lines.forEach(function(L,i){if((L[0]===a&&L[1]===id)||(L[0]===id&&L[1]===a))dup=i});
- if(dup>=0){
-  bench.lines.splice(dup,1);bench.ln.splice(dup,1);
-  if(a.indexOf('eq_')===0)delete bench.eqOn[a.slice(3)];
-  if(id.indexOf('eq_')===0)delete bench.eqOn[id.slice(3)];
-  syncLines();eqRender();toast('管线已拆除','自由了');return
- }
- bench.lines.push([a,id]);bench.ln.push([a,id]);
- if(a.indexOf('eq_')===0)bench.eqOn[a.slice(3)]=true;
- if(id.indexOf('eq_')===0)bench.eqOn[id.slice(3)]=true;
- syncLines();eqRender();
- var hit=(a.indexOf('eq_')===0||id.indexOf('eq_')===0);
- toast('管线接妥',hit?'器材已激活 · 效果生效':(a==='ptMortar'&&id==='ptFlask'?'研钵 → 烧瓶 直连':'已接线'),'ok');
- bnRender();
-}
+function ptEl(){}
+function wirePorts(){}
 function pourMortar(){
  if(!bench.on)return;
  if(bench.gi>=bench.mats.length){toast('研钵已空','全部材料已入瓶');return}
@@ -1338,28 +1386,9 @@ function pourMortar(){
  bnRender();
 }
 var D=null,tmpL=null;
-function posLine(port,ev){
- var b=document.getElementById('bench').getBoundingClientRect();
- var p=port.getBoundingClientRect();
- var sx=p.left-b.left+p.width/2,sy=p.top-b.top+p.height/2;
- var ex=(ev?ev.clientX:p.left+p.width/2)-b.left,ey=(ev?ev.clientY:p.top+p.height/2)-b.top;
- var dx=ex-sx,dy=ey-sy,len=Math.max(1,Math.hypot(dx,dy));
- tmpL.style.left=sx+'px';tmpL.style.top=sy+'px';tmpL.style.width=len+'px';
- tmpL.style.transform='rotate('+Math.atan2(dy,dx)+'rad)';
-}
+function posLine(){}
 document.addEventListener('pointerdown',function(e){
  var el=e.target;
- var port=el.classList&&el.classList.contains('eq-port')?el:(el.closest&&el.closest('.bn-port'));
- if(port){
-  if(!bench.on){toast('炼金台未开','先投料开台');return}
-  e.preventDefault();e.stopPropagation();
-  var id=port.getAttribute('data-p')||port.id;
-  if(!id){var pe=port.closest('.eq');id=pe?'eq_'+pe.getAttribute('data-c'):id}
-  D={t:'port',id:id,el:port};
-  tmpL=document.createElement('div');tmpL.className='tmp-line';
-  document.getElementById('bench').appendChild(tmpL);
-  posLine(port,e);return
- }
  var obj=el.closest&&el.closest('.obj');
  if(obj){
   e.preventDefault();e.stopPropagation();
@@ -1368,29 +1397,17 @@ document.addEventListener('pointerdown',function(e){
  var mv=el.closest&&el.closest('#mortar');
  if(mv&&bench.on){if(e.target.id==='pestle')return;e.preventDefault();D={t:'obj',el:mv,sx:e.clientX,sy:e.clientY,dx:parseFloat(mv.style.left)||8,dy:parseFloat(mv.style.top)||20};return}
  var fk=el.closest&&el.closest('#flask');
- if(fk&&bench.on){if(e.target.id==='ptFlask')return;e.preventDefault();D={t:'obj',el:fk,sx:e.clientX,sy:e.clientY,dx:parseFloat(fk.style.left)||71,dy:parseFloat(fk.style.top)||16};return}
+ if(fk&&bench.on){e.preventDefault();D={t:'obj',el:fk,sx:e.clientX,sy:e.clientY,dx:parseFloat(fk.style.left)||71,dy:parseFloat(fk.style.top)||16};return}
 });
 document.addEventListener('pointermove',function(e){
  if(!D)return;
- if(D.t==='port'){posLine(D.el,e);return}
  if(D.t==='obj'){var bw=document.getElementById('bench').getBoundingClientRect();var nx=Math.min(90,Math.max(2,D.dx+(e.clientX-D.sx)/bw.width*100));var ny=Math.min(74,Math.max(4,D.dy+(e.clientY-D.sy)/bw.height*100));D.el.style.left=nx+'%';D.el.style.top=ny+'%';
-  if(D.el.classList.contains('mortar')){var fr=document.getElementById('flask').getBoundingClientRect();var mr=D.el.getBoundingClientRect();var ov=!(mr.right<fr.left+10||mr.left>fr.right-10||mr.bottom<fr.top+10||mr.top>fr.bottom-10);document.getElementById('flask').classList.toggle('ov',ov)}
-  syncLines();return}
+  if(D.el.classList.contains('mortar')){var _tgt=bench.vessel==='kiln'?document.getElementById('obj-kiln'):document.getElementById('flask');var fr=_tgt?_tgt.getBoundingClientRect():null;var mr=D.el.getBoundingClientRect();var ov=fr&&!(mr.right<fr.left+10||mr.left>fr.right-10||mr.bottom<fr.top+10||mr.top>fr.bottom-10);if(_tgt&&_tgt.id==='flask')_tgt.classList.toggle('ov',ov);else if(_tgt)_tgt.classList.toggle('on',ov)}
+  if(D.el.classList.contains('obj')&&D.el.dataset.c&&G_MNT[D.el.dataset.c]){var hc=G_MNT[D.el.dataset.c],host=document.getElementById(hc);if(host){var hb=document.getElementById('bench').getBoundingClientRect(),hr=host.getBoundingClientRect(),er=D.el.getBoundingClientRect();var near=!(er.right<hr.left-6||er.left>hr.right+6||er.bottom<hr.top-6||er.top>hr.bottom+6);if(near){var ox=(hc==='mortar'?10:-8),oy=(hc==='mortar'?8:0);D.el.style.left=(((hr.left-hb.left)/hb.width*100)+ox)+'%';D.el.style.top=(((hr.top-hb.top)/hb.height*100)+oy)+'%';D.el.dataset.mnt=hc}else D.el.dataset.mnt=''}}
+  return}
 });
 document.addEventListener('pointerup',function(e){
  if(!D)return;
- if(D.t==='port'){
-  var src=D.id;D=null;
-  tmpL&&tmpL.remove();tmpL=null;
-  $$('.bn-port,.eq-port').forEach(function(x){x.classList.remove('sel')});
-  var el=document.elementFromPoint(e.clientX,e.clientY);
-  var port=el&&(el.classList&&el.classList.contains('eq-port')?el:(el.closest&&el.closest('.bn-port')));
-  if(!port)return;
-  var id=port.getAttribute('data-p')||port.id;
-  if(!id){var pe=port.closest('.eq');id=pe?'eq_'+pe.getAttribute('data-c'):id}
-  if(src===id)return;
-  wirePorts(src,id);return
- }
  if(D.t==='mat'){
   D=null;
   var el=document.elementFromPoint(e.clientX,e.clientY);
@@ -1405,32 +1422,59 @@ document.addEventListener('pointerup',function(e){
   if(isM){
    document.getElementById('flask').classList.remove('ov');
    if(moved&&bench.grind>=100){
-    var fr=document.getElementById('flask').getBoundingClientRect();
+    var tgt=bench.vessel==='kiln'?document.getElementById('obj-kiln'):document.getElementById('flask');
+    var fr=tgt?tgt.getBoundingClientRect():null;
     var mr=el.getBoundingClientRect();
-    var ov=!(mr.right<fr.left+10||mr.left>fr.right-10||mr.bottom<fr.top+10||mr.top>fr.bottom-10);
+    var ov=fr&&!(mr.right<fr.left+10||mr.left>fr.right-10||mr.bottom<fr.top+10||mr.top>fr.bottom-10);
     if(ov){pourMortar();el.style.left='8%';el.style.top='20%';return}
    }
    if(moved)window.__pmoved=true;
-   if(!moved){toast('研钵','研磨物留在研钵里 · <b>拖研钵到烧瓶</b>倒入');return}
+   if(!moved){
+    if(bench.mnt&&bench.mnt.brush&&bench.gi<bench.mats.length){
+     bench.grind=Math.min(100,bench.grind+Math.round((bench.grind<60?24:10)*(affKind('grind')?1.1:1)));
+     if(bench.grind>=100)toast('研磨完毕',(MATS[bench.mats[bench.gi]]?MATS[bench.mats[bench.gi]].n:'')+' 已成粉末 · 点研钵倒入瓶中');
+     return;
+    }
+    toast('研钵','研磨物留在研钵里 · <b>拖研钵到烧瓶</b>倒入');return
+   }
    return
+  }
+  if(el.id==='flask'){
+   if(!moved){var u=['rod','drop','tong'].filter(function(c){return bench.mnt&&bench.mnt[c]});if(u.length){useEq(u[0]);return}toast('烧瓶','拖来可用的器材（搅拌棒 / 滴管 / 坩埚钳）吸附在旁，再点我用');return}
+   return
+  }
+  if(c==='kiln'){
+   var fr=document.getElementById('flask');
+   var ov=false;
+   if(fr&&moved){var er=el.getBoundingClientRect(),fr0=fr.getBoundingClientRect();ov=!(er.right<fr0.left+10||er.left>fr0.right-10||er.bottom<fr0.top+10||er.top>fr0.bottom-10)}
+   if(ov){bench.vessel='kiln';el.style.left='71%';el.style.top='16%';el.classList.add('vessel');fr.style.display='none';toast('高温窑','已替代试瓶 · 可承受极高温，蒸干阈值 +58°C','ok');eqRender();return}
+   if(bench.vessel==='kiln'&&moved){bench.vessel='flask';el.classList.remove('vessel');if(fr)fr.style.display='';toast('高温窑','已移离试瓶位 · 恢复普通烧瓶');return}
+   if(!moved){if(bench.vessel==='kiln'){collectCur();return}useEq('kiln');return}
+   return
+  }
+  if(c&&G_MNT[c]){
+   if(el.dataset.mnt===G_MNT[c]){bench.mnt[c]=G_MNT[c];el.classList.add('mnt');var _e=EQUIP.find(function(x){return x.c===c});toast(_e?_e.n:c,'已吸附到 '+(G_MNT[c]==='mortar'?'研钵':'烧瓶')+' · 点击它使用','ok')}
+   else if(bench.mnt&&bench.mnt[c]){delete bench.mnt[c];el.classList.remove('mnt')}
+   eqRender();return
   }
   if(!moved&&c)useEq(c);
   return
  }
 });
-function syncLines(){
- $$('.bn-line').forEach(function(l){if(l.parentNode)l.parentNode.removeChild(l)});
- bench.lines.forEach(function(L){var e1=ptEl(L[0]),e2=ptEl(L[1]);if(e1&&e2)drawLine(e1,e2)});
-}
-$('#bulb').addEventListener('click',function(){
+function syncLines(){}
+function gBless(){try{return JSON.parse(localStorage.getItem('wz_gstyle')||'[]')}catch(e){return[]}}
+function gBlessIn(s){return gBless().indexOf(s)>=0}
+function collectCur(){
  if(!bench.on||!bench.ready)return;
  var rq=bnReq();
  var grindQ=(bench.mats&&bench.gi>=bench.mats.length)?100:Math.round((bench.grind||0)*0.9);
- var tubeQ=Math.max(60,100-bench.err*8)+(bench.lines.length>=2?8:0)+(bench.lines.some(function(L){return L[0].indexOf('eq_')===0||L[1].indexOf('eq_')===0})?4:0);
+ var tubeQ=Math.max(60,100-bench.err*8);
  var heatQ=Math.min(100,Math.round((bench.hits/(bench.tickN||1))*65+(bench.ctr/(bench.tickN||1))*35));
+ if(gBlessIn('flame'))heatQ=Math.min(100,heatQ+12);
  var phv=phQ(rq);
  var coolQ=bench.coolT<=(hasEq('cond')?12:6)?100:(bench.coolT<=(hasEq('cond')?20:10)?80:60);
  if(hasEq('iceb'))coolQ=Math.min(100,coolQ+8);
+ if(gBlessIn('ice'))coolQ=Math.min(100,coolQ+10);
  var timeQ=bench.elapsed<=rq.win+(hasEq('wax')?2:0)?100:Math.max(40,100-Math.floor((bench.elapsed-rq.win-(hasEq('wax')?2:0))/(rq.win+(hasEq('wax')?2:0))*60));
  var q=Math.round(grindQ*0.2+tubeQ*0.12+heatQ*0.3+phv*0.18+coolQ*0.1+timeQ*0.1);
  if(hasEq('filter'))q+=4;
@@ -1448,7 +1492,8 @@ $('#bulb').addEventListener('click',function(){
  if(st.qb.length>30)st.qb.shift();
  localStorage.setItem('wz_alch',JSON.stringify(st));
  qsum=q;benchExit();matchRecipe(true);
-});
+}
+$('#bulb').addEventListener('click',collectCur);
 $('#bnReset').addEventListener('click',function(){benchExit();setTimeout(benchStart,60)});
 $('#bnExit').addEventListener('click',function(){benchExit()});
 function matPrice(k){var m=MATS[k];if(!m)return -1;var b={原质:5,元素:5,金属:12,药草:16,矿石:22,遗物:34,中间:24}[m.cat]||10;return b+(m.r||0)*(m.cat==='遗物'?18:8)}
@@ -1664,6 +1709,8 @@ if(_pb){_pb.addEventListener('dragover',function(e){e.preventDefault()});_pb.add
 $('#work').style.setProperty('--cglow','transparent');
 $('#work').style.setProperty('--liq','rgba(30,30,34,.9)');
 })();
+
+try{abyssWire()}catch(e){}
 </script>
 </body>
 </html>

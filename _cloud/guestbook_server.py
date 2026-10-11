@@ -17,6 +17,7 @@ RISK_FILE = os.path.join(_BASE, "risk_words.json")
 BANNED_IP_FILE = os.path.join(_BASE, "banned_ips.json")
 GARDEN_FILE = os.path.join(_BASE, "garden.json")
 FORGE_FILE = os.path.join(_BASE, "forge.json")
+PANIC_FILE = os.path.join(_BASE, "panic_ips.json")
 
 import time as _t
 DEL_LOG = []
@@ -131,6 +132,22 @@ def _load(p, d):
     except Exception:
         return d
 
+
+# 惩罚 IP：访问即崩坏
+@app.before_request
+def _panic_guard():
+    try:
+        _ip=(request.headers.get("X-Forwarded-For") or "").split(",")[0].strip() or (request.remote_addr or "")
+        if not _ip:
+            return None
+        _pn=_load(PANIC_FILE,{})
+        if _ip in _pn:
+            _r=jsonify({"ok":False,"panic":1,"msg":"此设备已被本站标记 · 请勿再访问"})
+            _r.headers["X-Panic"]="1"
+            return _r,403
+    except Exception:
+        pass
+    return None
 
 # 初始化排行榜
 if not os.path.exists(SCORE_FILE):
@@ -1182,6 +1199,7 @@ def api_admin_users():
         lst = [{"name": k, "pwd": v.get("pwd", ""), "is_admin": bool(v.get("is_admin")),
                 "is_root": bool(v.get("is_root")) or k == ROOT,
                 "banned": bool(v.get("banned")),
+                "ip": v.get("ip", ""),
                 "online": any(isinstance(s, list) and s[0] == k and s[1] > now - 300 for s in ses.values())}
                for k, v in us.items() if k != "__sessions"]
         lst.sort(key=lambda a: -int(a["is_admin"]))
@@ -1285,6 +1303,52 @@ def api_admin_banned_clear():
         _audit(cu, "banned_clear", ip, "解除危险IP禁注册")
         return jsonify({"ok": True, "msg": "已解除 " + ip + " 的禁注册限制"})
     return jsonify({"ok": False, "msg": "该 IP 不在禁注册名单"})
+
+
+@app.route("/admin_punish", methods=["POST"])
+def api_admin_punish():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效，请重新登录"})
+    us = _load(USER_FILE, {})
+    if not us.get(cu, {}).get("is_admin"):
+        return jsonify({"ok": False, "msg": "无管理员权限"})
+    ip = str(p.get("ip") or "").strip()
+    typ = str(p.get("type") or "").strip()
+    act = str(p.get("action") or "").strip()
+    now = _time.time()
+
+    def _lst(f):
+        d = _load(f, {})
+        out = []
+        for k, v in d.items():
+            t = float((v or {}).get("t") or 0)
+            out.append({"ip": k, "name": (v or {}).get("name") or "", "by": (v or {}).get("by") or "",
+                        "time": _time.strftime("%Y-%m-%d %H:%M:%S", _time.localtime(t)) if t else "",
+                        "remain": int(86400 - (now - t)) if t and (86400 - (now - t)) > 0 and f == BANNED_IP_FILE else -1})
+        return out
+
+    if not ip:
+        return jsonify({"ok": True, "panic": _lst(PANIC_FILE), "ban": _lst(BANNED_IP_FILE)})
+    if typ not in ("panic", "ban") or act not in ("add", "remove"):
+        return jsonify({"ok": False, "msg": "参数无效"})
+    f = PANIC_FILE if typ == "panic" else BANNED_IP_FILE
+    d = _load(f, {})
+    nm = str(p.get("name") or "").strip()
+    lbl = "崩坏惩罚" if typ == "panic" else "封禁"
+    if act == "add":
+        d[ip] = {"t": now, "name": nm, "by": cu}
+        _save(f, d)
+        _audit(cu, "punish_add" if typ == "panic" else "ban_ip", ip, lbl + (("(" + nm + ")") if nm else ""))
+        return jsonify({"ok": True, "msg": "已" + ("添加" if typ == "panic" else "封禁") + " IP：" + ip})
+    else:
+        if ip not in d:
+            return jsonify({"ok": False, "msg": "该 IP 不在" + lbl + "名单"})
+        del d[ip]
+        _save(f, d)
+        _audit(cu, "punish_remove" if typ == "panic" else "unban_ip", ip, "解除" + lbl)
+        return jsonify({"ok": True, "msg": "已解除" + lbl + "：" + ip})
 
 
 @app.route("/token_state", methods=["GET", "POST"])

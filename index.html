@@ -1621,6 +1621,45 @@ window.fetch=function(u,o){return __f(u,o).then(function(r){try{if(r&&r.status==
     </span>
   </div>
 </div>
+<div class="card is-tool" id="abyssCard" style="cursor:pointer" onclick="location.href='pages/肉鸽.html'">
+  <div class="spot" aria-hidden="true"></div>
+  <div class="thumb">
+    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
+      <rect width="400" height="200" fill="#0A0A0A"/>
+      <g stroke="#1e1e1e" stroke-width="1"><path d="M0 40 H400 M0 80 H400 M0 120 H400 M0 160 H400"/></g>
+      <path d="M0 168 H400" stroke="#FFFFFF" stroke-width="2"/>
+      <path d="M0 168 H400 V200 H0 Z" fill="#141414"/>
+      <g fill="none" stroke="#8f8f8f" stroke-width="1.6">
+        <rect x="60" y="118" width="54" height="10"/>
+        <rect x="196" y="96" width="66" height="10"/>
+        <rect x="300" y="132" width="46" height="10"/>
+        <rect x="128" y="72" width="40" height="10"/>
+      </g>
+      <g fill="#FFFFFF">
+        <rect x="86" y="132" width="14" height="22"/>
+        <rect x="86" y="126" width="14" height="6" fill="#0A0A0A"/>
+      </g>
+      <path d="M104 138 h22" stroke="#FFFFFF" stroke-width="3"/>
+      <g fill="#8f8f8f">
+        <rect x="150" y="146" width="14" height="18"/>
+        <rect x="186" y="128" width="12" height="16"/>
+        <rect x="228" y="78" width="14" height="14"/>
+      </g>
+      <g fill="#5a5a5a"><circle cx="60" cy="160" r="3"/><circle cx="340" cy="150" r="3"/><circle cx="250" cy="152" r="3"/></g>
+      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
+        <text x="200" y="191" letter-spacing="7">ABYSS DESCENT</text>
+      </g>
+    </svg>
+  </div>
+  <div class="card-bd">
+    <div class="c-tag">ROGUELIKE · 横板肉鸽</div>
+    <h3>沉渊讨伐</h3>
+    <p>无限下沉 · 双技能 · 三选一强化 · 战利品回流炼金</p>
+    <span class="c-go" onclick="event.preventDefault();event.stopPropagation();location.href='pages/肉鸽.html'">跃入深渊
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</div>
 <div class="card is-tool" id="rankCard" style="cursor:pointer">
   <div class="spot" aria-hidden="true"></div>
   <div class="thumb">
@@ -1856,6 +1895,8 @@ window.fetch=function(u,o){return __f(u,o).then(function(r){try{if(r&&r.status==
       <button class="gb-btn" id="gb_sta_btn" style="padding:5px 12px;font-size:11px">▤ 数据面板</button>
       <button class="gb-btn" id="gb_ban_btn" style="padding:5px 12px;font-size:11px">⛔ 危险账号</button>
       <div id="gb_ban_list" style="display:none;width:100%;margin-top:6px;border:1px solid var(--bad);padding:6px;font-size:12px"></div>
+      <button class="gb-btn" id="gb_punish_btn" style="padding:5px 12px;font-size:11px">☠ 惩罚管理</button>
+      <div id="gb_punish_list" style="display:none;width:100%;margin-top:6px;border:1px solid var(--bad);padding:6px;font-size:12px"></div>
       <button class="gb-btn ghost" id="gb_aud_close" style="padding:5px 12px;font-size:11px;display:none">收起</button>
       <button class="gb-btn ghost" id="gb_bak_btn" style="padding:5px 12px;font-size:11px">⬇ 备份全站</button>
     </div>
@@ -3331,6 +3372,7 @@ function loadUsers(){
           (u.is_root?'<span class="adm" style="color:#d9a441;border-color:#d9a441">站长</span>':(u.is_admin?'<span class="adm">管理员</span>':''))+
           (u.banned?'<span class="adm" style="color:var(--bad);border-color:var(--bad)">已拉黑</span>':'')+
           '<span class="pwd">'+esc(u.pwd)+'</span>'+
+          (u.ip?'<span class="pwd" style="color:var(--ok)">'+esc(u.ip)+'</span>':'')+
           adminBtns(u)+
           '</div>';
       }).join('')||'<div class="gb-empty" style="padding:10px">暂无用户</div>';
@@ -4171,6 +4213,51 @@ function bind(){
       say(j.msg||(j.ok?'已解除':'失败'),!!j.ok);
       if(j.ok) $('gb_ban_btn').click();
     }).catch(function(e2){ say('请求失败：'+e2.message,false); });
+  });
+  $('gb_punish_btn').addEventListener('click',function(){
+    var box=$('gb_punish_list');
+    if(box.style.display!=='none'){ box.style.display='none'; return; }
+    box.innerHTML='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">'+
+      '<input id="gb_pun_ip" placeholder="输入 IP" style="background:var(--bg2);color:var(--ink2);border:1px solid var(--line);font-size:10.5px;padding:3px 6px;border-radius:3px;width:130px;font-family:var(--mono)">'+
+      '<input id="gb_pun_name" placeholder="备注(可选)" style="background:var(--bg2);color:var(--ink2);border:1px solid var(--line);font-size:10.5px;padding:3px 6px;border-radius:3px;width:110px;font-family:var(--mono)">'+
+      '<button class="gb-btn" data-pact="ban" style="padding:3px 10px;font-size:10.5px">⛔ 封禁</button>'+
+      '<button class="gb-btn" data-pact="panic" style="padding:3px 10px;font-size:10.5px">☠ 崩坏惩罚</button>'+
+      '</div><div id="gb_pun_rows" style="display:flex;flex-direction:column;gap:2px"></div>';
+    box.style.display='';
+    punishLoad();
+  });
+  function punishLoad(){
+    call('/admin_punish',{}).then(function(j){
+      if(!j.ok) return say(j.msg||'获取失败',false);
+      var rows=$('gb_pun_rows'); if(!rows) return;
+      var html='';
+      (j.panic||[]).forEach(function(x){
+        html+='<div style="display:flex;gap:8px;align-items:center;padding:3px 0;border-bottom:1px solid var(--line)"><b style="color:var(--bad)">☠ '+esc(x.ip)+'</b><span style="color:var(--ink3)">崩坏 · '+esc(x.by||'-')+' · '+esc(x.time)+'</span><button class="gb-btn ghost" data-pd="panic|'+esc(x.ip)+'" style="padding:1px 8px;font-size:10px">解除</button></div>';
+      });
+      (j.ban||[]).forEach(function(x){
+        html+='<div style="display:flex;gap:8px;align-items:center;padding:3px 0;border-bottom:1px solid var(--line)"><b style="color:var(--bad)">⛔ '+esc(x.ip)+'</b><span style="color:var(--ink3)">封禁 · '+esc(x.by||'-')+' · '+esc(x.time)+' · 剩 '+Math.max(0,x.remain)+'s</span><button class="gb-btn ghost" data-pd="ban|'+esc(x.ip)+'" style="padding:1px 8px;font-size:10px">解除</button></div>';
+      });
+      if(!html) html='<div style="color:var(--ok)">暂无惩罚记录</div>';
+      rows.innerHTML=html;
+    }).catch(function(e){ say('请求失败：'+ferr(e.message),false); });
+  }
+  $('gb_punish_list').addEventListener('click',function(e){
+    var add=e.target.closest('[data-pact]');
+    if(add){
+      var ip=$('gb_pun_ip').value.trim(); if(!ip) return say('请输入 IP',false);
+      var nm=$('gb_pun_name').value.trim();
+      call('/admin_punish',{ip:ip,name:nm,type:add.getAttribute('data-pact'),action:'add'}).then(function(j){
+        say(j.msg||(j.ok?'已添加':'失败'),!!j.ok); if(j.ok){ punishLoad(); $('gb_pun_ip').value=''; $('gb_pun_name').value=''; }
+      }).catch(function(e2){ say('请求失败：'+e2.message,false); });
+      return;
+    }
+    var pd=e.target.closest('[data-pd]');
+    if(pd){
+      var a=pd.getAttribute('data-pd').split('|');
+      call('/admin_punish',{ip:a[1],type:a[0],action:'remove'}).then(function(j){
+        say(j.msg||(j.ok?'已解除':'失败'),!!j.ok); if(j.ok) punishLoad();
+      }).catch(function(e2){ say('请求失败：'+e2.message,false); });
+    }
   });
   $('gb_config_dialog').addEventListener('click',function(e){
     if(e.target===$('gb_config_dialog')) gbCloseConfig();

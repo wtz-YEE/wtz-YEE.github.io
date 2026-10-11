@@ -72,11 +72,46 @@ var G_RARE=[6,11,13,15,17,18,21,24];
 var G_LEGEND=[22,23,25];
 var G_FLORA={letter:'拼写之名，随风开口',pixel:'像素的盛夏，一格都不浪费',geo:'几何即花语，棱角即温柔',glow:'发光的人，先学会等待',ink:'墨色深处，暗香浮动',crystal:'晶体敲响时，星屑落一地',nebula:'缠绕星云的名字，终被仰望',circuit:'电流过处，花开有声',bubble:'泡泡里的花园，永远完整',flame:'燃烧着，也是一种盛开',ice:'零度以下，记得春天',clock:'花期为整点，错过再等一轮',note:'和声响起，花自应答',ecg:'每一下心跳，都是一次开花'};
 var G_RIDDLES={letter:"字母在暗处拼写，凑齐它们，花园会开口说话",pixel:"八比特的像素光，藏在最朴素的照料里",geo:"几何是夜的骨架，三角形从不迷路",glow:"会发光的，往往先在黑暗里等",ink:"墨色未干时，花影已在纸上成型",crystal:"晶体在尘与光之间结晶，敲击会响",nebula:"星云藤缠绕着遥远的名字，须得仰望",circuit:"电路草的根是电流，沿着焊点生长",bubble:"泡泡里装着的，是另一片小花园",flame:"余烬深处，火绒草把自己烧成花",ice:"冰晶叶在零度以下记得春天",clock:"时针花的花期，是整点的那一刻",note:"音符兰只在听见和声时开放",ecg:"心电图草的心跳，就是花园的心跳"};
+var G_HARV={letter:['h_rosemary'],pixel:['h_moon'],geo:['h_marigold'],glow:['h_mistmushroom'],ink:['h_shadowmoss','h_mandrake'],crystal:['o_lapis','o_rubycore'],nebula:['h_stardustherb'],circuit:['m_verdigris'],bubble:['h_dreamlotus'],flame:['h_dragonpepper','h_firebloom','h_rose'],ice:['h_icelotus','e_frostcore','h_frost'],clock:['o_amber'],note:['h_moonlight'],ecg:['h_bloodvine']};
+var G_STYLES=['letter','pixel','geo','glow','ink','crystal','nebula','circuit','bubble','flame','ice','clock','note','ecg'];
+var G_MATN={h_rosemary:'芝华草',h_moon:'月光草',h_marigold:'金盏花',h_mistmushroom:'雾隐菇',h_shadowmoss:'影苔',h_mandrake:'曼德拉草',o_lapis:'青金石',o_rubycore:'红宝石之核',h_stardustherb:'星尘草',m_verdigris:'铜之绿锈',h_dreamlotus:'睡莲之梦',h_dragonpepper:'龙息椒',h_firebloom:'火焰花',h_rose:'火焰玫瑰',h_icelotus:'冰晶莲',e_frostcore:'霜雪之芯',h_frost:'霜雪莲',o_amber:'琥珀',h_moonlight:'月辉草',h_bloodvine:'血藤',pot_heat:'炽热药剂'};
+function gStyleCount(st){var n=0;for(var j=0;j<G_PLANTS.length;j++)if(G_PLANTS[j].st===st)n++;return n}
+function gStyleDone(st){var disc=gDisc(),have=0;for(var j=0;j<G_PLANTS.length;j++)if(G_PLANTS[j].st===st&&disc.indexOf(G_PLANTS[j].id)>=0)have++;return have>=gStyleCount(st)}
+function gHarvest(i){
+  var a=gSet();if(!a[i])return;
+  var p=a[i],g=p.g||.5;
+  if(g<1){toast('尚未盛开','把它照料到 1.0，再摘取材料');return}
+  var sp=gP(p.sp),st=sp.st,pool=G_HARV[st]||[];
+  if(!pool.length){toast(sp.n,'这株花还没凝出材料');return}
+  var alch={};try{alch=JSON.parse(localStorage.getItem('wz_alch')||'{}')}catch(e){}
+  if(!alch.mats)alch.mats={};
+  var isLeg=G_LEGEND.indexOf(sp.id)>=0,isRare=G_RARE.indexOf(sp.id)>=0;
+  var c=p.c||0;
+  var mult=1*(1+c*0.2)*(isLeg?1.5:(isRare?1.25:1))*(gStyleDone(st)?1.25:1);
+  if(isLeg&&Math.random()<.5){var rares=pool.filter(function(k){return k==='o_rubycore'||k==='e_frostcore'||k==='h_dragonpepper'||k==='h_stardustherb'});if(rares.length)pool=rares}
+  var pick=pool[Math.floor(Math.random()*pool.length)];
+  var n=Math.max(1,Math.round(mult));
+  if(gStyleIn('crystal')&&(pick==='o_lapis'||pick==='o_rubycore'||pick==='o_amber'))n+=1;
+  if(gStyleIn('clock')&&((60-new Date().getMinutes())%60)<=3)n+=1;
+  alch.mats[pick]=(alch.mats[pick]||0)+n;
+  if(st==='flame')alch.mats.pot_heat=(alch.mats.pot_heat||0)+1;
+  try{localStorage.setItem('wz_alch',JSON.stringify(alch))}catch(e){}
+  a[i].g=.35;
+  try{localStorage.setItem('wz_garden',JSON.stringify(a))}catch(e){}
+  gFx(window.innerWidth/2,window.innerHeight/2,isLeg?'#ffd60a':(isRare?'#b388ff':'#7dd3a8'));
+  toast('收获 · '+sp.n,'获得 '+(G_MATN[pick]||pick)+' ×'+n+(st==='flame'?' · 附带炽热药剂':'')+(gStyleDone(st)?' · 风格圆满 +25%':''),isLeg?'ok':null);
+  renderMy();gScene();
+}
 function gSeeds(){try{var a=JSON.parse(localStorage.getItem('wz_gseeds')||'null');if(Array.isArray(a))return a.slice();var cm=[];for(var i=0;i<G_PLANTS.length;i++){if(G_RARE.indexOf(G_PLANTS[i].id)<0&&G_LEGEND.indexOf(G_PLANTS[i].id)<0)cm.push(G_PLANTS[i])}var r=[cm[Math.floor(Math.random()*cm.length)].id];try{localStorage.setItem('wz_gseeds',JSON.stringify(r))}catch(e){};var d=gDisc();if(d.indexOf(r[0])<0){d.push(r[0]);try{localStorage.setItem('wz_gdisc',JSON.stringify(d))}catch(e){}}return r}catch(e){return[]}}
 function gSeedAdd(id){try{var a=gSeeds();a.push(id);localStorage.setItem('wz_gseeds',JSON.stringify(a));var d=gDisc();if(d.indexOf(id)<0){d.push(id);localStorage.setItem('wz_gdisc',JSON.stringify(d))}}catch(e){}}
 function gDisc(){try{return JSON.parse(localStorage.getItem('wz_gdisc')||'[]')}catch(e){return[]}}
 function gSeedTake(id){try{var a=gSeeds();var i=a.indexOf(id);if(i<0)return false;a.splice(i,1);localStorage.setItem('wz_gseeds',JSON.stringify(a));return true}catch(e){return false}}
-function gDiscAdd(id){var d=gDisc();if(d.indexOf(id)<0){d.push(id);try{localStorage.setItem('wz_gdisc',JSON.stringify(d))}catch(e){}}if(d.length>=G_PLANTS.length){try{if(!localStorage.getItem('wz_gcomp')){localStorage.setItem('wz_gcomp','1');gExAdd(5);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();toast('图鉴全收 · 守园人 ⚜','探索点 +5 · 你就是这片花园的主人')}}catch(e){}}}
+function gDiscAdd(id){var d=gDisc();if(d.indexOf(id)<0){d.push(id);try{localStorage.setItem('wz_gdisc',JSON.stringify(d))}catch(e){}
+  var L=d.length;if(L%8===0&&L<G_PLANTS.length){var k='wz_gmil'+L;try{if(!localStorage.getItem(k)){localStorage.setItem(k,'1');gExAdd(1);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();toast('图鉴 '+L+' 种','探索点 +1 · 每集齐 8 种，花园送你一份小礼')}}catch(e){}}
+}if(d.length>=G_PLANTS.length){try{if(!localStorage.getItem('wz_gcomp')){localStorage.setItem('wz_gcomp','1');gExAdd(5);var pb=document.getElementById('gExBox');if(pb)pb.textContent=gEx();toast('图鉴全收 · 守园人 ⚜','探索点 +5 · 你就是这片花园的主人')}}catch(e){}}gStyleRefresh()}
+function gStyleList(){var r=[];for(var i=0;i<G_STYLES.length;i++)if(gStyleDone(G_STYLES[i]))r.push(G_STYLES[i]);return r}
+function gStyleRefresh(){try{localStorage.setItem('wz_gstyle',JSON.stringify(gStyleList()))}catch(e){}}
+function gStyleIn(s){try{return JSON.parse(localStorage.getItem('wz_gstyle')||'[]').indexOf(s)>=0}catch(e){return false}}
 function gEx(){try{return parseInt(localStorage.getItem('wz_gex')||'0',10)||0}catch(e){return 0}}
 function gExAdd(n){try{localStorage.setItem('wz_gex',String(gEx()+n))}catch(e){}}
 function gDraw(cv,id,g,t){
@@ -157,6 +192,7 @@ function gDraw(cv,id,g,t){
 function gSet(){try{var a=JSON.parse(localStorage.getItem('wz_garden')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
 function gAdd(p){try{var a=gSet();a.push(p);localStorage.setItem('wz_garden',JSON.stringify(a))}catch(e){}}
 function openGarden(){
+  gStyleRefresh();
   var mask=document.createElement('div');
   mask.style.cssText='position:fixed;inset:0;z-index:2147483100;background:rgba(4,5,6,.86);display:flex;align-items:center;justify-content:center;padding:18px';
   var box=document.createElement('div');
@@ -394,14 +430,16 @@ function gSharedSceneClick(ev){
 }
 var gTutSteps=[
   ['拾种落种','初始你只有 1 颗随机种子。在种子库点选它（光标会携带种子），再点击下方【花园实景】任意位置把它种下——种下会消耗这颗种子，落点会生长为花。再点该种子或按 Esc 取消','1'],
-  ['照料成长','在共享花园里点“照料”，生长 +12%（每 30 秒一次，每株独立冷却）；照料是盛开的关键','2'],
+  ['照料成长','在共享花园里点“照料”，生长 +12%（初种可连浇 3 次，之后每 24 小时一次）；照料是盛开的关键','2'],
   ['收集种子','种下 / 照料时偶尔会发现新种子；集齐 64 种解锁“守园人 ⚜”','3'],
   ['夜行深处','花 1 探索点踏入“夜行深处”，可能带回传说种子或星尘——也可能一无所获','4'],
   ['相伴加成','同一画风植物≥2株时显示金色“相伴✦”，更显生机','5'],
   ['盛开','照料 / 离线生长把植物养到生长度 1，出现金色星环“✦ 盛开”','6'],
-  ['离线生长','离开花园后植物仍按真实时间慢慢生长，回来会有惊喜','7'],
-  ['星雨之夜','全站累计照料 50 次触发“星雨之夜”：全体探索点 +2 并解锁一枚传说种子','8'],
-  ['花园之星','共享花园中照料最多的一株会金边高亮，接受全站目光','9'],
+  ['收获材料','盛开后点「收获材料」：风格决定炼金材料（火焰→龙息椒 / 冰霜→冰晶莲 / 水晶→青金石…），产量随照料次数与稀有度提升；收获后重回 0.35 重新生长','7'],
+  ['离线生长','离开花园后植物仍按真实时间慢慢生长，回来会有惊喜','8'],
+  ['星雨之夜','全站累计照料 50 次触发“星雨之夜”：全体探索点 +2 并解锁一枚传说种子','9'],
+  ['花园之星','共享花园中照料最多的一株会金边高亮，接受全站目光','10'],
+  ['风格圆满','集齐某一画风的全部植物后，该画风被动觉醒：火焰→炼金火候更宽 · 冰霜→静置不衰减 · 水晶→矿物产量+1 · 电路→照料无冷却 · 时钟→整点收获额外产出（在炼金台同样生效）','11'],
 ];
 function gTut(){
   var t=document.getElementById('gTut');if(!t)return;
@@ -445,6 +483,10 @@ function renderMy(){
       var cb=document.createElement('div');cb.style.cssText='margin-top:5px';
       cb.innerHTML="<button onclick=\"gCareSelf("+i+")\" style=\"border:1px solid var(--accent,#fff);background:none;color:var(--accent,#fff);font-family:Consolas,monospace;font-size:9px;padding:3px 7px;cursor:pointer;transition:.15s\" onmouseenter=\"this.style.background='rgba(255,255,255,.08)'\" onmouseleave=\"this.style.background='none'\">照料</button>";
       d.appendChild(cb);
+    }else{
+      var hb=document.createElement('div');hb.style.cssText='margin-top:5px';
+      hb.innerHTML="<button onclick=\"gHarvest("+i+")\" style=\"border:1px solid #ffd60a;background:none;color:#ffd60a;font-family:Consolas,monospace;font-size:9px;padding:3px 7px;cursor:pointer;transition:.15s\" onmouseenter=\"this.style.background='rgba(255,214,10,.12)'\" onmouseleave=\"this.style.background='none'\">收获材料</button>";
+      d.appendChild(hb);
     }
     box.appendChild(d);
   }
@@ -487,7 +529,9 @@ function gCareSelf(idx){
   if((a[idx].g||.5)>=1){toast('已盛开 · 无需照料','这株花正沐浴星光');return}
   var key='wz_careself_'+a[idx].t;
   var lc=0;try{lc=parseInt(localStorage.getItem(key)||'0',10)||0}catch(e){}
-  if(Date.now()-lc<86400000){toast('照料冷却中','约 '+Math.max(1,Math.ceil((86400000-(Date.now()-lc))/86400000))+' 天后照料');return}
+  var c0=a[idx].c||0;
+  var cd=gStyleIn('circuit')?0:(c0<3?30000:86400000);
+  if(Date.now()-lc<cd){toast('照料冷却中',c0<3?'初种可连浇 · 稍候片刻':'约 '+Math.max(1,Math.ceil((86400000-(Date.now()-lc))/86400000))+' 天后照料');return}
   try{localStorage.setItem(key,String(Date.now()))}catch(e){}
   var elx=gBuffNow('pot_elixir');
   a[idx].g=Math.min(1,(a[idx].g||.5)+0.12*(elx?2:1));a[idx].c=(a[idx].c||0)+1;
