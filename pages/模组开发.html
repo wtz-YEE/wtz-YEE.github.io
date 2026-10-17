@@ -189,6 +189,7 @@ function ferr(msg){
   return msg;
 }
 </script>
+<link rel="stylesheet" href="../shared-ui.css">
 </head>
 <body>
 
@@ -326,7 +327,7 @@ function ferr(msg){
 for(var i=0;i<cs.length;i++)(function(c){
 var sp=c.querySelector('.spot');
 if(!sp)return;
-c.addEventListener('mousemove',function(e){var r=c.getBoundingClientRect();sp.style.setProperty('--mx',(e.clientX-r.left)+'px');sp.style.setProperty('--my',(e.clientY-r.top)+'px')});
+c.addEventListener('mousemove',function(e){if(c._q)return;c._q=true;requestAnimationFrame(function(){c._q=false;var r=c.getBoundingClientRect();sp.style.setProperty('--mx',(e.clientX-r.left)+'px');sp.style.setProperty('--my',(e.clientY-r.top)+'px')})});
 })(cs[i]);})();
 
 (function(){document.body.classList.add('ready')})();
@@ -741,5 +742,6 @@ poll();
 setInterval(poll,60000);
 })();
 </script>
+<script src="../shared-ui.js"></script>
 </body>
 </html>

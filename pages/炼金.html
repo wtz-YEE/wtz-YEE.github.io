@@ -277,6 +277,7 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
 .abyss-bar .ab-l{flex:1;font-family:Consolas,monospace;font-size:11px;color:#9BA9AD}
 .abyss-bar .ab-l b{color:#E6EDEF}
 </style>
+<link rel="stylesheet" href="../shared-ui.css">
 </head>
 <body>
 <header>
@@ -1214,7 +1215,7 @@ function bnReq(){
 function bnStepName(){return '自由'}
 function benchStart(){
  if(!cur||!cur.length){toast('坩埚空空','先投料再开台');return}
- bench.on=true;bench.grind=0;bench.sel=null;bench.err=0;bench.temp=0;bench.dist=0;bench.hits=0;bench.ctr=0;bench.tickN=0;bench.winLeft=0;bench.elapsed=0;bench.coolT=0;bench.rodN=0;bench.dropN=0;bench.tongN=0;bench.pressure=0;bench.mats=(cur||[]).slice();bench.gi=0;bench.liq=[];bench.ready=false;bench.cooling=false;bench.selP=null;bench.mnt={};liqStart();
+ bench.on=true;bench.grind=0;bench.sel=null;bench.err=0;bench.temp=0;bench.dist=0;bench.hits=0;bench.ctr=0;bench.tickN=0;bench.winLeft=0;bench.elapsed=0;bench.coolT=0;bench.rodN=0;bench.dropN=0;bench.tongN=0;bench.pressure=0;bench.mats=(cur||[]).slice();bench.gi=0;bench.liq=[];bench.ready=false;bench.cooling=false;bench.selP=null;bench.mnt={};(A.eq||[]).forEach(function(c){placeObj(c)});liqStart();
  BN.classList.add('on');$('#stageBadge').textContent='BENCH';
  setTimeout(function(){try{if(BN&&window.innerWidth<1300)BN.scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}},160);
  $('.pot').style.opacity=.3;$('#slots').style.opacity=.3;$('#ops').style.opacity=.3;
@@ -1328,12 +1329,11 @@ function bnTick(){
  bnRender();
 }
 function bnFail(m){toast('炼金失败',m);benchExit()}
-function drawLine(){}
 eqRender();
 var placed={};
 function placeObj(c){
  var e=EQUIP.find(function(x){return x.c===c});if(!e)return;
- if(document.getElementById('obj-'+c)){toast(e.n,'已在工作台上');return}
+ if(document.getElementById('obj-'+c))return;
  var o=document.createElement('div');o.className='obj';o.id='obj-'+c;o.dataset.c=c;
  var nn=Object.keys(placed).length;
  o.innerHTML='<span class="ob-sy">'+eico(c)+'</span><span class="ob-nm">'+e.n+'</span>';
@@ -1373,8 +1373,6 @@ $('#mortar').addEventListener('click',function(){
  if(bench.grind<100){toast('研钵','还没有可倒的粉末 · 先研磨');return}
  toast('研钵','研磨物留在研钵里 · <b>拖研钵到烧瓶</b>倒入');
 });
-function ptEl(){}
-function wirePorts(){}
 function pourMortar(){
  if(!bench.on)return;
  if(bench.gi>=bench.mats.length){toast('研钵已空','全部材料已入瓶');return}
@@ -1386,7 +1384,6 @@ function pourMortar(){
  bnRender();
 }
 var D=null,tmpL=null;
-function posLine(){}
 document.addEventListener('pointerdown',function(e){
  var el=e.target;
  var obj=el.closest&&el.closest('.obj');
@@ -1430,12 +1427,12 @@ document.addEventListener('pointerup',function(e){
    }
    if(moved)window.__pmoved=true;
    if(!moved){
-    if(bench.mnt&&bench.mnt.brush&&bench.gi<bench.mats.length){
-     bench.grind=Math.min(100,bench.grind+Math.round((bench.grind<60?24:10)*(affKind('grind')?1.1:1)));
+    if(bench.gi<bench.mats.length){
+     bench.grind=Math.min(100,bench.grind+Math.round((bench.grind<60?(bench.mnt&&bench.mnt.brush?24:18):10)*(affKind('grind')?1.1:1)));
+     bnRender();
      if(bench.grind>=100)toast('研磨完毕',(MATS[bench.mats[bench.gi]]?MATS[bench.mats[bench.gi]].n:'')+' 已成粉末 · 点研钵倒入瓶中');
-     return;
-    }
-    toast('研钵','研磨物留在研钵里 · <b>拖研钵到烧瓶</b>倒入');return
+    } else toast('研钵已空','全部材料已研磨入瓶');
+    return
    }
    return
   }
@@ -1461,7 +1458,6 @@ document.addEventListener('pointerup',function(e){
   return
  }
 });
-function syncLines(){}
 function gBless(){try{return JSON.parse(localStorage.getItem('wz_gstyle')||'[]')}catch(e){return[]}}
 function gBlessIn(s){return gBless().indexOf(s)>=0}
 function collectCur(){
@@ -1657,6 +1653,7 @@ function addMat(k,el){
  if(!(A.mats[k]>0)){toast('空空如也','没有这种材料');return}
  if(cur&&cur.length>=4){toast('坩埚已满','一份四两，再多逾矩');return}
  A.mats[k]--;cur=cur||[];cur.push(k);qsum=0;
+ if(bench&&bench.on){bench.mats=(cur||[]).slice();if(bench.gi>=bench.mats.length)bench.gi=0;bnRender()}
  var pb=document.querySelector('.pot .body'),pr=pb?pb.getBoundingClientRect():null;
  if(el&&el.querySelector&&pb){
   var sy=el.querySelector('.sy'),rr=sy?sy.getBoundingClientRect():null;
@@ -1712,5 +1709,6 @@ $('#work').style.setProperty('--liq','rgba(30,30,34,.9)');
 
 try{abyssWire()}catch(e){}
 </script>
+<script src="../shared-ui.js"></script>
 </body>
 </html>

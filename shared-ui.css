@@ -1,0 +1,10 @@
+/* ===== 全站共享 UI 碎片样式 · shared-ui.css ===== */
+.lay-switch{position:fixed;right:14px;top:42px;z-index:2147483000;display:flex;gap:5px;padding:5px;background:#11151A;border:1px solid rgba(255,255,255,.14)}
+.lay-switch button{width:26px;height:22px;border:1px solid rgba(255,255,255,.3);font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:10px;color:#66767A;background:none;cursor:pointer}
+.lay-switch button.on{border-color:#fff;color:#fff;box-shadow:0 0 10px rgba(255,255,255,.11)}
+.lay-switch button:hover{border-color:#fff;color:#fff}
+@media(max-width:640px){.lay-switch{top:auto;bottom:76px;right:10px}}
+
+/* ===== 全站性能优化 ===== */
+main{content-visibility:auto;contain-intrinsic-size:auto 800px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

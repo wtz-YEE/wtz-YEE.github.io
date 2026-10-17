@@ -542,6 +542,7 @@ function ferr(msg){
   return msg;
 }
 </script>
+<link rel="stylesheet" href="../shared-ui.css">
 <body>
 
 <div id="boot" role="status" aria-label="系统启动中">
@@ -745,12 +746,12 @@ hero.addEventListener('mouseleave',function(){hd.style.transform=''});
 for(var i=0;i<cs.length;i++)(function(c){
 var sp=c.querySelector('.spot');
 if(!sp)return;
-c.addEventListener('mousemove',function(e){var r=c.getBoundingClientRect();sp.style.setProperty('--mx',(e.clientX-r.left)+'px');sp.style.setProperty('--my',(e.clientY-r.top)+'px')});
+c.addEventListener('mousemove',function(e){if(c._q)return;c._q=true;requestAnimationFrame(function(){c._q=false;var r=c.getBoundingClientRect();sp.style.setProperty('--mx',(e.clientX-r.left)+'px');sp.style.setProperty('--my',(e.clientY-r.top)+'px')})});
 })(cs[i]);})();
 
 (function(){var cs=document.querySelectorAll('.card');
 for(var i=0;i<cs.length;i++)(function(c){
-c.addEventListener('mousemove',function(e){var r=c.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;c.style.transform='perspective(900px) rotateY('+((px-.5)*7).toFixed(2)+'deg) rotateX('+((.5-py)*7).toFixed(2)+'deg) translateY(-3px)'});
+c.addEventListener('mousemove',function(e){if(c._q)return;c._q=true;requestAnimationFrame(function(){c._q=false;var r=c.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;c.style.transform='perspective(900px) rotateY('+((px-.5)*7).toFixed(2)+'deg) rotateX('+((.5-py)*7).toFixed(2)+'deg) translateY(-3px)'})});
 c.addEventListener('mouseleave',function(){c.style.transform=''});
 })(cs[i]);
 })();
@@ -1182,5 +1183,6 @@ poll();
 setInterval(poll,60000);
 })();
 </script>
+<script src="../shared-ui.js"></script>
 </body>
 </html>
