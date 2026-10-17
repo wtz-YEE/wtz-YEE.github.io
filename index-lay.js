@@ -258,11 +258,6 @@ function tick(){
   if(SP)SP.style.transform=prx;
   var st=SZ?SZ.querySelector('.st'):null;
   if(st)st.style.transform=prx;
-  var invY=(-SV.ry)+'deg',invX=(-SV.rx)+'deg';
-  for(var i=0;i<SV.nodes.length;i++){
-   var d=SV.nodes[i],a=parseFloat(d.dataset.a),b=parseFloat(d.dataset.b);
-   d.style.transform='rotateY('+invY+') rotateX('+invX+') rotateY('+a+'rad) rotateX('+b+'rad) translateZ('+R+'px) rotateX('+(-b)+'rad) rotateY('+(-a)+'rad)';
-  }
   aim();
  }
  requestAnimationFrame(tick);
