@@ -33,3 +33,10 @@ _cloud/audit_*.json
 
 
 cloud_fixing.txt
+
+_cloud/guard.heartbeat
+_cloud/_ci_*
+云端地址.txt
+_g*.txt
+_ci_*
+

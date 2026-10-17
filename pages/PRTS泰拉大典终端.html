@@ -1400,7 +1400,7 @@ function openPvDetail(id){
   $("#pcName").textContent = it.name;
   $("#pcAlias").textContent = it.alias || "";
   const isOp = ref.cat === "ops";
-  const img = isOp && it.img ? `<img src="${it.img}" alt="${esc(it.name)}">` : "";
+  const img = isOp && it.img ? `<img src="${it.img}" alt="${esc(it.name)}" loading="lazy">` : "";
   $("#pcImg").innerHTML = img;
   const kvs = isOp ? [
     ["代号", it.name], ["种族", it.race], ["职业", it.job], ["出身地", it.birth],
@@ -1572,7 +1572,7 @@ function openDetail(id){
   let b = "";
   if(isOp){
     b += `<div class="dossier">`;
-    if(it.img) b += `<div class="portrait" data-zoom="${it.img}"><img src="${it.img}" alt="${esc(it.name)}"></div>`;
+    if(it.img) b += `<div class="portrait" data-zoom="${it.img}"><img src="${it.img}" alt="${esc(it.name)}" loading="lazy"></div>`;
     b += `<div class="kvs">` + [["代号",it.name],["种族",it.race],["职业",it.job],["出身地",it.birth],["生日",it.bd],["身高",it.h],["职能",it.role],["专精",it.exp]].map(([k,v])=>`<div class="kv"><k>${k}</k><v>${esc(v)}</v></div>`).join("") + `</div>`;
     b += physBars(it);
     b += `<div class="sec">档案摘要</div><p>${esc(it.intro)}</p>`;

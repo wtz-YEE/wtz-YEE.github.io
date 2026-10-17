@@ -1582,7 +1582,7 @@ setInterval(function(){
 },950);
 setInterval(function(){
  var wk=document.getElementById('work');
- if(!wk)return;
+ if(!wk||$('#stageBadge').textContent==='STANDBY')return;
  if(Math.random()<.55){
   var sk=document.createElement('i');sk.className='spark';
   var b=wk.getBoundingClientRect();

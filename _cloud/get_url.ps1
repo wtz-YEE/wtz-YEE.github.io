@@ -1,16 +1,51 @@
-$u = & python 'D:\WTZ\prts\_cloud\get_url.py'
+﻿$d = Split-Path -Parent $MyInvocation.MyCommand.Path
+$u = & python (Join-Path $d 'get_url.py')
 if ($u) {
-    [IO.File]::WriteAllText('D:\WTZ\prts\云端地址.txt', $u, (New-Object Text.UTF8Encoding $false))
+    [IO.File]::WriteAllText((Join-Path $d '..\云端地址.txt'), $u, (New-Object Text.UTF8Encoding $false))
     Set-Clipboard -Value $u
     Write-Host ''
     Write-Host ('  本机公网地址: ' + $u)
-    Write-Host '  cloud.txt 已合并多主机地址（保留其他主机的）'
-    Write-Host '  接下来将推送 GitHub 供 index 自动读取'
+    Write-Host '  cloud.txt 已合并多主机地址（保留其他主机的�?
+    Write-Host '  接下来将推�?GitHub �?index 自动读取'
     Write-Host ''
 }
 else {
     Write-Host ''
     Write-Host '  获取失败：cpolar 日志中未找到 guestbook 隧道'
-    Write-Host '  请确认 cpolar.yml 包含 guestbook 隧道(8701) 且服务在运行'
+    Write-Host '  请确�?cpolar.yml 包含 guestbook 隧道(8701) 且服务在运行'
     Write-Host ''
 }
+
+# SIG # Begin signature block
+# MIIFvAYJKoZIhvcNAQcCoIIFrTCCBakCAQExDzANBglghkgBZQMEAgEFADB5Bgor
+# BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCaqemfGwjTTV1f
+# wqwKsCDbIA2UEJjZBxR2bFuiKPDUJ6CCAyQwggMgMIICCKADAgECAhBE5/d/RP1H
+# okwBK/3YjG8kMA0GCSqGSIb3DQEBCwUAMCgxDDAKBgNVBAoMA1dUWjEYMBYGA1UE
+# AwwPV1RaIENsb3VkIEd1YXJkMB4XDTI2MTAxNzAzNDQxNloXDTMxMTAxNzAzNTQx
+# NFowKDEMMAoGA1UECgwDV1RaMRgwFgYDVQQDDA9XVFogQ2xvdWQgR3VhcmQwggEi
+# MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDR+B/LHafl5HbxrKwd02an5LMs
+# kbw5WkQZCS6BaOmpSOAt78MGDDi4h8XD984UTojiz/HDIVqfgqlFnI5BvksC7jgv
+# 1BvUbjdpTpmDG5lzkZ5Kl0gXEdccm5a+eZ0BttOh8xP6ZOUdwWsC9PCZCHIwDDYr
+# v2Vunon0WDCj0piWrOg5N1g6Q/4pVU7F1GPeAeNQyYzhVV9RYcE8gnz4G7LhK6hl
+# 3PD6s4ivn33qL4R2KRGScaKPGhBKOdah0en12ass6Av1zE2xOw8bgudyP9ZaQtv2
+# bbWwbHNtjJ4U0JTuZ8HCQvpfLYDXU9ES9snQKwDyn9e6GLKe/y8tXS0YxNaVAgMB
+# AAGjRjBEMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNV
+# HQ4EFgQUogKssx97PYPD2YNqHvh084K08gAwDQYJKoZIhvcNAQELBQADggEBAKcs
+# e+u+3riERwUOWRPBYVSc9yDICTMJxZhULfc3qrzO6y7+L7udnoqDBUW3YyKuCAuk
+# vnBepNGpKiXFQW6g9sQy9QVi5rUOAoWfYMKSiL+v12s/3s6QxQMWSybivd8Vn/Cz
+# IJ6RO8U68vKhoeEMvQL3P+aqibQstXVQ8RFP/gKau/im5O/gO+UHF+jiKwl6tYrJ
+# lghGm7mXr89ZBmDhjGFN5yCs4OLddSB10AKNNwExLdlZVmO+QvAfZej3XINP4wn+
+# 8wU9/ViDWr69x99V/shJ+kgVmU7F4qcFTtdY+aoTou7a6hjYZEAuFW0joeY6k2lH
+# vsjeXTKuu07j7zU5XtcxggHuMIIB6gIBATA8MCgxDDAKBgNVBAoMA1dUWjEYMBYG
+# A1UEAwwPV1RaIENsb3VkIEd1YXJkAhBE5/d/RP1HokwBK/3YjG8kMA0GCWCGSAFl
+# AwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkD
+# MQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwLwYJ
+# KoZIhvcNAQkEMSIEIMycZhBas7fMzeaVEzHEtidbLW1jFZj6iE/13OU5Lv8hMA0G
+# CSqGSIb3DQEBAQUABIIBAAB3KFtVCXCExAxgnvGBaTk1pfDQbGcnntV9E+wYbPCu
+# lAMPtafYwFEs5L4SmYKeZJB86RVkUgiRLFv62TfH2sVSYCCQLUpyI0HJJfaV1z/r
+# 14bZVS4Co/iC0K9FFhrDWo2rU+lMA2IeCgGOhfOGB9pyhAoZCq28A1MtYAsM85Nb
+# 54XRxBxveccH1Xh9YzaXczcdOdi8JoMWVwwOrb2J8xwtoGEFBi8y7nBaFmYjXkxC
+# OBNqVvkBFUCGPx9HticYC0aTPgjWPVe8NAgTMFiOKB831JsIjUOBS/oJC2OWUOQn
+# 5J/NVNIzswPHkFFCMI7gGISEHDoU2rI0i/EbyT1wPFg=
+# SIG # End signature block

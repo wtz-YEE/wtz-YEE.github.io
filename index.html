@@ -14,6 +14,17 @@
 
 <body>
 
+<script>
+/* 关键全局兜底：不依赖任何 defer 脚本，即使 index-core 中断也保证 $/esc 可用 */
+window.$=window.$||function(i){return document.getElementById(i)};
+window.esc=window.esc||function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+window.call=window.call||function(){return new Promise(function(r){r({ok:false,msg:'本地模式'})})};
+window.go=window.go||function(){};
+window.S=window.S||{};
+/* 绝对启动兜底：独立于所有脚本，任何崩溃都不会卡在启动动画 */
+(function(){function h(){var b=document.getElementById('boot'),d=document.body;if(!b)return;if(!d.classList.contains('ready')){d.classList.add('ready');b.style.display='none'}}setTimeout(h,2500);setTimeout(h,5000);setTimeout(h,9000)})();
+</script>
+
 <div id="fixMask" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#0a0a0a;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:Consolas,monospace;text-align:center"><div style="font-size:min(9vw,110px);letter-spacing:.35em;color:#ff5c7a;text-shadow:0 0 34px rgba(255,92,122,.45);font-weight:bold">维修中</div><div style="width:56px;height:2px;background:#ff5c7a;opacity:.5"></div><div id="fixReason" style="font-size:min(1.6vw,16px);color:#8a8a8a;letter-spacing:.22em">系统维护 · 请稍后刷新页面</div><div id="fixEta" style="font-size:min(1.3vw,13px);color:#5a5a5a;letter-spacing:.18em"></div></div>
 
 <div id="updBar" class="hidden">
@@ -790,7 +801,7 @@
 <div id="sphereView">
   <div class="sphere-tip"><div class="sp-dot"></div><i class="sp-c c1"></i><i class="sp-c c2"></i><i class="sp-c c3"></i><i class="sp-c c4"></i></div>
   <div id="sphere"></div>
-  <div class="sphere-hud"><span>W·A·S·D 旋转视角</span><span>准星 ▸ <b id="spAim">—</b></span><span>空格 / 点击 进入</span></div>
+  <div class="sphere-hud"><span>W·A·S·D 移动视角</span><span>准星 ▸ <b id="spAim">—</b></span><span>空格 / 点击 进入</span></div>
   <button class="sphere-back" id="spBack">退出视角</button>
 </div>
 
@@ -866,9 +877,9 @@
 
 
 
-<script src="index-core.js" defer></script>
-<script src="index-app.js" defer></script>
-<script src="index-lay.js" defer></script>
+<script src="index-core.js?v=20261017" defer></script>
+<script src="index-app.js?v=20261017" defer></script>
+<script src="index-lay.js?v=20261017" defer></script>
 </body>
 </html>
 

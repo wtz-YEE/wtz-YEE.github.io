@@ -1,4 +1,4 @@
-
+﻿
 function ferr(msg){
   msg=String(msg||'');
   if(/Failed to fetch|ERR_CONNECTION|NetworkError|fetch failed/i.test(msg)) return '网络连接失败，请检查网络或稍后重试';
@@ -34,7 +34,7 @@ var __f=window.fetch;
 window.fetch=function(u,o){return __f(u,o).then(function(r){try{if(r&&r.status===403){var c=r.clone();c.json().then(function(j){if(j&&j.panic)pz()}).catch(function(){})}}catch(e){}return r})};
 })();
 (function(){var m=document.getElementById('fixMask');if(!m)return;fetch('https://wtz-YEE.github.io/cloud_fixing.txt?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var ls=String(t||'').split(/\r?\n/);if((ls[0]||'').trim().toLowerCase()==='t'){var rr=document.getElementById('fixReason'),ee=document.getElementById('fixEta');var rs=(ls[1]||'').trim(),es=(ls[2]||'').trim();if(rr) rr.textContent=rs||'系统维护 · 请稍后刷新页面';if(ee) ee.textContent=es?('预计恢复：'+es):'';m.style.display='flex';document.documentElement.style.overflow='hidden';}}).catch(function(){});})();
-(function(){try{setTimeout(function(){var b=document.getElementById('boot');if(b&&b.style.display!=='none'&&!document.body.classList.contains('ready')){b.style.display='none';document.body.classList.add('ready')}},7000)}catch(e){}})()
+(function(){try{setTimeout(function(){var b=document.getElementById('boot');if(b&&b.style.display!=='none'&&!document.body.classList.contains('ready')){b.style.display='none';document.body.classList.add('ready')}},7000)}catch(e){}})();
 
 (function(){
 'use strict';
@@ -431,8 +431,9 @@ function parseApis(raw){
   });
   return out;
 }
+function isBadApi(x){return /36c3116e|74312bf6|751e3fda/.test(x||'')}
 try{ S.apis=parseApis(localStorage.getItem(K_API)); }catch(e){ S.apis=[]; }
-S.apis=(S.apis||[]).filter(function(x){return x.indexOf('36c3116e')<0});
+S.apis=(S.apis||[]).filter(function(x){return !isBadApi(x)});
 S.api=(S.apis&&S.apis[0])||'';
 try{
   var sv=JSON.parse(localStorage.getItem(K_SESS)||'null');
@@ -1680,7 +1681,7 @@ function autoCloud(){
   var lb=$('guestbookList');
   if(lb && !S.api) lb.innerHTML='<div class="gb-empty">正在连接云端…</div>';
   fetchCloudTxt().then(function(t){
-    var apis=parseApis(t||'').filter(function(x){return x.indexOf('36c3116e')<0});
+    var apis=parseApis(t||'').filter(function(x){return !isBadApi(x)});
     if(!apis.length) return;
     S.apis=apis;
     pickAlive(apis).then(function(al){
@@ -1710,7 +1711,7 @@ function cloudRecover(){
   var cur=S.api;
   function fresh(){
     return fetchCloudTxt().then(function(t){
-      var apis=parseApis(t||'').filter(function(x){return x.indexOf('36c3116e')<0});
+      var apis=parseApis(t||'').filter(function(x){return !isBadApi(x)});
       if(!apis.length) return false;
       var ch=apis[0]!==cur||apis.length!==(S.apis||[]).length;
       S.apis=apis;
@@ -2310,7 +2311,7 @@ function bgmStop(){
   if(bgmB)bgmB.textContent='♪';
 }
 if(bgmB)bgmB.onclick=function(){if(bgmOn)bgmStop();else bgmPlay()};
-if(bgmOn)bgmPlay();
+if(bgmOn){var bd1=function(){bgmPlay();document.removeEventListener('click',bd1);document.removeEventListener('touchstart',bd1);document.removeEventListener('keydown',bd1)};document.addEventListener('click',bd1);document.addEventListener('touchstart',bd1);document.addEventListener('keydown',bd1)}
 var srchB=document.getElementById('srchBtn'),srchM=document.getElementById('srchM'),srchIn=document.getElementById('srchIn'),srchGo=document.getElementById('srchGo'),srchOut=document.getElementById('srchOut');
 function escS(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function hlW(q,s){ var qq=String(q||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); return escS(s).replace(new RegExp('('+qq+')','ig'),'<mark class="hl">$1</mark>'); }

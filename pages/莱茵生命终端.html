@@ -1701,7 +1701,7 @@ function dossierHTML(o){
   const rows=[['代号',o.code+'  '],['真名',o.en+'  '],['种族',o.race],['性别',o.gender],['身高',o.height],['生日',o.birth],['出身地',o.origin],['战斗经验',o.combat],['矿石病',o.infection],['所属',o.dept],['职务',o.role]];
   const kv=rows.map(r=>r[1]==='—'||r[1].trim()==='—'||!r[1]?'':('<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd>')).join('');
   const portrait=o.img
-    ?'<div class="portrait"><img src="'+o.img+'" alt="'+esc(o.code)+'" style="cursor:zoom-in" onclick="zoomImg(this)" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="glyph" style="display:none">'+ICO.op+'</div></div>'
+    ?'<div class="portrait"><img src="'+o.img+'" alt="'+esc(o.code)+'" loading="lazy" style="cursor:zoom-in" onclick="zoomImg(this)" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="glyph" style="display:none">'+ICO.op+'</div></div>'
     :'<div class="portrait"><div class="glyph">'+ICO.op+'</div></div>';
   const quote=o.quote?'<div class="quote">“'+esc(o.quote)+'”</div>':'';
   return '<div class="dossier"><div class="portrait">'+portrait+'</div>'
