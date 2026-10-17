@@ -1,9 +1,8 @@
-/* ===== 布局系统 · 5 套布局 ===== */
-#laySwitch{position:fixed;top:42px;right:14px;z-index:2147483000;display:flex;gap:5px;padding:5px;background:#11151A;border:1px solid rgba(255,255,255,.14)}
-#laySwitch button{width:26px;height:22px;border:1px solid rgba(255,255,255,.3);font-family:var(--mono,Consolas,monospace);font-size:10px;color:#66767A;background:none;cursor:pointer}
-#laySwitch button.on{border-color:#fff;color:#fff;box-shadow:0 0 10px rgba(255,255,255,.11)}
+/* ===== 布局系统 · 8 套布局 ===== */
+#laySwitch{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+#laySwitch button{width:34px;height:28px;border:1px solid var(--line2);font-family:var(--mono,Consolas,monospace);font-size:10px;color:#66767A;background:rgba(255,255,255,.02);cursor:pointer;transition:.18s}
+#laySwitch button.on{border-color:#fff;color:#fff;box-shadow:0 0 10px rgba(255,255,255,.11);background:rgba(255,255,255,.07)}
 #laySwitch button:hover{border-color:#fff;color:#fff}
-@media(max-width:640px){#laySwitch{top:auto;bottom:76px;right:10px}}
 
 /* lay-2 终端侧栏：左深色侧栏 + 主工作区，无横向按钮行 */
 body.lay-2 #v-home{display:flex;align-items:stretch}
@@ -220,3 +219,7 @@ body.lay-8 .card{border-left:none;border-right:none;transition:background .2s}
 body.lay-8 .card:hover{background:var(--panel)}
 body.lay-8 .sec-tab{background:none;border:1px solid transparent}
 body.lay-8 .sec-tab.on{border-color:var(--accent);color:#fff}
+
+/* 整块内容（留言板/设置面板等）不被网格布局压缩：跨全列 */
+body.lay-4 .sec>*:not(.grid):not(.grid3):not(.x-grid):not(.card):not(.b-head),
+body.lay-6 .sec>*:not(.grid):not(.grid3):not(.x-grid):not(.card):not(.b-head){grid-column:1/-1;min-width:0}

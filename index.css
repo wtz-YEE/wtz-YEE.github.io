@@ -1296,12 +1296,7 @@ body::after{content:"";position:fixed;inset:0;z-index:52;pointer-events:none;opa
 .h-q{margin-top:14px;display:inline-block;border:1px solid var(--line2);padding:7px 14px;transition:border-color .2s,box-shadow .2s,color .2s;max-width:100%}
 .h-q:hover{border-color:var(--accent);color:var(--ink);box-shadow:0 0 14px var(--accent-soft)}
 
-/* ===== 布局系统 v3（5 套首页布局切换） ===== */
-.lay-switch{position:fixed;right:14px;top:42px;z-index:60;display:flex;gap:5px;padding:5px;background:var(--panel);border:1px solid var(--line)}
-.lay-switch button{width:26px;height:22px;border:1px solid var(--line2);font-family:var(--mono);font-size:10px;color:var(--ink3)}
-.lay-switch button.on{border-color:var(--accent);color:var(--accent);box-shadow:0 0 10px var(--accent-soft)}
-.lay-switch button:hover{border-color:var(--accent);color:var(--accent)}
-body.view-mobile .lay-switch{top:auto;bottom:76px;right:10px}
+/* ===== 布局系统 v3（8 套首页布局切换） ===== */
 .hero-nav{display:none;flex-direction:column;gap:2px;margin-top:20px;text-align:left}
 .hero-nav a,.hero-nav button{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;border:1px solid transparent;color:var(--ink2);font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-decoration:none;background:none;cursor:pointer}
 .hero-nav a:hover,.hero-nav button:hover{border-color:var(--line2);color:var(--accent);background:var(--accent-soft)}
