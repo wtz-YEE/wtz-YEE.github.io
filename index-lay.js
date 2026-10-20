@@ -234,11 +234,14 @@ function aim(){
  var best=null,bd=-1;
  for(var i=0;i<SV.nodes.length;i++){
   var d=SV.nodes[i];
-  var n1=rotY([0,0,1],parseFloat(d.dataset.a));
-  var n2=rotX(n1,parseFloat(d.dataset.b));
+  var n1=rotX([0,0,1],parseFloat(d.dataset.b));
+  var n2=rotY(n1,parseFloat(d.dataset.a));
   var n3=rotY(n2,ry),n4=rotX(n3,rx);
-  if(n4[2]<=0.05)continue;
-  if(n4[2]>bd){bd=n4[2];best=d;}
+  var z=n4[2],v=z<=0.5?0:(z-0.5)/0.3;if(v>1)v=1;
+  d.style.opacity=v.toFixed(2);
+  if(v>0.02){d.style.visibility='visible';d.style.pointerEvents='auto'}else{d.style.visibility='hidden';d.style.pointerEvents='none'}
+  if(z<=0.05)continue;
+  if(z>bd){bd=z;best=d;}
  }
  for(var j=0;j<SV.nodes.length;j++)SV.nodes[j].classList.toggle('aim',SV.nodes[j]===best);
  if(SV.aim!==best){SV.aim=best;if(SAim)SAim.textContent=best?(best.querySelector('.sn-nm')||{}).textContent||'?':'—';var tip=document.querySelector('.sphere-tip');if(tip)tip.classList.toggle('lock',!!best);}
@@ -246,8 +249,8 @@ function aim(){
 function tick(){
  if(!SV.on)return;
  var k=SV.keys,mv=false;
- if(k['w']||k['arrowup']){SV.vel.rx=Math.min(2.1,SV.vel.rx+.4);mv=true}
- if(k['s']||k['arrowdown']){SV.vel.rx=Math.max(-2.1,SV.vel.rx-.4);mv=true}
+ if(k['w']||k['arrowup']){SV.vel.rx=Math.max(-2.1,SV.vel.rx-.4);mv=true}
+ if(k['s']||k['arrowdown']){SV.vel.rx=Math.min(2.1,SV.vel.rx+.4);mv=true}
  if(k['a']||k['arrowleft']){SV.vel.ry=Math.min(2.1,SV.vel.ry+.4);mv=true}
  if(k['d']||k['arrowright']){SV.vel.ry=Math.max(-2.1,SV.vel.ry-.4);mv=true}
  if(!mv){SV.vel.rx*=.9;SV.vel.ry*=.9}
@@ -263,7 +266,7 @@ function tick(){
  requestAnimationFrame(tick);
 }
 SV.start=function(){SV.on=true;mkStars();aim();requestAnimationFrame(tick)};
-SV.stop=function(){SV.on=false;SV.aim=null;var tip=document.querySelector('.sphere-tip');if(tip)tip.classList.remove('lock');if(SAim)SAim.textContent='—';var ns=SP?SP.children:[],i;for(i=0;i<ns.length;i++)ns[i].classList.remove('aim')};
+SV.stop=function(){SV.on=false;SV.aim=null;var tip=document.querySelector('.sphere-tip');if(tip)tip.classList.remove('lock');if(SAim)SAim.textContent='—';var ns=SP?SP.children:[],i;for(i=0;i<ns.length;i++){ns[i].classList.remove('aim');ns[i].style.opacity='1';ns[i].style.visibility='visible';ns[i].style.pointerEvents='auto'}};
 document.addEventListener('visibilitychange',function(){if(document.hidden){if(SV.on)SV.stop()}else if(!SV.on&&curLay===3){SV.start()}});
 function apply(n){
  for(var i=1;i<=8;i++)B.classList.remove('lay-'+i);

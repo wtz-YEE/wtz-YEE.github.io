@@ -159,21 +159,22 @@
       <label class="switch" style="margin-left:6px"><input type="checkbox" id="follow" checked>鼠标跟随</label>
       <button class="btn" id="resetBtn" type="button">复位</button>
     </div>
-    <div class="hint">点击角色会随机播放一个动作 · 本页为<b>静态离线页面</b>，需通过本地服务器打开（见 README）</div>
+    <div class="hint">点击舞台会随机播放一个动作 · 本页为<b>静态离线页面</b>，需通过本地服务器打开（见 README）</div>
   </nav>
 
   <script src="lib/pixi.min.js"></script>
   <script src="lib/live2dcubismcore.min.js"></script>
-  <script src="lib/pixi-live2d-display.min.js"></script>
+  <script src="lib/untitled-cubism.min.js"></script>
   <script>
   (function(){
     'use strict';
     var MODEL_URL = 'model/seethrough_output_2.model3.json';
-    var EXPRESSIONS = ['普通','微笑','半闭眼','惊讶','嫌弃眼','左眼眨','右眼眨'];
+    // 表情顺序 = model3.json Expressions 数组顺序（该引擎按索引匹配，exp3.json 无 Name 字段）
+    var EXPRESSIONS = [['普通',0],['微笑',1],['半闭眼',2],['惊讶',3],['嫌弃眼',4],['左眼眨',5],['右眼眨',6]];
     var MOTIONS = [['待机','Idle'],['眨眼','Blink'],['点头','Nod'],['摇头','Shake']];
     var EXPR_BTN, MOTION_BTN;
 
-    var app = null, model = null, sized = false, followOn = true;
+    var app = null, model = null, followOn = true;
     var curX = 0, curY = 0, targetX = 0, targetY = 0;
 
     function byId(id){ return document.getElementById(id); }
@@ -185,13 +186,14 @@
 
     // 构建控制按钮
     EXPR_BTN = {};
-    EXPRESSIONS.forEach(function(name){
+    EXPRESSIONS.forEach(function(pair){
+      var name = pair[0], idx = pair[1];
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'btn'; b.textContent = name;
       b.setAttribute('aria-label', '切换表情：' + name);
-      b.addEventListener('click', function(){ setExpression(name, b); });
+      b.addEventListener('click', function(){ setExpression(idx, b); });
       byId('exprBtns').appendChild(b);
-      EXPR_BTN[name] = b;
+      EXPR_BTN[idx] = b;
     });
     MOTION_BTN = {};
     MOTIONS.forEach(function(m){
@@ -203,21 +205,17 @@
       MOTION_BTN[m[1]] = b;
     });
 
-    function setExpression(name, btn){
+    function setExpression(idx, btn){
       if(!model) return;
-      var mm = model.internalModel && model.internalModel.motionManager;
-      if(!mm || typeof mm.setExpression !== 'function') return;
-      mm.setExpression(name).catch(function(){});
+      model.expression(idx).catch(function(){});
       Object.keys(EXPR_BTN).forEach(function(k){
-        EXPR_BTN[k].classList.toggle('on', k === name);
+        EXPR_BTN[k].classList.toggle('on', k === String(idx));
       });
       flash(btn);
     }
     function playMotion(group){
       if(!model) return;
-      var mm = model.internalModel && model.internalModel.motionManager;
-      if(!mm || typeof mm.startMotion !== 'function') return;
-      mm.startMotion(group, 0, 3).catch(function(){});
+      model.motion(group).catch(function(){});
     }
 
     // 滑块数值
@@ -260,11 +258,10 @@
     });
     function flash(btn){ if(btn){ btn.style.transform = 'scale(.94)'; setTimeout(function(){ btn.style.transform = ''; }, 90); } }
 
-    // 鼠标跟随：目标角度映射
-    var stageEl = byId('stage');
-    stageEl.addEventListener('mousemove', function(ev){
+    // 鼠标跟随：目标角度映射（监听 window——canvas 与 stage 是兄弟元素，事件不冒泡到 stage）
+    window.addEventListener('mousemove', function(ev){
       if(!followOn) return;
-      var r = stageEl.getBoundingClientRect();
+      var r = byId('stage').getBoundingClientRect();
       var nx = (ev.clientX - r.left) / r.width;      // 0..1
       var ny = (ev.clientY - r.top) / r.height;
       targetX = (nx - 0.5) * 2 * 24;                 // ±24°
@@ -288,60 +285,74 @@
         fail('浏览器未启用 <b>WebGL</b>，无法渲染 Live2D 模型。<br><br>请开启浏览器硬件加速（设置 → 系统 → 使用硬件加速），或换用另一浏览器打开本页。');
         return;
       }
-      // 1. 初始化 Pixi（v8 推荐 init 写法）
+      // 1. 注册 Live2D 渲染管道（untitled-pixi-live2d-engine，必须在创建 Pixi renderer 之前）
+      if (!PIXI.live2d || !PIXI.live2d.Live2DPlugin) {
+        fail('未找到 Live2D 渲染引擎（lib/untitled-cubism.min.js 缺失或加载失败）。<br><br>请确认 lib/ 目录下 <b>pixi.min.js</b>、<b>live2dcubismcore.min.js</b>、<b>untitled-cubism.min.js</b> 三个文件完整存在。');
+        return;
+      }
+      try { PIXI.extensions.add(PIXI.live2d.Live2DPlugin); }
+      catch(e){ fail('Live2D 渲染管道注册失败：' + (e && e.message)); return; }
+      // 2. 初始化 Pixi（v8）
       app = new PIXI.Application();
-      await app.init({ resizeTo: window, backgroundAlpha: 0, antialias: true, autoDensity: true });
+      await app.init({ resizeTo: window, backgroundAlpha: 0, antialias: true, autoDensity: true, resolution: window.devicePixelRatio });
       byId('view').replaceWith(app.canvas);
       app.canvas.id = 'view';
       app.canvas.style.position = 'absolute';
       app.canvas.style.inset = '0';
 
-      // 2. Cubism 5 引导
-      if (PIXI.live2d && typeof PIXI.live2d.startUpCubism5 === 'function') {
-        try {
-          var sp = PIXI.live2d.startUpCubism5();
-          if (sp && typeof sp.then === 'function') { await sp; }
-        } catch(e){}
-      }
-      // 尺寸自适应兜底（兼容 resizeTo 未生效的环境）
-      window.addEventListener('resize', function(){
-        if(!app) return;
-        try{ app.renderer.resize(window.innerWidth, window.innerHeight); }catch(e){}
-        if(model && sized){
-          model.x = app.screen.width / 2;
-          model.y = app.screen.height / 2 - app.screen.height * 0.03;
-        }
-      });
-
-      // 3. 加载模型
-      model = await PIXI.live2d.Live2DModel.from(MODEL_URL, { autoInteract: true });
+      // 3. 加载模型（新引擎原生渲染管道，模型自动更新与绘制）
+      // autoFocus:false —— 关闭引擎自带的鼠标聚焦，避免与下方手动头部角度双写冲突
+      model = await PIXI.live2d.Live2DModel.from(MODEL_URL, { autoFocus: false });
       model.anchor.set(0.5, 0.5);
       app.stage.addChild(model);
-      model.on('hit', randomMotion);
+      sizeModel();
+      window.addEventListener('resize', function(){ if(model) sizeModel(); });
+      // 诊断：打印模型真实参数表（确认 ParamAngleX/Y 是否存在）
+      try {
+        var core = model.internalModel.coreModel;
+        var n = core.getParameterCount();
+        var names = [];
+        for (var i = 0; i < n; i++) { try { names.push(core.getParameterId(i)); } catch(e){} }
+        console.log('[diag] params(' + n + '): ' + names.join(','));
+      } catch(e){ console.log('[diag] param list error', e && e.message); }
 
-      // 4. 每帧：平滑头部角度 + 首次按屏幕尺寸缩放
+      // 4. 每帧：平滑头部角度
+      var wc = 0;
       app.ticker.add(function(){
         if(!model) return;
         curX += (targetX - curX) * 0.08;
         curY += (targetY - curY) * 0.08;
         try{
-          model.internalModel.coreModel.setParameterValueById('ParamAngleX', curX);
-          model.internalModel.coreModel.setParameterValueById('ParamAngleY', curY);
-        }catch(e){}
-        if(!sized && model.width > 1 && model.height > 1){
-          var s = Math.min(app.screen.width / model.width, app.screen.height / model.height) * 0.86;
-          model.scale.set(s);
-          model.x = app.screen.width / 2;
-          model.y = app.screen.height / 2 - app.screen.height * 0.03;
-          sized = true;
-        }
+          var core = model.internalModel.coreModel;
+          core.setParameterValueById('ParamAngleX', curX);
+          core.setParameterValueById('ParamAngleY', curY);
+          // 立即把参数同步到渲染缓冲（引擎每帧只在自身 update 尾部同步一次，手动写参数后需要主动刷新）
+          if (typeof core.loadParameters === 'function') { core.loadParameters(); }
+          if (wc < 20) {
+            wc++;
+            var rb = (typeof core.getParameterValueById === 'function') ? core.getParameterValueById('ParamAngleX') : -1;
+            console.log('[diag] write X=' + curX.toFixed(2) + ' Y=' + curY.toFixed(2) + ' rb=' + (typeof rb === 'number' ? rb.toFixed(2) : String(rb)));
+          }
+        }catch(e){ console.log('[diag] write error', e && e.message); }
       });
 
-      // 5. 入场动作 + 收尾
+      // 5. 点击舞台随机播放动作
+      app.canvas.addEventListener('click', randomMotion);
+
+      // 6. 入场动作 + 收尾
       playMotion('Idle');
       setStatus(true, '模型就绪');
       var b = byId('boot'); b.classList.add('hide');
       setTimeout(function(){ b.style.display = 'none'; }, 600);
+    }
+
+    function sizeModel(){
+      if(!model || !model.internalModel) return;
+      var iw = model.internalModel.width, ih = model.internalModel.height;
+      if(!(iw > 1) || !(ih > 1)) return;
+      var s = Math.min(app.screen.width / iw, app.screen.height / ih) * 0.86;
+      model.scale.set(s);
+      model.position.set(app.screen.width / 2, app.screen.height / 2 - app.screen.height * 0.03);
     }
 
     function fail(msg){
@@ -353,7 +364,8 @@
     boot().catch(function(err){
       var hint = '如果始终无法加载，请确认：<br>1) 通过本地服务器打开本页（如 start.bat 或 python -m http.server），不能用 file:// 直接双击<br>2) 三个库文件 lib/ 完整存在<br>3) 浏览器支持 WebGL';
       var info = (err && err.message ? (err.name ? err.name + ': ' : '') + err.message : String(err));
-      fail(hint + '<br><br>技术信息：' + info);
+      var stack = err && err.stack ? String(err.stack).replace(/</g, '&lt;') : '';
+      fail(hint + '<br><br>技术信息：' + info + (stack ? '<br><br><span style="font-size:11px;color:var(--muted2);word-break:break-all">堆栈：' + stack + '</span>' : ''));
     });
   })();
   </script>
