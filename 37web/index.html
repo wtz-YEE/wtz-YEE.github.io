@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>37 · Live2D 角色展示</title>
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="%23232742" stroke="%23e8c987" stroke-width="1.5"/><circle cx="11.5" cy="13" r="2.2" fill="%23e8c987"/><circle cx="20.5" cy="13" r="2.2" fill="%23e8c987"/><path d="M10 21 Q16 26.5 22 21" stroke="%23e8c987" stroke-width="2" fill="none" stroke-linecap="round"/></svg>'>
+<style>
+  :root{
+    --bg0:#14162a; --bg1:#1d2038; --bg2:#2a2c4c;
+    --panel:rgba(23,25,45,.86); --line:#3a4066; --line-soft:rgba(122,132,180,.25);
+    --text:#eceaf6; --muted:#9aa1c4; --muted2:#6f769e;
+    --gold:#e8c987; --gold2:#f6dfae; --cyan:#8fd8ea;
+    --danger:#ff9d94;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,-apple-system,sans-serif;
+    color:var(--text); background:var(--bg0); overflow:hidden;
+  }
+  /* 舞台背景：深蓝紫渐变 + 两层弱光晕 + 星点 */
+  .stage{
+    position:absolute; inset:0; overflow:hidden;
+    background:
+      radial-gradient(1100px 620px at 50% 38%, rgba(232,201,135,.10), transparent 60%),
+      radial-gradient(900px 700px at 72% 88%, rgba(143,216,234,.08), transparent 55%),
+      linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 55%, var(--bg2) 100%);
+  }
+  .stage::before{ /* 星点 */
+    content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background-image:
+      radial-gradient(1.2px 1.2px at 12% 22%, rgba(255,255,255,.8) 50%, transparent 51%),
+      radial-gradient(1px 1px at 34% 9%, rgba(255,255,255,.55) 50%, transparent 51%),
+      radial-gradient(1.4px 1.4px at 58% 17%, rgba(255,255,255,.45) 50%, transparent 51%),
+      radial-gradient(1px 1px at 76% 7%, rgba(255,255,255,.6) 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 88% 31%, rgba(255,255,255,.4) 50%, transparent 51%),
+      radial-gradient(1px 1px at 22% 44%, rgba(255,255,255,.3) 50%, transparent 51%),
+      radial-gradient(1.1px 1.1px at 47% 38%, rgba(255,255,255,.35) 50%, transparent 51%),
+      radial-gradient(1px 1px at 66% 52%, rgba(255,255,255,.25) 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 7% 68%, rgba(255,255,255,.28) 50%, transparent 51%),
+      radial-gradient(1px 1px at 93% 74%, rgba(255,255,255,.3) 50%, transparent 51%);
+    animation:twinkle 9s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle{from{opacity:.28}to{opacity:.6}}
+  @media (prefers-reduced-motion: reduce){ .stage::before{animation:none} }
+
+  #view{position:absolute; inset:0; z-index:2; display:block}
+
+  /* 顶部信息条 */
+  .topbar{
+    position:absolute; top:0; left:0; right:0; z-index:5;
+    display:flex; align-items:baseline; gap:14px; padding:18px 26px 0;
+    pointer-events:none;
+  }
+  .topbar .mark{font-size:11px; letter-spacing:.28em; color:var(--gold); font-weight:600}
+  .topbar .title{font-family:Georgia,"Songti SC","SimSun",serif; font-size:clamp(20px,3vw,30px); color:var(--text); text-shadow:0 2px 14px rgba(0,0,0,.45)}
+  .topbar .sub{font-size:12px; color:var(--muted)}
+  .status{margin-left:auto; display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); pointer-events:auto}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--gold); box-shadow:0 0 8px var(--gold); animation:pulse 1.6s ease-in-out infinite}
+  .dot.ok{background:#9fe0a8; box-shadow:0 0 8px #9fe0a8; animation:none}
+  .dot.err{background:var(--danger); box-shadow:0 0 8px var(--danger); animation:none}
+  @keyframes pulse{50%{opacity:.35}}
+
+  /* 加载 / 错误覆盖层 */
+  .boot{
+    position:absolute; inset:0; z-index:8; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:14px; background:rgba(20,22,42,.82);
+    transition:opacity .5s ease;
+  }
+  .boot.hide{opacity:0; pointer-events:none}
+  .boot .ring{width:46px; height:46px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--gold); animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .boot .txt{font-size:14px; color:var(--muted)}
+  .boot.err .ring{display:none}
+  .boot.err .txt{color:var(--danger); max-width:460px; text-align:center; line-height:1.7}
+  .boot .retry{
+    display:none; margin-top:8px; border:1px solid var(--gold); color:var(--gold2);
+    background:rgba(232,201,135,.1); font:inherit; font-size:13px; padding:8px 20px;
+    border-radius:999px; cursor:pointer; min-height:44px;
+  }
+  .boot.err .retry{display:block}
+  .boot .retry:hover{background:rgba(232,201,135,.2)}
+
+  /* 底部控制坞 */
+  .dock{
+    position:absolute; left:50%; bottom:18px; transform:translateX(-50%);
+    z-index:6; width:min(1080px, calc(100% - 28px));
+    background:var(--panel); border:1px solid var(--line-soft); border-radius:16px;
+    box-shadow:0 10px 40px rgba(0,0,0,.4); padding:12px 14px 12px;
+    display:flex; flex-direction:column; gap:10px;
+    backdrop-filter:blur(10px);
+  }
+  .group{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .group .label{font-size:12px; color:var(--muted2); width:34px; flex:none; letter-spacing:.05em}
+  .btn{
+    border:1px solid var(--line); background:transparent; color:var(--text);
+    font:inherit; font-size:13px; padding:6px 12px; border-radius:999px; cursor:pointer;
+    min-height:44px; transition:border-color .15s, color .15s, background .15s, transform .05s;
+  }
+  .btn:hover{border-color:var(--gold); color:var(--gold2)}
+  .btn:active{transform:scale(.96)}
+  .btn.on{border-color:var(--gold); color:var(--gold2); background:rgba(232,201,135,.12)}
+  .btn:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
+  .sl{display:flex; align-items:center; gap:6px; min-width:150px}
+  .sl input{width:92px; accent-color:var(--gold); cursor:pointer; min-height:20px}
+  .sl .sv{font-size:11px; color:var(--muted); width:34px; text-align:right; font-variant-numeric:tabular-nums}
+  .sl.disabled{opacity:.35; pointer-events:none}
+  .switch{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text); min-height:44px}
+  .switch input{accent-color:var(--gold); width:16px; height:16px; cursor:pointer}
+
+  .hint{font-size:11px; color:var(--muted2); text-align:center; margin-top:2px}
+  .hint b{color:var(--muted); font-weight:600}
+
+  /* 窄屏：dock 变纵向可滚动 */
+  @media (max-width:640px){
+    body{overflow:auto}
+    .dock{position:static; transform:none; width:auto; margin:calc(100vh - 320px) 14px 14px; z-index:6}
+    .stage{position:fixed; inset:0}
+    #view{height:calc(100vh - 320px)}
+    .group{gap:6px}
+  }
+</style>
+</head>
+<body>
+
+  <div class="stage" id="stage"></div>
+  <canvas id="view"></canvas>
+
+  <header class="topbar">
+    <div>
+      <div class="mark">个人展示 · LIVE2D</div>
+      <h1 class="title">我的 Live2D 角色</h1>
+      <div class="sub">seethrough_output_2 · Cubism 5.0 · 36 参数 · 7 表情</div>
+    </div>
+    <div class="status"><span class="dot" id="dot"></span><span id="statusText">正在加载模型…</span></div>
+  </header>
+
+  <div class="boot" id="boot" role="status">
+    <div class="ring"></div>
+    <div class="txt" id="bootTxt">正在加载 Live2D 模型（贴图较大，请稍候）…</div>
+    <button class="retry" id="retryBtn" type="button">重试</button>
+  </div>
+
+  <nav class="dock" id="dock" aria-label="模型控制面板">
+    <div class="group">
+      <span class="label">表情</span>
+      <span id="exprBtns"></span>
+    </div>
+    <div class="group">
+      <span class="label">动作</span>
+      <span id="motionBtns"></span>
+    </div>
+    <div class="group">
+      <span class="label">头部</span>
+      <label class="sl" id="slX"><span style="font-size:11px;color:var(--muted)">左右</span><input type="range" id="headX" min="-30" max="30" value="0" step="1"><span class="sv" id="headXV">0°</span></label>
+      <label class="sl" id="slY"><span style="font-size:11px;color:var(--muted)">上下</span><input type="range" id="headY" min="-30" max="30" value="0" step="1"><span class="sv" id="headYV">0°</span></label>
+      <label class="sl"><span style="font-size:11px;color:var(--muted)">嘴巴</span><input type="range" id="mouth" min="0" max="100" value="0" step="1"><span class="sv" id="mouthV">0%</span></label>
+      <label class="switch" style="margin-left:6px"><input type="checkbox" id="follow" checked>鼠标跟随</label>
+      <button class="btn" id="resetBtn" type="button">复位</button>
+    </div>
+    <div class="hint">点击角色会随机播放一个动作 · 本页为<b>静态离线页面</b>，需通过本地服务器打开（见 README）</div>
+  </nav>
+
+  <script src="lib/pixi.min.js"></script>
+  <script src="lib/live2dcubismcore.min.js"></script>
+  <script src="lib/pixi-live2d-display.min.js"></script>
+  <script>
+  (function(){
+    'use strict';
+    var MODEL_URL = 'model/seethrough_output_2.model3.json';
+    var EXPRESSIONS = ['普通','微笑','半闭眼','惊讶','嫌弃眼','左眼眨','右眼眨'];
+    var MOTIONS = [['待机','Idle'],['眨眼','Blink'],['点头','Nod'],['摇头','Shake']];
+    var EXPR_BTN, MOTION_BTN;
+
+    var app = null, model = null, sized = false, followOn = true;
+    var curX = 0, curY = 0, targetX = 0, targetY = 0;
+
+    function byId(id){ return document.getElementById(id); }
+    function setStatus(ok, text){
+      var d = byId('dot'), t = byId('statusText');
+      d.className = 'dot ' + (ok ? 'ok' : 'err');
+      t.textContent = text;
+    }
+
+    // 构建控制按钮
+    EXPR_BTN = {};
+    EXPRESSIONS.forEach(function(name){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn'; b.textContent = name;
+      b.setAttribute('aria-label', '切换表情：' + name);
+      b.addEventListener('click', function(){ setExpression(name, b); });
+      byId('exprBtns').appendChild(b);
+      EXPR_BTN[name] = b;
+    });
+    MOTION_BTN = {};
+    MOTIONS.forEach(function(m){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn'; b.textContent = m[0];
+      b.setAttribute('aria-label', '播放动作：' + m[0]);
+      b.addEventListener('click', function(){ playMotion(m[1]); });
+      byId('motionBtns').appendChild(b);
+      MOTION_BTN[m[1]] = b;
+    });
+
+    function setExpression(name, btn){
+      if(!model) return;
+      var mm = model.internalModel && model.internalModel.motionManager;
+      if(!mm || typeof mm.setExpression !== 'function') return;
+      mm.setExpression(name).catch(function(){});
+      Object.keys(EXPR_BTN).forEach(function(k){
+        EXPR_BTN[k].classList.toggle('on', k === name);
+      });
+      flash(btn);
+    }
+    function playMotion(group){
+      if(!model) return;
+      var mm = model.internalModel && model.internalModel.motionManager;
+      if(!mm || typeof mm.startMotion !== 'function') return;
+      mm.startMotion(group, 0, 3).catch(function(){});
+    }
+
+    // 滑块数值
+    function bindSlider(id, vid, fmt, onInput){
+      var el = byId(id);
+      el.addEventListener('input', function(){
+        byId(vid).textContent = fmt(el.value);
+        if(onInput) onInput(el.value);
+      });
+    }
+    bindSlider('headX','headXV', function(v){ return v + '°'; }, function(v){ targetX = Number(v); });
+    bindSlider('headY','headYV', function(v){ return v + '°'; }, function(v){ targetY = Number(v); });
+    bindSlider('mouth','mouthV', function(v){ return v + '%'; }, function(v){
+      if(model) try{ model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', Number(v)/100); }catch(e){}
+    });
+
+    byId('retryBtn').addEventListener('click', function(){ location.reload(); });
+
+    byId('follow').addEventListener('change', function(){
+      followOn = this.checked;
+      byId('slX').classList.toggle('disabled', followOn);
+      byId('slY').classList.toggle('disabled', followOn);
+      if(followOn){ targetX = curX = 0; targetY = curY = 0; }
+    });
+    byId('resetBtn').addEventListener('click', function(){
+      if(model){
+        try{
+          var core = model.internalModel.coreModel;
+          core.setParameterValueById('ParamAngleX', 0);
+          core.setParameterValueById('ParamAngleY', 0);
+          core.setParameterValueById('ParamMouthOpenY', 0);
+          core.setParameterValueById('ParamEyeLOpen', 1);
+          core.setParameterValueById('ParamEyeROpen', 1);
+        }catch(e){}
+      }
+      byId('headX').value = 0; byId('headX').dispatchEvent(new Event('input'));
+      byId('headY').value = 0; byId('headY').dispatchEvent(new Event('input'));
+      byId('mouth').value = 0; byId('mouth').dispatchEvent(new Event('input'));
+      playMotion('Idle');
+    });
+    function flash(btn){ if(btn){ btn.style.transform = 'scale(.94)'; setTimeout(function(){ btn.style.transform = ''; }, 90); } }
+
+    // 鼠标跟随：目标角度映射
+    var stageEl = byId('stage');
+    stageEl.addEventListener('mousemove', function(ev){
+      if(!followOn) return;
+      var r = stageEl.getBoundingClientRect();
+      var nx = (ev.clientX - r.left) / r.width;      // 0..1
+      var ny = (ev.clientY - r.top) / r.height;
+      targetX = (nx - 0.5) * 2 * 24;                 // ±24°
+      targetY = (ny - 0.5) * 2 * 18;
+    });
+
+    // 随机动作（点击角色时）
+    function randomMotion(){
+      var groups = ['Nod','Shake','Blink'];
+      playMotion(groups[Math.floor(Math.random() * groups.length)]);
+    }
+
+    async function boot(){
+      // 0. 协议与 WebGL 前置检查
+      if (location.protocol === 'file:') {
+        fail('检测到当前以 <b>file://</b> 方式直接打开了本页，浏览器会禁止此方式加载模型文件。<br><br>请改为：<br>① 双击 <b>start.bat</b>（自动启动服务器并打开页面），或<br>② 在该目录运行 <b>python -m http.server 8000</b>，再访问 <b>http://localhost:8000</b>');
+        return;
+      }
+      var glTest = document.createElement('canvas').getContext('webgl2') || document.createElement('canvas').getContext('webgl');
+      if (!glTest) {
+        fail('浏览器未启用 <b>WebGL</b>，无法渲染 Live2D 模型。<br><br>请开启浏览器硬件加速（设置 → 系统 → 使用硬件加速），或换用另一浏览器打开本页。');
+        return;
+      }
+      // 1. 初始化 Pixi（v8 推荐 init 写法）
+      app = new PIXI.Application();
+      await app.init({ resizeTo: window, backgroundAlpha: 0, antialias: true, autoDensity: true });
+      byId('view').replaceWith(app.canvas);
+      app.canvas.id = 'view';
+      app.canvas.style.position = 'absolute';
+      app.canvas.style.inset = '0';
+
+      // 2. Cubism 5 引导
+      if (PIXI.live2d && typeof PIXI.live2d.startUpCubism5 === 'function') {
+        try {
+          var sp = PIXI.live2d.startUpCubism5();
+          if (sp && typeof sp.then === 'function') { await sp; }
+        } catch(e){}
+      }
+      // 尺寸自适应兜底（兼容 resizeTo 未生效的环境）
+      window.addEventListener('resize', function(){
+        if(!app) return;
+        try{ app.renderer.resize(window.innerWidth, window.innerHeight); }catch(e){}
+        if(model && sized){
+          model.x = app.screen.width / 2;
+          model.y = app.screen.height / 2 - app.screen.height * 0.03;
+        }
+      });
+
+      // 3. 加载模型
+      model = await PIXI.live2d.Live2DModel.from(MODEL_URL, { autoInteract: true });
+      model.anchor.set(0.5, 0.5);
+      app.stage.addChild(model);
+      model.on('hit', randomMotion);
+
+      // 4. 每帧：平滑头部角度 + 首次按屏幕尺寸缩放
+      app.ticker.add(function(){
+        if(!model) return;
+        curX += (targetX - curX) * 0.08;
+        curY += (targetY - curY) * 0.08;
+        try{
+          model.internalModel.coreModel.setParameterValueById('ParamAngleX', curX);
+          model.internalModel.coreModel.setParameterValueById('ParamAngleY', curY);
+        }catch(e){}
+        if(!sized && model.width > 1 && model.height > 1){
+          var s = Math.min(app.screen.width / model.width, app.screen.height / model.height) * 0.86;
+          model.scale.set(s);
+          model.x = app.screen.width / 2;
+          model.y = app.screen.height / 2 - app.screen.height * 0.03;
+          sized = true;
+        }
+      });
+
+      // 5. 入场动作 + 收尾
+      playMotion('Idle');
+      setStatus(true, '模型就绪');
+      var b = byId('boot'); b.classList.add('hide');
+      setTimeout(function(){ b.style.display = 'none'; }, 600);
+    }
+
+    function fail(msg){
+      setStatus(false, '加载失败');
+      byId('bootTxt').innerHTML = msg;
+      byId('boot').classList.add('err');
+    }
+
+    boot().catch(function(err){
+      var hint = '如果始终无法加载，请确认：<br>1) 通过本地服务器打开本页（如 start.bat 或 python -m http.server），不能用 file:// 直接双击<br>2) 三个库文件 lib/ 完整存在<br>3) 浏览器支持 WebGL';
+      var info = (err && err.message ? (err.name ? err.name + ': ' : '') + err.message : String(err));
+      fail(hint + '<br><br>技术信息：' + info);
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "seethrough_output_2.moc3",
+		"Textures": [
+			"seethrough_output_2.1024/texture_00.png",
+			"seethrough_output_2.1024/texture_01.png"
+		],
+		"Physics": "seethrough_output_2.physics3.json",
+		"DisplayInfo": "seethrough_output_2.cdi3.json",
+		"Expressions": [
+			{
+				"Name": "普通",
+				"File": "seethrough_output_2.neutral.exp3.json"
+			},
+			{
+				"Name": "微笑",
+				"File": "seethrough_output_2.smile.exp3.json"
+			},
+			{
+				"Name": "半闭眼",
+				"File": "seethrough_output_2.usume.exp3.json"
+			},
+			{
+				"Name": "惊讶",
+				"File": "seethrough_output_2.surprise.exp3.json"
+			},
+			{
+				"Name": "嫌弃眼",
+				"File": "seethrough_output_2.jito.exp3.json"
+			},
+			{
+				"Name": "左眼眨",
+				"File": "seethrough_output_2.winkL.exp3.json"
+			},
+			{
+				"Name": "右眼眨",
+				"File": "seethrough_output_2.winkR.exp3.json"
+			}
+		],
+		"Motions": {
+			"Idle": [
+				{
+					"File": "seethrough_output_2.idle.motion3.json"
+				}
+			],
+			"Blink": [
+				{
+					"File": "seethrough_output_2.blink.motion3.json"
+				}
+			],
+			"Nod": [
+				{
+					"File": "seethrough_output_2.nod.motion3.json"
+				}
+			],
+			"Shake": [
+				{
+					"File": "seethrough_output_2.shake.motion3.json"
+				}
+			]
+		}
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeLOpen",
+				"ParamEyeROpen"
+			]
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": [
+				"ParamMouthOpenY"
+			]
+		}
+	]
+}
