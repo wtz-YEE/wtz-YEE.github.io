@@ -5,10 +5,12 @@ import os
 import re
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
 CORS(app)
 
 _BASE = os.path.dirname(os.path.abspath(__file__))
 GUESTBOOK_FILE = os.path.join(_BASE, "guestbook.json")
+VIDEO_FILE = os.path.join(_BASE, "videos.json")
 USER_FILE = os.path.join(_BASE, "users.json")
 PM_FILE = os.path.join(_BASE, "pm.json")
 CHANGELOG_FILE = os.path.join(_BASE, "changelog.json")
@@ -1161,6 +1163,111 @@ def api_upload():
 @app.route("/uploads/<fn>", methods=["GET"])
 def api_uploads(fn):
     return send_from_directory(UP_DIR, fn)
+
+
+VID_DIR = os.path.join(_BASE, "videos")
+os.makedirs(VID_DIR, exist_ok=True)
+
+@app.route("/videos/<fn>", methods=["GET"])
+def api_videos(fn):
+    return send_from_directory(VID_DIR, fn)
+
+@app.route("/video_up", methods=["POST"])
+def api_video_up():
+    cu = _cur_user((request.form or {}).get("token") or "")
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录后再投稿"})
+    if (_load(USER_FILE, {}).get(cu) or {}).get("banned"):
+        return jsonify({"ok": False, "msg": "你已被拉黑，无法投稿"})
+    f = request.files.get("file")
+    if not f:
+        return jsonify({"ok": False, "msg": "未收到视频文件"})
+    raw = f.read()
+    if not raw:
+        return jsonify({"ok": False, "msg": "视频文件为空"})
+    if len(raw) > 60 * 1024 * 1024:
+        return jsonify({"ok": False, "msg": "压缩后仍超过 60MB，请降低码率"})
+    if not (f.filename or "").lower().endswith((".webm", ".mp4", ".mov")):
+        return jsonify({"ok": False, "msg": "仅支持 webm/mp4/mov"})
+    fn = _uuid.uuid4().hex[:12] + ".webm"
+    with open(os.path.join(VID_DIR, fn), "wb") as g:
+        g.write(raw)
+    return jsonify({"ok": True, "src": "/videos/" + fn})
+
+@app.route("/video_add", methods=["POST"])
+def api_video_add():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录后再投稿"})
+    if (_load(USER_FILE, {}).get(cu) or {}).get("banned"):
+        return jsonify({"ok": False, "msg": "你已被拉黑，无法投稿"})
+    t = str(p.get("t") or "").strip()[:80]
+    if not t:
+        return jsonify({"ok": False, "msg": "标题不能为空"})
+    zn = str(p.get("zn") or "").strip()[:8]
+    if not zn:
+        return jsonify({"ok": False, "msg": "请选择分区"})
+    src = str(p.get("src") or "").strip()
+    if not src.startswith("/videos/"):
+        return jsonify({"ok": False, "msg": "请先上传视频"})
+    tags = [str(x).strip()[:12] for x in (p.get("tg") or []) if str(x).strip()][:6]
+    v = _load(VIDEO_FILE, [])
+    nid = 1
+    for x in v:
+        nid = max(nid, int(x.get("id", 0) or 0) + 1)
+    v.append({"id": nid, "user": cu, "t": t, "d": str(p.get("d") or "")[:1000], "zn": zn,
+              "tg": tags, "time": _now(), "src": src, "fn": str(p.get("fn") or "")[:120],
+              "sz": int(p.get("sz") or 0)})
+    _save(VIDEO_FILE, v)
+    _add_exp(_load(USER_FILE, {}), cu, 10)
+    return jsonify({"ok": True, "id": nid})
+
+@app.route("/video_mine", methods=["POST"])
+def api_video_mine():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录"})
+    v = _load(VIDEO_FILE, [])
+    mine = [x for x in v if x.get("user") == cu]
+    mine = sorted(mine, key=lambda a: -int(a.get("id", 0) or 0))
+    us = _load(USER_FILE, {})
+    adm = bool(us.get(cu, {}).get("is_admin")) or cu == ROOT
+    return jsonify({"ok": True, "list": mine, "adm": adm})
+
+@app.route("/video_list", methods=["GET", "POST"])
+def api_video_list():
+    v = _load(VIDEO_FILE, [])
+    pub = sorted(v, key=lambda a: -int(a.get("id", 0) or 0))
+    return jsonify({"ok": True, "list": pub})
+
+@app.route("/video_del", methods=["POST"])
+def api_video_del():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "登录已失效"})
+    us = _load(USER_FILE, {})
+    adm = bool(us.get(cu, {}).get("is_admin")) or cu == ROOT
+    v = _load(VIDEO_FILE, [])
+    tar = [x for x in v if str(x.get("id")) == str(p.get("id"))]
+    if not tar:
+        return jsonify({"ok": False, "msg": "投稿不存在"})
+    x0 = tar[0]
+    if not adm and x0.get("user") != cu:
+        return jsonify({"ok": False, "msg": "只能删除自己的投稿"})
+    v = [x for x in v if str(x.get("id")) != str(p.get("id"))]
+    _save(VIDEO_FILE, v)
+    try:
+        fn = (x0.get("src") or "").split("/")[-1]
+        if fn:
+            fp = os.path.join(VID_DIR, fn)
+            if os.path.exists(fp):
+                os.remove(fp)
+    except Exception:
+        pass
+    return jsonify({"ok": True, "msg": "已删除"})
 
 @app.route("/logout", methods=["POST"])
 def api_logout():
