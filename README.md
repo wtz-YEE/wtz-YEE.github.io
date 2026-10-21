@@ -25,8 +25,15 @@
 | `pages/解码器.html` / `pages/guestwall.html` | 解码器 / 访客墙 | 密文解码 / 访客留言墙 |
 | `games/游戏-01.html` ~ `games/游戏-08.html` | 24 个小游戏 | 每 4 个小游戏一个 HTML（2048/小恐龙/贪吃蛇/战机…） |
 | `pages/changelog.html` | 更新日志 | 全站更新记录 |
+| `pages/mcratch.html` | mcratch | MC 风格 Scratch：积木编程、大地图/场景/节点、多角色多脚本、可导入 `.mcratch` 项目 |
+| `pages/花园.html` | 花园 | 种植/照料/收获材料，64 种植物 14 种风格，星雨之夜全站协作 |
+| `pages/炼金.html` | 炼金 | 107 种产物配方、器材拖放研磨、火候控制、贤者之石长流程 |
+| `pages/锻造.html` | 锻造 | 武器附魔锻造 |
+| `pages/肉鸽.html` | 横板肉鸽 | 消耗药剂与武器的 roguelite 关卡 |
+| `pages/opusmc/index.html` | OpusMC | 浏览器 MC 复刻（生存/创造/红石） |
+| `37web/` | Live2D 角色展示 | 可交互立绘（表情/鼠标跟随） |
 | `404.html` | 404 | 黑白终端风自定义 404 |
-| `docs/泰拉肉鸽_游戏设计与实现文档.md` / `docs/PRTS项目交接文档.md` | 文档 | 肉鸽玩法设计与项目交接说明 |
+| `docs/泰拉肉鸽_游戏设计与实现文档.md` | 文档 | 肉鸽玩法设计与实现说明 |
 
 ## 核心功能
 
@@ -113,7 +120,7 @@ prts/
 ├── mods/                                    # mod.jar
 ├── scripts/                                 # 资源恢复 / 审计 / 迁移等一次性脚本
 ├── tools/                                   # 启动脚本（.bat）+ 密钥/JSON 工具
-├── docs/                                    # 设计与交接文档
+├── docs/                                    # 设计文档
 ├── _gb/                                     # 本地服务端（gitignore）
 │   ├── guestbook_server.py                  # 权威服务端
 │   └── push_*.ps1 / patch_*.py / 数据 json
