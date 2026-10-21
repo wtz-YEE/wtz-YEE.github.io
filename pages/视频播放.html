@@ -27,6 +27,32 @@ h1 b{color:var(--gold)}
 .meta .row{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--ink3);font-size:12.5px;letter-spacing:.05em;align-items:center}
 .meta .row .u{color:var(--gold);font-family:Consolas,monospace;font-size:11.5px}
 .meta .row .tg{display:inline-block;border:1px solid rgba(255,214,10,.5);color:var(--gold);font-size:11.5px;padding:3px 9px;letter-spacing:.06em}
+.mine-tag{display:none;margin-left:12px;font-family:Consolas,monospace;font-size:10px;color:var(--grn);border:1px solid rgba(92,255,154,.4);padding:3px 10px;letter-spacing:.1em;vertical-align:middle}
+.mine-tag.show{display:inline-block}
+.acts{display:flex;gap:14px;margin-top:16px;flex-wrap:wrap}
+.abtn{display:inline-flex;align-items:center;gap:8px;font-family:Consolas,monospace;font-size:12px;letter-spacing:.1em;color:var(--ink3);border:1px solid var(--line2);background:transparent;padding:9px 16px;cursor:pointer;transition:.16s}
+.abtn:hover{color:var(--accent);border-color:rgba(255,255,255,.4)}
+.abtn.on{color:var(--gold);border-color:var(--gold);box-shadow:0 0 12px rgba(255,214,10,.15)}
+.abtn .num{color:var(--gold)}
+.abtn b{font-weight:600}
+.cmt{margin-top:26px;border:1px solid var(--line2);background:var(--panel);padding:20px}
+.cmt h3{font-family:Consolas,monospace;font-size:12px;letter-spacing:.18em;color:var(--ink3);margin:0 0 16px}
+.cmt h3::before{content:"//";color:var(--gold);margin-right:8px}
+.cmt-list{list-style:none;margin:0;padding:0}
+.cmt-list li{padding:12px 2px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;gap:10px;align-items:flex-start}
+.cmt-list .av{width:30px;height:30px;flex:0 0 30px;border:1px solid rgba(255,214,10,.5);color:var(--gold);font-family:Consolas,monospace;font-size:13px;display:flex;align-items:center;justify-content:center}
+.cmt-list .cb{flex:1;min-width:0}
+.cmt-list .cb .cu{font-size:11.5px;color:var(--gold);font-family:Consolas,monospace;letter-spacing:.06em}
+.cmt-list .cb .ct{font-size:11px;color:var(--ink3);margin-left:10px}
+.cmt-list .cb .cc{margin-top:5px;font-size:13px;line-height:1.6;word-break:break-word}
+.cmt-list .cx{color:var(--red);background:transparent;border:1px solid rgba(255,92,92,.5);font-family:Consolas,monospace;font-size:10px;padding:3px 9px;cursor:pointer;flex:0 0 auto;transition:.15s}
+.cmt-list .cx:hover{background:rgba(255,92,92,.12)}
+.cmt .empty{color:var(--ink3);font-size:12px;text-align:center;padding:22px 0;letter-spacing:.1em}
+.cmt-in{display:flex;gap:10px;margin-top:16px}
+.cmt-in input{flex:1;background:#050506;border:1px solid var(--line2);color:var(--ink);padding:11px 13px;font-family:inherit;font-size:13px;letter-spacing:.04em;outline:none}
+.cmt-in input:focus{border-color:var(--gold)}
+.cmt-in button{background:var(--gold);color:#000;border:none;font-family:Consolas,monospace;font-size:12px;letter-spacing:.14em;padding:0 20px;cursor:pointer;font-weight:600}
+.cmt-in button:disabled{background:rgba(255,214,10,.35);cursor:not-allowed}
 .back{display:inline-block;margin-top:20px;color:var(--ink3);text-decoration:none;font-family:Consolas,monospace;font-size:11.5px;letter-spacing:.12em;border:1px solid var(--line2);padding:9px 18px;transition:.18s}
 .back:hover{color:var(--gold);border-color:var(--gold)}
 .delbtn{display:none;margin-top:20px;margin-left:14px;color:var(--red);background:transparent;font-family:Consolas,monospace;font-size:11.5px;letter-spacing:.12em;border:1px solid rgba(255,92,92,.5);padding:9px 18px;cursor:pointer;transition:.18s}
@@ -62,11 +88,20 @@ h1 b{color:var(--gold)}
   <div id="player-box">
     <video class="player" id="pv" controls preload="metadata"></video>
     <div class="meta">
-      <h2 id="mt"></h2>
+      <h2 id="mt"><span id="mineTag" class="mine-tag">MY VIDEO</span></h2>
       <div class="row" id="mrow"></div>
+      <div class="acts" id="acts"></div>
       <button id="del" class="delbtn">✕ 删除视频</button>
     </div>
     <a class="back" href="视频播放.html">◄ 返回全部视频</a>
+    <div class="cmt" id="cmt">
+      <h3>评论区</h3>
+      <ul class="cmt-list" id="cmtList"></ul>
+      <div class="cmt-in">
+        <input id="cmtIn" maxlength="300" placeholder="说点什么…（登录后可评论）">
+        <button id="cmtSend">发表</button>
+      </div>
+    </div>
   </div>
   <div id="grid"></div>
 </main>
@@ -80,6 +115,47 @@ h1 b{color:var(--gold)}
   function esc(s){try{return window.esc?window.esc(s):String(s==null?'':s)}catch(e){return String(s==null?'':s)}}
   function q(name){var m=new RegExp('[?&]'+name+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1]):''}
   function cloud(){try{return !!apiBase()}catch(e){return false}}
+  function renderActs(v){
+    var a=document.getElementById('acts');a.innerHTML='';
+    var lb=document.createElement('button');lb.className='abtn'+(v.liked?' on':'');
+    lb.innerHTML='<b>♥</b> 点赞 <span class="num">'+(v.likes||[]).length+'</span>';
+    lb.onclick=function(){
+      if(!apiToken()){try{window.toast?window.toast('请先登录'):alert('请先登录')}catch(e){}return}
+      call('/video_like',{id:v.id}).then(function(j){
+        if(j.ok){v.liked=j.liked;lb.classList.toggle('on',j.liked);lb.querySelector('.num').textContent=j.likes}
+        else{try{window.toast?window.toast(j.msg):alert(j.msg)}catch(e){}}
+      }).catch(function(){try{window.toast?window.toast('云端中断'):alert('云端中断')}catch(e){}});
+    };
+    var vb=document.createElement('span');vb.className='abtn';vb.style.cursor='default';
+    vb.innerHTML='▶ 播放 <span class="num">'+(v.views||0)+'</span>';
+    var cb=document.createElement('span');cb.className='abtn';cb.style.cursor='default';
+    cb.innerHTML='💬 评论 <span class="num">'+(v.cmts||[]).length+'</span>';
+    a.appendChild(lb);a.appendChild(vb);a.appendChild(cb);
+  }
+  function loadCmt(v){
+    var ul=document.getElementById('cmtList');
+    if(!v.cmts){ul.innerHTML='<li class="empty">加载中…</li>';return}
+    ul.innerHTML='';
+    if(!v.cmts.length){ul.innerHTML='<li class="empty">// 暂无评论 · 来抢沙发</li>';return}
+    v.cmts.forEach(function(c){
+      var li=document.createElement('li');
+      var av=document.createElement('span');av.className='av';av.textContent=(c.user||'?').charAt(0).toUpperCase();
+      var b=document.createElement('span');b.className='cb';
+      b.innerHTML='<span class="cu">@'+esc(c.user||'匿名')+'</span><span class="ct">'+new Date(c.time||Date.now()).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span><div class="cc">'+esc(c.c||'')+'</div>';
+      li.appendChild(av);li.appendChild(b);
+      if(v.mine){
+        var x=document.createElement('button');x.className='cx';x.textContent='✕ 删除';
+        x.onclick=function(){
+          call('/video_cmt_del',{id:v.id,cid:c.id}).then(function(j){
+            if(j.ok){v.cmts=j.cmts;loadCmt(v);renderActs(v)}
+            else{try{window.toast?window.toast(j.msg):alert(j.msg)}catch(e){}}
+          }).catch(function(){try{window.toast?window.toast('云端中断'):alert('云端中断')}catch(e){}});
+        };
+        li.appendChild(x);
+      }
+      ul.appendChild(li);
+    });
+  }
   function run(list){
     var id=q('id');
     if(id){
@@ -91,13 +167,15 @@ h1 b{color:var(--gold)}
       pb.classList.add('show');
       pv.src=vsrc(v.src);
       mt.textContent=v.t||'无标题';
+      var tg=document.getElementById('mineTag');tg.className='mine-tag'+(v.mine?' show':'');
       var r=document.createElement('div');
       var h='<span class="u">@'+esc(v.user||'匿名')+'</span><span>'+esc(v.zn||'未分区')+'</span><span>'+new Date(v.time||Date.now()).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span>';
       (v.tg||[]).forEach(function(x){h+=' <span class="tg">'+esc(x)+'</span>'});
       r.innerHTML=h;
       mrow.innerHTML='';mrow.appendChild(r);
       document.title=(v.t||'视频')+' · 视频库 · WTZ';
-      delb.className='delbtn'+(apiToken()?' show':'');
+      renderActs(v);
+      delb.className='delbtn'+(v.mine?' show':'');
       delb.onclick=function(){
         if(!confirm('确定删除「'+(v.t||'无标题')+'」？'))return;
         delb.disabled=true;delb.textContent='删除中…';
@@ -106,6 +184,21 @@ h1 b{color:var(--gold)}
           if(j.ok){try{window.toast?window.toast('已删除'):alert('已删除')}catch(e){}location.href='视频播放.html'}
           else{try{window.toast?window.toast('删除失败：'+j.msg):alert(j.msg)}catch(e){}}
         }).catch(function(){delb.disabled=false;delb.textContent='✕ 删除视频';try{window.toast?window.toast('云端中断，删除未完成'):alert('云端中断')}catch(e){}});
+      };
+      call('/video_view',{id:v.id}).then(function(j){if(j.ok){v.views=j.views;renderActs(v)}})['catch'](function(){});
+      loadCmt(v);
+      var cin=document.getElementById('cmtIn'),cs=document.getElementById('cmtSend');
+      cin.onkeydown=function(e){if(e.key==='Enter')cs.click()};
+      cs.onclick=function(){
+        var c=cin.value.trim();
+        if(!c)return;
+        if(!apiToken()){try{window.toast?window.toast('请先登录'):alert('请先登录')}catch(e){}return}
+        cs.disabled=true;
+        call('/video_cmt_add',{id:v.id,c:c}).then(function(j){
+          cs.disabled=false;
+          if(j.ok){v.cmts=j.cmts;cin.value='';loadCmt(v);renderActs(v)}
+          else{try{window.toast?window.toast(j.msg):alert(j.msg)}catch(e){}}
+        }).catch(function(){cs.disabled=false;try{window.toast?window.toast('云端中断'):alert('云端中断')}catch(e){}});
       };
       pv.play()['catch'](function(){});
       return;
@@ -117,7 +210,7 @@ h1 b{color:var(--gold)}
     list.forEach(function(v){
       var c=document.createElement('div');c.className='gcard';
       var zn=(v.zn||'未分区').charAt(0);
-      c.innerHTML='<div class="ph"><i>'+zn+'</i></div><div class="gi"><b>'+esc(v.t||'无标题')+'</b><div class="gm"><span class="u">@'+esc(v.user||'匿名')+'</span><span>'+new Date(v.time||Date.now()).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit'})+'</span><span class="zn">'+esc(v.zn||'')+'</span></div></div>';
+      c.innerHTML='<div class="ph"><i>'+zn+'</i></div><div class="gi"><b>'+esc(v.t||'无标题')+'</b><div class="gm"><span class="u">@'+esc(v.user||'匿名')+'</span><span>♥'+(v.likes||[]).length+'</span><span>▶'+(v.views||0)+'</span><span class="zn">'+esc(v.zn||'')+'</span></div></div>';
       c.onclick=function(){location.href='视频播放.html?id='+encodeURIComponent(v.id)};
       g.appendChild(c);
     });

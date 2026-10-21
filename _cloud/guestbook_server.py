@@ -1238,9 +1238,17 @@ def api_video_mine():
 
 @app.route("/video_list", methods=["GET", "POST"])
 def api_video_list():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token") or "")
+    us = _load(USER_FILE, {})
+    adm = bool(us.get(cu, {}).get("is_admin")) or cu == ROOT
     v = _load(VIDEO_FILE, [])
     pub = sorted(v, key=lambda a: -int(a.get("id", 0) or 0))
-    return jsonify({"ok": True, "list": pub})
+    out = []
+    for x in pub:
+        out.append(dict(x, mine=(bool(cu) and (x.get("user") == cu or adm)),
+                        liked=(bool(cu) and cu in (x.get("likes") or []))))
+    return jsonify({"ok": True, "list": out})
 
 @app.route("/video_del", methods=["POST"])
 def api_video_del():
@@ -1268,6 +1276,88 @@ def api_video_del():
     except Exception:
         pass
     return jsonify({"ok": True, "msg": "已删除"})
+
+@app.route("/video_like", methods=["POST"])
+def api_video_like():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录"})
+    v = _load(VIDEO_FILE, [])
+    for x in v:
+        if str(x.get("id")) == str(p.get("id")):
+            likes = x.get("likes") or []
+            if cu in likes:
+                likes.remove(cu)
+            else:
+                likes.append(cu)
+            x["likes"] = likes
+            _save(VIDEO_FILE, v)
+            return jsonify({"ok": True, "likes": len(likes), "liked": cu in likes})
+    return jsonify({"ok": False, "msg": "投稿不存在"})
+
+@app.route("/video_view", methods=["POST"])
+def api_video_view():
+    p = request.get_json() or {}
+    v = _load(VIDEO_FILE, [])
+    for x in v:
+        if str(x.get("id")) == str(p.get("id")):
+            x["views"] = int(x.get("views") or 0) + 1
+            _save(VIDEO_FILE, v)
+            return jsonify({"ok": True, "views": x["views"]})
+    return jsonify({"ok": False, "msg": "投稿不存在"})
+
+@app.route("/video_cmt", methods=["POST"])
+def api_video_cmt():
+    p = request.get_json() or {}
+    v = _load(VIDEO_FILE, [])
+    for x in v:
+        if str(x.get("id")) == str(p.get("id")):
+            return jsonify({"ok": True, "cmts": x.get("cmts") or []})
+    return jsonify({"ok": False, "msg": "投稿不存在"})
+
+@app.route("/video_cmt_add", methods=["POST"])
+def api_video_cmt_add():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录"})
+    c = str(p.get("c") or "").strip()[:300]
+    if not c:
+        return jsonify({"ok": False, "msg": "评论不能为空"})
+    v = _load(VIDEO_FILE, [])
+    for x in v:
+        if str(x.get("id")) == str(p.get("id")):
+            cmts = x.get("cmts") or []
+            cid = 1
+            for z in cmts:
+                cid = max(cid, int(z.get("id", 0) or 0) + 1)
+            cmts.append({"id": cid, "user": cu, "time": _now(), "c": c})
+            x["cmts"] = cmts
+            _save(VIDEO_FILE, v)
+            return jsonify({"ok": True, "cid": cid, "cmts": cmts})
+    return jsonify({"ok": False, "msg": "投稿不存在"})
+
+@app.route("/video_cmt_del", methods=["POST"])
+def api_video_cmt_del():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录"})
+    us = _load(USER_FILE, {})
+    adm = bool(us.get(cu, {}).get("is_admin")) or cu == ROOT
+    v = _load(VIDEO_FILE, [])
+    for x in v:
+        if str(x.get("id")) == str(p.get("id")):
+            cmts = x.get("cmts") or []
+            for z in cmts:
+                if str(z.get("id")) == str(p.get("cid")) and (z.get("user") == cu or adm):
+                    cmts.remove(z)
+                    x["cmts"] = cmts
+                    _save(VIDEO_FILE, v)
+                    return jsonify({"ok": True, "cmts": cmts})
+            return jsonify({"ok": False, "msg": "评论不存在或无权删除"})
+    return jsonify({"ok": False, "msg": "投稿不存在"})
 
 @app.route("/logout", methods=["POST"])
 def api_logout():
