@@ -58,6 +58,17 @@ body.rz{user-select:none}
 .insline{position:absolute;left:0;right:0;height:3px;background:#FFD24A;border-radius:2px;display:none;pointer-events:none;z-index:5;box-shadow:0 0 4px rgba(255,210,74,.8)}
 .gh{position:fixed;z-index:999;opacity:.55;pointer-events:none;filter:grayscale(.35) brightness(1.08);box-shadow:0 3px 10px rgba(0,0,0,.35)}
 .gh .blk{margin:0;cursor:grabbing}
+.ghst{display:flex;flex-direction:column;align-items:flex-start}
+.ghst .blk{margin:0;cursor:grabbing}
+#bin{margin-top:10px;padding:8px;border:2px dashed #6B7178;border-radius:4px;color:#9AA0A6;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(0,0,0,.04)}
+#bin.over{border-color:#E74C3C;color:#E74C3C;background:rgba(231,76,60,.1)}
+.ctxm{position:fixed;z-index:1000;background:#fff;border:2px solid #000;box-shadow:0 3px 8px rgba(0,0,0,.3);padding:2px;display:none;min-width:96px}
+.ci{padding:4px 10px;cursor:pointer;font-size:12px;color:#111}
+.ci:hover{background:#FFD24A}
+.note{margin:4px 0 0;background:#FFD24A;border:1px solid #B8860B;border-radius:3px;padding:3px}
+.note textarea{width:100%;box-sizing:border-box;background:transparent;border:none;outline:none;font:inherit;font-size:11px;resize:vertical;min-height:22px;color:#5A3A00}
+.blk.rn{outline:2px solid #fff;animation:rblk .3s steps(2) infinite}
+@keyframes rblk{50%{outline-color:#FFD24A}}
 .end-cap,.else-cap{border-radius:4px;font-size:10px;text-align:center;color:#5A3A00;font-weight:700;min-height:20px;line-height:16px;background:rgba(255,171,25,.26)}
 .end-cap::before,.end-cap::after,.else-cap::before,.else-cap::after{display:none!important}
 .else-cap{background:rgba(255,171,25,.14);margin:2px 0}
@@ -65,15 +76,15 @@ body.rz{user-select:none}
 #work{flex:1;background:linear-gradient(180deg,#E9E4D8,#D8D2C2);border-right:3px solid #000;display:flex;flex-direction:column;min-width:300px;background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.03) 0 1px,transparent 1px 26px),repeating-linear-gradient(90deg,rgba(0,0,0,.03) 0 1px,transparent 1px 26px)}
 .wk-hd{display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(180deg,#9C8A6C,#7A674A);border-bottom:3px solid #000;color:#fff;font-size:13px;letter-spacing:1px;text-shadow:1px 1px 0 rgba(0,0,0,.5)}
 .wk-hd span{color:#FFE9A8}
-#scripts{flex:1;overflow-y:auto;padding:16px;position:relative}
+#scripts{flex:1;overflow:auto;position:relative}
 #scripts .ph{color:#8B836F;font-size:13px;text-align:center;margin-top:40px;letter-spacing:1px;text-shadow:none}
-.scr{position:relative;margin:0 auto 26px;max-width:420px}
-.scr .sc-hd{display:flex;align-items:center;gap:8px;padding:5px 8px;background:#3A3020;border:2px solid #000;color:#FFE9A8;font-size:11px;margin-bottom:-2px}
+.scr{position:absolute;left:0;top:0;right:0;bottom:0;display:flex;flex-direction:column;max-width:none;margin:0}
+.scr .sc-hd{display:flex;align-items:center;gap:8px;padding:5px 8px;background:#3A3020;border:2px solid #000;color:#FFE9A8;font-size:11px;margin-bottom:-2px;z-index:2}
 .scr .sc-hd img{width:20px;height:20px;image-rendering:pixelated}
 .scr .sc-x{margin-left:auto;color:#D8D2C2;cursor:pointer;font-size:12px}
-.scr-bd{background:#F5F1E6;border:2px solid #000;padding:10px 8px 16px;min-height:40px;position:relative}
+.scr-bd{flex:1;position:relative;background:#F5F1E6;border:2px solid #000;min-width:1800px;min-height:1100px}
 .scr-c{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
-.chain{position:relative;background:#EFE9D9;border:2px solid #000;padding:8px 8px 12px;min-width:110px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.chain{position:absolute;background:#EFE9D9;border:2px solid #000;padding:8px 8px 12px;min-width:110px;box-shadow:0 3px 0 rgba(0,0,0,.25);display:inline-block;vertical-align:top}
 .chain .ch-x{position:absolute;top:-9px;right:-9px;width:18px;height:18px;line-height:14px;text-align:center;background:#B03A2E;color:#fff;border:2px solid #000;border-radius:50%;font-size:10px;cursor:pointer;z-index:3;box-shadow:0 2px 0 rgba(0,0,0,.35)}
 #rcol{width:340px;min-width:340px;background:var(--pn);border:none;display:flex;flex-direction:column}
 #pcol{width:300px;min-width:240px;max-width:480px;background:var(--pn);border:none;display:flex;flex-direction:column}
@@ -194,6 +205,7 @@ body.rz{user-select:none}
   <aside id="pal">
     <div class="pal-hd">积木面板<button id="foldB">全部</button></div>
     <div id="cats"></div>
+    <div id="bin" title="拖到这里删除"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zM9 10h1.5v9H9v-9zm4.5 0H15v9h-1.5v-9z" fill="currentColor"/></svg><span>拖到这里删除</span></div>
   </aside>
   <div class="rv" id="pw"></div>
   <main id="work">
