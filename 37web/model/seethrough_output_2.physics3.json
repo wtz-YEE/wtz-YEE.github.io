@@ -2,7 +2,7 @@
     "Version": 3,
     "Meta": {
         "PhysicsSettingCount": 17,
-        "TotalInputCount": 37,
+        "TotalInputCount": 35,
         "TotalOutputCount": 17,
         "VertexCount": 52,
         "EffectiveForces": {
@@ -181,36 +181,18 @@
                 {
                     "Source": {
                         "Target": "Parameter",
-                        "Id": "ParamAngleX"
-                    },
-                    "Weight": 60.0,
-                    "Type": "X",
-                    "Reflect": false
-                },
-                {
-                    "Source": {
-                        "Target": "Parameter",
-                        "Id": "ParamAngleZ"
-                    },
-                    "Weight": 60.0,
-                    "Type": "Angle",
-                    "Reflect": false
-                },
-                {
-                    "Source": {
-                        "Target": "Parameter",
                         "Id": "ParamBodyAngleX"
                     },
-                    "Weight": 40.0,
+                    "Weight": 10.0,
                     "Type": "X",
                     "Reflect": false
                 },
                 {
                     "Source": {
                         "Target": "Parameter",
-                        "Id": "ParamBodyAngleZ"
+                        "Id": "ParamBreath"
                     },
-                    "Weight": 40.0,
+                    "Weight": 30.0,
                     "Type": "Angle",
                     "Reflect": false
                 }

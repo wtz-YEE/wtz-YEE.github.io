@@ -175,7 +175,7 @@
     var EXPR_BTN, MOTION_BTN;
 
     var app = null, model = null, followOn = true;
-    var curX = 0, curY = 0, targetX = 0, targetY = 0;
+    var focusX = 0, focusY = 0, mouthTarget = 0;
 
     function byId(id){ return document.getElementById(id); }
     function setStatus(ok, text){
@@ -215,7 +215,7 @@
     }
     function playMotion(group){
       if(!model) return;
-      model.motion(group).catch(function(){});
+      model.motion(group, 0, 3).catch(function(){});   // 3 = FORCE：强制打断当前动作立即播放（默认 NORMAL 会被 Idle 占位拒绝）
     }
 
     // 滑块数值
@@ -226,11 +226,14 @@
         if(onInput) onInput(el.value);
       });
     }
-    bindSlider('headX','headXV', function(v){ return v + '°'; }, function(v){ targetX = Number(v); });
-    bindSlider('headY','headYV', function(v){ return v + '°'; }, function(v){ targetY = Number(v); });
-    bindSlider('mouth','mouthV', function(v){ return v + '%'; }, function(v){
-      if(model) try{ model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', Number(v)/100); }catch(e){}
-    });
+    // 头部控制：focusX/focusY 是目标值（-1..1，滑杆可到 ±2 即 ±72°），
+    // boot 里的 ticker 每帧用自身 lerp 平滑逼近并直写 focusController 当前值
+    // （引擎 updateFocus 每帧无条件消费，渲染必吃）。patch 后系数：头 ±36°/单位、眼睛 ±0.68。
+    // 歪头 AngleZ 保持 -8（仅加大转头/点头，不加大旋转）。
+    // 不用引擎 focus()（自带物理惯性会过冲/滞后），平滑完全由本页接管。
+    bindSlider('headX','headXV', function(v){ return v + '°'; }, function(v){ focusX = Number(v) / 36; });
+    bindSlider('headY','headYV', function(v){ return v + '°'; }, function(v){ focusY = Number(v) / 36; });
+    bindSlider('mouth','mouthV', function(v){ return v + '%'; }, function(v){ mouthTarget = Number(v) / 100; });
 
     byId('retryBtn').addEventListener('click', function(){ location.reload(); });
 
@@ -238,18 +241,16 @@
       followOn = this.checked;
       byId('slX').classList.toggle('disabled', followOn);
       byId('slY').classList.toggle('disabled', followOn);
-      if(followOn){ targetX = curX = 0; targetY = curY = 0; }
+      if(!followOn){ focusX = 0; focusY = 0; }   // 关闭 → 平滑回正
     });
     byId('resetBtn').addEventListener('click', function(){
       if(model){
         try{
           var core = model.internalModel.coreModel;
-          core.setParameterValueById('ParamAngleX', 0);
-          core.setParameterValueById('ParamAngleY', 0);
-          core.setParameterValueById('ParamMouthOpenY', 0);
           core.setParameterValueById('ParamEyeLOpen', 1);
           core.setParameterValueById('ParamEyeROpen', 1);
         }catch(e){}
+        focusX = 0; focusY = 0; mouthTarget = 0;
       }
       byId('headX').value = 0; byId('headX').dispatchEvent(new Event('input'));
       byId('headY').value = 0; byId('headY').dispatchEvent(new Event('input'));
@@ -258,14 +259,16 @@
     });
     function flash(btn){ if(btn){ btn.style.transform = 'scale(.94)'; setTimeout(function(){ btn.style.transform = ''; }, 90); } }
 
-    // 鼠标跟随：目标角度映射（监听 window——canvas 与 stage 是兄弟元素，事件不冒泡到 stage）
+    // 鼠标跟随：监听 window（canvas 与 stage 是兄弟元素，事件不冒泡到 stage），
+    // 坐标映射为目标值；鼠标离开舞台边缘 → 目标归零（平滑回正，不保持最大角度）
     window.addEventListener('mousemove', function(ev){
-      if(!followOn) return;
+      if(!followOn || !model) return;
       var r = byId('stage').getBoundingClientRect();
-      var nx = (ev.clientX - r.left) / r.width;      // 0..1
+      var nx = (ev.clientX - r.left) / r.width;   // 0..1
       var ny = (ev.clientY - r.top) / r.height;
-      targetX = (nx - 0.5) * 2 * 24;                 // ±24°
-      targetY = (ny - 0.5) * 2 * 18;
+      if(nx < -0.06 || nx > 1.06 || ny < -0.06 || ny > 1.06){ focusX = 0; focusY = 0; return; }   // 移出舞台 → 回正
+      focusX = (nx - 0.5) * 2;                    // -1..1
+      focusY = (1 - ny - 0.5) * 2;                // 屏幕 y 向下，模型 y 向上
     });
 
     // 随机动作（点击角色时）
@@ -301,7 +304,8 @@
       app.canvas.style.inset = '0';
 
       // 3. 加载模型（新引擎原生渲染管道，模型自动更新与绘制）
-      // autoFocus:false —— 关闭引擎自带的鼠标聚焦，避免与下方手动头部角度双写冲突
+      // autoFocus:false —— 引擎原生跟随关掉，鼠标跟随由下方 window mousemove 自主驱动
+      // focusController（幅度可控：头部 ±8°、眼睛 ±0.35，已 patch 引擎系数）
       model = await PIXI.live2d.Live2DModel.from(MODEL_URL, { autoFocus: false });
       model.anchor.set(0.5, 0.5);
       app.stage.addChild(model);
@@ -312,29 +316,35 @@
         var core = model.internalModel.coreModel;
         var n = core.getParameterCount();
         var names = [];
-        for (var i = 0; i < n; i++) { try { names.push(core.getParameterId(i)); } catch(e){} }
+        for (var i = 0; i < n; i++) {
+          try {
+            var pid = core.getParameterId(i);
+            var s = (pid && typeof pid.getString === 'function') ? pid.getString().s : String(pid);
+            names.push(s);
+          } catch(e){}
+        }
         console.log('[diag] params(' + n + '): ' + names.join(','));
       } catch(e){ console.log('[diag] param list error', e && e.message); }
 
-      // 4. 每帧：平滑头部角度
-      var wc = 0;
+      // 4. 头部平滑：每帧 lerp 逼近目标并直写 focusController 当前值
+      //    （引擎每帧 updateFocus 无条件消费 fc.x/fc.y，走引擎管线渲染必吃；
+      //    自身 lerp 接管平滑，避免引擎 focus() 物理惯性的过冲/滞后）
       app.ticker.add(function(){
         if(!model) return;
-        curX += (targetX - curX) * 0.08;
-        curY += (targetY - curY) * 0.08;
+        var fc = model.internalModel && model.internalModel.focusController;
+        if(!fc) return;
+        fc.x += (focusX - fc.x) * 0.12;
+        fc.y += (focusY - fc.y) * 0.12;
+      }, null, 100);
+      // 4b. 嘴巴滑杆：每帧 add 逼近目标值（priority 100 先于引擎 update 执行，
+      //    进入引擎 saveParameters 快照，渲染必然生效）
+      app.ticker.add(function(){
+        if(!model) return;
         try{
           var core = model.internalModel.coreModel;
-          core.setParameterValueById('ParamAngleX', curX);
-          core.setParameterValueById('ParamAngleY', curY);
-          // 立即把参数同步到渲染缓冲（引擎每帧只在自身 update 尾部同步一次，手动写参数后需要主动刷新）
-          if (typeof core.loadParameters === 'function') { core.loadParameters(); }
-          if (wc < 20) {
-            wc++;
-            var rb = (typeof core.getParameterValueById === 'function') ? core.getParameterValueById('ParamAngleX') : -1;
-            console.log('[diag] write X=' + curX.toFixed(2) + ' Y=' + curY.toFixed(2) + ' rb=' + (typeof rb === 'number' ? rb.toFixed(2) : String(rb)));
-          }
-        }catch(e){ console.log('[diag] write error', e && e.message); }
-      });
+          core.addParameterValueById('ParamMouthOpenY', mouthTarget - core.getParameterValueById('ParamMouthOpenY'), 1);
+        }catch(e){}
+      }, null, 100);
 
       // 5. 点击舞台随机播放动作
       app.canvas.addEventListener('click', randomMotion);
