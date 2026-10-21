@@ -71,17 +71,30 @@ if errorlevel 1 (
   if !FAIL! geq 3 (
     echo   强杀残留进程并重启服务
     for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":8701 "') do taskkill /f /pid %%p >nul 2>&1
+    powershell -NoProfile -Command "Get-CimInstance Win32_Process ^| Where-Object {$_.CommandLine -like '*guestbook_server.py*'} ^| ForEach-Object {Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue}" >nul 2>&1
     ping -n 2 127.0.0.1 >nul
     start "" /min "%PYW%" "%CLOUD%guestbook_server.py"
     set FAIL=1
   ) else (
     echo   拉起服务
-    start "" /min "%PYW%" "%CLOUD%guestbook_server.py"
+    netstat -ano | findstr "LISTENING" | findstr ":8701 " >nul 2>&1
+    if not errorlevel 1 (
+      echo   已存在监听，跳过重复拉起
+    ) else (
+      start "" /min "%PYW%" "%CLOUD%guestbook_server.py"
+    )
   )
   ping -n 5 127.0.0.1 >nul
 ) else (
   if !FAIL! gtr 0 echo [%date% %time%] 本机服务已恢复
   set FAIL=0
+  powershell -NoProfile -Command "$n=(Get-CimInstance Win32_Process ^| Where-Object {$_.CommandLine -like '*guestbook_server.py*'} ^| Measure-Object).Count; if($n -gt 1){'multi'}" | findstr /i "multi" >nul 2>&1
+  if not errorlevel 1 (
+    echo 检测到多实例，清理为单实例
+    powershell -NoProfile -Command "Get-CimInstance Win32_Process ^| Where-Object {$_.CommandLine -like '*guestbook_server.py*'} ^| ForEach-Object {Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue}" >nul 2>&1
+    ping -n 2 127.0.0.1 >nul
+    start "" /min "%PYW%" "%CLOUD%guestbook_server.py"
+  )
 )
 set /a N+=1
 if !N! geq 4 (
