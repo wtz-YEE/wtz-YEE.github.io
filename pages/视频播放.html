@@ -86,7 +86,7 @@ h1 b{color:var(--gold)}
   <h1>视频<b>库</b></h1>
   <p class="sub" id="sub">正在连接云端…</p>
   <div id="player-box">
-    <video class="player" id="pv" controls preload="metadata"></video>
+    <video class="player" id="pv" controls preload="none" poster=""></video>
     <div class="meta">
       <h2 id="mt"><span id="mineTag" class="mine-tag">MY VIDEO</span></h2>
       <div class="row" id="mrow"></div>
@@ -166,8 +166,9 @@ h1 b{color:var(--gold)}
       g.innerHTML='';
       pb.classList.add('show');
       pv.src=vsrc(v.src);
+      var tg=document.getElementById('mineTag');
       mt.textContent=v.t||'无标题';
-      var tg=document.getElementById('mineTag');tg.className='mine-tag'+(v.mine?' show':'');
+      tg.className='mine-tag'+(v.mine?' show':'');
       var r=document.createElement('div');
       var h='<span class="u">@'+esc(v.user||'匿名')+'</span><span>'+esc(v.zn||'未分区')+'</span><span>'+new Date(v.time||Date.now()).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span>';
       (v.tg||[]).forEach(function(x){h+=' <span class="tg">'+esc(x)+'</span>'});
@@ -185,7 +186,7 @@ h1 b{color:var(--gold)}
           else{try{window.toast?window.toast('删除失败：'+j.msg):alert(j.msg)}catch(e){}}
         }).catch(function(){delb.disabled=false;delb.textContent='✕ 删除视频';try{window.toast?window.toast('云端中断，删除未完成'):alert('云端中断')}catch(e){}});
       };
-      call('/video_view',{id:v.id}).then(function(j){if(j.ok){v.views=j.views;renderActs(v)}})['catch'](function(){});
+      pv.onplay=function(){call('/video_view',{id:v.id}).then(function(j){if(j.ok){v.views=j.views;renderActs(v)}})['catch'](function(){})};
       loadCmt(v);
       var cin=document.getElementById('cmtIn'),cs=document.getElementById('cmtSend');
       cin.onkeydown=function(e){if(e.key==='Enter')cs.click()};
@@ -200,7 +201,6 @@ h1 b{color:var(--gold)}
           else{try{window.toast?window.toast(j.msg):alert(j.msg)}catch(e){}}
         }).catch(function(){cs.disabled=false;try{window.toast?window.toast('云端中断'):alert('云端中断')}catch(e){}});
       };
-      pv.play()['catch'](function(){});
       return;
     }
     sub.textContent='// '+list.length+' 条 · 点击卡片进入播放';
@@ -216,7 +216,7 @@ h1 b{color:var(--gold)}
     });
   }
   if(!cloud()){sub.textContent='// 无云端连接 · 仅显示本地草稿（无视频）';g.innerHTML='<div class="empty">// 云端未连接</div>';return}
-  call('/video_list').then(function(j){if(j.ok)run(j.list||[]);else{sub.textContent='// 拉取失败：'+j.msg;g.innerHTML='';pb.classList.remove('show')}}).catch(function(){sub.textContent='// 云端中断 · 稍后重试';g.innerHTML='<div class="empty">// 网络错误</div>';pb.classList.remove('show')});
+  call('/video_list').then(function(j){if(j.ok)run(j.list||[]);else{sub.textContent='// 拉取失败：'+j.msg;g.innerHTML='';pb.classList.remove('show')}}).catch(function(e){sub.textContent='// 云端中断 · 稍后重试';g.innerHTML='<div class="empty">// 网络错误</div>';pb.classList.remove('show')});
 })();
 </script>
 </body>

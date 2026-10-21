@@ -50,7 +50,7 @@
   /* 顶部信息条 */
   .topbar{
     position:absolute; top:0; left:0; right:0; z-index:5;
-    display:flex; align-items:baseline; gap:14px; padding:18px 26px 0;
+    display:flex; align-items:baseline; gap:14px; padding:18px 26px 0 270px;
     pointer-events:none;
   }
   .topbar .mark{font-size:11px; letter-spacing:.28em; color:var(--gold); font-weight:600}
@@ -82,17 +82,25 @@
   .boot.err .retry{display:block}
   .boot .retry:hover{background:rgba(232,201,135,.2)}
 
-  /* 底部控制坞 */
+  /* 左侧竖栏控制坞 */
   .dock{
-    position:absolute; left:50%; bottom:18px; transform:translateX(-50%);
-    z-index:6; width:min(1080px, calc(100% - 28px));
+    position:absolute; left:18px; top:50%; transform:translateY(-50%);
+    z-index:6; width:236px; max-height:calc(100vh - 56px); overflow-y:auto;
     background:var(--panel); border:1px solid var(--line-soft); border-radius:16px;
-    box-shadow:0 10px 40px rgba(0,0,0,.4); padding:12px 14px 12px;
-    display:flex; flex-direction:column; gap:10px;
+    box-shadow:0 10px 40px rgba(0,0,0,.4); padding:14px 12px;
+    display:flex; flex-direction:column; gap:12px;
     backdrop-filter:blur(10px);
   }
-  .group{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
-  .group .label{font-size:12px; color:var(--muted2); width:34px; flex:none; letter-spacing:.05em}
+  .group{display:flex; flex-direction:column; align-items:stretch; gap:6px}
+  .group .label{font-size:12px; color:var(--muted2); letter-spacing:.05em}
+  #charBtns{display:flex; flex-direction:column; gap:6px}
+  #charBtns .btn{width:100%; text-align:center; font-size:12px; padding:8px 6px}
+  .charsub{font-size:11px; color:var(--muted2)}
+  .btn:disabled{opacity:.38; cursor:not-allowed; border-style:dashed}
+  .sl{display:flex; align-items:center; gap:6px; min-width:0; width:100%}
+  .sl input{width:auto; flex:1; accent-color:var(--gold); cursor:pointer; min-height:20px}
+  .sl .sv{font-size:11px; color:var(--muted); width:34px; text-align:right; font-variant-numeric:tabular-nums}
+  .sl.disabled{opacity:.35; pointer-events:none}
   .btn{
     border:1px solid var(--line); background:transparent; color:var(--text);
     font:inherit; font-size:13px; padding:6px 12px; border-radius:999px; cursor:pointer;
@@ -102,23 +110,24 @@
   .btn:active{transform:scale(.96)}
   .btn.on{border-color:var(--gold); color:var(--gold2); background:rgba(232,201,135,.12)}
   .btn:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
-  .sl{display:flex; align-items:center; gap:6px; min-width:150px}
-  .sl input{width:92px; accent-color:var(--gold); cursor:pointer; min-height:20px}
-  .sl .sv{font-size:11px; color:var(--muted); width:34px; text-align:right; font-variant-numeric:tabular-nums}
-  .sl.disabled{opacity:.35; pointer-events:none}
   .switch{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text); min-height:44px}
   .switch input{accent-color:var(--gold); width:16px; height:16px; cursor:pointer}
 
   .hint{font-size:11px; color:var(--muted2); text-align:center; margin-top:2px}
   .hint b{color:var(--muted); font-weight:600}
 
-  /* 窄屏：dock 变纵向可滚动 */
-  @media (max-width:640px){
+  /* 窄屏：dock 收回底部横排可滚动 */
+  @media (max-width:720px){
     body{overflow:auto}
-    .dock{position:static; transform:none; width:auto; margin:calc(100vh - 320px) 14px 14px; z-index:6}
+    .dock{position:absolute; left:10px; right:10px; bottom:10px; top:auto; transform:none; width:auto; max-height:44vh; overflow-y:auto}
     .stage{position:fixed; inset:0}
-    #view{height:calc(100vh - 320px)}
-    .group{gap:6px}
+    #view{height:calc(100vh - 44vh)}
+    .group{flex-direction:row; flex-wrap:wrap; align-items:center; gap:6px 8px}
+    .group .label{width:auto}
+    #charBtns{flex-direction:row; flex-wrap:wrap}
+    #charBtns .btn{width:auto}
+    .sl{width:auto}
+    .topbar{padding-left:26px}
   }
 </style>
 </head>
@@ -131,7 +140,7 @@
     <div>
       <div class="mark">个人展示 · LIVE2D</div>
       <h1 class="title">我的 Live2D 角色</h1>
-      <div class="sub">seethrough_output_2 · Cubism 5.0 · 36 参数 · 7 表情</div>
+      <div class="sub">双角色切换 · seethrough_output_2 + Hiyori · 点击左侧角色切换</div>
     </div>
     <div class="status"><span class="dot" id="dot"></span><span id="statusText">正在加载模型…</span></div>
   </header>
@@ -144,6 +153,11 @@
 
   <nav class="dock" id="dock" aria-label="模型控制面板">
     <div class="group">
+      <span class="label">角色</span>
+      <span id="charBtns"></span>
+      <span class="charsub">点击切换角色 · 动作表情会重置</span>
+    </div>
+    <div class="group" id="exprGroup">
       <span class="label">表情</span>
       <span id="exprBtns"></span>
     </div>
@@ -168,12 +182,23 @@
   <script>
   (function(){
     'use strict';
-    var MODEL_URL = 'model/seethrough_output_2.model3.json';
-    // 表情顺序 = model3.json Expressions 数组顺序（该引擎按索引匹配，exp3.json 无 Name 字段）
-    var EXPRESSIONS = [['普通',0],['微笑',1],['半闭眼',2],['惊讶',3],['嫌弃眼',4],['左眼眨',5],['右眼眨',6]];
-    var MOTIONS = [['待机','Idle'],['眨眼','Blink'],['点头','Nod'],['摇头','Shake']];
-    var EXPR_BTN, MOTION_BTN;
-
+    // 角色列表：每个角色带自己的动作组与表情表（切换时销毁旧模型重新加载，并重建按钮）
+    var CHARS = [
+      {
+        name: 'seethrough_output_2',
+        url: 'model/seethrough_output_2.model3.json',
+        motions: [['待机','Idle'],['眨眼','Blink'],['点头','Nod'],['摇头','Shake']],
+        expressions: [['普通',0],['微笑',1],['半闭眼',2],['惊讶',3],['嫌弃眼',4],['左眼眨',5],['右眼眨',6]]
+      },
+      {
+        name: 'Hiyori 日和',
+        url: 'model/Hiyori/Hiyori.model3.json',
+        motions: [['待机','Idle'],['触摸','TapBody']],
+        expressions: []
+      }
+    ];
+    var CHAR_BTN = {}, curIdx = 0;
+    var EXPR_BTN = {}, MOTION_BTN = {};
     var app = null, model = null, followOn = true;
     var focusX = 0, focusY = 0, mouthTarget = 0;
 
@@ -184,26 +209,57 @@
       t.textContent = text;
     }
 
-    // 构建控制按钮
-    EXPR_BTN = {};
-    EXPRESSIONS.forEach(function(pair){
-      var name = pair[0], idx = pair[1];
+    // 构建控制按钮（首次与切换角色时按当前角色重建）
+    // 角色切换
+    CHARS.forEach(function(c, i){
       var b = document.createElement('button');
-      b.type = 'button'; b.className = 'btn'; b.textContent = name;
-      b.setAttribute('aria-label', '切换表情：' + name);
-      b.addEventListener('click', function(){ setExpression(idx, b); });
-      byId('exprBtns').appendChild(b);
-      EXPR_BTN[idx] = b;
+      b.type = 'button'; b.className = 'btn' + (i === curIdx ? ' on' : '');
+      b.textContent = c.name;
+      b.setAttribute('aria-label', '切换角色：' + c.name);
+      b.addEventListener('click', function(){ switchChar(i, b); });
+      byId('charBtns').appendChild(b);
+      CHAR_BTN[i] = b;
     });
-    MOTION_BTN = {};
-    MOTIONS.forEach(function(m){
-      var b = document.createElement('button');
-      b.type = 'button'; b.className = 'btn'; b.textContent = m[0];
-      b.setAttribute('aria-label', '播放动作：' + m[0]);
-      b.addEventListener('click', function(){ playMotion(m[1]); });
-      byId('motionBtns').appendChild(b);
-      MOTION_BTN[m[1]] = b;
-    });
+    function switchChar(i, btn){
+      if(i === curIdx) return;
+      curIdx = i;
+      Object.keys(CHAR_BTN).forEach(function(k){ CHAR_BTN[k].classList.toggle('on', Number(k) === i); });
+      flash(btn);
+      rebuildControls();
+      reloadModel();
+    }
+    function rebuildControls(){
+      var c = CHARS[curIdx];
+      // 表情（角色无表情时隐藏整组）
+      var eg = byId('exprBtns'); eg.innerHTML = '';
+      EXPR_BTN = {};
+      if(c.expressions.length){
+        byId('exprGroup').style.display = '';
+        c.expressions.forEach(function(pair){
+          var name = pair[0], idx = pair[1];
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'btn'; b.textContent = name;
+          b.setAttribute('aria-label', '切换表情：' + name);
+          b.addEventListener('click', function(){ setExpression(idx, b); });
+          eg.appendChild(b);
+          EXPR_BTN[idx] = b;
+        });
+      } else {
+        byId('exprGroup').style.display = 'none';
+      }
+      // 动作
+      var mb = byId('motionBtns'); mb.innerHTML = '';
+      MOTION_BTN = {};
+      c.motions.forEach(function(m){
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'btn'; b.textContent = m[0];
+        b.setAttribute('aria-label', '播放动作：' + m[0]);
+        b.addEventListener('click', function(){ playMotion(m[1]); });
+        mb.appendChild(b);
+        MOTION_BTN[m[1]] = b;
+      });
+    }
+    rebuildControls();
 
     function setExpression(idx, btn){
       if(!model) return;
@@ -226,13 +282,13 @@
         if(onInput) onInput(el.value);
       });
     }
-    // 头部控制：focusX/focusY 是目标值（-1..1，滑杆可到 ±2 即 ±72°），
+    // 头部控制：focusX/focusY 是目标值（-1..1，滑杆 ±30° 映射 ±0.83），
     // boot 里的 ticker 每帧用自身 lerp 平滑逼近并直写 focusController 当前值
-    // （引擎 updateFocus 每帧无条件消费，渲染必吃）。patch 后系数：头 ±36°/单位、眼睛 ±0.68。
+    // （引擎 updateFocus 每帧无条件消费，渲染必吃）。patch 后系数：水平 ±36°、垂直 ±24°/单位、眼睛 ±0.68。
     // 歪头 AngleZ 保持 -8（仅加大转头/点头，不加大旋转）。
     // 不用引擎 focus()（自带物理惯性会过冲/滞后），平滑完全由本页接管。
     bindSlider('headX','headXV', function(v){ return v + '°'; }, function(v){ focusX = Number(v) / 36; });
-    bindSlider('headY','headYV', function(v){ return v + '°'; }, function(v){ focusY = Number(v) / 36; });
+    bindSlider('headY','headYV', function(v){ return v + '°'; }, function(v){ focusY = Number(v) / 24; });
     bindSlider('mouth','mouthV', function(v){ return v + '%'; }, function(v){ mouthTarget = Number(v) / 100; });
 
     byId('retryBtn').addEventListener('click', function(){ location.reload(); });
@@ -271,9 +327,10 @@
       focusY = (1 - ny - 0.5) * 2;                // 屏幕 y 向下，模型 y 向上
     });
 
-    // 随机动作（点击角色时）
+    // 随机动作（点击角色时）：取当前角色除 Idle 外的动作组
     function randomMotion(){
-      var groups = ['Nod','Shake','Blink'];
+      var groups = CHARS[curIdx].motions.map(function(m){ return m[1]; }).filter(function(g){ return g !== 'Idle'; });
+      if(!groups.length) return;
       playMotion(groups[Math.floor(Math.random() * groups.length)]);
     }
 
@@ -303,30 +360,8 @@
       app.canvas.style.position = 'absolute';
       app.canvas.style.inset = '0';
 
-      // 3. 加载模型（新引擎原生渲染管道，模型自动更新与绘制）
-      // autoFocus:false —— 引擎原生跟随关掉，鼠标跟随由下方 window mousemove 自主驱动
-      // focusController（幅度可控：头部 ±8°、眼睛 ±0.35，已 patch 引擎系数）
-      model = await PIXI.live2d.Live2DModel.from(MODEL_URL, { autoFocus: false });
-      model.anchor.set(0.5, 0.5);
-      app.stage.addChild(model);
-      sizeModel();
-      window.addEventListener('resize', function(){ if(model) sizeModel(); });
-      // 诊断：打印模型真实参数表（确认 ParamAngleX/Y 是否存在）
-      try {
-        var core = model.internalModel.coreModel;
-        var n = core.getParameterCount();
-        var names = [];
-        for (var i = 0; i < n; i++) {
-          try {
-            var pid = core.getParameterId(i);
-            var s = (pid && typeof pid.getString === 'function') ? pid.getString().s : String(pid);
-            names.push(s);
-          } catch(e){}
-        }
-        console.log('[diag] params(' + n + '): ' + names.join(','));
-      } catch(e){ console.log('[diag] param list error', e && e.message); }
-
-      // 4. 头部平滑：每帧 lerp 逼近目标并直写 focusController 当前值
+      // 3. 注册每帧控制器（不依赖 model，切换角色后继续生效）
+      //    头部平滑：lerp 逼近目标并直写 focusController 当前值
       //    （引擎每帧 updateFocus 无条件消费 fc.x/fc.y，走引擎管线渲染必吃；
       //    自身 lerp 接管平滑，避免引擎 focus() 物理惯性的过冲/滞后）
       app.ticker.add(function(){
@@ -336,8 +371,8 @@
         fc.x += (focusX - fc.x) * 0.12;
         fc.y += (focusY - fc.y) * 0.12;
       }, null, 100);
-      // 4b. 嘴巴滑杆：每帧 add 逼近目标值（priority 100 先于引擎 update 执行，
-      //    进入引擎 saveParameters 快照，渲染必然生效）
+      // 嘴巴滑杆：每帧 add 逼近目标值（priority 100 先于引擎 update 执行，
+      // 进入引擎 saveParameters 快照，渲染必然生效）
       app.ticker.add(function(){
         if(!model) return;
         try{
@@ -346,14 +381,59 @@
         }catch(e){}
       }, null, 100);
 
-      // 5. 点击舞台随机播放动作
+      // 4. 点击舞台随机播放动作
       app.canvas.addEventListener('click', randomMotion);
+      window.addEventListener('resize', function(){ if(model) sizeModel(); });
 
-      // 6. 入场动作 + 收尾
-      playMotion('Idle');
-      setStatus(true, '模型就绪');
-      var b = byId('boot'); b.classList.add('hide');
-      setTimeout(function(){ b.style.display = 'none'; }, 600);
+      // 5. 首次加载模型
+      loadModel();
+    }
+
+    // 加载当前角色模型（首次与切换共用）
+    async function loadModel(){
+      var bootEl = byId('boot');
+      try {
+        // autoFocus:false —— 引擎原生跟随关掉，鼠标跟随由 window mousemove 自主驱动 focusController
+        model = await PIXI.live2d.Live2DModel.from(CHARS[curIdx].url, { autoFocus: false });
+        model.anchor.set(0.5, 0.5);
+        app.stage.addChild(model);
+        sizeModel();
+        // 诊断：打印模型真实参数表
+        try {
+          var core = model.internalModel.coreModel;
+          var n = core.getParameterCount();
+          var names = [];
+          for (var i = 0; i < n; i++) {
+            try {
+              var pid = core.getParameterId(i);
+              var s = (pid && typeof pid.getString === 'function') ? pid.getString().s : String(pid);
+              names.push(s);
+            } catch(e){}
+          }
+          console.log('[diag] params(' + n + '): ' + names.join(','));
+        } catch(e){ console.log('[diag] param list error', e && e.message); }
+        playMotion('Idle');
+        setStatus(true, '模型就绪：' + CHARS[curIdx].name);
+        bootEl.classList.add('hide');
+        setTimeout(function(){ bootEl.style.display = 'none'; }, 600);
+      } catch(e){
+        if(model){
+          try{ app.stage.removeChild(model); model.destroy(); }catch(_){}
+          model = null;
+        }
+        fail('加载失败：' + (e && e.message));
+      }
+    }
+    function reloadModel(){
+      if(!app) return;
+      if(model){
+        try{ app.stage.removeChild(model); model.destroy(); }catch(e){}
+        model = null;
+      }
+      var bootEl = byId('boot');
+      bootEl.classList.remove('hide'); bootEl.style.display = 'flex';
+      byId('bootTxt').textContent = '正在加载角色：' + CHARS[curIdx].name + ' …';
+      loadModel();
     }
 
     function sizeModel(){
@@ -362,7 +442,8 @@
       if(!(iw > 1) || !(ih > 1)) return;
       var s = Math.min(app.screen.width / iw, app.screen.height / ih) * 0.86;
       model.scale.set(s);
-      model.position.set(app.screen.width / 2, app.screen.height / 2 - app.screen.height * 0.03);
+      // 桌面端模型右移给左侧竖栏让位（窄屏恢复居中）
+      model.position.set(app.screen.width / 2 + (window.innerWidth > 720 ? 118 : 0), app.screen.height / 2 - app.screen.height * 0.03);
     }
 
     function fail(msg){
