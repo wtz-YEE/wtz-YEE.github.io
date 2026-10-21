@@ -1303,3 +1303,16 @@ body::after{content:"";position:fixed;inset:0;z-index:52;pointer-events:none;opa
 .hero-nav .hn-ic{width:16px;text-align:center}
 
 /* lay-2 左侧边栏 */
+
+/* ===== 入口 Bento 非对称布局 ===== */
+.grid.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;grid-auto-flow:dense}
+.grid.bento .card{display:flex;flex-direction:column;height:100%}
+.grid.bento .thumb{height:auto;flex:1;min-height:130px}
+.g7{grid-column:span 7;grid-row:span 2}
+.g5{grid-column:span 5}
+.g4{grid-column:span 4}
+.g6{grid-column:span 6}
+@media(max-width:900px){.grid.bento{grid-template-columns:1fr;gap:14px}.grid.bento .card,.grid.bento .g7,.grid.bento .g5,.grid.bento .g4,.grid.bento .g6{grid-column:auto;grid-row:auto}.grid.bento .thumb{height:150px;flex:none}}
+body.view-mobile .grid.bento{grid-template-columns:1fr;gap:12px}
+body.view-mobile .grid.bento .card,body.view-mobile .grid.bento .g7,body.view-mobile .grid.bento .g5,body.view-mobile .grid.bento .g4,body.view-mobile .grid.bento .g6{grid-column:auto;grid-row:auto}
+body.view-mobile .grid.bento .thumb{height:150px;flex:none}
