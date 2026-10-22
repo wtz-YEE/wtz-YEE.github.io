@@ -77,7 +77,7 @@
   .boot .retry{
     display:none; margin-top:8px; border:1px solid var(--gold); color:var(--gold2);
     background:rgba(232,201,135,.1); font:inherit; font-size:13px; padding:8px 20px;
-    border-radius:999px; cursor:pointer; min-height:44px;
+    border-radius:4px; cursor:pointer; min-height:44px;
   }
   .boot.err .retry{display:block}
   .boot .retry:hover{background:rgba(232,201,135,.2)}
@@ -86,12 +86,13 @@
   .dock{
     position:absolute; left:18px; top:50%; transform:translateY(-50%);
     z-index:6; width:236px; max-height:calc(100vh - 56px); overflow-y:auto;
-    background:var(--panel); border:1px solid var(--line-soft); border-radius:16px;
+    background:var(--panel); border:1px solid var(--line-soft); border-radius:4px;
     box-shadow:0 10px 40px rgba(0,0,0,.4); padding:14px 12px;
     display:flex; flex-direction:column; gap:12px;
     backdrop-filter:blur(10px);
   }
   .group{display:flex; flex-direction:column; align-items:stretch; gap:6px}
+  .group + .group{border-top:1px solid var(--line-soft); padding-top:10px}
   .group .label{font-size:12px; color:var(--muted2); letter-spacing:.05em}
   #charBtns{display:flex; flex-direction:column; gap:6px}
   #charBtns .btn{width:100%; text-align:center; font-size:12px; padding:8px 6px}
@@ -103,7 +104,7 @@
   .sl.disabled{opacity:.35; pointer-events:none}
   .btn{
     border:1px solid var(--line); background:transparent; color:var(--text);
-    font:inherit; font-size:13px; padding:6px 12px; border-radius:999px; cursor:pointer;
+    font:inherit; font-size:13px; padding:7px 14px; border-radius:4px; cursor:pointer;
     min-height:44px; transition:border-color .15s, color .15s, background .15s, transform .05s;
   }
   .btn:hover{border-color:var(--gold); color:var(--gold2)}
@@ -138,9 +139,9 @@
 
   <header class="topbar">
     <div>
-      <div class="mark">个人展示 · LIVE2D</div>
-      <h1 class="title">我的 Live2D 角色</h1>
-      <div class="sub">双角色切换 · seethrough_output_2 + Hiyori · 点击左侧角色切换</div>
+      <div class="mark">LIVE2D · 角色展示</div>
+      <h1 class="title">Live2D 角色展示</h1>
+      <div class="sub">三角色切换 · 点击左侧角色切换</div>
     </div>
     <div class="status"><span class="dot" id="dot"></span><span id="statusText">正在加载模型…</span></div>
   </header>
@@ -191,10 +192,16 @@
         expressions: [['普通',0],['微笑',1],['半闭眼',2],['惊讶',3],['嫌弃眼',4],['左眼眨',5],['右眼眨',6]]
       },
       {
-        name: 'Hiyori 日和',
-        url: 'model/Hiyori/Hiyori.model3.json',
-        motions: [['待机','Idle'],['触摸','TapBody']],
-        expressions: []
+        name: 'cyrene_small',
+        url: 'model/cyrene_small/4.model3.json',
+        motions: [['待机','Idle'],['眨眼','Blink'],['点头','Nod'],['摇头','Shake']],
+        expressions: [['普通',0],['微笑',1],['半闭眼',2],['惊讶',3],['嫌弃眼',4],['左眼眨',5],['右眼眨',6]]
+      },
+      {
+        name: 'cyrene_clo',
+        url: 'model/cyrene_clo/seethrough_output_3.model3.json',
+        motions: [['待机','Idle'],['眨眼','Blink'],['点头','Nod'],['摇头','Shake']],
+        expressions: [['普通',0],['微笑',1],['半闭眼',2],['惊讶',3],['嫌弃眼',4],['左眼眨',5],['右眼眨',6]]
       }
     ];
     var CHAR_BTN = {}, curIdx = 0;
