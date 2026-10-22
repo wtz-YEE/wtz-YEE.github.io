@@ -248,6 +248,18 @@
     }
     renderLogin();
 
+    /* API 地址兜底：本地无云端地址时从 CDN cloud.txt 拉取一次（raw 超时环境可用） */
+    if(!navApi()){
+      fetch('https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/cloud.txt', { cache:'no-store' })
+        .then(function(r){ if(!r.ok) throw 0; return r.text(); })
+        .then(function(t){
+          var m = String(t || '').trim().replace(/^\uFEFF/, '').split(/[\n,;]+/)
+            .map(function(x){ return x.trim().replace(/\/+$/, ''); })
+            .filter(function(x){ return /^https?:\/\//i.test(x); });
+          if(m.length){ LSet(K_API, m.join('\n')); renderLogin(); console.log('[nav] cloud.txt -> ' + m[0]); }
+        }).catch(function(){});
+    }
+
     /* 顶栏登录按钮 → 打开面板并聚焦登录区 */
     loginBtn.addEventListener('click', function(){
       mask.classList.add('on');

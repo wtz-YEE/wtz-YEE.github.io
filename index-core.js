@@ -1669,12 +1669,17 @@ function gbSaveConfig(){
   if(S.user) pmRefreshConversations();
 }
 
-/* 启动时自动从 GitHub 读取云端地址（由「一键启动云端.bat」推送） */
+/* 启动时自动从 GitHub 读取云端地址（由「一键启动云端.bat」推送）
+   源顺序：jsDelivr CDN（国内可达，raw 超时的替代）→ GitHub Pages → raw.githubusercontent */
 function fetchCloudTxt(){
-  var u0='https://raw.githubusercontent.com/wtz-YEE/wtz-YEE.github.io/main/cloud.txt?t='+Date.now();
-  var u1='https://wtz-YEE.github.io/cloud.txt?t='+Date.now();
-  return fetch(u0,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text()}).catch(function(){
-    return fetch(u1,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text()});
+  var t=Date.now();
+  var u2='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/cloud.txt?t='+t;
+  var u1='https://wtz-YEE.github.io/cloud.txt?t='+t;
+  var u0='https://raw.githubusercontent.com/wtz-YEE/wtz-YEE.github.io/main/cloud.txt?t='+t;
+  return fetch(u2,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text()}).catch(function(){
+    return fetch(u1,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text()}).catch(function(){
+      return fetch(u0,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text()});
+    });
   });
 }
 function autoCloud(){
