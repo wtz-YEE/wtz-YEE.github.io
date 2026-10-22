@@ -12,6 +12,17 @@
   "src": "/videos/64e892237105437f.mp4",
   "fn": "bilibili_BV1QC3G6DEKX_p1_480P.mp4",
   "sz": 11949327,
-  "views": 2
+  "views": 5,
+  "cmts": [
+   {
+    "id": 1,
+    "user": "wtz",
+    "time": "2026-10-22 19:05:24",
+    "c": "会赢的"
+   }
+  ],
+  "likes": [
+   "wtz"
+  ]
  }
 ]
