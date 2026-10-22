@@ -567,13 +567,15 @@
         if(fill) fill.style.width = n + '%';
         if(pct) pct.textContent = Math.round(n) + '%';
       }
-      PIXI.Assets.loader.off('progress', ph);
-      PIXI.Assets.loader.on('progress', ph);
       ph(0);
+      try {
+        // v8.22 加载进度：Assets.load 的 onProgress 选项（loader.on/off 事件 API 不存在）
+        await PIXI.Assets.load(CHARS[curIdx].url, { onProgress: ph });
+        ph(100);
+      } catch(e){ /* 预加载失败：交给下方 from 正常加载 */ }
       try {
         // autoFocus:false —— 引擎原生跟随关掉，鼠标跟随由 window mousemove 自主驱动 focusController
         model = await PIXI.live2d.Live2DModel.from(CHARS[curIdx].url, { autoFocus: false });
-        PIXI.Assets.loader.off('progress', ph);
         ph(100);
         model.anchor.set(0.5, 0.5);
         app.stage.addChild(model);
@@ -597,7 +599,6 @@
         bootEl.classList.add('hide');
         setTimeout(function(){ bootEl.style.display = 'none'; }, 600);
       } catch(e){
-        PIXI.Assets.loader.off('progress', ph);
         if(model){
           try{ app.stage.removeChild(model); model.destroy(); }catch(_){}
           model = null;
