@@ -72,6 +72,9 @@
   .boot .ring{width:46px; height:46px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--gold); animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .boot .txt{font-size:14px; color:var(--muted)}
+  .boot .pbar{width:220px;height:6px;background:rgba(122,132,180,.18);border-radius:3px;overflow:hidden;margin-top:4px}
+  .boot .pbar i{display:block;height:100%;width:0;background:var(--gold);transition:width .18s ease}
+  .boot .ptxt{font-size:11px;color:var(--muted2);font-variant-numeric:tabular-nums}
   .boot.err .ring{display:none}
   .boot.err .txt{color:var(--danger); max-width:460px; text-align:center; line-height:1.7}
   .boot .retry{
@@ -117,6 +120,30 @@
   .hint{font-size:11px; color:var(--muted2); text-align:center; margin-top:2px}
   .hint b{color:var(--muted); font-weight:600}
 
+  /* 投稿面板 */
+  .panel{position:fixed; inset:0; z-index:50; display:none; flex-direction:column; background:rgba(12,14,26,.92); backdrop-filter:blur(8px); padding:20px; overflow-y:auto}
+  .panel.on{display:flex}
+  .panel .phead{display:flex; align-items:center; gap:12px; margin-bottom:14px; max-width:760px; width:100%; margin-left:auto; margin-right:auto}
+  .panel .phead h2{font-size:18px; color:var(--text); flex:1}
+  .panel .pbody{width:min(760px,100%); margin:0 auto; display:flex; flex-direction:column; gap:16px}
+  .pcard{background:var(--panel); border:1px solid var(--line-soft); border-radius:4px; padding:14px}
+  .pcard h3{font-size:14px; color:var(--gold2); margin-bottom:10px}
+  .pcard label{display:block; font-size:12px; color:var(--muted); margin:8px 0 4px}
+  .pcard input[type=text],.pcard textarea,.pcard input[type=file]{width:100%; background:var(--bg1); border:1px solid var(--line); color:var(--text); border-radius:4px; padding:8px 10px; font:inherit; font-size:13px; min-height:44px}
+  .pcard textarea{resize:vertical; min-height:72px}
+  .pcard .prev{max-width:220px; max-height:220px; object-fit:contain; background:#000; border-radius:4px; margin-top:8px; display:none}
+  .plist{display:flex; flex-direction:column; gap:10px}
+  .pitem{display:flex; gap:12px; background:var(--bg1); border:1px solid var(--line-soft); border-radius:4px; padding:10px; align-items:center}
+  .pitem img{width:86px; height:86px; object-fit:contain; background:#000; border-radius:4px}
+  .pitem .pi-m{flex:1; min-width:0}
+  .pitem .pi-m b{display:block; font-size:14px; color:var(--text)}
+  .pitem .pi-m p{font-size:12px; color:var(--muted); margin:2px 0 4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .pitem .pi-v{font-size:12px; color:var(--gold); white-space:nowrap; display:flex; align-items:center; gap:8px}
+  .pitem .pi-v button{min-height:44px}
+  .pstat{font-size:12px; color:var(--muted2); text-align:center}
+  .pstat.err{color:var(--danger)}
+  .pstat.ok{color:#9fe0a8}
+
   /* 窄屏：dock 收回底部横排可滚动 */
   @media (max-width:720px){
     body{overflow:auto}
@@ -149,6 +176,8 @@
   <div class="boot" id="boot" role="status">
     <div class="ring"></div>
     <div class="txt" id="bootTxt">正在加载 Live2D 模型（贴图较大，请稍候）…</div>
+    <div class="pbar" id="bootBar"><i id="bootFill"></i></div>
+    <div class="ptxt" id="bootPct">0%</div>
     <button class="retry" id="retryBtn" type="button">重试</button>
   </div>
 
@@ -174,8 +203,37 @@
       <label class="switch" style="margin-left:6px"><input type="checkbox" id="follow" checked>鼠标跟随</label>
       <button class="btn" id="resetBtn" type="button">复位</button>
     </div>
+    <div class="group">
+      <button class="btn" id="submitBtn" type="button">角色投稿</button>
+      <span class="charsub">上传图片 · 投票 · 最高票做成 L2D 进站</span>
+    </div>
     <div class="hint">点击舞台会随机播放一个动作 · 本页为<b>静态离线页面</b>，需通过本地服务器打开（见 README）</div>
   </nav>
+
+  <div class="panel" id="panel" role="dialog" aria-label="角色投稿">
+    <div class="phead">
+      <h2>角色投稿</h2>
+      <button class="btn" id="panelClose" type="button">关闭</button>
+    </div>
+    <div class="pbody">
+      <div class="pstat" id="pStat">正在连接投稿服务…</div>
+      <div class="pcard">
+        <h3>投稿榜 · 投票</h3>
+        <div class="plist" id="pList"></div>
+      </div>
+      <div class="pcard">
+        <h3>我要投稿</h3>
+        <label>图片</label>
+        <input type="file" id="pFile" accept="image/*">
+        <img class="prev" id="pPrev" alt="预览">
+        <label>标题</label>
+        <input type="text" id="pTitle" maxlength="40" placeholder="角色名字 / 主题">
+        <label>说明</label>
+        <textarea id="pDesc" maxlength="200" placeholder="一句话介绍"></textarea>
+        <button class="btn" id="pSub" type="button" style="margin-top:12px">提交投稿</button>
+      </div>
+    </div>
+  </div>
 
   <script src="lib/pixi.min.js"></script>
   <script src="lib/live2dcubismcore.min.js"></script>
@@ -300,6 +358,105 @@
 
     byId('retryBtn').addEventListener('click', function(){ location.reload(); });
 
+    // ===== 角色投稿（云端服务：本地同源 / 线上读 cloud-url.txt） =====
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+    var CLOUD = '';
+    function apiBase(){
+      var h = location.hostname;
+      if(h === 'localhost' || h === '127.0.0.1' || location.protocol === 'file:') return location.origin;
+      return CLOUD;
+    }
+    if(location.protocol !== 'file:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1'){
+      fetch('cloud-url.txt').then(function(r){ return r.text(); }).then(function(t){
+        CLOUD = t.trim().replace(/\/+$/, '');
+      }).catch(function(){});
+    }
+    function pStat(msg, cls){
+      var s = byId('pStat');
+      s.className = 'pstat' + (cls ? ' ' + cls : '');
+      s.textContent = msg;
+    }
+    byId('submitBtn').addEventListener('click', function(){
+      byId('panel').classList.add('on');
+      loadList();
+    });
+    byId('panelClose').addEventListener('click', function(){ byId('panel').classList.remove('on'); });
+    var pImg = null;
+    byId('pFile').addEventListener('change', function(){
+      var f = this.files && this.files[0];
+      if(!f) return;
+      var fr = new FileReader();
+      fr.onload = function(){
+        var im = new Image();
+        im.onload = function(){
+          var m = Math.max(im.width, im.height);
+          var s = m > 1024 ? 1024 / m : 1;
+          var c = document.createElement('canvas');
+          c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+          c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+          pImg = c.toDataURL('image/jpeg', .85);
+          byId('pPrev').src = pImg;
+          byId('pPrev').style.display = 'block';
+        };
+        im.src = fr.result;
+      };
+      fr.readAsDataURL(f);
+    });
+    function loadList(){
+      var base = apiBase();
+      if(!base){ pStat('投稿服务未连接：线上模式需 cloud-url.txt（本地用 start.bat 打开）', 'err'); return; }
+      fetch(base + '/api/list').then(function(r){ return r.json(); }).then(function(d){
+        if(!d.ok){ pStat('服务异常：' + (d.msg || '未知'), 'err'); return; }
+        pStat('共 ' + d.list.length + ' 条投稿 · 最高票将做成 L2D 进站');
+        var box = byId('pList');
+        box.innerHTML = '';
+        d.list.forEach(function(it){
+          var div = document.createElement('div');
+          div.className = 'pitem';
+          var voted = localStorage.getItem('37v_' + it.id);
+          div.innerHTML = '<img src="' + base + it.img + '" alt="">' +
+            '<div class="pi-m"><b>' + esc(it.title) + '</b><p>' + esc(it.desc || '') + '</p></div>' +
+            '<div class="pi-v"><span>' + it.votes + ' 票</span>' +
+            (voted ? '<button class="btn" disabled>已投</button>' : '<button class="btn">投票</button>') + '</div>';
+          var b = div.querySelector('button');
+          if(b && !b.disabled){
+            b.addEventListener('click', function(){
+              fetch(base + '/api/vote', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id: it.id})})
+                .then(function(r){ return r.json(); })
+                .then(function(d2){
+                  if(d2.ok){
+                    localStorage.setItem('37v_' + it.id, '1');
+                    loadList();
+                  }
+                }).catch(function(){ pStat('投票失败：服务不可达', 'err'); });
+            });
+          }
+          box.appendChild(div);
+        });
+      }).catch(function(){ pStat('投稿服务未连接：需站长本地运行 start.bat 并保持 cpolar 在线', 'err'); });
+    }
+    byId('pSub').addEventListener('click', function(){
+      if(!pImg){ pStat('请先选择一张图片', 'err'); return; }
+      var title = byId('pTitle').value.trim();
+      if(!title){ pStat('请填写标题', 'err'); return; }
+      var base = apiBase();
+      if(!base){ pStat('投稿服务未连接', 'err'); return; }
+      var b = this; b.disabled = true; b.textContent = '提交中…';
+      fetch(base + '/api/submit', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({title: title, desc: byId('pDesc').value.trim(), img: pImg})})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          b.disabled = false; b.textContent = '提交投稿';
+          if(d.ok){
+            pStat('投稿成功！已进入投票榜', 'ok');
+            byId('pTitle').value = ''; byId('pDesc').value = '';
+            byId('pFile').value = ''; byId('pPrev').style.display = 'none'; pImg = null;
+            loadList();
+          } else { pStat('提交失败：' + (d.msg || ''), 'err'); }
+        })
+        .catch(function(){ b.disabled = false; b.textContent = '提交投稿'; pStat('提交失败：服务不可达', 'err'); });
+    });
+
     byId('follow').addEventListener('change', function(){
       followOn = this.checked;
       byId('slX').classList.toggle('disabled', followOn);
@@ -399,9 +556,25 @@
     // 加载当前角色模型（首次与切换共用）
     async function loadModel(){
       var bootEl = byId('boot');
+      var fill = byId('bootFill'), pct = byId('bootPct');
+      function ph(){
+        var n = 0;
+        for(var i = arguments.length - 1; i >= 0; i--){
+          var a = arguments[i];
+          if(typeof a === 'number'){ n = a; break; }
+        }
+        n = n > 1 ? n : n * 100;
+        if(fill) fill.style.width = n + '%';
+        if(pct) pct.textContent = Math.round(n) + '%';
+      }
+      PIXI.Assets.loader.off('progress', ph);
+      PIXI.Assets.loader.on('progress', ph);
+      ph(0);
       try {
         // autoFocus:false —— 引擎原生跟随关掉，鼠标跟随由 window mousemove 自主驱动 focusController
         model = await PIXI.live2d.Live2DModel.from(CHARS[curIdx].url, { autoFocus: false });
+        PIXI.Assets.loader.off('progress', ph);
+        ph(100);
         model.anchor.set(0.5, 0.5);
         app.stage.addChild(model);
         sizeModel();
@@ -424,6 +597,7 @@
         bootEl.classList.add('hide');
         setTimeout(function(){ bootEl.style.display = 'none'; }, 600);
       } catch(e){
+        PIXI.Assets.loader.off('progress', ph);
         if(model){
           try{ app.stage.removeChild(model); model.destroy(); }catch(_){}
           model = null;
