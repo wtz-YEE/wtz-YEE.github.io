@@ -36,7 +36,8 @@ def save_v(v):
 
 def pub(i):
     return {'id': i['id'], 'title': i['title'], 'desc': i['desc'],
-            'votes': i['votes'], 't': i['t'], 'img': '/api/img?id=' + i['id']}
+            'votes': i['votes'], 't': i['t'], 'img': '/api/img?id=' + i['id'],
+            'adopted': bool(i.get('adopted'))}
 
 CT = {
     '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -125,18 +126,33 @@ class H(http.server.BaseHTTPRequestHandler):
                 fp = os.path.join(SUBDIR, iid + '.png')
                 if os.path.isfile(fp):
                     os.remove(fp)
+            if q.get('adopt') or q.get('unadopt'):
+                iid = (q.get('adopt') or q.get('unadopt') or [''])[0]
+                val = 1 if q.get('adopt') else 0
+                with LOCK:
+                    items = load()
+                    for i in items:
+                        if i['id'] == iid:
+                            i['adopted'] = val
+                            save(items)
+                            break
             with LOCK:
-                items = sorted(load(), key=lambda x: -x['votes'])
+                items = sorted(load(), key=lambda x: (-(1 if x.get('adopted') else 0), -x['votes']))
             rows = ''.join(
-                '<div class="r"><img src="/api/img?id=%s"><div class="m"><b>%s</b><span>%s</span><p>%s</p><i>票数 %d · 编号 %s</i></div><div class="a"><a href="/admin?key=%s&del=%s">删除</a></div></div>'
-                % (i['id'], i['title'], time.strftime('%m-%d %H:%M', time.localtime(i['t'])), i['desc'], i['votes'], i['id'], ADMIN_KEY, i['id'])
+                '<div class="r%s"><img src="/api/img?id=%s"><div class="m"><b>%s</b><span>%s</span><p>%s</p><i>票数 %d · 编号 %s%s</i></div><div class="a">%s<a href="/admin?key=%s&del=%s" onclick="return confirm(\'确定删除?\')">删除</a></div></div>'
+                % (' ad' if i.get('adopted') else '',
+                   i['id'], i['title'], time.strftime('%m-%d %H:%M', time.localtime(i['t'])), i['desc'], i['votes'], i['id'],
+                   ' · ★ 已采用' if i.get('adopted') else '',
+                   ('<a href="/admin?key=%s&unadopt=%s">取消采用</a>' % (ADMIN_KEY, i['id']) if i.get('adopted') else '<a class="ad" href="/admin?key=%s&adopt=%s">采用</a>' % (ADMIN_KEY, i['id'])),
+                   ADMIN_KEY, i['id'])
                 for i in items)
             html = ('<!DOCTYPE html><meta charset="utf-8"><title>37web 投稿管理</title>'
                     '<style>body{font-family:system-ui;background:#10121c;color:#e8e6f2;margin:0;padding:24px}'
                     '.r{display:flex;gap:14px;background:#1a1d30;border:1px solid #333a5c;border-radius:6px;padding:12px;margin-bottom:12px;align-items:center}'
                     'img{width:150px;height:150px;object-fit:contain;background:#000;border-radius:4px}'
                     '.m b{display:block;font-size:16px}.m span{color:#9aa1c4;font-size:12px}.m p{color:#cfd3ea;font-size:13px;margin:6px 0}.m i{color:#e8c987;font-size:12px;font-style:normal}'
-                    '.a a{color:#ff9d94;font-size:13px;white-space:nowrap}'
+                    '.a a{color:#ff9d94;font-size:13px;white-space:nowrap;margin-left:10px}'
+                    '.a a.ad{color:#7ee787}.r.ad{background:#22301d;border-color:#4c7a3a}'
                     '.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}'
                     '.top h1{font-size:20px}.cnt{color:#9aa1c4;font-size:13px}</style>'
                     '<div class="top"><h1>37web 投稿管理 · 按票数排序</h1><span class="cnt">共 %d 条 · 选最高票数的那张做 L2D</span></div>' % len(items) + rows)
