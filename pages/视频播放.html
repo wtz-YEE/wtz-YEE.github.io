@@ -86,7 +86,7 @@ h1 b{color:var(--gold)}
   <h1>视频<b>库</b></h1>
   <p class="sub" id="sub">正在连接云端…</p>
   <div id="player-box">
-    <video class="player" id="pv" controls preload="none" poster=""></video>
+    <video class="player" id="pv" controls preload="metadata" poster=""></video>
     <div class="meta">
       <h2 id="mt"><span id="mineTag" class="mine-tag">MY VIDEO</span></h2>
       <div class="row" id="mrow"></div>
@@ -106,7 +106,7 @@ h1 b{color:var(--gold)}
   <div id="grid"></div>
 </main>
 <script src="shared.js?v=20261022"></script>
-<script>try{if(!window.apiList||!window.apiList().length)localStorage.setItem('gb_api_url','https://280c01a7.r20.cpolar.top')}catch(e){}</script>
+<script>try{if(!window.apiList||!window.apiList().length)localStorage.setItem('gb_api_url','https://45f188f2.r20.cpolar.top')}catch(e){}</script>
 <script>
 (function(){
   var g=document.getElementById('grid'),pb=document.getElementById('player-box'),pv=document.getElementById('pv');
@@ -167,6 +167,9 @@ h1 b{color:var(--gold)}
       g.innerHTML='';
       pb.classList.add('show');
       pv.src=vsrc(v.src);
+      var firstDone=false;
+      pv.onloadedmetadata=function(){try{pv.currentTime=0.05}catch(e){}};
+      pv.onseeked=function(){try{if(!firstDone){firstDone=true;pv.pause()}}catch(e){}};
       var tg=document.getElementById('mineTag');
       mt.textContent=v.t||'无标题';
       tg.className='mine-tag'+(v.mine?' show':'');

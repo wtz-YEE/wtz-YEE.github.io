@@ -62,10 +62,12 @@ if errorlevel 1 (
   echo [%date% %time%] 本机服务异常 (连续失败 !FAIL!)
   if !FAIL! geq 5 (
     echo   终极修复：重启 cpolar 隧道 + 服务
-    net stop cpolar >nul 2>&1
-    ping -n 3 127.0.0.1 >nul
-    net start cpolar >nul 2>&1
-    ping -n 5 127.0.0.1 >nul
+taskkill /f /im cpolar.exe >nul 2>&1
+ping -n 3 127.0.0.1 >nul
+start "" cpolar start guestbook -daemon=on >nul 2>&1
+ping -n 2 127.0.0.1 >nul
+start "" cpolar start web37 -daemon=on >nul 2>&1
+ping -n 4 127.0.0.1 >nul
     set FAIL=3
   )
   if !FAIL! geq 3 (
@@ -113,12 +115,17 @@ if !N! geq 4 (
           taskkill /f /im cpolar.exe >nul 2>&1
           ping -n 3 127.0.0.1 >nul
           start "" cpolar start guestbook -daemon=on >nul 2>&1
+          ping -n 2 127.0.0.1 >nul
+          start "" cpolar start web37 -daemon=on >nul 2>&1
           set CF=1
         ) else (
           echo   重启 cpolar 隧道
-          net stop cpolar >nul 2>&1
-          ping -n 3 127.0.0.1 >nul
-          net start cpolar >nul 2>&1
+taskkill /f /im cpolar.exe >nul 2>&1
+ping -n 3 127.0.0.1 >nul
+start "" cpolar start guestbook -daemon=on >nul 2>&1
+ping -n 2 127.0.0.1 >nul
+start "" cpolar start web37 -daemon=on >nul 2>&1
+ping -n 4 127.0.0.1 >nul
         )
         ping -n 15 127.0.0.1 >nul
       ) else (
