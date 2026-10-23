@@ -1,0 +1,26 @@
+[
+  {
+    "name": "guestbook",
+    "desc": "主站云端（留言/视频/云存档）",
+    "script": "guestbook_server.py",
+    "port": 8701,
+    "tunnel": "guestbook",
+    "health": "/health",
+    "addrfile": "cloud.txt",
+    "remote_file": "cloud.txt",
+    "push": true,
+    "enabled": true
+  },
+  {
+    "name": "37web",
+    "desc": "37web 投稿/投票/投票采用",
+    "script": "D:/WTZ/37web/submit_server/server.py",
+    "port": 8000,
+    "tunnel": "web37",
+    "health": "/api/list",
+    "addrfile": "37web/cloud-url.txt",
+    "remote_file": "37web/cloud-url.txt",
+    "push": true,
+    "enabled": true
+  }
+]

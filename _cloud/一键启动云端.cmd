@@ -1,11 +1,12 @@
 @echo off
 chcp 936 >nul
-title WTZ 云端一键启动
+title WTZ 云端一键启动（多云端稳定版）
 setlocal enabledelayedexpansion
 set CLOUD=%~dp0
+set LOGDIR=%USERPROFILE%\.cpolar\logs
 echo ============================================
-echo   WTZ 云端一键启动（防护版）
-echo   自动检测 Python + 装依赖 + 起 cpolar + 推地址
+echo   WTZ 云端一键启动（多云端稳定版）
+echo   本机服务 + cpolar 多隧道 + 地址自动同步 + 云端守护
 echo ============================================
 net session >nul 2>&1
 if errorlevel 1 (
@@ -14,83 +15,58 @@ if errorlevel 1 (
   exit /b
 )
 powershell -NoProfile -ExecutionPolicy Bypass -File "%CLOUD%guard_core.ps1"
-if errorlevel 1 exit /b 1
-echo.
-echo [1/5] 检测 Python ...
+if errorlevel 1 ( echo [错误] 守护签名校验失败，已中止 & pause & exit /b 1 )
+
 set PY=
 for /f "delims=" %%i in ('where python 2^>nul') do (set PY=%%i & goto :pyfound)
 :pyfound
 if not defined PY (
-  echo.
-  echo   [错误] 未找到 Python
-  echo   请先安装 Python 3 并勾选 "Add python.exe to PATH"
-  echo   下载: https://www.python.org/downloads/
-  echo.
-  pause
-  exit /b 1
+  for /f "delims=" %%i in ('dir /b /s "C:\Users\*\AppData\Local\Programs\Python\python.exe" 2^>nul') do (set PY=%%i & goto :pyfound2)
 )
-echo      Python: %PY%
-echo [2/5] 检测依赖并安装 + cpolar ...
+:pyfound2
+if not defined PY if exist "C:\Python312\python.exe" set PY=C:\Python312\python.exe
+if not defined PY if exist "C:\Python311\python.exe" set PY=C:\Python311\python.exe
+if not defined PY if exist "C:\Python310\python.exe" set PY=C:\Python310\python.exe
+if not defined PY if exist "C:\Python39\python.exe" set PY=C:\Python39\python.exe
+if not defined PY ( echo [错误] 未找到 Python & pause & exit /b 1 )
+echo [1/6] Python: %PY%
 python "%CLOUD%setup.py"
-if errorlevel 1 (
-  echo.
-  echo   [错误] 依赖安装失败，请看上方提示
-  echo.
-  pause
-  exit /b 1
-)
-echo [3/5] 启动服务 8701 ...
-set PYW=%PY:~0,-3%pythonw.exe
-if not exist "%PYW%" set PYW=pythonw.exe
-netstat -ano | findstr ":8701" >nul 2>&1
-if errorlevel 1 (
-  start "" /min "%PYW%" "%CLOUD%guestbook_server.py"
-  echo      服务已拉起，等待健康检查...
-  set /a n=0
-  :wait1
-  powershell -NoProfile -Command "try{$r=Invoke-WebRequest 'http://127.0.0.1:8701/health' -UseBasicParsing -TimeoutSec 3;if($r.StatusCode -eq 200){'ok'}else{'no'}}catch{'no'}" | findstr /i "ok" >nul 2>&1
-  if errorlevel 1 (
-    set /a n+=1
-    if !n! lss 30 (ping -n 2 127.0.0.1 >nul & goto wait1)
-    echo      [警告] 健康检查未通过，守护将接管
-  ) else (
-    echo      服务健康检查通过
-  )
-) else (
-  echo      服务已在运行
-)
-echo [4/5] 启动 cpolar 隧道 ...
-sc query cpolar 2>nul | findstr RUNNING >nul 2>&1
-if errorlevel 1 (
-  where cpolar >nul 2>&1
-  if errorlevel 1 (
-    echo      [错误] cpolar 命令不可用，请确认已安装并加入 PATH
-  ) else (
-    cpolar start guestbook -daemon=on >nul 2>&1
-    echo      已后台启动，等待隧道就绪...
-    ping -n 22 127.0.0.1 >nul
-  )
-) else (
-  echo      服务式运行中，等待隧道就绪...
-  ping -n 22 127.0.0.1 >nul
-)
-echo [5/5] 获取公网地址并推送 ...
-python "%CLOUD%get_url.py"
-if exist "%CLOUD%..\云端地址.txt" (
-  set /p URL=<"%CLOUD%..\云端地址.txt"
-) else (
-  set URL=
-)
-echo %URL% | findstr /i "^http" >nul 2>&1
-if errorlevel 1 (
-  echo      [警告] 地址获取失败或格式异常，守护将自动重试
-) else (
-  echo      公网地址: %URL%
-)
+if errorlevel 1 ( echo [错误] 依赖安装失败 & pause & exit /b 1 )
+
+echo [2/6] 启动本机服务 ...
+python "%CLOUD%start_services.py"
+echo.
+echo [3/6] 启动 cpolar 多隧道 ...
+python "%CLOUD%start_tunnels.py"
+if errorlevel 1 ( echo [错误] cpolar 启动失败，请确认已安装并加入 PATH & pause & exit /b 1 )
+
+echo [4/6] 等待隧道就绪并同步地址 ...
+set /a n=0
+:wait3
+set /a n+=1
+python "%CLOUD%get_url.py" --scan-only > "%LOGDIR%\_sync.out" 2>nul
+findstr /i "37web=" "%LOGDIR%\_sync.out" >nul 2>&1
+if not errorlevel 1 goto ok3
+if !n! geq 12 goto warn3
+echo   等待隧道建立 (!n!/12) ...
+ping -n 9 127.0.0.1 >nul
+goto wait3
+:ok3
+echo   隧道就绪:
+type "%LOGDIR%\_sync.out"
+goto after3
+:warn3
+echo   [警告] 隧道未完全就绪，云端守护将自动重试
+:after3
+python "%CLOUD%get_url.py" > "%LOGDIR%\_sync.out" 2>nul
+echo [5/6] 推送公网地址 ...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%CLOUD%push_cloud.ps1"
+echo [6/6] 启动云端守护 ...
+call "%CLOUD%云端看门狗.cmd"
 echo.
 echo ============================================
 echo   云端启动完成
-echo   公网地址已推送 GitHub，前端将自动读取
+echo   守护已接管，隧道地址自动同步
+echo   关闭本窗口不会停止云端服务
 echo ============================================
 pause

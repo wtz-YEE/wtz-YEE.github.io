@@ -62,11 +62,7 @@ if errorlevel 1 (
   echo [%date% %time%] 本机服务异常 (连续失败 !FAIL!)
   if !FAIL! geq 5 (
     echo   终极修复：重启 cpolar 隧道 + 服务
-taskkill /f /im cpolar.exe >nul 2>&1
-ping -n 3 127.0.0.1 >nul
-start "" cpolar start guestbook -daemon=on >nul 2>&1
-ping -n 2 127.0.0.1 >nul
-start "" cpolar start web37 -daemon=on >nul 2>&1
+python "%CLOUD%start_tunnels.py"
 ping -n 4 127.0.0.1 >nul
     set FAIL=3
   )
@@ -112,19 +108,12 @@ if !N! geq 4 (
         echo [%date% %time%] 公网隧道失联 (连续失败 !CF!)
         if !CF! geq 4 (
           echo   终极修复：强杀 cpolar 进程并重启
-          taskkill /f /im cpolar.exe >nul 2>&1
-          ping -n 3 127.0.0.1 >nul
-          start "" cpolar start guestbook -daemon=on >nul 2>&1
-          ping -n 2 127.0.0.1 >nul
-          start "" cpolar start web37 -daemon=on >nul 2>&1
+          python "%CLOUD%start_tunnels.py"
+          ping -n 4 127.0.0.1 >nul
           set CF=1
         ) else (
           echo   重启 cpolar 隧道
-taskkill /f /im cpolar.exe >nul 2>&1
-ping -n 3 127.0.0.1 >nul
-start "" cpolar start guestbook -daemon=on >nul 2>&1
-ping -n 2 127.0.0.1 >nul
-start "" cpolar start web37 -daemon=on >nul 2>&1
+python "%CLOUD%start_tunnels.py"
 ping -n 4 127.0.0.1 >nul
         )
         ping -n 15 127.0.0.1 >nul
