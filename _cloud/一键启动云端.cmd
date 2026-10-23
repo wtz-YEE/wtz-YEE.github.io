@@ -31,7 +31,7 @@ if not defined PY if exist "C:\Python39\python.exe" set PY=C:\Python39\python.ex
 if not defined PY ( echo [错误] 未找到 Python & pause & exit /b 1 )
 echo [1/6] Python: %PY%
 python "%CLOUD%setup.py"
-if errorlevel 1 ( echo [错误] 依赖安装失败 & pause & exit /b 1 )
+if errorlevel 1 ( echo [错误] 云端环境检查失败，请查看上方原因 & pause & exit /b 1 )
 
 echo [2/6] 启动本机服务 ...
 python "%CLOUD%start_services.py"
