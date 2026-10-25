@@ -96,6 +96,13 @@ body.mob #hint{font-size:10px;padding:4px 10px;max-width:80%}
 body.mob #msg{font-size:13px}
 body.mob #pstat{font-size:10px}
 body.mob .skbtn{min-width:44px;padding:7px 8px;font-size:10px}
+body.mob #ov{overflow-y:auto;padding:18px 14px}
+body.mob #ov h2{font-size:15px}
+body.mob #ov .over{font-size:26px}
+body.mob #picks{max-width:100%}
+body.mob #picks .pick{width:min(166px,88vw)}
+body.mob #rst{padding:12px 26px;font-size:15px}
+body.mob #hint{max-width:70%;line-height:1.6}
 </style>
 </head>
 <body>
@@ -158,6 +165,7 @@ var c=70,cm=100,f=0,fm=100,hp=100,hpm=100,wv=1,fn=0,kl=0,tm=0,dm=1,cMul=1,fGain=
 var es=[],ws=[],es2=[],es3=[],pt=[],tb=[],pets=[],obj=[],st='menu',sel=4,pr={},ovT=null,domT=0,dom2T=0,domW=0,relT=0,hitT=0,fireCd=0,firing=false,rng=9.4,rto=1,dbl=0,hsT=0,shk=0,slowT=0,mute=0,eid=1,mimic=0,blackT=0,suT=0,huT=0,slT=0,slk=null,skX=0,skY=0,rev=0;
 var dashT=0,dashCd=0,inv=0,dashA=0,dashBuf=0,wvCd=0,TH=0,pIdx=0,atkCd=0,skSel=-1,skCd=[0,0,0],skT=0,fGainT=0,att=-1,combo=0,comboT=0,atkT=0,spT=0,mimicT=0,comboMax=0,cFl=0,domC=0,infT=0,amU=0,izT=0,surgT=0;var blk=[],axis=[],curse=0,axisCd=0;var rock=null,stT=0;
 var domCol=['#4D9FFF','#FF6B35','#22D3EE','#FF4D4D','#E74C3C','#FF4D4D','#E8F0FF','#EC4899','#A78BFA','#FFA94D','#8E6BF0','#2ECC71','#E67E22','#7F8C8D','#1ABC9C','#F1C40F','#8E44AD','#16A085','#E74C3C','#D35400','#3498DB','#27AE60'];
+var isT=('ontouchstart'in window)||(navigator.maxTouchPoints||0)>0;
 var DIF=0,pts=[0,0,0],ms=1,mh=1,mn=1,selC=0;
 var px=0,py=0,th=0,kd={},AC=null;
 var CRC=['#C44DFF','#FF6B35','#22D3EE','#FF4D4D','#E040FB','#FF4D4D','#E8F0FF','#EC4899','#A78BFA','#FFD84D','#8E6BF0','#2ECC71','#E67E22','#7F8C8D','#1ABC9C','#F1C40F','#8E44AD','#16A085','#E74C3C','#3498DB','#D35400','#27AE60'];
@@ -495,7 +503,7 @@ function smoke(x,y,cc,n,m){for(var i=0;i<n;i++){var a=Math.random()*6.28,sp=(0.4
 function flashX(x,y,cc,sz){pt.push({x:x,y:y,vx:0,vy:0,t:0.16,cc:cc,cx:1,cw:sz||3})}
 function upPt(dt){for(var i=pt.length-1;i>=0;i--){var p=pt[i];p.t-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.ring){p.r+=p.vr*dt}else{if(p.g)p.vy+=p.g*dt;p.vx*=0.86;p.vy*=0.86;if(p.rv)p.rot=(p.rot||0)+p.rv*dt}if(p.t<=0)pt.splice(i,1)}
  for(var j=tb.length-1;j>=0;j--){var q=tb[j];q.a-=dt*1.5;q.y-=q.vy*dt;if(q.a<=0)tb.splice(j,1)}}
-function gameOver(){st='over';var h=$('ovhead');h.className='';h.innerHTML='<div class="over">领域崩溃</div>';
+function gameOver(){st='over';tuiV();var h=$('ovhead');h.className='';h.innerHTML='<div class="over">领域崩溃</div>';
  var mh3=Math.floor(tm/60),sh3=Math.floor(tm%60);
  $('picks').style.cssText='display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:520px';
  $('picks').innerHTML=[['抵达层数','层',wv,'#4D9FFF'],['存活时间','',mh3+'分'+sh3+'秒','#34D399'],['击杀','',kl,'#FF6B35'],['宿傩手指','',Math.min(20,fn),'#FF8C00'],['最高连击','',comboMax,'#FFD84D']].map(function(a){return '<div style="flex:1;min-width:120px;background:linear-gradient(180deg,#131A2C,#0F1524);border:1px solid #1E2A44;border-top:2px solid '+a[3]+';border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:#8FA3C8;letter-spacing:1px">'+a[0]+'</div><div style="font-size:22px;font-weight:700;color:'+a[3]+';margin-top:4px;font-variant-numeric:tabular-nums">'+a[2]+'</div></div>'}).join('');
@@ -505,7 +513,7 @@ function row(title,opts,cur,cb){var d=document.createElement('div');d.style.cssT
  for(var i=0;i<opts.length;i++){(function(i){var b=document.createElement('button');b.textContent=opts[i];b.style.cssText='border:1px solid #2A3A5C;background:#0D1424;color:#B9C7E2;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer';if(i===cur)b.style.cssText='border:1px solid #C44DFF;background:#1B1140;color:#E8D0FF;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;box-shadow:0 0 8px rgba(196,77,255,.3)';
   b.onclick=function(){cb(i);menu()};d.appendChild(b)})(i)}
  return d}
-function menu(){st='menu';try{var ls=localStorage.getItem('axs_cf');if(ls&&ls!==CF.s){CF.s=ls;parseFx(ls)}}catch(e){}try{var ls2=localStorage.getItem('axs_cf2');if(ls2&&ls2!==CA.s)parseFx(ls2,CA)}catch(e){}try{var ls3=localStorage.getItem('axs_cf3');if(ls3&&ls3!==CS.s)parseFx(ls3,CS)}catch(e){}if(!CF.f){CF.s='x^2+1';parseFx(CF.s)}updTpl();var h=$('ovhead');h.className='';h.innerHTML='<h2>轴数回战 · 开局配置</h2>';
+function menu(){st='menu';tuiV();try{var ls=localStorage.getItem('axs_cf');if(ls&&ls!==CF.s){CF.s=ls;parseFx(ls)}}catch(e){}try{var ls2=localStorage.getItem('axs_cf2');if(ls2&&ls2!==CA.s)parseFx(ls2,CA)}catch(e){}try{var ls3=localStorage.getItem('axs_cf3');if(ls3&&ls3!==CS.s)parseFx(ls3,CS)}catch(e){}if(!CF.f){CF.s='x^2+1';parseFx(CF.s)}updTpl();var h=$('ovhead');h.className='';h.innerHTML='<h2>轴数回战 · 开局配置</h2>';
  var b=$('picks');b.style.cssText='width:min(680px,94vw);flex-direction:column;gap:8px;align-items:stretch';b.innerHTML='';
  var dn=['简单','普通','困难'];
  b.appendChild(row('难度',dn,DIF,function(i){DIF=i}));
@@ -582,13 +590,13 @@ function start(){var d=[{mh:.8,ms:.85,mn:.8,ic:120,ih:120},{mh:1,ms:1,mn:1,ic:10
  mh=d.mh;ms=d.ms;mn=d.mn;cm=d.ic+15*pts[0];c=cm;hpm=d.ih+10*pts[1];hp=hpm;dm=1+0.08*pts[2];
  if(selC===3){cm=0;c=0}
  att=-1;skSel=-1;
- $('ov').classList.remove('show');st='play';updHud();wave();flash('守住坐标原点')}
-function togglePause(){if(st==='play'){st='pause';var h=$('ovhead');h.className='';h.innerHTML='<h2>已暂停</h2>';var b=$('picks');b.style.cssText='display:flex;gap:14px';b.innerHTML='';
+ $('ov').classList.remove('show');st='play';tuiV();updHud();wave();flash('守住坐标原点')}
+function togglePause(){if(st==='play'){st='pause';tuiV();var h=$('ovhead');h.className='';h.innerHTML='<h2>已暂停</h2>';var b=$('picks');b.style.cssText='display:flex;gap:14px';b.innerHTML='';
   var c1=document.createElement('button');c1.textContent='继续';c1.style.cssText='border:1px solid #C44DFF;background:#1B1140;color:#E8D0FF;border-radius:8px;padding:10px 22px;font-size:14px;cursor:pointer';c1.onclick=function(){togglePause()};b.appendChild(c1);
   var c2=document.createElement('button');c2.textContent='重新开始';c2.style.cssText='border:1px solid #2A3A5C;background:#0D1424;color:#B9C7E2;border-radius:8px;padding:10px 22px;font-size:14px;cursor:pointer';c2.onclick=function(){location.reload()};b.appendChild(c2);
   var c3=document.createElement('button');c3.textContent='改函数';c3.title='返回配置界面，重新编辑函数/角色/强化';c3.style.cssText='border:1px solid #FFB02E;background:#2A2008;color:#FFD88A;border-radius:8px;padding:10px 22px;font-size:14px;cursor:pointer';c3.onclick=function(){menu()};b.appendChild(c3);
   $('ovfoot').innerHTML='<h4>按 Esc 继续</h4>';$('rst').style.display='none';$('ov').classList.add('show');updHud()}
- else if(st==='pause'){st='play';$('ov').classList.remove('show')}
+ else if(st==='pause'){st='play';tuiV();$('ov').classList.remove('show')}
  else if(st==='sk'){cancelSk()}}
 var POOL=[
  {n:'咒力上限 +20',d:'更深的咒力池',go:function(){cm+=20;c=cm}},
@@ -604,7 +612,7 @@ var POOL=[
 function pick(){st='pick';var h=$('ovhead');h.className='';h.innerHTML='<h2>选择强化</h2>';$('picks').style.cssText='';$('picks').innerHTML='';
  var pool=POOL.slice();var s=[];
  for(var i=0;i<3;i++){var j=Math.floor(Math.random()*pool.length);s.push(pool[j]);pool.splice(j,1)}
- for(var i=0;i<3;i++){(function(o){var d=document.createElement('div');d.className='pick';d.setAttribute('data-r',Math.floor(Math.random()*3)+1);d.innerHTML='<h3>'+o.n+'</h3><p>'+o.d+'</p>';d.onclick=function(){o.go();$('ov').classList.remove('show');st='play';wv++;wave()};$('picks').appendChild(d)})(s[i])}
+ for(var i=0;i<3;i++){(function(o){var d=document.createElement('div');d.className='pick';d.setAttribute('data-r',Math.floor(Math.random()*3)+1);d.innerHTML='<h3>'+o.n+'</h3><p>'+o.d+'</p>';d.onclick=function(){o.go();$('ov').classList.remove('show');st='play';tuiV();wv++;wave()};$('picks').appendChild(d)})(s[i])}
  $('ovfoot').innerHTML='';$('rst').style.display='none';$('ov').classList.add('show')}
 function wpx2(w,s2){var y=t2f(w,s2);return px+Math.cos(w.th)*s2-Math.sin(w.th)*y}
 function wpy2(w,t,s2){var y=t2f(w,s2);return py+Math.sin(w.th)*s2+Math.cos(w.th)*y}
@@ -910,8 +918,8 @@ function stepPar(dir){var q=parLoc();
  updHud()}
 window.addEventListener('keyup',function(e){kd[e.keyCode]=0});
 $('rst').onclick=function(){location.reload()};
-var isT=('ontouchstart'in window)||(navigator.maxTouchPoints||0)>0;
 if(isT){document.body.classList.add('mob');$('hint').innerHTML='左摇杆 移动 · 右摇杆 瞄准/点按攻击 · 连射 发射函数 · 术式键 放技能 · 点按右摇杆释放'};
+function tuiV(){if(!isT)return;var el=$('tui');el.style.display=(st==='play')?'block':'none'}
 function tapFire(){if(st!=='play')return;if(att>=0){var ta=TH*Math.PI/180;skHit(att,px+Math.cos(ta)*4,py+Math.sin(ta)*4,ta);att=-1;skSel=-1;updHud()}else{atk()}}
 function tS(i){if(st==='play'){if(att===i)forceSk(i);else aim(i)}}
 (function(){var el=$('lsb'),kn=$('lsn'),sx=0,sy=0,on=0;
