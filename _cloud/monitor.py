@@ -113,11 +113,14 @@ def tunnel_url(patname):
     return ''
 
 def probe_https(u, path='/health'):
-    try:
-        urllib.request.urlopen(u + path, timeout=2.5)
-        return True
-    except Exception:
-        return False
+    for i in range(2):
+        try:
+            urllib.request.urlopen(u + path, timeout=2.5)
+            return True
+        except Exception:
+            if i == 0:
+                time.sleep(1)
+    return False
 
 def svc_status():
     out = []
@@ -182,7 +185,8 @@ def compute_status():
             tunnels.append({'name': s.get('tunnel', ''), 'svc': s['name'],
                             'url': url, 'ok': False})
         with ThreadPoolExecutor(max_workers=8) as ex:
-            oks = list(ex.map(probe_https, [t['url'] for t in tunnels]))
+            oks = list(ex.map(probe_https, [t['url'] for t in tunnels],
+                              [s.get('health', '/health') for s in cfgs]))
         for i, t in enumerate(tunnels):
             t['ok'] = oks[i] if t['url'] else False
     addrs = {}
@@ -239,7 +243,7 @@ def guard_stop():
     return 'OK'
 
 def guard_start():
-    subprocess.Popen(['cmd', '/c', os.path.join(BASE, '云端守护.cmd')], creationflags=CNW)
+    subprocess.Popen(['cmd', '/c', os.path.join(BASE, '云端守护.cmd'), '/watchdog'], creationflags=CNW)
     return 'OK'
 
 def tunnel_restart():

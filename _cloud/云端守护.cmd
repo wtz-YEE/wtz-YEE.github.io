@@ -22,7 +22,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%CLOUD%guard_core.ps1"
 if errorlevel 1 exit /b 1
 set HB2=
 for /f "delims=" %%h in ('type "%CLOUD%guard.heartbeat" 2^>nul') do set HB2=%%h
-for /f %%t in ('powershell -NoProfile -Command "[int](Get-Date -UFormat %%s)"') do set HB=%%t
+for /f %%t in ('powershell -NoProfile -Command "[DateTimeOffset]::Now.ToUnixTimeSeconds()"') do set HB=%%t
 echo %HB%> "%CLOUD%guard.heartbeat"
 if defined HB2 (
   set /a D2=!HB!-!HB2!
@@ -36,7 +36,7 @@ set FAIL=0
 set CF=0
 set N=0
 :loop
-for /f %%t in ('powershell -NoProfile -Command "[int](Get-Date -UFormat %%s)"') do set HB=%%t
+for /f %%t in ('powershell -NoProfile -Command "[DateTimeOffset]::Now.ToUnixTimeSeconds()"') do set HB=%%t
 echo %HB%> "%CLOUD%guard.heartbeat"
 set PY=
 for /f "delims=" %%i in ('where python 2^>nul') do (set PY=%%i & goto :pyf)

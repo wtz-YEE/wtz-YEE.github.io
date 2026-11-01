@@ -35,7 +35,7 @@ def scan_tunnel(name):
 
 def probe(u, path):
     try:
-        urllib.request.urlopen(urllib.request.Request(u + path, timeout=5))
+        urllib.request.urlopen(u + path, timeout=5)
         return True
     except Exception:
         return False
@@ -45,17 +45,18 @@ def tunnels_alive(cfg):
         if not svc.get('enabled', True):
             continue
         u = scan_tunnel(svc['tunnel'])
-        if not u:
-            af = os.path.join(REPO, svc['addrfile'])
+        if u and probe(u, svc.get('health', '/health')):
+            continue
+        u = ''
+        af = os.path.join(REPO, svc['addrfile'])
+        old = ''
+        try:
+            old = open(af, encoding='utf-8').read().strip().split('\n')[0]
+        except Exception:
             old = ''
-            try:
-                old = open(af, encoding='utf-8').read().strip().split('\n')[0]
-            except Exception:
-                old = ''
-            if old and probe(old, svc.get('health', '/health')):
-                u = old
-        if not u:
-            return False
+        if old and probe(old, svc.get('health', '/health')):
+            continue
+        return False
     return True
 
 def main():

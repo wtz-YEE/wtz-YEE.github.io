@@ -35,7 +35,7 @@ def scan_tunnel(name):
 
 def probe(u, path):
     try:
-        urllib.request.urlopen(urllib.request.Request(u + path, timeout=5))
+        urllib.request.urlopen(u + path, timeout=5)
         return True
     except Exception:
         return False
