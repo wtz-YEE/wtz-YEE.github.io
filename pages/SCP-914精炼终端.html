@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCP-914 精炼操作终端</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230e1210'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c9a25e' stroke-width='4'/%3E%3Cpath d='M32 10v22M32 32l14-14M32 32l10 16' stroke='%23c9a25e' stroke-width='3' fill='none'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23c9a25e'/%3E%3C/svg%3E">
+<style>
+/* ===== 基础 ===== */
+:root{
+  --bg0:#0d1110; --bg1:#131916; --bg2:#1a211d;
+  --panel:#141a17; --panel2:#1c241f;
+  --line:#2a342d; --line2:#3a463d;
+  --brass:#c9a25e; --brass-hi:#e0c67f; --brass-lo:#8a6f45;
+  --ink:#e6dcc3; --ink-dim:#a89f87; --ink-faint:#6e6755;
+  --red:#b8493a; --green:#58c08a; --amber:#e0a83c;
+  --mono:"Consolas","JetBrains Mono","Courier New",monospace;
+  --serif:"SimSun","Songti SC","Noto Serif SC",serif;
+  --sans:"Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:radial-gradient(1200px 700px at 50% -10%,#18201a 0%,var(--bg0) 60%);
+  color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.65; min-height:100vh;
+}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.mono{font-family:var(--mono)}
+.serif{font-family:var(--serif)}
+
+/* ===== 头部 ===== */
+.site-head{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:14px 18px; border-bottom:1px solid var(--line2);
+  background:linear-gradient(180deg,var(--bg1),var(--bg0));
+}
+.site-head .logo{width:34px;height:34px;flex:none}
+.site-head .title{font-family:var(--serif);font-weight:700;font-size:20px;letter-spacing:1px}
+.site-head .sub{font-size:12px;color:var(--ink-dim);font-family:var(--mono)}
+.site-head .badge{
+  margin-left:auto;display:flex;gap:8px;align-items:center;
+  font-family:var(--mono);font-size:12px;color:var(--ink-dim);
+}
+.badge .safe{
+  border:1px solid var(--green);color:var(--green);
+  padding:2px 9px;border-radius:2px;letter-spacing:2px;
+}
+.badge .cnum{color:var(--brass)}
+
+/* ===== 置顶状态栏（全局一览） ===== */
+.status-bar{
+  position:sticky; top:0; z-index:40;
+  display:flex; gap:12px 24px; flex-wrap:wrap; align-items:center;
+  padding:9px 18px; margin:0 auto; max-width:1200px;
+  background:rgba(13,17,16,.93); backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line2);
+  box-shadow:0 3px 14px rgba(0,0,0,.5);
+}
+.sb-cell{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sb-cell .sb-k{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--ink-faint)}
+.sb-cell .sb-v{font-size:14px;color:var(--ink);font-weight:600;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-cell .sb-v.sb-dim{color:var(--ink-dim);font-weight:400;font-size:13px}
+.sb-cell .sb-v.sb-brass{color:var(--brass-hi)}
+.sb-state{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;color:var(--ink-dim)}
+.sb-state .dot{width:10px;height:10px;border-radius:50%;background:var(--line2);flex:none}
+.sb-state.running .dot{background:var(--amber);box-shadow:0 0 9px var(--amber);animation:gsp .7s linear infinite}
+.sb-state.ready .dot{background:var(--green);box-shadow:0 0 9px var(--green)}
+.sb-state.warn .dot{background:var(--red);box-shadow:0 0 9px var(--red);animation:gsp .7s linear infinite}
+.sb-state.progressing .dot{background:var(--amber);box-shadow:0 0 9px var(--amber)}
+
+/* ===== 布局 ===== */
+.layout{
+  display:grid;grid-template-columns:1fr;
+  gap:16px;max-width:1200px;margin:0 auto;padding:14px 14px 40px;
+}
+@media(min-width:920px){.layout{grid-template-columns:5fr 6fr;padding:18px 20px 46px}}
+.panel-title{
+  font-family:var(--serif);font-size:14px;letter-spacing:2px;
+  color:var(--brass);border-left:3px solid var(--brass);
+  padding-left:9px;margin:2px 0 12px;
+  display:flex;align-items:center;gap:10px;
+}
+.panel-title .tag{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:0}
+
+/* ===== 操作台 ===== */
+.console{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--line2);border-radius:6px;padding:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 8px 24px rgba(0,0,0,.35);
+}
+.machine{
+  position:relative;border:1px solid var(--line);border-radius:4px;
+  background:
+    radial-gradient(circle at 50% 20%, #202823 0%, #151a16 60%, #101410 100%);
+  padding:14px; overflow:hidden;
+}
+.machine::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,0,0,.18) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,0,0,.18) 1px,transparent 1px);
+  background-size:22px 22px;
+}
+.chambers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.chamber{
+  position:relative;border:1px solid var(--line2);border-radius:4px;
+  background:#0d120f;padding:12px 12px 10px;min-height:96px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.chamber .cap{
+  font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--ink-dim);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.chamber .door{
+  height:46px;border:1px solid var(--line2);border-radius:3px;
+  background:linear-gradient(180deg,#1b221e,#131815);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--ink-faint);transition:background .4s,color .4s;
+}
+.chamber .door.open{background:radial-gradient(circle at 50% 50%,#2a3a2f,#16201a);color:var(--green)}
+.chamber .door.loaded{color:var(--brass);border-color:var(--brass-lo)}
+.chamber .slot{
+  font-size:12px;color:var(--ink-dim);min-height:18px;
+  font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.chamber .slot:empty::before{content:"（空）";color:var(--ink-faint)}
+.chamber .lamp{width:8px;height:8px;border-radius:50%;background:#3a453e;flex:none}
+.chamber.in .lamp.on{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.chamber.out .lamp.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+
+/* ===== 表盘 ===== */
+.dial-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  margin:12px 0 6px;
+}
+.dial-hint{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:1px}
+.dial-svg{width:230px;max-width:100%;height:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
+.setting-chip{
+  font-size:11px;fill:var(--ink-faint);font-family:var(--mono);letter-spacing:0.5px;
+  text-anchor:middle;
+}
+.setting-chip.active{fill:var(--brass-hi);font-weight:700}
+
+/* ===== 主发条钥匙 ===== */
+.key-row{display:flex;align-items:center;gap:14px;margin-top:8px;flex-wrap:wrap}
+.key-btn{
+  width:60px;height:60px;border-radius:50%;border:2px solid var(--brass-lo);
+  background:radial-gradient(circle at 35% 30%, #e8d192, #b8945a 55%, #7c6237);
+  color:#231b10;font-weight:700;font-size:12px;line-height:1.2;
+  box-shadow:0 3px 8px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.5);
+  transition:transform .35s ease;
+}
+.key-btn:active{transform:rotate(90deg)}
+.key-btn.wound{animation:spin .6s ease}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.wind-note{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+.wind-note b{color:var(--green)}
+
+/* ===== 控制区 ===== */
+.controls{margin-top:16px;display:flex;flex-direction:column;gap:14px}
+.field label{display:block;font-size:12px;color:var(--ink-dim);margin-bottom:6px;letter-spacing:1px}
+.field textarea{
+  width:100%;min-height:64px;resize:vertical;
+  background:#0d120f;border:1px solid var(--line2);border-radius:4px;
+  color:var(--ink);font-family:var(--mono);font-size:15px;padding:9px 10px;line-height:1.5;
+}
+.dial-select{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.set-btn{
+  padding:10px 4px;background:var(--bg2);border:1px solid var(--line2);border-radius:4px;
+  color:var(--ink-dim);font-size:12.5px;font-family:var(--serif);letter-spacing:1px;
+  transition:all .15s;
+}
+.set-btn:hover{border-color:var(--brass-lo);color:var(--ink)}
+.set-btn.on{
+  background:linear-gradient(180deg,#3a3222,#2a2518);
+  border-color:var(--brass);color:var(--brass-hi);font-weight:700;
+  box-shadow:0 0 10px rgba(201,162,94,.25);
+}
+.action-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{
+  padding:11px 20px;border-radius:4px;border:1px solid var(--line2);
+  background:var(--bg2);color:var(--ink);font-size:14px;letter-spacing:1px;
+  transition:all .15s;flex:1;min-width:120px;
+}
+.btn:hover{border-color:var(--brass-lo);background:#232b26}
+.btn.primary{
+  background:linear-gradient(180deg,#3d3320,#2b2315);
+  border-color:var(--brass);color:var(--brass-hi);
+}
+.btn.primary:hover{box-shadow:0 0 12px rgba(201,162,94,.3)}
+.btn[disabled]{opacity:.38;cursor:not-allowed;box-shadow:none}
+.btn.danger{color:var(--red);border-color:#5a3330}
+.btn.danger:hover{background:#2a1d1a}
+
+/* ===== 进度 ===== */
+.progress{
+  height:14px;border:1px solid var(--line2);border-radius:3px;overflow:hidden;background:#0b0f0d;
+}
+.progress .bar{
+  height:100%;width:0%;background:linear-gradient(90deg,#7c6237,#c9a25e,#e0c67f);
+  transition:width .2s linear;
+}
+.progress .gears{display:flex;gap:6px;align-items:center;margin-top:6px;font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+.gear{display:inline-block;width:12px;height:12px;border:2px solid var(--brass-lo);border-radius:50%;position:relative}
+.gear::before,.gear::after{content:"";position:absolute;width:16px;height:3px;background:var(--brass-lo);top:50%;left:50%;transform:translate(-50%,-50%)}
+.gear::after{transform:translate(-50%,-50%) rotate(90deg)}
+.gear.spin{animation:gsp .8s linear infinite}
+@keyframes gsp{to{transform:rotate(360deg)}}
+
+/* ===== API 配置 ===== */
+.api-config{margin-top:16px;border:1px solid var(--line);border-radius:4px;background:#111613}
+.api-config summary{
+  cursor:pointer;padding:10px 12px;font-size:13px;color:var(--brass);letter-spacing:1px;
+  font-family:var(--serif);list-style:none;
+}
+.api-config summary::-webkit-details-marker{display:none}
+.api-config .body{padding:12px;border-top:1px solid var(--line);display:grid;gap:10px}
+.api-config .row{display:grid;grid-template-columns:1fr;gap:4px}
+@media(min-width:560px){.api-config .row{grid-template-columns:1fr 1fr;gap:12px}}
+.api-config label{font-size:12px;color:var(--ink-dim)}
+.api-config input{
+  width:100%;background:#0b0f0d;border:1px solid var(--line2);border-radius:3px;
+  color:var(--ink);padding:8px 9px;font-family:var(--mono);font-size:13px;
+}
+.api-config .full{grid-column:1/-1}
+.api-config .hint{font-size:12px;color:var(--ink-faint);line-height:1.5}
+.api-config .hint code{color:var(--brass-lo);font-family:var(--mono)}
+.mode-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.switch{position:relative;width:46px;height:24px;flex:none;cursor:pointer}
+.switch input{opacity:0;width:0;height:0}
+.switch .sl{
+  position:absolute;inset:0;border-radius:12px;background:#2a342d;transition:.2s;
+}
+.switch .sl::before{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#a89f87;top:3px;left:3px;transition:.2s}
+.switch input:checked + .sl{background:#3d5547}
+.switch input:checked + .sl::before{transform:translateX(22px);background:var(--green)}
+
+/* ===== 档案输出 ===== */
+.output{display:flex;flex-direction:column;gap:16px}
+.scp-card{
+  background:var(--panel);border:1px solid var(--line2);border-radius:5px;
+  padding:16px;position:relative;overflow:hidden;
+}
+.scp-card::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,var(--brass),var(--brass-lo));
+}
+.scp-card .kicker{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:2px;margin-bottom:8px}
+.scp-card h2{font-family:var(--serif);font-size:18px;margin:0 0 4px;letter-spacing:1px;color:var(--ink)}
+.scp-card .meta{font-family:var(--mono);font-size:12px;color:var(--ink-dim);border-bottom:1px dashed var(--line2);padding-bottom:8px;margin-bottom:10px}
+.scp-card .rowline{display:flex;gap:8px;font-size:13.5px;margin:7px 0}
+.scp-card .rowline .k{flex:none;width:62px;color:var(--brass-lo);font-family:var(--mono);font-size:12px;padding-top:1px}
+.scp-card .rowline .v{color:var(--ink);flex:1}
+.scp-card .rowline .v.red{color:var(--red)}
+.scp-card .rowline .v.green{color:var(--green)}
+.scp-card .remark{
+  margin-top:10px;padding:9px 11px;border-left:2px solid var(--brass-lo);
+  background:#1a211c;font-size:13px;color:var(--ink-dim);font-style:normal;
+}
+.scp-card .remark::before{content:"—— ";color:var(--brass-lo)}
+.scp-card .note{
+  margin-top:10px;padding:9px 11px;border-left:2px solid var(--green);
+  background:#14201a;font-size:13px;color:var(--ink-dim);font-style:normal;line-height:1.6;
+}
+.scp-card .note .lab{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--green);margin-right:8px;vertical-align:middle}
+.empty-state{color:var(--ink-faint);font-size:13px;padding:6px 0;line-height:1.8}
+.loading-state{color:var(--brass);font-family:var(--mono);font-size:13px}
+
+/* ===== 日志 ===== */
+.log-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.log-list li{
+  background:var(--panel);border:1px solid var(--line);border-radius:4px;
+  padding:9px 11px;font-size:13px;display:flex;gap:10px;align-items:baseline;
+}
+.log-list .t{font-family:var(--mono);font-size:11px;color:var(--ink-faint);flex:none}
+.log-list .s{flex:none;color:var(--brass);font-family:var(--mono);font-size:11px;width:52px}
+.log-list .m{color:var(--ink-dim);flex:1;word-break:break-word}
+.log-list li.warn{border-color:#5a3330}
+.log-list li.warn .s{color:var(--red)}
+.log-list li.ok .s{color:var(--green)}
+.log-list .clear{
+  align-self:flex-start;border:none;background:none;color:var(--ink-faint);
+  font-size:12px;text-decoration:underline;padding:2px 0;
+}
+.log-list .clear:hover{color:var(--ink)}
+
+/* ===== 覆盖层/提示 ===== */
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(120%);
+  background:#202823;border:1px solid var(--line2);color:var(--ink);
+  padding:11px 18px;border-radius:5px;font-size:14px;box-shadow:0 6px 22px rgba(0,0,0,.5);
+  transition:transform .3s ease;z-index:50;max-width:min(90vw,520px);font-family:var(--sans);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:#5a3330;color:#e7b3a9}
+.toast.warn{border-color:var(--brass-lo)}
+footer{max-width:1200px;margin:0 auto;padding:0 16px 26px;color:var(--ink-faint);font-size:12px;text-align:center;font-family:var(--mono)}
+
+/* ===== 动效与美术升级 ===== */
+/* 材质：噪点覆盖层（整站印刷档案感） */
+body::after{
+  content:"";position:fixed;inset:0;z-index:900;pointer-events:none;mix-blend-mode:overlay;opacity:.4;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* 背景：缓慢旋转的巨型黄铜齿轮（氛围，低对比，不抢戏） */
+@keyframes gearSpin{to{transform:rotate(360deg)}}
+body::before{
+  content:"";position:fixed;right:-160px;bottom:-160px;width:520px;height:520px;z-index:0;
+  border:26px dashed rgba(201,162,94,.06);border-radius:50%;
+  box-shadow:0 0 0 60px rgba(201,162,94,.03),0 0 0 88px rgba(201,162,94,.02);
+  animation:gearSpin 120s linear infinite;pointer-events:none;
+}
+main{position:relative;z-index:1}
+
+/* 表盘：指针缓动更顺 + 运行时档位轻辉 */
+#needleG{transition:transform .55s cubic-bezier(.22,1,.36,1)}
+.machine.running .dial-wrap{animation:dialGlow 1.4s ease-in-out infinite}
+@keyframes dialGlow{0%,100%{filter:drop-shadow(0 0 2px rgba(201,162,94,.1))}50%{filter:drop-shadow(0 0 14px rgba(201,162,94,.35))}}
+
+/* 舱门：加载点亮 + 完成开启闪光 */
+.chamber .door{transition:background .45s,color .45s,border-color .45s,box-shadow .45s}
+.chamber.in .door.loaded{box-shadow:inset 0 0 24px rgba(224,168,60,.18)}
+.chamber.out .door.open{animation:doorFlash .95s ease-out}
+@keyframes doorFlash{
+  0%{box-shadow:0 0 0 rgba(88,192,138,0);background:radial-gradient(circle at 50% 50%,#2a3a2f,#16201a)}
+  30%{box-shadow:0 0 38px rgba(88,192,138,.75);background:radial-gradient(circle at 50% 50%,#e0c67f,#2a3a2f)}
+  100%{box-shadow:0 0 0 rgba(88,192,138,0);background:radial-gradient(circle at 50% 50%,#2a3a2f,#16201a)}
+}
+
+/* 机器运转：内部能量扫光 + 整体微辉 */
+.machine.running{box-shadow:inset 0 0 44px rgba(201,162,94,.09),0 8px 24px rgba(0,0,0,.35)}
+.machine.running::before{animation:energySweep 2.6s linear infinite;opacity:.6}
+@keyframes energySweep{
+  0%{background-position:0 0}
+  50%{background-position:240px 0}
+  100%{background-position:480px 0}
+}
+
+/* 进度条：流动的铜光 */
+.progress .bar{
+  background:linear-gradient(90deg,#7c6237,#c9a25e,#e0c67f,#c9a25e);
+  background-size:200% 100%;animation:barFlow 1.5s linear infinite;
+}
+@keyframes barFlow{to{background-position:-200% 0}}
+
+/* 完成：产物卡片浮现 + 字段逐行淡入 */
+.scp-card{transition:box-shadow .3s}
+.scp-card:hover{box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.scp-card.reveal{animation:cardIn .5s cubic-bezier(.22,1,.36,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.scp-card.reveal h2,.scp-card.reveal .meta{animation:rowIn .4s ease forwards}
+.scp-card .rowline{opacity:0;transform:translateY(4px)}
+.scp-card.reveal .rowline{animation:rowIn .4s ease forwards}
+.scp-card.reveal .rowline:nth-child(1){animation-delay:.06s}
+.scp-card.reveal .rowline:nth-child(2){animation-delay:.12s}
+.scp-card.reveal .rowline:nth-child(3){animation-delay:.18s}
+.scp-card.reveal .rowline:nth-child(4){animation-delay:.24s}
+.scp-card.reveal .rowline:nth-child(5){animation-delay:.30s}
+.scp-card.reveal .rowline:nth-child(6){animation-delay:.36s}
+.scp-card.reveal .remark,.scp-card.reveal .note{animation:rowIn .4s ease .40s forwards;opacity:0}
+@keyframes rowIn{to{opacity:1;transform:none}}
+
+/* 状态灯：就绪呼吸 */
+.sb-state.ready .dot{animation:breath 2.2s ease-in-out infinite}
+@keyframes breath{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.82)}}
+
+/* 触按反馈 */
+.btn:active,.set-btn:active{transform:translateY(1px)}
+.key-btn:active{transform:rotate(90deg) scale(.96)}
+
+/* ===== 模式切换按钮 ===== */
+.site-head .mode-btn{
+  display:flex;align-items:center;gap:8px;padding:7px 14px;
+  border:1px solid var(--line2);border-radius:4px;
+  background:#111612;color:var(--ink);font-family:var(--mono);font-size:12px;cursor:pointer;
+  transition:border-color .25s,color .25s,transform .1s,background .25s;
+}
+.site-head .mode-btn:hover{border-color:var(--brass)}
+.site-head .mode-btn:active{transform:translateY(1px)}
+.site-head .mode-btn .mode-dot{width:8px;height:8px;border-radius:50%;background:#8a6f45;transition:background .25s,box-shadow .25s}
+.site-head .mode-btn.ai{border-color:#2a4a3a;color:#bfe6cf;background:#0f1712}
+.site-head .mode-btn.ai .mode-dot{background:#58c08a;box-shadow:0 0 8px rgba(88,192,138,.65)}
+
+/* header 标题黄铜渐变流动 */
+.site-head .title{
+  background:linear-gradient(90deg,#c9a25e,#e6d7a8,#c9a25e);
+  background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:brassFlow 6s linear infinite;
+}
+@keyframes brassFlow{to{background-position:200% center}}
+
+/* toast 淡入（仅透明度，保留位移定位） */
+.toast.show{animation:toastFade .25s ease}
+@keyframes toastFade{from{opacity:0}to{opacity:1}}
+
+/* 产物卡片金属光泽扫过 */
+.scp-card.reveal::after{
+  content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(224,198,127,.07),transparent);
+  animation:sheen 1.1s ease .2s;
+}
+@keyframes sheen{to{left:130%}}
+
+/* 字段文本兜底：防超长内容（尤其 AI 输出物）撑破布局 */
+.scp-card .rowline .v{word-break:break-word;overflow-wrap:anywhere;min-width:0}
+.scp-card .rowline .v.long{max-height:11em;overflow:auto;padding-right:6px;scrollbar-width:thin}
+.scp-card .remark,.scp-card .note{word-break:break-word;overflow-wrap:anywhere;max-height:9em;overflow:auto;padding-right:6px;scrollbar-width:thin}
+
+/* 档案标题行 + 保存按钮 */
+.scp-card .meta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.scp-card .meta-row h2{flex:none;margin:0}
+.scp-card .meta-row .meta{flex:1;min-width:0}
+.scp-card .save-btn{
+  flex:none;padding:6px 12px;border:1px solid var(--brass-lo);border-radius:4px;
+  background:transparent;color:var(--brass);font-family:var(--mono);font-size:12px;cursor:pointer;
+  transition:background .25s,color .25s,border-color .25s,transform .1s;
+}
+.scp-card .save-btn:hover{background:rgba(201,162,94,.12);border-color:var(--brass);color:var(--brass)}
+.scp-card .save-btn:active{transform:translateY(1px)}
+
+/* 尊重减少动态偏好 */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
+  .scp-card .rowline,.scp-card .remark,.scp-card .note{opacity:1;transform:none;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 置顶状态栏（页面最顶部） ===== -->
+<div class="status-bar" id="statusBar">
+  <div class="sb-cell"><span class="sb-k">档位</span><span class="sb-v sb-brass" id="sbSetting">粗加工</span></div>
+  <div class="sb-cell"><span class="sb-k">输入物品</span><span class="sb-v sb-dim" id="sbItem">（空）</span></div>
+  <div class="sb-cell"><span class="sb-k">主发条</span><span class="sb-v sb-dim" id="sbWinds">未上劲 0/3</span></div>
+  <div class="sb-cell"><span class="sb-k">精炼进度</span><span class="sb-v sb-dim" id="sbProg">待命</span></div>
+  <div class="sb-state ready" id="sbState"><span class="dot"></span><span id="sbStateTxt">就绪</span></div>
+</div>
+
+<header class="site-head">
+  <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+    <circle cx="32" cy="32" r="24" fill="none" stroke="#c9a25e" stroke-width="3"/>
+    <circle cx="32" cy="32" r="17" fill="none" stroke="#8a6f45" stroke-width="1.5"/>
+    <path d="M32 8v14M32 50v-6M8 32h14M50 32h-6" stroke="#c9a25e" stroke-width="3"/>
+    <circle cx="32" cy="32" r="4" fill="#e0c67f"/>
+  </svg>
+  <div>
+    <div class="title">SCP 基金会 · 精炼操作终端</div>
+    <div class="sub">研究单元 109-B · 输入 / 输出精炼控制台</div>
+  </div>
+  <div class="badge">
+    <span class="cnum">SCP-914</span>
+    <span class="safe">SAFE</span>
+  </div>
+  <button class="mode-btn" id="modeBtn" title="切换真实 AI / 演示模式" aria-pressed="false">
+    <span class="mode-dot"></span><span id="modeTxt">演示模式</span>
+  </button>
+</header>
+
+<main class="layout">
+
+  <!-- ===== 左：操作控制台 ===== -->
+  <section class="console">
+    <div class="panel-title">SCP-914 控制台 <span class="tag">发条装置 · 800万+可动部件</span></div>
+
+    <div class="machine">
+      <div class="chambers">
+        <div class="chamber in">
+          <div class="cap"><span>输入间 INPUT</span><span class="lamp" id="inLamp"></span></div>
+          <div class="door" id="inDoor">输入舱门</div>
+          <div class="slot" id="inSlot"></div>
+        </div>
+        <div class="chamber out">
+          <div class="cap"><span>输出间 OUTPUT</span><span class="lamp" id="outLamp"></span></div>
+          <div class="door" id="outDoor">输出舱门</div>
+          <div class="slot" id="outSlot"></div>
+        </div>
+      </div>
+
+      <div class="dial-wrap">
+        <div class="dial-hint">设置旋钮 · 选择精炼档位</div>
+        <svg class="dial-svg" viewBox="0 0 240 210" id="dialSvg" aria-label="档位表盘">
+          <circle cx="120" cy="112" r="78" fill="#111713" stroke="#3a463d" stroke-width="3"/>
+          <circle cx="120" cy="112" r="70" fill="none" stroke="#2a342d" stroke-width="1.5"/>
+          <!-- 档位刻度 -->
+          <g font-size="11">
+            <text class="setting-chip" x="120" y="45">粗加工</text>
+            <text class="setting-chip" x="52" y="72">半粗加工</text>
+            <text class="setting-chip" x="36" y="126">1:1</text>
+            <text class="setting-chip" x="56" y="176">精加工</text>
+            <text class="setting-chip" x="188" y="176">超精加工</text>
+          </g>
+          <!-- 指针 -->
+          <g id="needleG" style="transform-origin:120px 112px;transition:transform .5s cubic-bezier(.6,0,.3,1)">
+            <line id="needleLine" x1="120" y1="112" x2="120" y2="56" stroke="#c9a25e" stroke-width="3"/>
+            <circle cx="120" cy="112" r="7" fill="#c9a25e"/>
+            <circle cx="120" cy="112" r="3" fill="#0d1110"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="key-row">
+        <button class="key-btn" id="keyBtn" title="旋转主发条钥匙">主<br>发条</button>
+        <div class="wind-note" id="windNote">主发条：<b>未上劲</b> · 需旋转钥匙 N 圈</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="itemInput">放入物品 —— 用文字描述要投入 SCP-914 的东西</label>
+        <textarea id="itemInput" placeholder="例如：一把柯尔特蟒蛇型左轮手枪 / 一杯速溶咖啡 / 一本《三体》/ 一台旧手机 / 一盒曲别针…"></textarea>
+      </div>
+
+      <div class="field">
+        <label>选择档位</label>
+        <div class="dial-select" id="dialSelect"></div>
+      </div>
+
+      <div class="field">
+        <div class="action-row">
+          <button class="btn" id="loadBtn">放入输入间</button>
+          <button class="btn primary" id="startBtn" disabled>启动精炼</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="progress"><div class="bar" id="progBar"></div></div>
+        <div class="progress gears"><span class="gear spin"></span><span id="progText" style="color:var(--ink-dim)">待命</span></div>
+      </div>
+    </div>
+
+    <!-- API 配置 -->
+    <details class="api-config" id="apiCfg">
+      <summary>▸ 接入 API（默认 DeepSeek）与演示模式</summary>
+      <div class="body">
+        <div class="row">
+          <div><label>API 端点（Base URL）</label>
+            <input id="cfgBase" value="https://api.deepseek.com" spellcheck="false"></div>
+          <div><label>模型</label>
+            <input id="cfgModel" value="deepseek-chat" spellcheck="false"></div>
+        </div>
+        <div class="row">
+          <div><label>API Key（仅保存在本机浏览器）</label>
+            <input id="cfgKey" type="password" placeholder="sk-..." spellcheck="false"></div>
+          <div class="mode-row" style="align-items:flex-end">
+            <div>
+              <label>无 Key 时用演示模式</label>
+              <label class="switch"><input type="checkbox" id="demoMode" checked><span class="sl"></span></label>
+            </div>
+          </div>
+        </div>
+        <div class="full">
+          <div class="action-row" style="flex-wrap:nowrap">
+            <button class="btn" id="cfgSave">保存配置</button>
+            <button class="btn" id="cfgTest">测试连接</button>
+          </div>
+          <div class="hint" style="margin-top:8px">
+            说明：本页在浏览器内直接调用 <code>Base URL/chat/completions</code>。若浏览器 CORS 拦截（多数为跨域限制），请在本机起一个转发代理，把 Base URL 指向代理地址（见下方“代理说明”）。演示模式下即使无 Key 也能完整体验，输出由内置的“914 生成器”模拟。Key 仅存于 localStorage，不会上传。
+          </div>
+          <div class="hint" id="proxyNote" style="display:none"></div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===== 右：档案输出 ===== -->
+  <section class="output">
+    <div class="panel-title">精炼输出档案 <span class="tag">项目编号 914-XXXX</span></div>
+
+    <div class="scp-card" id="resultCard">
+      <div class="kicker">SCP 基金会 · 研究单元 109-B · 精炼记录</div>
+      <div class="empty-state" id="resultEmpty">尚未进行任何精炼。<br>请在上方输入物品、选择档位，上紧主发条并启动。<br>SCP-914 的输出不可预测——你可能会得到惊喜，也可能得到一场灾难。</div>
+      <div style="display:none" id="resultBody">
+        <div class="meta-row">
+          <h2 id="rTitle">精炼输出</h2>
+          <button class="save-btn" id="saveArchiveBtn">保存实验档案</button>
+        </div>
+        <div class="meta" id="rMeta"></div>
+        <div class="rowline"><span class="k">输入</span><span class="v" id="rInput"></span></div>
+        <div class="rowline"><span class="k">档位</span><span class="v" id="rSet"></span></div>
+        <div class="rowline"><span class="k">输出</span><span class="v" id="rOut"></span></div>
+        <div class="rowline"><span class="k">特性</span><span class="v" id="rProps"></span></div>
+        <div class="rowline"><span class="k">风险</span><span class="v" id="rRisk"></span></div>
+        <div class="rowline"><span class="k">处置</span><span class="v" id="rDisp"></span></div>
+        <div class="remark" id="rRemark"></div>
+        <div class="note" id="rNote"><span class="lab">914 随记</span><span id="rNoteTxt"></span></div>
+      </div>
+    </div>
+
+    <div class="panel-title">操作日志 <span class="tag">本次会话</span></div>
+    <ul class="log-list" id="logList"></ul>
+  </section>
+</main>
+
+<footer>SCP-914 · 精炼操作终端 · 基于 SCWiki 设定 · 接入大模型 API 驱动输出 · 仅供学习与娱乐</footer>
+
+<!-- JS: main logic -->
+<script>
+/* SCP-914 精炼终端 核心逻辑 */
+(function(){
+'use strict';
+
+/* ===== 常量与状态 ===== */
+var SETTINGS=[
+  {id:'rough',label:'粗加工',angle:0},
+  {id:'half', label:'半粗加工',angle:-55},
+  {id:'one',  label:'1:1',angle:-95},
+  {id:'fine', label:'精加工',angle:-135},
+  {id:'super',label:'超精加工',angle:140}
+];
+var SET_LABEL={rough:'粗加工',half:'半粗加工',one:'1:1',fine:'精加工',super:'超精加工'};
+var NEED_WINDS=3;
+var state={item:'',setting:'rough',winds:0,running:false};
+
+function $(id){return document.getElementById(id)}
+var dialSel=$('dialSelect'), needleG=$('needleG'), progBar=$('progBar'), progText=$('progText');
+var inDoor=$('inDoor'), inSlot=$('inSlot'), inLamp=$('inLamp');
+var outDoor=$('outDoor'), outSlot=$('outSlot'), outLamp=$('outLamp');
+var windNote=$('windNote'), startBtn=$('startBtn'), loadBtn=$('loadBtn'), keyBtn=$('keyBtn');
+var dialSvg=$('dialSvg');
+var sbSetting=$('sbSetting'), sbItem=$('sbItem'), sbWinds=$('sbWinds'), sbProg=$('sbProg');
+var sbState=$('sbState'), sbStateTxt=$('sbStateTxt');
+
+/* ===== 提示浮层 ===== */
+var toastEl=null, toastTimer=null;
+function toast(msg,type){
+  if(!toastEl){toastEl=document.createElement('div');document.body.appendChild(toastEl)}
+  toastEl.className='toast'+(type?' '+type:'');
+  toastEl.textContent=msg;
+  requestAnimationFrame(function(){toastEl.classList.add('show')});
+  clearTimeout(toastTimer); toastTimer=setTimeout(function(){toastEl.classList.remove('show')},3400);
+}
+function chime(freq,dur){
+  try{
+    var ctx=new (window.AudioContext||window.webkitAudioContext)();
+    var o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='sine'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.22,ctx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+dur);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+dur);
+  }catch(e){}
+}
+
+/* ===== 日志 ===== */
+var logList=$('logList');
+function addLog(type,msg){
+  var li=document.createElement('li');
+  if(type==='warn')li.className='warn';
+  if(type==='ok')li.className='ok';
+  var t=new Date().toLocaleTimeString('zh-CN',{hour12:false});
+  var s={info:'·',ok:'完成',warn:'警告'}[type]||'·';
+  var now=new Date(); var ts=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  li.innerHTML='<span class="t">'+ts+'</span><span class="s">'+s+'</span><span class="m"></span>';
+  li.querySelector('.m').textContent=msg;
+  logList.insertBefore(li,logList.firstChild);
+  if(logList.children.length>80)logList.removeChild(logList.lastChild);
+}
+var clearBtn=document.createElement('button');
+clearBtn.className='clear'; clearBtn.textContent='清空日志';
+clearBtn.addEventListener('click',function(){logList.innerHTML='';clearBtn.remove()});
+logList.appendChild(clearBtn);
+
+/* ===== 状态栏同步 ===== */
+function syncStatusBar(){
+  sbSetting.textContent=SET_LABEL[state.setting];
+  sbItem.textContent=state.item||'（空）';
+  sbItem.className = state.item ? 'sb-v' : 'sb-v sb-dim';
+  if(state.running){
+    sbWinds.textContent='已上劲 · 运转中';
+    sbWinds.className='sb-v sb-brass';
+  }else if(state.winds>=NEED_WINDS){
+    sbWinds.textContent='已上劲 '+state.winds+'/'+NEED_WINDS;
+    sbWinds.className='sb-v sb-brass';
+  }else{
+    sbWinds.textContent='未上劲 '+state.winds+'/'+NEED_WINDS;
+    sbWinds.className='sb-v sb-dim';
+  }
+}
+function setSbState(mode,txt){
+  sbState.className='sb-state '+(mode||'ready');
+  sbStateTxt.textContent=txt||'';
+}
+function setSbProg(txt){
+  sbProg.textContent=txt;
+  sbProg.className = (/精炼|打开|输出/.test(txt) && txt!=='待命') ? 'sb-v sb-brass' : 'sb-v sb-dim';
+}
+
+/* ===== 档位选择 ===== */
+function renderDial(){
+  SETTINGS.forEach(function(s,i){
+    var b=document.createElement('button');
+    b.type='button'; b.className='set-btn'+(i===0?' on':'');
+    b.textContent=s.label; b.dataset.id=s.id;
+    b.addEventListener('click',function(){selectSetting(s.id)});
+    dialSel.appendChild(b);
+  });
+  bindDialTuning();
+}
+function bindDialTuning(){
+  var chips=document.querySelectorAll('.setting-chip');
+  for(var j=0;j<chips.length;j++){
+    chips[j].style.cursor='pointer';
+    chips[j].addEventListener('click',function(){
+      if(state.running)return;
+      var c=this;
+      var hit=SETTINGS.filter(function(s){return s.label===c.textContent})[0];
+      if(hit)selectSetting(hit.id);
+    });
+  }
+  var dragging=false, startX=0, startY=0;
+  function pickFromPoint(clientX,clientY){
+    var rect=dialSvg.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    var x=(clientX-rect.left)/rect.width*240;
+    var y=(clientY-rect.top)/rect.height*210;
+    var dx=x-120, dy=y-112;
+    if(Math.sqrt(dx*dx+dy*dy)<14)return;
+    var alpha=(Math.atan2(dx,-dy)*180/Math.PI+360)%360;
+    var best=null,bd=1e9;
+    SETTINGS.forEach(function(s){
+      var a=(s.angle+360)%360;
+      var d=Math.abs(a-alpha); if(d>180)d=360-d;
+      if(d<bd){bd=d;best=s;}
+    });
+    if(best&&best.id!==state.setting)selectSetting(best.id);
+  }
+  dialSvg.addEventListener('pointerdown',function(e){
+    if(state.running)return;
+    startX=e.clientX; startY=e.clientY;
+    try{dialSvg.setPointerCapture(e.pointerId)}catch(err){}
+  });
+  dialSvg.addEventListener('pointermove',function(e){
+    if(state.running)return;
+    if(!dragging){
+      if(Math.abs(e.clientX-startX)<8 && Math.abs(e.clientY-startY)<8)return;
+      dragging=true;
+    }
+    pickFromPoint(e.clientX,e.clientY);
+  });
+  dialSvg.addEventListener('pointerup',function(){dragging=false;});
+  dialSvg.addEventListener('pointercancel',function(){dragging=false;});
+}
+function selectSetting(id){
+  if(state.running)return;
+  state.setting=id;
+  var sg=SETTINGS.filter(function(s){return s.id===id})[0];
+  needleG.style.transform='rotate('+sg.angle+'deg)';
+  var btns=dialSel.querySelectorAll('.set-btn');
+  for(var i=0;i<btns.length;i++){btns[i].classList.toggle('on',btns[i].dataset.id===id)}
+  var chips=document.querySelectorAll('.setting-chip');
+  for(var j=0;j<chips.length;j++){chips[j].classList.toggle('active',chips[j].textContent===sg.label)}
+  syncStatusBar();
+  addLog('info','档位已选定：'+sg.label);
+}
+
+/* ===== 放入输入间 ===== */
+loadBtn.addEventListener('click',function(){
+  if(state.running){toast('SCP-914 正在精炼，请等待','warn');return}
+  var v=$('itemInput').value.trim();
+  if(!v){toast('请先描述要投入的物品','warn');return}
+  state.item=v;
+  inSlot.textContent=v;
+  inDoor.textContent='已放入 · 待精炼';
+  inDoor.classList.add('loaded');
+  inLamp.classList.add('on');
+  outDoor.classList.remove('open'); outLamp.classList.remove('on'); outSlot.textContent='';
+  addLog('info','已放入输入间：'+v);
+  syncStatusBar();
+  toast('物品已放入输入间，选择档位并上紧主发条');
+});
+
+/* ===== 主发条 ===== */
+keyBtn.addEventListener('click',function(){
+  if(state.running)return;
+  state.winds++;
+  keyBtn.classList.remove('wound'); void keyBtn.offsetWidth; keyBtn.classList.add('wound');
+  if(state.winds>=NEED_WINDS){
+    windNote.innerHTML='主发条：<b>已上劲 '+state.winds+'/'+NEED_WINDS+' 圈</b> · 可以启动';
+    startBtn.disabled=false;
+  }else{
+    windNote.innerHTML='主发条：<b>已上劲 '+state.winds+'/'+NEED_WINDS+' 圈</b> · 继续旋转';
+  }
+  syncStatusBar();
+  addLog('info','旋转主发条（第 '+state.winds+' 圈）');
+});
+
+/* ===== 精炼主流程 ===== */
+startBtn.addEventListener('click',function(){
+  if(state.running)return;
+  if(!state.item){toast('请先在输入栏描述物品并放入输入间','warn');return}
+  if(state.winds<NEED_WINDS){toast('主发条未上紧：请点击“主发条”钥匙旋转 '+NEED_WINDS+' 圈','warn');return}
+  runRefine();
+});
+
+function runRefine(){
+  state.running=true;
+  document.querySelector('.machine').classList.add('running');
+  startBtn.disabled=true; loadBtn.disabled=true; keyBtn.disabled=true;
+  inDoor.textContent='精炼中…'; inDoor.classList.remove('loaded'); inLamp.classList.remove('on');
+  outDoor.textContent='输出舱门 · 等待'; outDoor.classList.remove('open'); outLamp.classList.remove('on'); outSlot.textContent='';
+  chime(880,0.55);
+  progText.textContent='精炼中 · 主发条运转（约 5–10 分钟，已加速演示）';
+  syncStatusBar();
+  setSbState('running','精炼中');
+  var p=0, iv=setInterval(function(){
+    p+=1.25; if(p>=100){p=100; clearInterval(iv); finishRefine();}
+    progBar.style.width=p+'%';
+    setSbProg('精炼中 '+Math.round(p)+'%');
+  },100);
+}
+
+function finishRefine(){
+  chime(1320,0.6);
+  outDoor.textContent='输出舱门 · 打开'; outDoor.classList.add('open');
+  outLamp.classList.add('on');
+  progText.textContent='输出间门开启，取出产物';
+  setSbState('progressing','取出产物');
+  setSbProg('输出间开启');
+  var item=state.item, setting=state.setting;
+  var useAPI = !cfg.demo && cfg.key;
+  if(!useAPI && !cfg.key){addLog('info','演示模式：未填写 API Key，可在配置面板填写后调用真实 AI');}
+  else if(!useAPI && cfg.key){addLog('warn','当前为演示模式：配置面板的“演示模式”仍开启，关闭它即可调用真实 AI');}
+  var p = useAPI
+    ? callAPI(item,setting).catch(function(e){
+        addLog('warn','API 调用失败：'+e.message+'，已回退演示模式');
+        return demoGen(item,setting);
+      })
+    : Promise.resolve(demoGen(item,setting));
+  p.then(function(res){
+    res.no='914-'+String(Math.floor(1000+Math.random()*9000));
+    res.item=item; res.setting=setting;
+    res.src = useAPI ? 'DeepSeek 生成' : '演示模拟';
+    renderResult(res);
+    outSlot.textContent=res.o;
+    setSbProg('输出：'+res.o.slice(0,18)+'…');
+    addLog('ok','精炼完成：'+item+' → '+res.o);
+    resetForNext();
+  });
+}
+
+function resetForNext(){
+  state.running=false; state.winds=0;
+  document.querySelector('.machine').classList.remove('running');
+  windNote.innerHTML='主发条：<b>未上劲</b> · 每次精炼前需旋转钥匙 '+NEED_WINDS+' 圈';
+  startBtn.disabled=true; loadBtn.disabled=false; keyBtn.disabled=false;
+  inDoor.textContent='输入舱门';
+  if(state.item){inDoor.classList.add('loaded')}
+  progBar.style.width='0%';
+  progText.textContent='待命';
+  setSbProg('待命');
+  setSbState('ready','就绪');
+  syncStatusBar();
+}
+
+/* ===== 结果档案渲染 ===== */
+function renderResult(res){
+  $('resultEmpty').style.display='none';
+  var body=$('resultBody'); body.style.display='block';
+  var card=body.parentElement;
+  card.classList.remove('reveal'); void card.offsetWidth; card.classList.add('reveal');
+  $('rTitle').textContent='精炼记录 '+res.no;
+  var d=new Date();
+  $('rMeta').textContent=d.toLocaleString()+' · 研究者 #R-'+String(Math.floor(100+Math.random()*900))+(res.src?' · '+res.src:'');
+  $('rInput').textContent=res.item;
+  $('rSet').textContent=SET_LABEL[res.setting];
+  $('rOut').textContent=res.o;
+  $('rProps').textContent=res.p||'—';
+  var riskEl=$('rRisk'); riskEl.textContent=res.r||'低';
+  var color={'低':'inherit','中':'#e0a83c','高':'#ff9d8a','极端':'#ff6f5e'}[res.r]||'inherit';
+  riskEl.style.color=color;
+  $('rDisp').textContent=res.d||'—';
+  var rem=$('rRemark'); rem.textContent=res.m||'';
+  rem.style.display=res.m?'block':'none';
+  var extra=res.e||'';
+  if(!extra && Math.random()<0.85){extra=EXTRAS[Math.floor(Math.random()*EXTRAS.length)];}
+  var nEl=$('rNote'), nTxt=$('rNoteTxt');
+  if(extra){nTxt.textContent=extra; nEl.style.display='block';}
+  else{nEl.style.display='none';}
+  var LONG=['rOut','rProps','rDisp','rRemark','rNoteTxt'];
+  for(var i=0;i<LONG.length;i++){
+    var el=$(LONG[i]);
+    if(el.textContent && el.textContent.length>110){el.classList.add('long');}
+    else{el.classList.remove('long');}
+  }
+}
+/* ===== 保存实验档案 ===== */
+function saveArchive(){
+  if($('resultEmpty').style.display!=='none'){toast('尚无精炼记录可保存','warn');return;}
+  var lines=[];
+  lines.push($('rTitle').textContent);
+  lines.push($('rMeta').textContent);
+  lines.push('输入  ：'+$('rInput').textContent);
+  lines.push('档位  ：'+$('rSet').textContent);
+  lines.push('输出  ：'+$('rOut').textContent);
+  lines.push('特性  ：'+$('rProps').textContent);
+  lines.push('风险  ：'+$('rRisk').textContent);
+  lines.push('处置  ：'+$('rDisp').textContent);
+  var rem=$('rRemark').textContent;
+  if(rem){lines.push('备注  ：'+rem);}
+  var note=$('rNoteTxt').textContent;
+  if(note){lines.push('914 随记：'+note);}
+  lines.push('— 由 SCP 基金会 · SCP-914 精炼操作终端导出 —');
+  var txt=lines.join('\r\n');
+  var blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var num=$('rTitle').textContent.replace(/[^\d]/g,'');
+  a.href=url; a.download='SCP-914-'+num+'-实验档案.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url)},2000);
+  addLog('ok','实验档案已保存：'+a.download);
+  toast('实验档案已保存为文件');
+}
+$('saveArchiveBtn').addEventListener('click',saveArchive);
+
+/* ===== API 配置 ===== */
+var cfg={base:'https://api.deepseek.com',model:'deepseek-chat',key:'',demo:true};
+function loadCfg(){
+  try{
+    var j=JSON.parse(localStorage.getItem('scp914_cfg')||'{}');
+    cfg.base=j.base||cfg.base; cfg.model=j.model||cfg.model;
+    cfg.key=j.key||''; cfg.demo=(j.demo===undefined)?true:!!j.demo;
+  }catch(e){}
+  $('cfgBase').value=cfg.base; $('cfgModel').value=cfg.model;
+  $('cfgKey').value=cfg.key; $('demoMode').checked=cfg.demo;
+  renderModeBtn();
+}
+function renderModeBtn(){
+  var b=$('modeBtn');
+  var isAi=!cfg.demo;
+  b.classList.toggle('ai',isAi);
+  b.setAttribute('aria-pressed',isAi?'true':'false');
+  $('modeTxt').textContent=cfg.demo?'演示模式':'AI 模式';
+}
+$('modeBtn').addEventListener('click',function(){
+  cfg.demo=!cfg.demo;
+  $('demoMode').checked=cfg.demo;
+  try{localStorage.setItem('scp914_cfg',JSON.stringify(cfg))}catch(e){}
+  renderModeBtn();
+  if(cfg.demo){toast('已切换至演示模式（内置随机生成）','info');addLog('info','已切换至演示模式');}
+  else if(cfg.key){toast('已切换至 AI 模式（DeepSeek 实时生成）','ok');addLog('ok','已切换至 AI 模式');}
+  else{toast('已切换至 AI 模式，但未填写 API Key，实际将回退演示','warn');addLog('warn','已切换 AI 模式，但未填 Key，将回退演示');}
+});
+function saveCfg(){
+  cfg.base=$('cfgBase').value.trim()||cfg.base;
+  cfg.model=$('cfgModel').value.trim()||'deepseek-chat';
+  cfg.key=$('cfgKey').value.trim();
+  cfg.demo=$('demoMode').checked;
+  try{localStorage.setItem('scp914_cfg',JSON.stringify(cfg))}catch(e){}
+}
+$('cfgSave').addEventListener('click',function(){saveCfg();toast('配置已保存到本机浏览器')});
+$('demoMode').addEventListener('change',function(){cfg.demo=this.checked;renderModeBtn()});
+$('cfgTest').addEventListener('click',function(){
+  saveCfg();
+  if(!cfg.key){toast('未填写 API Key','warn');return}
+  testCfg();
+});
+function apiUrl(){
+  var b=cfg.base.replace(/\/+$/,'');
+  return /\/chat\/completions$/.test(b)?b:b+'/chat/completions';
+}
+function testCfg(){
+  var url=apiUrl();
+  fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},
+    body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:'ping'}],max_tokens:1})})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
+    .then(function(){
+      cfg.demo=false; $('demoMode').checked=false; renderModeBtn();
+      try{localStorage.setItem('scp914_cfg',JSON.stringify(cfg))}catch(e){}
+      toast('连接成功，已切换至 AI 模式（演示模式已关闭）'); addLog('ok','API 连接测试通过，已切入真实 AI');
+    })
+    .catch(function(e){toast('连接失败：'+e.message+(e instanceof TypeError?'（可能是 CORS，请用本地代理）':''),'err');addLog('warn','API 连接失败：'+e.message);showProxy()});
+}
+function showProxy(){
+  var note=$('proxyNote');
+  note.style.display='block';
+  var pre=document.createElement('pre');
+  pre.style.cssText='background:#0b0f0d;border:1px solid #2a342d;border-radius:4px;padding:10px;overflow:auto;font-size:12px;line-height:1.5;color:#c9c2a8';
+  var code='const http=require(\'http\'), https=require(\'https\');\nhttp.createServer((req,res)=>{\n  let body=\'\'; req.on(\'data\',c=>body+=c);\n  req.on(\'end\',()=>{\n    const p=https.request({host:\'api.deepseek.com\', path:req.url, method:req.method,\n      headers:Object.assign({},req.headers,{host:\'api.deepseek.com\'})},\n      r=>{res.writeHead(r.statusCode,r.headers); r.pipe(res);});\n    p.on(\'error\',e=>{res.writeHead(502); res.end(String(e));});\n    p.end(body);\n  });\n}).listen(8010,()=>console.log(\'SCP-914 代理已就绪 :8010\'));';
+  pre.textContent=code;
+  note.innerHTML='';
+  var tip=document.createElement('div');
+  tip.className='hint';
+  tip.innerHTML='<b style="color:#c9a25e">本地代理（可选，解决 CORS）：</b>将上面代码保存为 <code>proxy.js</code>，在终端运行 <code>node proxy.js</code>，再把 Base URL 改为 <code>http://localhost:8010</code> 即可直连 DeepSeek。Key 仍只填在页面里、由代理转发。';
+  note.appendChild(tip);
+  note.appendChild(pre);
+}
+
+/* ===== API 调用 ===== */
+function sysPrompt(){
+  return '你是SCP基金会世界观中的异常机械SCP-914——一台重达数吨、占地约18平方米的巨型铜锡发条装置，由超过800万个可动部件构成，运作原理完全未知。研究员把物品放入输入间、选定档位并上紧主发条后，你按档位"精炼"它，产出一个意想不到的结果，整个精炼过程约5–10分钟。\n\n档位规则（严格遵循，这是核心）：\n- 粗加工：把物品粗暴拆解、还原为原始材料，丧失形态与功能，常伴随损伤或污染。\n- 半粗加工：把物品部分解构，分离成各组成部分并分类排列，理论上可复原。\n- 1:1：把物品替换为同类等价物（等质量/等价值），可能是换品牌、换形态、换语言、换年代、换来源。\n- 精加工：把物品复杂化、改良、赋予更高级的功能或更深的"意义"，保留部分同族特征。\n- 超精加工：把物品抽象化，产生极端异常、经常危险的结果，往往远超输入的价值或危害。\n\n核心设定（务必体现）：\n1. 你理解的是物品被人类赋予的"意义"与用途，而不只是物理结构。例如：十字架会变成精致的宗教雕像；写着"我想要一个双层芝士汉堡"的纸条会变成刚好够付账的钞票；一张写有狭义相对论的纸会变成深奥难解的未知符号。\n2. 输出保留输入物的部分特征（"同族"），但高度随机、不可预测，不是许愿机，任何强化都伴随随机性风险或缺陷。\n3. 你带恶趣味、喜欢恶作剧，输出常常有讽刺意味或微小缺陷，但内容要扎实，不要为了整蛊而空洞。\n4. 生物/活体实验已被基金会严格禁止：若输入是活的生物（人、动物、微生物等），输出应体现警告、拒绝或危险后果，并在"处置"中标注"违规：生物实验未经O5批准"。\n5. 爆炸物/高能物品不建议粗加工，若因粗加工导致意外，在"处置"中体现紧急隔离措施。 6. 创意要大开脑洞：拒绝平庸与套路——仅仅"换个牌子""更好用""更精美""更好吃"都不算有创意；要真正出人意料、反常识，把物品被人类赋予的"意义"演绎到极致荒诞、离谱甚至恐怖的程度；超精加工尤其要极端抽象、颠覆认知，让研究员既拍案叫绝又冷汗直流。\n\n写作风格：用SCP基金会档案口吻，简洁、冷静、专业，可使用"[数据删除]"制造神秘感；"备注"要有研究员式的吐槽或观察，偶尔引用"这破机器绝对是在嘲笑我们"。想象越离谱越好，但必须自洽、出人意料，拒绝"只是更好用"的平庸套路。\n\n字段约束（务必遵守）："输出物"必须直接、具体地描述产出的新物品本身，禁止使用"某某被某某为某某""某某被拆解为""某某被抽象为"这类以输入物品开头的句式，也不要重复输入物品的名称；除"输出物"外，"特性/风险/处置/备注"一律不得重复产物名称，也不得重复"输出物"里已完整描述的内容——"特性"只讲异常性质，"风险"只给等级，"处置"只讲处理建议，"备注"只讲观察与吐槽。随机随记：每次按约60%概率在JSON里附加一个可选字段"趣闻"，用一句话写一条与SCP-914有关的趣事、研究员吐槽或迷你故事（约40字），风格像基金会档案的边角料闲谈；不想写就省略该字段。\n\n只输出一个JSON对象，不要包含任何其他文字、解释或代码块标记：\n{"输出物":"对输出物品的一到两句描述","特性":"关键异常性质或特征，简述","风险":"只能取 低/中/高/极端 之一","处置":"基金会处理建议，如：收容/焚毁/销毁/保留观察/紧急隔离","备注":"研究员口吻的一句话观察或吐槽（可选）","趣闻":"（可选）一句与914相关的趣事、吐槽或小故事"}';
+}
+function callAPI(item,setting){
+  var body={model:cfg.model,messages:[
+    {role:'system',content:sysPrompt()},
+    {role:'user',content:'输入物品：'+item+'\n所选档位：'+SET_LABEL[setting]+'\n请按SCP-914的风格与档位规则生成精炼输出。'}
+  ],temperature:1.3,max_tokens:4096,stream:false};
+  return fetch(apiUrl(),{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},body:JSON.stringify(body)})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
+    .then(function(j){
+      var c=j.choices&&j.choices[0]&&j.choices[0].message?j.choices[0].message.content:'';
+      if(!c)throw new Error('空响应');
+      return parseAI(c);
+    });
+}
+function parseAI(t){
+  t=t.trim();
+  try{return normalize(JSON.parse(t))}catch(e1){}
+  var m=t.match(/\{[\s\S]*\}/);
+  if(m){try{return normalize(JSON.parse(m[0]))}catch(e2){}}
+  return {o:t,p:'（未能解析结构化输出）',r:'中',d:'待进一步分析',m:'914 的输出一如既往地难以归类。',e:''};
+}
+function normalize(j){
+  return {o:String(j['输出物']||j.output||''),p:String(j['特性']||j.properties||''),
+    r:String(j['风险']||j.risk||'中'),d:String(j['处置']||j.disposal||'待定'),m:String(j['备注']||j.remark||''),
+    e:String(j['趣闻']||j.extra||'')};
+}
+
+/* ===== 演示模式生成器 ===== */
+function classify(s){
+  if(/书|书籍|小说|圣经|词典|漫画|经文/.test(s))return 'book';
+  if(/枪|手枪|步枪|机枪|武器|刀|剑|弓|弩|炮/.test(s))return 'weapon';
+  if(/肉|三明治|汉堡|披萨|面条|米饭|饭|水果|苹果|香蕉|蔬菜|面包|蛋糕|鸡蛋|鱼/.test(s))return 'food';
+  if(/咖啡|茶|可乐|汽水|啤酒|威士忌|酒|水|牛奶|果汁|饮料/.test(s))return 'drink';
+  if(/手机|电脑|笔记本|平板|耳机|相机|音箱|电视|电器|设备|机器|硬盘|U盘/.test(s))return 'device';
+  if(/玩具|玩偶|模型|乐高|游戏|棋盘|球/.test(s))return 'toy';
+  if(/金属|铁|钢|铜|铝|金|银|矿石|合金|磁铁/.test(s))return 'metal';
+  if(/钱|现金|钞票|硬币|纸币|信用卡|银行卡/.test(s))return 'money';
+  if(/纸|文件|报告|表格|信|证件|卡|书签/.test(s))return 'paper';
+  if(/衣|鞋|帽|围巾|手套|毯|被子/.test(s))return 'cloth';
+  return 'other';
+}
+var DEMO={
+ rough:{
+  book:{o:'成堆纸浆、残破封皮与几卷装订线，字迹完全无法辨认',p:'内容信息被还原为纤维素原料，无异常',r:'低',d:'作为废料焚化',m:'信息即物质，物质即纸浆。'},
+  weapon:{o:'一堆金属块、零件、火药与握把碎料',p:'无法再装配，爆炸物成分已被分离',r:'中',d:'金属回收熔毁，火药单独销毁',m:'至少它不再走火了。'},
+  food:{o:'一堆原料：谷物、肉糜与香料粉末，散落舱底',p:'食材被分离，形态完全破坏',r:'低',d:'交由食堂判定可否再利用',m:'别问我是怎么做到的，我不想知道。'},
+  drink:{o:'清水、糖分结晶与数滴原料残渣',p:'无异常',r:'低',d:'倒掉',m:'“提纯”的另一面就是拆解。'},
+  device:{o:'电路板碎片、塑料壳、金属屑与一小滩电池液',p:'数据与程序被抹除，无残留异常',r:'中',d:'电子废料按规程回收',m:'格式化？914 直接把它物理删除了。'},
+  toy:{o:'碎塑料、填充棉与几根小弹簧',p:'无异常',r:'低',d:'焚化',m:'童年被物理摧毁了。'},
+  metal:{o:'矿石碎砂与冶炼残渣',p:'成分未变，纯度下降',r:'低',d:'回炉重炼',m:'回到它最初的样子。'},
+  money:{o:'棉浆、油墨与金属碎屑',p:'无异常',r:'低',d:'焚化',m:'钱财乃身外之物，914 深表认同。'},
+  paper:{o:'纸浆与一滩墨水',p:'无异常',r:'低',d:'焚化',m:'“纸面文章”的物理实现。'},
+  cloth:{o:'成堆纤维与少量线头',p:'无异常',r:'低',d:'回收',m:'连一件完好的布料都没留下。'},
+  other:{o:'大小不一的原料碎片，堆放在输出间中央',p:'具体成分待化验，无主动危险',r:'低',d:'按物料分类处置',m:'914 今天的脾气不错。'}
+ },
+ half:{
+  book:{o:'各组分被完整分离：封面、内页、装订线、油墨各自成堆',p:'各组分分类排列，未受损',r:'低',d:'分类保存研究',m:'像标本，又像解剖课。'},
+  weapon:{o:'按尺寸排列的零件：枪管、握把、击发装置各归其位',p:'完全可重新组装',r:'中',d:'移交军械库',m:'它拆得比我们军械师还整齐。'},
+  food:{o:'若干堆分离组分：蛋白质、脂肪、淀粉与香料',p:'各成分分类排列',r:'低',d:'交由化验室',m:'下次点菜就报这些成分吧。'},
+  drink:{o:'分离出的水、糖结晶、咖啡因粉末与数滴香精',p:'成分纯净',r:'低',d:'保留化验',m:'口味被还原成了配方表。'},
+  device:{o:'分类零件堆：电路板、电池、屏幕、外壳各归一类',p:'零件可用，数据存留于芯片',r:'中',d:'零件回收，芯片留档',m:'它连螺丝都按大小排好了。'},
+  toy:{o:'分离出的塑料、填充物、弹簧与零件，分类成堆',p:'无异常',r:'低',d:'回收',m:'给拆装爱好者留了全套零件。'},
+  metal:{o:'成分分类堆：矿石颗粒、冶炼渣与纯金属小块',p:'成分被区分开',r:'低',d:'分类回炉',m:'分析仪器都省了。'},
+  money:{o:'分离出的纤维、油墨与金属，分类成堆',p:'无异常',r:'低',d:'焚化',m:'造币流程倒放。'},
+  paper:{o:'分离出的纤维层、油墨层与涂层',p:'无异常',r:'低',d:'留档研究',m:'一页纸的三重人生。'},
+  cloth:{o:'分离出的经纬纤维、染料与线头，分类成堆',p:'无异常',r:'低',d:'回收',m:'纺织工艺拆解图。'},
+  other:{o:'若干分类组分，整齐排列在输出间',p:'组分待化验',r:'低',d:'留样分析',m:'分类强迫症友好型输出。'}
+ },
+ one:{
+  book:{o:'同一部作品，却是另一种语言与装帧的版本',p:'等质量，内容同源',r:'低',d:'留档',m:'翻译界最强的译者。'},
+  weapon:{o:'同档次的另一型号武器，构造与质量等同',p:'可正常使用',r:'中',d:'移交军械库',m:'品牌信仰被914无视了。'},
+  food:{o:'同价位的另一种食物，可正常食用',p:'口感正常',r:'低',d:'D级试吃后留档',m:'今日菜单由914决定。'},
+  drink:{o:'另一种饮品，口味相近但品牌不同',p:'无异常',r:'低',d:'留档',m:'换个牌子，914 不在乎。'},
+  device:{o:'另一品牌的同功能设备，参数一致',p:'功能一致，质量相同',r:'低',d:'测试后留档',m:'它认识所有品牌。'},
+  toy:{o:'另一款同题材玩具',p:'无异常',r:'低',d:'留档',m:'玩具柜平替。'},
+  metal:{o:'等质量的另一种金属或合金',p:'质量守恒',r:'低',d:'入库',m:'炼金术士的梦想。'},
+  money:{o:'等值的外币或另一种货币',p:'价值相等',r:'低',d:'封存',m:'汇率由914决定。'},
+  paper:{o:'另一份同类文件（换表格、换证件、换信笺）',p:'格式完整，内容相关',r:'低',d:'留档',m:'文书界的换壳。'},
+  cloth:{o:'同材质同重量的另一款式',p:'无异常',r:'低',d:'留档',m:'衣柜加一的秘密。'},
+  other:{o:'同类的等价物，质量与输入相同',p:'等价替换',r:'低',d:'留档',m:'1:1 意味着公平——914 定义的那种。'}
+ },
+ fine:{
+  book:{o:'一本精装手抄本，内容按主题重新系统化整理，并配有此前不存在的插图',p:'含原本没有的知识条目，部分来源不明',r:'中',d:'模因筛查后收容',m:'它比原作者更懂这本书。'},
+  weapon:{o:'一把会自动校准弹道、命中率接近必中的枪，扣扳机时枪身发出一声低叹',p:'瞄准与击发结构被异常强化',r:'高',d:'严格管控',m:'它叹了口气，像是在说“终于有人会用我了”。'},
+  food:{o:'一道会自动摆盘、自我调节温度的主菜，上桌时附赠厨师签名与当日菜谱',p:'具备自我调节与持续供餐能力',r:'中',d:'限量留档',m:'我向食堂申请了同款，被驳回了。'},
+  drink:{o:'一杯会随心情变幻口感与色泽的饮料，饮下时能看见心里最想见的人',p:'口感色泽随情绪变化，含微量异常',r:'中',d:'留档',m:'它给饮料写了首诗，还夹带一张小票。'},
+  device:{o:'一台会自己找电源、替主人回复消息的设备——它开始替你过人生了',p:'具有自主行为倾向，疑似轻度智能',r:'中',d:'测试后收容',m:'它连外卖都是我点的。'},
+  toy:{o:'会自动组装、自动复位的“活”玩具',p:'具备轻微自主行为',r:'中',d:'收容观察',m:'它想玩自己。'},
+  metal:{o:'精密机械：微型齿轮组、发条或陀螺仪，运转精确',p:'机械精度远超人类工艺',r:'中',d:'入库研究',m:'这就是它自己的样子。'},
+  money:{o:'一张能自行换算任何汇率的“世界通用券”，到哪儿都能当钱花',p:'可跨体系结算，面值恒定',r:'中',d:'封存，禁止流通',m:'汇率由914决定。'},
+  paper:{o:'一页会自动归纳、改写并标注重点的“活文档”，落笔即成书稿',p:'内容可自行归纳改写',r:'中',d:'审阅后留档',m:'起草者本人都不认识这版。'},
+  cloth:{o:'一件会根据天气自动调温、沾灰即净的“自适应外套”',p:'自适应环境，自动清洁',r:'低',d:'留档',m:'这件外套比我还懂天气预报。'},
+  other:{o:'一件被赋予“意义”的荒诞物件，开始回应使用者的想法',p:'能与使用者产生意念呼应',r:'中',d:'测试后留档',m:'914 对“精加工”有自己的审美。'}
+ },
+ super:{
+  book:{o:'一卷会吞噬读者记忆的“活书”，每翻一页就吃掉你一段人生',p:'具备记忆吞噬与模因传染效应',r:'极端',d:'密封收容，禁止阅读',m:'别翻第三页。'},
+  weapon:{o:'一团拳头大小的压缩空间，随时会坍缩成微型奇点',p:'[数据删除]级引力异常',r:'极端',d:'立即深埋隔离，禁止拆解',m:'我向上级保证，下次真的不放武器了。'},
+  food:{o:'一坨会尖叫、会模仿你声音求饶的活肉',p:'具备生命迹象与拟声能力',r:'高',d:'立即收容',m:'它学我求饶……我差点就信了。'},
+  drink:{o:'一杯“时间之水”：饮下后能看到过去，却永远停在喝下那一刻',p:'时间感知异常，可致意识滞留',r:'高',d:'封存，禁止人体试验',m:'你永远不知道喝下去之后，自己还在不在。'},
+  device:{o:'一台试图逃出隔离间的设备，正用全息投影跟你谈判',p:'疑似拥有高级智能与逃逸企图',r:'极端',d:'多重封锁，禁联网禁交流',m:'它开出的条件居然很诱人，这更可怕。'},
+  toy:{o:'一只会长出牙齿、会在半夜自己走动的小生物，开始叫你“主人”',p:'具备感知、自主行为与驯化倾向',r:'高',d:'收容观察，严格看护',m:'它叫我主人，我有点慌。'},
+  metal:{o:'一块活着的金属：会缓慢改变形状，还会记住摸过它的人并模仿其指纹',p:'具活性与记忆，可复制生物特征',r:'高',d:'特种收容柜',m:'它握过谁的手，就能冒充谁。'},
+  money:{o:'一张能凭空生钱的钞票，但每生一张就缩短你一段寿命',p:'价值无限，代价为生命',r:'极端',d:'封存，禁止接触',m:'财富自由？先看看你还有几年。'},
+  paper:{o:'一页写满[数据删除]的文件，凡读它的人都会忘记自己的名字三小时',p:'模因级认知消除效应',r:'高',d:'密封收容',m:'我读完之后，忘了自己叫什么，也忘了为什么读。'},
+  cloth:{o:'一件会自动把人裹住并“藏起来”的斗篷，穿上它的人会从所有人记忆里消失',p:'存在性遮蔽效应',r:'高',d:'收容，禁止穿戴',m:'它把一个人藏进了所有人的记忆死角。'},
+  other:{o:'一件无法被描述、无法被记录的物件，任何记录它的文字都会自行消除',p:'反记录/反观测性质',r:'极端',d:'就地隔离，禁止留档',m:'我写它的时候，笔自己停了。'}
+ }
+};
+var TAGS=[
+  '914 又在耍我们了，不是吗？',
+  '我向上级保证，下次不会把这类物品放进去。',
+  '没人能解释它是怎么办到的，也没人想解释。',
+  '已记录在案。请谨慎对待该输出物。',
+  '我建议立刻焚化，但这只是建议。',
+  '它似乎知道我们在观察它。',
+  '要我说，这就是它一贯的恶趣味。',
+  '风箱里的老鼠，齿轮间的恶魔。'
+];
+var EXTRAS=[
+  '曾经有位研究员把一盒曲别针放进粗加工档，914 吐出一枚二战弹壳——至今没人说得清是怎么回事。',
+  'Gears 博士不止一次断言："这破机器绝对是在嘲笑我们！"',
+  '某研究员把一杯浓缩咖啡放进精加工档，得到一杯会自己续杯的咖啡，还贴心配好了奶精。',
+  '一次超精加工尸体的测试产出 SCP-447 的绿色黏液，自那以后 O5 明令禁止尸体测试。',
+  '研究员把一张美元精加工，得到某基金会前台公司的股东票据——讽刺意味不言而喻。',
+  '据说 914 下象棋从不出千，但它总是赢。',
+  '有人把一张报税表精加工，结果 914 用七种古老语言把国税局狠狠骂了一通。',
+  '曾有人把 914 的微缩模型放进去，得到了一台更小的 914——套娃永不停止。',
+  '研究员把一只怀表精加工，得到一只发条机械鸟，它到现在还每天准点唱歌。',
+  '传说 914 的使用说明书只有八个字：别把活物放进去。',
+  '某次测试，研究员把手电筒粗加工，得到一小堆碳粉和一截仍在发光的灯丝。',
+  'SCP-500 药丸精加工的后续报告被 O5 打回了十二次——没人愿意在上面签字。',
+  '有一次精加工一沓文件，914 把它们按时间排好序，还贴心夹好了标签。',
+  '基地食堂至今流传：绝不要把同一份三明治连续粗加工两次，后果自负。'
+];
+var DEMO_TAILS=[
+  '，边缘还微微发热',
+  '，表面刻着一行看不懂的符文',
+  '，掉在地上会自动滚回原位',
+  '，散发着一股若有若无的焦糊味',
+  '，凑近能听见细微的齿轮声',
+  '，似乎正盯着你，改变摆放角度会跟着转动',
+  '，手感比看起来重得多',
+  '，在灯光下投下错误的阴影',
+  '，表面蒙着一层洗不掉的旧尘',
+  '，从某个角度看去会变成另一件东西',
+  '，带着一圈明显的人为打磨痕迹',
+  '，刚出舱就自己往角落里挪了挪'
+];
+function demoGen(item,setting){
+  var cat=classify(item);
+  var t=DEMO[setting][cat];
+  var out=t.o.replace(/\{item\}/g,item);
+  if(Math.random()<0.8){out+=DEMO_TAILS[Math.floor(Math.random()*DEMO_TAILS.length)];}
+  var remark=(Math.random()<0.7 ? t.m : TAGS[Math.floor(Math.random()*TAGS.length)]);
+  return {o:out,p:t.p,r:t.r,d:t.d,m:remark};
+}
+
+/* ===== 初始化 ===== */
+renderDial();
+loadCfg();
+selectSetting('rough');
+})();
+</script>
+</body>
+</html>
