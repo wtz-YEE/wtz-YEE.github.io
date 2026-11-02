@@ -250,7 +250,7 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px soli
 .scp-card .kicker{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:2px;margin-bottom:8px}
 .scp-card h2{font-family:var(--serif);font-size:18px;margin:0 0 4px;letter-spacing:1px;color:var(--ink)}
 .scp-card .meta{font-family:var(--mono);font-size:12px;color:var(--ink-dim);border-bottom:1px dashed var(--line2);padding-bottom:8px;margin-bottom:10px}
-.scp-card .rowline{display:flex;gap:8px;font-size:13.5px;margin:7px 0}
+.scp-card .rowline{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin:7px 0;max-width:100%}
 .scp-card .rowline .k{flex:none;width:62px;color:var(--brass-lo);font-family:var(--mono);font-size:12px;padding-top:1px}
 .scp-card .rowline .v{color:var(--ink);flex:1}
 .scp-card .rowline .v.red{color:var(--red)}
@@ -404,9 +404,11 @@ main{position:relative;z-index:1}
 @keyframes sheen{to{left:130%}}
 
 /* 字段文本兜底：防超长内容（尤其 AI 输出物）撑破布局 */
-.scp-card .rowline .v{word-break:break-word;overflow-wrap:anywhere;min-width:0}
-.scp-card .rowline .v.long{max-height:11em;overflow:auto;padding-right:6px;scrollbar-width:thin}
+.scp-card .rowline .v{word-break:break-word;overflow-wrap:anywhere;min-width:0;max-height:10em;overflow:auto;padding-right:6px;scrollbar-width:thin}
 .scp-card .remark,.scp-card .note{word-break:break-word;overflow-wrap:anywhere;max-height:9em;overflow:auto;padding-right:6px;scrollbar-width:thin}
+/* 右侧输出列整体兜底：防止卡片/日志被超长内容撑爆 */
+.output .scp-card{overflow:hidden}
+.log-list li{word-break:break-word;overflow-wrap:anywhere;max-height:8em;overflow:auto;padding-right:6px;scrollbar-width:thin}
 
 /* 档案标题行 + 保存按钮 */
 .scp-card .meta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
