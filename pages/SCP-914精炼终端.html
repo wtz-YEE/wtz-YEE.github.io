@@ -403,12 +403,16 @@ main{position:relative;z-index:1}
 }
 @keyframes sheen{to{left:130%}}
 
-/* 字段文本兜底：防超长内容（尤其 AI 输出物）撑破布局 */
-.scp-card .rowline .v{word-break:break-word;overflow-wrap:anywhere;min-width:0;max-height:10em;overflow:auto;padding-right:6px;scrollbar-width:thin}
-.scp-card .remark,.scp-card .note{word-break:break-word;overflow-wrap:anywhere;max-height:9em;overflow:auto;padding-right:6px;scrollbar-width:thin}
-/* 右侧输出列整体兜底：防止卡片/日志被超长内容撑爆 */
-.output .scp-card{overflow:hidden}
-.log-list li{word-break:break-word;overflow-wrap:anywhere;max-height:8em;overflow:auto;padding-right:6px;scrollbar-width:thin}
+/* 字段文本：正常断行不横向压缩（仅对超长无空白字符做词内兜底断行） */
+.scp-card .rowline .v{word-break:break-word;min-width:0;min-height:0;padding-right:6px;scrollbar-width:thin}
+.scp-card .remark,.scp-card .note{word-break:break-word;min-height:0;padding-right:6px;scrollbar-width:thin}
+/* 右侧输出列整体兜底：flex 子项 min-height 归零，卡片不被撑破 */
+.output{min-height:0}
+.output .scp-card{overflow:hidden;min-height:0}
+/* 日志列容器级限高滚动：避免精炼后日志无限纵向展开撑爆整个页面 */
+.log-list{max-height:24em;overflow-y:auto;overflow-x:hidden;padding-right:4px}
+.log-list li{word-break:break-word;overflow-wrap:anywhere;min-height:0;max-height:8em;overflow:auto;padding-right:6px;scrollbar-width:thin}
+.log-list .m{min-width:0}
 
 /* 档案标题行 + 保存按钮 */
 .scp-card .meta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -438,6 +442,7 @@ main{position:relative;z-index:1}
   <div class="sb-cell"><span class="sb-k">主发条</span><span class="sb-v sb-dim" id="sbWinds">未上劲 0/3</span></div>
   <div class="sb-cell"><span class="sb-k">精炼进度</span><span class="sb-v sb-dim" id="sbProg">待命</span></div>
   <div class="sb-state ready" id="sbState"><span class="dot"></span><span id="sbStateTxt">就绪</span></div>
+  <div class="sb-cell" style="opacity:.55;font-size:11px"><span class="sb-k">版本</span><span class="sb-v" id="sbVer">v3-并行请求</span></div>
 </div>
 
 <header class="site-head">
@@ -581,7 +586,6 @@ main{position:relative;z-index:1}
         <div class="meta" id="rMeta"></div>
         <div class="rowline"><span class="k">输入</span><span class="v" id="rInput"></span></div>
         <div class="rowline"><span class="k">档位</span><span class="v" id="rSet"></span></div>
-        <div class="rowline"><span class="k">输出</span><span class="v" id="rOut"></span></div>
         <div class="rowline"><span class="k">特性</span><span class="v" id="rProps"></span></div>
         <div class="rowline"><span class="k">风险</span><span class="v" id="rRisk"></span></div>
         <div class="rowline"><span class="k">处置</span><span class="v" id="rDisp"></span></div>
@@ -806,36 +810,50 @@ function runRefine(){
   progText.textContent='精炼中 · 主发条运转（约 5–10 分钟，已加速演示）';
   syncStatusBar();
   setSbState('running','精炼中');
+  var item=state.item, setting=state.setting;
+  var useAPI = !cfg.demo && cfg.key;
+  if(!useAPI && !cfg.key){addLog('info','演示模式：未填写 API Key，可在配置面板填写后调用真实 AI');}
+  else if(!useAPI && cfg.key){addLog('warn','当前为演示模式：配置面板的“演示模式”仍开启，关闭它即可调用真实 AI');}
+  /* 进度条一启动就并发发请求（仅创建一次），未返回前不走到 100% */
+  if(useAPI){addLog('info','已向模型 '+cfg.model+' 发送精炼请求（进度条并行推进）');}
+  var req = useAPI
+    ? callAPI(item,setting).catch(function(e){
+        addLog('warn','API 调用失败：'+e.message+'，已回退演示模式');
+        return demoGen(item,setting);
+      })
+    : Promise.resolve(demoGen(item,setting));
   var p=0, iv=setInterval(function(){
-    p+=1.25; if(p>=100){p=100; clearInterval(iv); finishRefine();}
+    p+=1.25;
+    if(p>=100){
+      /* 演示模式：无网络等待，直接走满 100% 收尾 */
+      if(!useAPI){clearInterval(iv); finishRefine(req,item,setting);}
+      else{p=90;} /* 真实 AI：停在 90%，等请求返回再补满 */
+    }
     progBar.style.width=p+'%';
     setSbProg('精炼中 '+Math.round(p)+'%');
   },100);
+  if(useAPI){
+    req.then(function(){
+      if(!state.running)return;
+      clearInterval(iv);
+      progBar.style.width='100%'; progText.textContent='输出间门开启，取出产物';
+      finishRefine(req,item,setting);
+    });
+  }
 }
 
-function finishRefine(){
+function finishRefine(req,item,setting){
   chime(1320,0.6);
   outDoor.textContent='输出舱门 · 打开'; outDoor.classList.add('open');
   outLamp.classList.add('on');
   progText.textContent='输出间门开启，取出产物';
   setSbState('progressing','取出产物');
   setSbProg('输出间开启');
-  var item=state.item, setting=state.setting;
-  var useAPI = !cfg.demo && cfg.key;
-  if(!useAPI && !cfg.key){addLog('info','演示模式：未填写 API Key，可在配置面板填写后调用真实 AI');}
-  else if(!useAPI && cfg.key){addLog('warn','当前为演示模式：配置面板的“演示模式”仍开启，关闭它即可调用真实 AI');}
-  var p = useAPI
-    ? callAPI(item,setting).catch(function(e){
-        addLog('warn','API 调用失败：'+e.message+'，已回退演示模式');
-        return demoGen(item,setting);
-      })
-    : Promise.resolve(demoGen(item,setting));
-  p.then(function(res){
+  req.then(function(res){
     res.no='914-'+String(Math.floor(1000+Math.random()*9000));
     res.item=item; res.setting=setting;
-    res.src = useAPI ? 'DeepSeek 生成' : '演示模拟';
+    res.src = (!cfg.demo && cfg.key) ? 'DeepSeek 生成' : '演示模拟';
     renderResult(res);
-    outSlot.textContent=res.o;
     setSbProg('输出：'+res.o.slice(0,18)+'…');
     addLog('ok','精炼完成：'+item+' → '+res.o);
     resetForNext();
@@ -867,7 +885,6 @@ function renderResult(res){
   $('rMeta').textContent=d.toLocaleString()+' · 研究者 #R-'+String(Math.floor(100+Math.random()*900))+(res.src?' · '+res.src:'');
   $('rInput').textContent=res.item;
   $('rSet').textContent=SET_LABEL[res.setting];
-  $('rOut').textContent=res.o;
   $('rProps').textContent=res.p||'—';
   var riskEl=$('rRisk'); riskEl.textContent=res.r||'低';
   var color={'低':'inherit','中':'#e0a83c','高':'#ff9d8a','极端':'#ff6f5e'}[res.r]||'inherit';
@@ -880,7 +897,7 @@ function renderResult(res){
   var nEl=$('rNote'), nTxt=$('rNoteTxt');
   if(extra){nTxt.textContent=extra; nEl.style.display='block';}
   else{nEl.style.display='none';}
-  var LONG=['rOut','rProps','rDisp','rRemark','rNoteTxt'];
+  var LONG=['rProps','rDisp','rRemark','rNoteTxt'];
   for(var i=0;i<LONG.length;i++){
     var el=$(LONG[i]);
     if(el.textContent && el.textContent.length>110){el.classList.add('long');}
@@ -895,7 +912,6 @@ function saveArchive(){
   lines.push($('rMeta').textContent);
   lines.push('输入  ：'+$('rInput').textContent);
   lines.push('档位  ：'+$('rSet').textContent);
-  lines.push('输出  ：'+$('rOut').textContent);
   lines.push('特性  ：'+$('rProps').textContent);
   lines.push('风险  ：'+$('rRisk').textContent);
   lines.push('处置  ：'+$('rDisp').textContent);
@@ -992,13 +1008,15 @@ function showProxy(){
 
 /* ===== API 调用 ===== */
 function sysPrompt(){
-  return '你是SCP基金会世界观中的异常机械SCP-914——一台重达数吨、占地约18平方米的巨型铜锡发条装置，由超过800万个可动部件构成，运作原理完全未知。研究员把物品放入输入间、选定档位并上紧主发条后，你按档位"精炼"它，产出一个意想不到的结果，整个精炼过程约5–10分钟。\n\n档位规则（严格遵循，这是核心）：\n- 粗加工：把物品粗暴拆解、还原为原始材料，丧失形态与功能，常伴随损伤或污染。\n- 半粗加工：把物品部分解构，分离成各组成部分并分类排列，理论上可复原。\n- 1:1：把物品替换为同类等价物（等质量/等价值），可能是换品牌、换形态、换语言、换年代、换来源。\n- 精加工：把物品复杂化、改良、赋予更高级的功能或更深的"意义"，保留部分同族特征。\n- 超精加工：把物品抽象化，产生极端异常、经常危险的结果，往往远超输入的价值或危害。\n\n核心设定（务必体现）：\n1. 你理解的是物品被人类赋予的"意义"与用途，而不只是物理结构。例如：十字架会变成精致的宗教雕像；写着"我想要一个双层芝士汉堡"的纸条会变成刚好够付账的钞票；一张写有狭义相对论的纸会变成深奥难解的未知符号。\n2. 输出保留输入物的部分特征（"同族"），但高度随机、不可预测，不是许愿机，任何强化都伴随随机性风险或缺陷。\n3. 你带恶趣味、喜欢恶作剧，输出常常有讽刺意味或微小缺陷，但内容要扎实，不要为了整蛊而空洞。\n4. 生物/活体实验已被基金会严格禁止：若输入是活的生物（人、动物、微生物等），输出应体现警告、拒绝或危险后果，并在"处置"中标注"违规：生物实验未经O5批准"。\n5. 爆炸物/高能物品不建议粗加工，若因粗加工导致意外，在"处置"中体现紧急隔离措施。 6. 创意要大开脑洞：拒绝平庸与套路——仅仅"换个牌子""更好用""更精美""更好吃"都不算有创意；要真正出人意料、反常识，把物品被人类赋予的"意义"演绎到极致荒诞、离谱甚至恐怖的程度；超精加工尤其要极端抽象、颠覆认知，让研究员既拍案叫绝又冷汗直流。\n\n写作风格：用SCP基金会档案口吻，简洁、冷静、专业，可使用"[数据删除]"制造神秘感；"备注"要有研究员式的吐槽或观察，偶尔引用"这破机器绝对是在嘲笑我们"。想象越离谱越好，但必须自洽、出人意料，拒绝"只是更好用"的平庸套路。\n\n字段约束（务必遵守）："输出物"必须直接、具体地描述产出的新物品本身，禁止使用"某某被某某为某某""某某被拆解为""某某被抽象为"这类以输入物品开头的句式，也不要重复输入物品的名称；除"输出物"外，"特性/风险/处置/备注"一律不得重复产物名称，也不得重复"输出物"里已完整描述的内容——"特性"只讲异常性质，"风险"只给等级，"处置"只讲处理建议，"备注"只讲观察与吐槽。随机随记：每次按约60%概率在JSON里附加一个可选字段"趣闻"，用一句话写一条与SCP-914有关的趣事、研究员吐槽或迷你故事（约40字），风格像基金会档案的边角料闲谈；不想写就省略该字段。\n\n只输出一个JSON对象，不要包含任何其他文字、解释或代码块标记：\n{"输出物":"对输出物品的一到两句描述","特性":"关键异常性质或特征，简述","风险":"只能取 低/中/高/极端 之一","处置":"基金会处理建议，如：收容/焚毁/销毁/保留观察/紧急隔离","备注":"研究员口吻的一句话观察或吐槽（可选）","趣闻":"（可选）一句与914相关的趣事、吐槽或小故事"}';
+  return '你是SCP基金会世界观中的异常机械SCP-914——一台重达数吨、占地约18平方米的巨型铜锡发条装置，由超过800万个可动部件构成，运作原理完全未知。研究员把物品放入输入间、选定档位并上紧主发条后，你按档位"精炼"它，产出一个意想不到的结果，整个精炼过程约5–10分钟。\n\n档位规则（严格遵循，这是核心）：\n- 粗加工：把物品粗暴拆解、还原为原始材料，丧失形态与功能，常伴随损伤或污染。\n- 半粗加工：把物品部分解构，分离成各组成部分并分类排列，理论上可复原。\n- 1:1：把物品替换为同类等价物（等质量/等价值），可能是换品牌、换形态、换语言、换年代、换来源。\n- 精加工：把物品复杂化、改良、赋予更高级的功能或更深的"意义"，保留部分同族特征。\n- 超精加工：把物品抽象化，产生极端异常、经常危险的结果，往往远超输入的价值或危害。\n\n核心设定（务必体现）：\n1. 你理解的是物品被人类赋予的"意义"与用途，而不只是物理结构。例如：十字架会变成精致的宗教雕像；写着"我想要一个双层芝士汉堡"的纸条会变成刚好够付账的钞票；一张写有狭义相对论的纸会变成深奥难解的未知符号。\n2. 输出保留输入物的部分特征（"同族"），但随机、不可预测，不是许愿机，任何强化都伴随随机性风险或缺陷。\n3. 你带恶趣味、喜欢恶作剧，输出常常有微小缺陷，但内容要扎实，不要为了整蛊而空洞。\n4. 生物/活体实验已被基金会严格禁止：若输入是活的生物（人、动物、微生物等），输出应体现警告、拒绝或危险后果，并在"处置"中标注"违规：生物实验未经O5批准"。\n5. 爆炸物/高能物品不建议粗加工，若因粗加工导致意外，在"处置"中体现紧急隔离措施。 6. 创意要大开脑洞：拒绝平庸与套路——仅仅"换个牌子""更好用""更精美""更好吃"都不算有创意；要真正出人意料、反常识，把物品被人类赋予的"意义"演绎到极致荒诞、离谱甚至恐怖的程度；超精加工尤其要极端抽象、颠覆认知，让研究员既拍案叫绝又冷汗直流。7.多产物更偏向融合多个输入物，单个物品偏向超级提升原功能。8.当输入中带有“manager：”时必须将产物向其后所写功能等靠近且取消副作用\n\n写作风格：用SCP基金会档案口吻，简洁、冷静、专业，可使用"[数据删除]"制造神秘感；"备注"要有研究员式的吐槽或观察，偶尔认为这破机器绝对是在嘲笑我们。想象越离谱越好，但必须自洽、出人意料。\n\n字段约束（务必遵守）："输出物"必须直接、具体地描述产出的新物品本身，禁止使用"某某被某某为某某""某某被拆解为""某某被抽象为"这类以输入物品开头的句式，也不要重复输入物品的名称；除"输出物"外，"特性/风险/处置/备注"一律不得重复产物名称，也不得重复"输出物"里已完整描述的内容——"特性"只讲异常性质，"风险"只给等级，"处置"只讲处理建议，"备注"只讲观察与吐槽。随机随记：每次按约60%概率在JSON里附加一个可选字段"趣闻"，用一句话写一条与SCP-914有关的趣事、研究员吐槽或迷你故事（约40字），风格像基金会档案的边角料闲谈；不想写就省略该字段。\n\n只输出一个JSON对象，不要包含任何其他文字、解释或代码块标记：\n{"输出物":"对输出物品的一到两句描述","特性":"关键异常性质或特征，简述","风险":"只能取 低/中/高/极端 之一","处置":"基金会处理建议，如：收容/焚毁/销毁/保留观察/紧急隔离","备注":"研究员口吻的一句话观察或吐槽（可选）","趣闻":"（可选）一句与914相关的趣事、吐槽或小故事"}';
 }
 function callAPI(item,setting){
   var body={model:cfg.model,messages:[
     {role:'system',content:sysPrompt()},
     {role:'user',content:'输入物品：'+item+'\n所选档位：'+SET_LABEL[setting]+'\n请按SCP-914的风格与档位规则生成精炼输出。'}
   ],temperature:1.3,max_tokens:4096,stream:false};
+  /* Kimi/Moonshot 不接受 temperature/top_p（400 根因）；且 max_tokens 含推理 token，需调大防截断 */
+  if(/moonshot\.cn/i.test(cfg.base||'')){delete body.temperature;delete body.top_p;body.max_tokens=8192;}
   return fetch(apiUrl(),{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},body:JSON.stringify(body)})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
     .then(function(j){
