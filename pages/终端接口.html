@@ -617,7 +617,7 @@ function get(){xhr('GET','https://api.jsonbin.io/v3/b/'+bin+'/latest',null,funct
 function merge(){try{if(!cloud)return;var c=cloud,L=[];try{L=JSON.parse(localStorage.getItem('wAch')||'[]')}catch(e){}
 if(c.ach&&c.ach[dev]){var a=c.ach[dev],chg=false;for(var i=0;i<a.length;i++)if(L.indexOf(a[i])<0){L.push(a[i]);chg=true}if(chg){localStorage.setItem('wAch',JSON.stringify(L));try{ACH.scan()}catch(e){}}}
 if(c.best&&c.best[dev]){var bb=c.best[dev];for(var kk in bb){var v=+bb[kk];if(v>+(localStorage.getItem(kk)||0))localStorage.setItem(kk,v)}}}catch(e){}}
-function data(){var vis={};try{vis=cloud.vis||{}}catch(e){};var nm=localStorage.getItem('wtz_vn');if(nm)vis[nm]=+(localStorage.getItem('wtz_vc')||0);var D={u:Date.now(),vc:Math.max(+(localStorage.getItem('wtz_vc')||0),+(cloud.vc||0)),vn:nm||'',vis:vis,ach:{},best:{},plays:+(localStorage.getItem('wPlayCnt')||0)};
+function data(){var D={u:Date.now(),vc:Math.max(+(localStorage.getItem('wtz_vc')||0),+(cloud.vc||0)),ach:{},best:{},plays:+(localStorage.getItem('wPlayCnt')||0)};
 D.ach[dev]=[];try{D.ach[dev]=JSON.parse(localStorage.getItem('wAch')||'[]')}catch(e){}
 D.best[dev]={};var hk=['w2048b','wDino','wSnake','wTetris','wBreak','wFlappy','wStrike','wGomoku','wTic','wSudo','wSlide','wMaze','wMem','wGuess','wMatch','wWhack','wCatch','wFruit','wTarget','wDodge','wPong','wRunner','wCollect','wFish','wReflex','wSimon','wTyper','wHang','wJack','wAlch'];
 for(var i=0;i<hk.length;i++){var v=+(localStorage.getItem(hk[i])||0);if(v)D.best[dev][hk[i]]=v}
@@ -974,7 +974,6 @@ if(gv('wtz_vc')>=50)u.push(47);
 var mx=0,hk=['w2048b','wDino','wSnake','wTetris','wBreak','wFlappy','wStrike','wMatch','wWhack','wCatch','wFruit','wTarget','wDodge','wRunner','wFish','wTyper','wHang','wAlch'];
 for(var i=0;i<hk.length;i++)mx=Math.max(mx,gv(hk[i]));
 if(mx>=1000)u.push(48);
-if(localStorage.getItem('wtz_vn'))u.push(49);
 for(var i=0;i<u.length;i++)unlock(u[i]);
 var cb=0;for(var i=0;i<20;i++)if(has(i))cb++;
 if(cb>=20)unlock(49);
@@ -1203,55 +1202,12 @@ bootT();
 rt();
 </script>
 
-<div id="vbox" class="site-visitor" style="position:relative;z-index:25;text-align:center;padding:12px 10px 0;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:11px;letter-spacing:.18em;color:inherit;opacity:.75">
-<span id="vlabel">GUEST // 输入访客名</span>
-<input id="vinput" maxlength="12" placeholder="你的名字" style="width:120px;background:rgba(127,127,127,.08);border:1px solid rgba(127,127,127,.35);color:inherit;padding:3px 8px;margin:0 8px;font-family:inherit;font-size:11px;outline:none">
-<button id="vbtn" style="border:1px solid rgba(127,127,127,.45);color:inherit;padding:3px 12px;font-family:inherit;font-size:11px;letter-spacing:.1em;cursor:pointer">确认</button>
-</div>
 <script>
 (function(){try{
-var K='prts_vn',N='prts_vc',g=function(k){try{return localStorage.getItem(k)}catch(e){return null}};
-var nm=g(K),c=(g(N)?parseInt(g(N),10):0)+1;
-try{localStorage.setItem(N,String(c))}catch(e){}
-var v=document.getElementById('vinput'),b=document.getElementById('vbtn'),l=document.getElementById('vlabel');
-function done(){l.textContent='VISITOR // '+(nm||'未命名')+' · 第'+c+'次访问本站';if(v)v.style.display='none';if(b)b.style.display='none';var bx=document.getElementById('vbox');if(bx){bx.style.cursor='pointer';bx.title='点击修改名字'}}
-if(nm){done();return}
-if(b)b.addEventListener('click',function(){var x=v?v.value.trim():'';if(!x)return;try{localStorage.setItem(K,x)}catch(e){}nm=x;done()});
-if(v)v.addEventListener('keydown',function(e){if(e.key==='Enter'&&b)b.click()});
+var kc='wtz_vc';
+var c=+(localStorage.getItem(kc)||0)+1;
+localStorage.setItem(kc,String(c));
 }catch(e){}})();
-</script>
-
-<div class="site-stat" style="position:relative;z-index:25;text-align:center;padding:16px 10px 28px;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:10.5px;letter-spacing:.2em;color:inherit;opacity:.75">SITE // <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS · <span id="jbStat">CLOUD OFF</span></div>
-
-
-<script>
-(function(){
-var k='wtz_vn',kc='wtz_vc',n=localStorage.getItem(k);
-function esc(s){return s.replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
-function upd(){
-var c=localStorage.getItem(kc)||0,el=document.querySelectorAll('.site-stat'),cl=document.getElementById('jbStat');
-for(var i=0;i<el.length;i++)el[i].innerHTML='SITE // VISITOR '+(n?esc(n):'GUEST')+' · '+c+' VISITS · <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS · <span id="jbStat">'+(cl?cl.textContent:'CLOUD OFF')+'</span>';
-}
-function ask(){
-var m=document.createElement('div'),b=document.createElement('div');
-m.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(5,7,8,.78);display:flex;align-items:center;justify-content:center';
-b.style.cssText='background:#11151A;border:1px solid rgba(63,224,200,.35);padding:26px 30px;max-width:340px;width:86%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)';
-var t=document.createElement('p');t.textContent='输入你的名字以登记访问';t.style.cssText='color:#E6EDEF;font-size:15px;letter-spacing:.12em;margin-bottom:14px';
-var s=document.createElement('p');s.textContent='名字将上传云端统计 · 可随时点击下方统计条修改';s.style.cssText='color:#66767A;font-size:11px;letter-spacing:.1em;margin-bottom:14px';
-var i=document.createElement('input');i.placeholder='访客昵称';i.maxLength=14;i.style.cssText='width:100%;background:#0A0C0E;border:1px solid rgba(63,224,200,.3);color:#E6EDEF;padding:10px 12px;font-size:14px;outline:none;text-align:center';
-var ok=document.createElement('button');ok.textContent='登 记';ok.style.cssText='margin-top:14px;width:100%;padding:10px;border:1px solid #3FE0C8;color:#3FE0C8;background:rgba(63,224,200,.08);font-size:13px;letter-spacing:.3em;cursor:pointer';
-b.appendChild(t);b.appendChild(s);b.appendChild(i);b.appendChild(ok);m.appendChild(b);document.body.appendChild(m);i.focus();
-function done(){var v=i.value.replace(/^\s+|\s+$/g,'');if(!v){i.style.borderColor='#FF5C7A';return}localStorage.setItem(k,v);n=v;document.body.removeChild(m);upd();try{JB.push()}catch(e){}}
-ok.onclick=done;i.onkeydown=function(e){if(e.key==='Enter')done();if(e.key==='Escape')document.body.removeChild(m)};
-}
-(function(){var c=+(localStorage.getItem(kc)||0)+1;localStorage.setItem(kc,c);
-var el=document.querySelectorAll('.site-stat');
-for(var i=0;i<el.length;i++)el[i].style.cursor='pointer';
-if(!n){ask()}else{upd()}
-document.addEventListener('click',function(e){var t=e.target;while(t){if(t&&t.className&&(' '+t.className+' ').indexOf(' site-stat ')>-1){ask();return}t=t.parentNode}});
-try{JB.push()}catch(e){}
-})();
-})();
 </script>
 
 <div id="achPan" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="achT">

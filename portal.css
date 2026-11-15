@@ -314,3 +314,57 @@ main{position:relative;z-index:2}
   .shero .count{margin-left:auto}
   .pgrid{grid-template-columns:1fr}
 }
+
+/* ---------- 首页白黑极简主题 ---------- */
+body.light{
+  --bg:#FFFFFF;--bg2:#FFFFFF;--panel:#FFFFFF;--panel2:#FFFFFF;
+  --line:#E4E4E4;--line2:#111111;
+  --ink:#111111;--ink2:#333333;--ink3:#666666;
+  --acc:#000000;--acc2:#000000;--ok:#111111;--warn:#111111;--bad:#111111;
+  background:#FFFFFF;color:#111111;
+}
+body.light::before,body.light::after{display:none}
+body.light ::selection{background:#000;color:#fff}
+body.light .top{background:#fff;border-bottom:1px solid #000;color:#666;backdrop-filter:none}
+body.light .top .dot{background:#000;box-shadow:none;animation:none}
+body.light .top .tl{color:#000}
+body.light .top .tl::after{color:#000;animation:none}
+body.light .top .clk{color:#666}
+body.light .top nav a{color:#333}
+body.light .top nav a:hover{color:#000}
+body.light .top nav a.on{color:#000;border-bottom-color:#000}
+body.light .cover .eyebrow{color:#666}
+body.light .cover h1{color:#000;text-shadow:none}
+body.light .cover h1 .mark{color:#000;animation:none}
+body.light .cover h1 .ch:hover{transform:none;color:#000}
+body.light .cover .sub{color:#333}
+body.light .cover .meta{color:#666}
+body.light .cover .rule{background:#DDDDDD}
+body.light .cover .quot{border:1px solid #000;background:#fff;color:#000}
+body.light .cover .quot:hover{background:#000;color:#fff;border-color:#000}
+body.light .tile{border:1px solid #000;background:#fff;color:#000}
+body.light .tile::before{display:none}
+body.light .tile:hover{transform:none;border-color:#000;background:#000;color:#fff}
+body.light .tile .no{border-left-color:#999;color:#666}
+body.light .tile .en{color:#666}
+body.light .tile .glyph{color:#EEEEEE}
+body.light .tile:hover .glyph{color:#222;transform:none}
+body.light .tile h2{color:#000}
+body.light .tile h2 small{color:#666}
+body.light .tile p{color:#333}
+body.light .tile .stat{color:#777}
+body.light .tile .stat i{background:#999}
+body.light .tile .go{color:#000}
+body.light .tile:hover h2{color:#fff}
+body.light .tile:hover h2 small,
+body.light .tile:hover .no,
+body.light .tile:hover .en,
+body.light .tile:hover .stat{color:#AAA}
+body.light .tile:hover p{color:#DDD}
+body.light .tile:hover .go{color:#fff}
+body.light .quick .lbl{color:#666}
+body.light .quick a{border:1px solid #000;background:#fff;color:#000}
+body.light .quick a:hover{background:#000;color:#fff;border-color:#000}
+body.light .foot{border-top:1px solid #000;color:#666}
+body.light .foot a{color:#333}
+body.light .foot a:hover{color:#000;border-bottom-color:#000}
