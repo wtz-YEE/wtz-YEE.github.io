@@ -1,0 +1,121 @@
+/* ===== 页面专属启动动画 · intro.css ===== */
+html.wi-lock{overflow:hidden}
+.wi{
+  position:fixed;inset:0;z-index:99999;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:#080A0B;color:#F3F3EC;
+  font-family:"Cascadia Mono",Consolas,"Courier New",monospace;
+  animation:wiIn .16s ease both;
+}
+.wi--video{background:#FFFFFF;color:#00A0B0}
+.wi--wip{background:#0A0C0D;color:#FFC24B}
+.wi--admin{background:#070707;color:rgb(255,241,0)}
+.wi .wi-art{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:1}
+.wi .wi-art i{position:absolute;display:block}
+.wi .wi-copy{position:relative;z-index:3;text-align:center;pointer-events:none}
+.wi .wi-copy b{display:block;font-size:clamp(42px,9vw,96px);line-height:.92;font-weight:700;letter-spacing:.16em;text-indent:.16em;opacity:0;animation:wiCopy .55s .16s cubic-bezier(.2,1,.3,1) both}
+.wi .wi-copy span{display:block;margin-top:14px;font-size:10px;letter-spacing:.38em;text-indent:.38em;opacity:0;animation:wiCopy .55s .34s ease both}
+.wi .wi-prog{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.1);z-index:4}
+.wi--video .wi-prog{background:rgba(0,160,176,.12)}
+.wi .wi-prog i{display:block;height:100%;width:0;background:currentColor;animation:wiProg var(--wi-d,1.2s) linear forwards}
+.wi .wi-corner{position:absolute;top:18px;right:20px;font-size:9px;letter-spacing:.2em;color:currentColor;opacity:.55;z-index:4}
+.wi .wi-corner-l{position:absolute;top:18px;left:20px;font-size:9px;letter-spacing:.2em;color:currentColor;opacity:.55;z-index:4}
+.wi.out{animation:wiOut .26s ease forwards}
+@keyframes wiIn{from{opacity:.55}to{opacity:1}}
+@keyframes wiOut{to{opacity:0;visibility:hidden}}
+@keyframes wiCopy{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes wiProg{from{width:0}to{width:100%}}
+
+/* 首页：黑白双幕 + 六边形标记 */
+.wi--home .wi-art i:nth-child(1){
+  width:clamp(92px,14vw,150px);height:clamp(92px,14vw,150px);
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:currentColor;opacity:.9;transform:scale(.15);animation:wiHex 1.05s cubic-bezier(.2,1,.3,1) both;
+}
+.wi--home .wi-art i:nth-child(2),.wi--home .wi-art i:nth-child(3){
+  top:0;bottom:0;width:50%;background:#080A0B;z-index:2;
+}
+.wi--home .wi-art i:nth-child(2){left:0;transform-origin:left;animation:wiPanelL .95s .12s cubic-bezier(.76,0,.24,1) both}
+.wi--home .wi-art i:nth-child(3){right:0;transform-origin:right;animation:wiPanelR .95s .12s cubic-bezier(.76,0,.24,1) both}
+@keyframes wiHex{0%{transform:scale(.15);opacity:0}45%{opacity:1}100%{transform:scale(1);opacity:.9}}
+@keyframes wiPanelL{0%{transform:translateX(0)}100%{transform:translateX(-102%)}}
+@keyframes wiPanelR{0%{transform:translateX(0)}100%{transform:translateX(102%)}}
+
+/* 项目：档案横切页 */
+.wi--project .wi-art::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 38px,rgba(255,255,255,.07) 38px 39px)}
+.wi--project .wi-art i{left:8%;right:8%;height:2px;background:currentColor;opacity:.65;transform-origin:left;animation:wiSlat .8s cubic-bezier(.2,1,.3,1) both}
+.wi--project .wi-art i:nth-child(1){top:32%;animation-delay:.04s}
+.wi--project .wi-art i:nth-child(2){top:50%;animation-delay:.14s}
+.wi--project .wi-art i:nth-child(3){top:68%;animation-delay:.24s}
+@keyframes wiSlat{0%{transform:scaleX(0);opacity:0}100%{transform:scaleX(1);opacity:.65}}
+
+/* 游戏：CRT 开机 */
+.wi--games .wi-art::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.12) 0 1px,transparent 1px 4px);opacity:.45;animation:wiCrtLines .9s steps(8) both}
+.wi--games .wi-art i:nth-child(1){width:min(72vw,720px);height:2px;background:currentColor;animation:wiCrtOpen 1s cubic-bezier(.2,1,.3,1) both}
+.wi--games .wi-art i:nth-child(2){width:8px;height:8px;background:currentColor;opacity:0;animation:wiPixel .7s .35s steps(2) both}
+@keyframes wiCrtOpen{0%{transform:scaleY(1);opacity:0}20%{opacity:1}100%{transform:scaleY(42);opacity:.75}}
+@keyframes wiCrtLines{0%{opacity:0}30%{opacity:.45}100%{opacity:.2}}
+@keyframes wiPixel{0%{opacity:0;transform:translate(-40vw,0)}30%{opacity:1}100%{opacity:0;transform:translate(40vw,0)}}
+
+/* 社区：信号波纹 + 频道条 */
+.wi--community .wi-art i{border:1px solid currentColor;border-radius:50%;width:56px;height:56px;opacity:0;animation:wiRipple .85s ease-out both}
+.wi--community .wi-art i:nth-child(1){animation-delay:.1s}
+.wi--community .wi-art i:nth-child(2){width:140px;height:140px;animation-delay:.2s}
+.wi--community .wi-art i:nth-child(3){width:250px;height:250px;animation-delay:.3s}
+.wi--community .wi-art::after{content:"";position:absolute;left:12%;right:12%;bottom:24%;height:1px;background:currentColor;opacity:.25}
+@keyframes wiRipple{0%{opacity:.9;transform:scale(.35)}100%{opacity:0;transform:scale(1.35)}}
+
+/* 杂项：齿轮/虚线环 */
+.wi--misc .wi-art i:nth-child(1){width:clamp(110px,16vw,180px);height:clamp(110px,16vw,180px);border:1px dashed currentColor;border-radius:50%;animation:wiGear 1.05s cubic-bezier(.2,1,.3,1) both}
+.wi--misc .wi-art i:nth-child(2){width:clamp(70px,10vw,110px);height:clamp(70px,10vw,110px);border:1px solid currentColor;animation:wiGear2 .95s .1s cubic-bezier(.2,1,.3,1) both}
+.wi--misc .wi-art i:nth-child(3){width:5px;height:5px;background:currentColor;border-radius:50%;box-shadow:34px 0 currentColor,-34px 0 currentColor,0 34px currentColor,0 -34px currentColor;opacity:0;animation:wiCopy .5s .35s both}
+@keyframes wiGear{0%{transform:rotate(-120deg) scale(.5);opacity:0}100%{transform:rotate(0) scale(1);opacity:.8}}
+@keyframes wiGear2{0%{transform:rotate(90deg) scale(.7);opacity:0}100%{transform:rotate(0) scale(1);opacity:.55}}
+
+/* 开发中：警示斜纹扫过 */
+.wi--wip .wi-art::before{content:"";position:absolute;left:-5%;right:-5%;top:58%;height:74px;background:repeating-linear-gradient(135deg,rgba(255,194,75,.24) 0 14px,transparent 14px 28px);transform:translateX(-110%) skewX(-14deg);animation:wiHazard 1s cubic-bezier(.2,1,.3,1) both}
+.wi--wip .wi-art i:nth-child(1){width:0;height:0;border-left:26px solid transparent;border-right:26px solid transparent;border-bottom:44px solid #FFC24B;top:calc(50% + 58px);opacity:0;animation:wiWarn .55s .3s both}
+.wi--wip .wi-art i:nth-child(2){width:5px;height:22px;background:#FFC24B;top:calc(50% + 70px);opacity:0;animation:wiWarn .55s .3s both}
+.wi--wip .wi-art i:nth-child(3){width:5px;height:5px;background:#FFC24B;top:calc(50% + 100px);opacity:0;animation:wiWarn .55s .3s both}
+@keyframes wiHazard{0%{transform:translateX(-110%) skewX(-14deg);opacity:0}25%{opacity:1}100%{transform:translateX(0) skewX(-14deg);opacity:1}}
+@keyframes wiWarn{to{opacity:1}}
+
+/* 视频库：胶片倒计时 */
+.wi--video .wi-art::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 76px,rgba(0,160,176,.09) 76px 78px)}
+.wi--video .wi-art::after{content:"";position:absolute;left:50%;top:50%;width:min(46vw,430px);height:min(46vw,430px);border:2px solid rgba(0,160,176,.45);border-radius:50%;transform:translate(-50%,-50%);animation:wiIris 1s cubic-bezier(.2,1,.3,1) both}
+.wi--video .wi-art i:nth-child(1){left:50%;top:50%;width:min(46vw,430px);height:1px;background:#00A0B0;transform:translate(-50%,-50%) scaleX(.2);animation:wiCross 1s .1s cubic-bezier(.2,1,.3,1) both}
+.wi--video .wi-art i:nth-child(2){left:50%;top:50%;width:1px;height:min(46vw,430px);background:#00A0B0;transform:translate(-50%,-50%) scaleY(.2);animation:wiCross 1s .1s cubic-bezier(.2,1,.3,1) both}
+.wi--video .wi-art i:nth-child(3){left:50%;top:50%;width:16px;height:16px;border:1px solid #00A0B0;border-radius:50%;transform:translate(-50%,-50%);opacity:0;animation:wiCopy .5s .4s both}
+@keyframes wiIris{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}40%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:.55}}
+@keyframes wiCross{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:.6}}
+
+/* 管理后台：扫描网格 */
+.wi--admin .wi-art::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(255,241,0,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,241,0,.055) 1px,transparent 1px);background-size:32px 32px;animation:wiAdminGrid 1s ease both}
+.wi--admin .wi-art i:nth-child(1){left:0;right:0;top:0;height:2px;background:currentColor;box-shadow:0 0 18px currentColor;animation:wiScan 1s cubic-bezier(.4,0,.2,1) both}
+.wi--admin .wi-art i:nth-child(2){width:10px;height:10px;border:1px solid currentColor;right:20px;bottom:20px;opacity:0;animation:wiWarn .5s .3s both}
+@keyframes wiAdminGrid{from{opacity:0}to{opacity:1}}
+@keyframes wiScan{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(100vh);opacity:.3}}
+
+/* 终端：命令行启动 */
+.wi--terminal .wi-art::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 5px)}
+.wi--terminal .wi-art i{left:10%;width:30%;height:2px;background:currentColor;opacity:0;animation:wiTty .7s steps(5) both}
+.wi--terminal .wi-art i:nth-child(1){top:38%;animation-delay:.04s}
+.wi--terminal .wi-art i:nth-child(2){top:44%;width:48%;animation-delay:.13s}
+.wi--terminal .wi-art i:nth-child(3){top:50%;width:22%;animation-delay:.22s}
+@keyframes wiTty{0%{opacity:0;transform:scaleX(0);transform-origin:left}100%{opacity:.7;transform:scaleX(1)}}
+
+/* Live2D：虹膜开屏 */
+.wi--live2d .wi-art i:nth-child(1){width:min(38vw,340px);height:min(20vw,180px);border:1px solid currentColor;border-radius:50%;clip-path:ellipse(45% 45% at 50% 50%);animation:wiIris2 1s cubic-bezier(.2,1,.3,1) both}
+.wi--live2d .wi-art i:nth-child(2){width:3px;height:min(20vw,180px);background:currentColor;opacity:0;animation:wiWarn .5s .4s both}
+.wi--live2d .wi-art i:nth-child(3){width:min(24vw,220px);height:1px;background:currentColor;opacity:0;animation:wiWarn .5s .4s both}
+@keyframes wiIris2{0%{clip-path:ellipse(0 0 at 50% 50%);opacity:0}100%{clip-path:ellipse(45% 45% at 50% 50%);opacity:.85}}
+
+@media(max-width:600px){
+  .wi .wi-copy b{font-size:38px}
+  .wi .wi-copy span{font-size:8.5px;letter-spacing:.24em;margin-top:10px}
+  .wi--project .wi-art i{left:5%;right:5%}
+}
+@media(prefers-reduced-motion:reduce){
+  .wi{display:none!important}
+  html.wi-lock{overflow:auto!important}
+}

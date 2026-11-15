@@ -55,6 +55,7 @@ function toast(msg,sub){
 var K_API='gb_api_url',K_SESS='gb_session',K_DB='gb_db_v2',K_GB='gb_cache_v2';
 var AUTH_ERR={ok:false,msg:'登录已失效，请重新登录'};
 var S={api:'',apis:[],user:null,peer:null,timer:null,avatar:0,img:'',pmImg:'',replyTo:'',thread:[],ntF:'all'};
+var VOTE37={items:[],img:null,busy:false};
 var AVATARS=[{c:'#3FE0C8',s:'◆'},{c:'#FF5C7A',s:'▲'},{c:'#FFD166',s:'★'},{c:'#6C8CFF',s:'●'},{c:'#B58CFF',s:'✦'},{c:'#5CE08A',s:'■'},{c:'#FF9F6B',s:'✿'},{c:'#4FD8EB',s:'☂'},{c:'#FFC36B',s:'⚡'},{c:'#8F9BB3',s:'☾'},{c:'#FF7AB8',s:'❖'},{c:'#7BFFB8',s:'☯'}];
 
 function normalizeApi(v){
@@ -71,7 +72,7 @@ function parseApis(raw){
   });
   return out;
 }
-function isBadApi(x){return /36c3116e|74312bf6|751e3fda/.test(x||'')}
+function isBadApi(x){return /36c3116e|74312bf6|751e3fda|51f2b4ef/.test(x||'')}
 
 try{ S.apis=parseApis(localStorage.getItem(K_API)); }catch(e){ S.apis=[]; }
 S.apis=(S.apis||[]).filter(function(x){return !isBadApi(x)});
@@ -426,17 +427,7 @@ function applyAuth(){
   if(ib) ib.disabled=!isOn;
   var gu=isOn&&S.user.is_admin;
   show('gb_users_panel',gu?'block':'none');
-  if(gu){
-    ['gb_risk_kw','gb_risk_btn','gb_risk_all','gb_aud_btn','gb_sta_btn','gb_ban_btn','gb_punish_btn','gb_bak_btn'].forEach(function(x){ show(x,S.api?'':'none'); });
-    var rb=document.querySelector('.cm-riskbox');
-    if(rb) rb.style.display=S.api?'':'none';
-    if($('gb_aud')) $('gb_aud').style.display='none';
-    if($('gb_sta')) $('gb_sta').style.display='none';
-    if($('gb_aud_close')) $('gb_aud_close').style.display='none';
-    if($('gb_ban_list')) $('gb_ban_list').style.display='none';
-    if($('gb_punish_list')) $('gb_punish_list').style.display='none';
-    loadUsers();
-  }
+  voteAuth();
   checkinStatus();
   if(isOn){
     txt('gb_curuser',S.user.username);
@@ -447,6 +438,7 @@ function applyAuth(){
     var gn2=$('gb_name');
     if(gn2){ gn2.disabled=false; gn2.placeholder='昵称（访客）'; }
   }
+  try{ document.dispatchEvent(new CustomEvent('wz:auth',{detail:{user:S.user}})); }catch(e){}
 }
 
 function gbRegister(){
@@ -933,6 +925,7 @@ function checkinStatus(){
 
 /* ---------- 用户列表 ---------- */
 function loadUsers(silent){
+  if(!$('gb_ulist')) return;
   if(!S.user||!S.user.is_admin) return;
   call('/admin_users',{}).then(function(j){
     if(!j.ok){ if(!silent) say((j&&j.msg)||'扫描失败',false); return; }
@@ -1312,6 +1305,109 @@ function openShop(){
     shopRender();
   }).catch(function(){_shopCat=[];_shopDaily={};shopRender()});
 }
+
+/* ---------- 37Web 角色投票 ---------- */
+function voteAuth(){
+  var w=$('voteSubWrap'),h=$('voteLoginHint');
+  if(w)w.style.display=S.user?'':'none';
+  if(h)h.style.display=S.user?'none':'';
+}
+function voteDay(){
+  var d=new Date(),p=function(n){return(n<10?'0':'')+n};
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());
+}
+function voteImg(it){
+  if(!it||!it.id)return '';
+  return esc((S.api||'')+'/37_img/'+encodeURIComponent(it.id));
+}
+function voteRender(){
+  var box=$('voteList'),st=$('voteStat');
+  if(!box)return;
+  if(!S.api){
+    if(st)st.textContent='需连接云端后投票';
+    box.innerHTML='<div class="cm-vote-empty">本地模式暂不支持角色投票，请先配置社区云端。</div>';
+    return;
+  }
+  var l=VOTE37.items||[];
+  if(st)st.textContent=(l.length?('共 '+l.length+' 条 · 按票数排序'):'暂无投稿');
+  if(!l.length){box.innerHTML='<div class="cm-vote-empty">还没有人投稿，登录后可以发第一张。</div>';return}
+  box.innerHTML=l.map(function(it){
+    var k='wtz37v_'+it.id+'_'+voteDay();
+    var voted=false;try{voted=!!localStorage.getItem(k)}catch(e){}
+    return '<div class="cm-vote-item"><img src="'+voteImg(it)+'" alt="" loading="lazy">'+
+      '<div class="cm-vote-info"><b>'+esc(it.title)+(it.adopted?' <span class="cm-vote-ad">★已采用</span>':'')+'</b>'+
+      '<p>'+esc(it.desc||'')+'</p><i>#'+esc(it.id)+' · '+(it.t?new Date(it.t*1000).toLocaleDateString():'')+'</i></div>'+
+      '<div class="cm-vote-side"><span>'+it.votes+' 票</span>'+
+      '<button data-vote-id="'+esc(it.id)+'"'+(voted?' disabled':'')+'>'+(voted?'已投':'投票')+'</button></div></div>';
+  }).join('');
+}
+function loadVoteList(){
+  var st=$('voteStat');
+  if(!S.api){voteRender();return}
+  if(st)st.textContent='加载中…';
+  call('/37_list',{},'GET').then(function(j){
+    if(!j||!j.ok){if(st)st.textContent='加载失败';return}
+    VOTE37.items=j.list||[];
+    voteRender();
+  }).catch(function(){if(st)st.textContent='服务不可达';});
+}
+function openVote(){
+  var m=$('voteMask');if(!m)return;
+  m.classList.add('on');voteAuth();loadVoteList();
+}
+function voteCast(id,btn){
+  if(!S.api)return toast('未连接云端',false);
+  if(!id)return;
+  if(btn)btn.disabled=true;
+  call('/37_vote',{id:id}).then(function(j){
+    if(!j||!j.ok){toast((j&&j.msg)||'投票失败',false);loadVoteList();return}
+    try{localStorage.setItem('wtz37v_'+id+'_'+voteDay(),'1')}catch(e){}
+    toast('投票成功 · '+j.votes+' 票',true);
+    loadVoteList();
+  }).catch(function(){if(btn)btn.disabled=false;toast('投票失败，请稍后重试',false);});
+}
+function votePick(){
+  var f=$('voteFile'),pn=$('votePrev');
+  if(!f||!f.files||!f.files[0])return;
+  var fr=new FileReader();
+  fr.onload=function(){
+    var im=new Image();
+    im.onload=function(){
+      var m=Math.max(im.width,im.height),s=m>1024?1024/m:1;
+      var c=document.createElement('canvas');
+      c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      VOTE37.img=c.toDataURL('image/jpeg',.85);
+      if(pn){pn.src=VOTE37.img;pn.style.display='block'}
+    };
+    im.src=fr.result;
+  };
+  fr.readAsDataURL(f.files[0]);
+}
+function voteSubmit(){
+  if(!S.user)return toast('登录后才能投稿',false);
+  if(!S.api)return toast('未连接云端，暂不能投稿',false);
+  if(!VOTE37.img)return toast('请先选择图片',false);
+  var title=$('voteTitle'),desc=$('voteDesc'),sayEl=$('voteSay');
+  if(!title||!title.value.trim())return toast('请填写标题',false);
+  var btn=$('voteSubmit');if(btn){btn.disabled=true;btn.textContent='提交中…'}
+  call('/37_submit',{title:title.value.trim(),desc:desc?desc.value.trim():'',img:VOTE37.img}).then(function(j){
+    if(btn){btn.disabled=false;btn.textContent='提交投稿'}
+    if(!j||!j.ok){
+      if(sayEl){sayEl.className='gb-say bad';sayEl.textContent=(j&&j.msg)||'投稿失败'}
+      return;
+    }
+    VOTE37.img=null;
+    if($('voteFile'))$('voteFile').value='';
+    if($('votePrev'))$('votePrev').style.display='none';
+    if(title)title.value='';if(desc)desc.value='';
+    if(sayEl){sayEl.className='gb-say ok';sayEl.textContent='投稿成功，已进入投票榜'}
+    loadVoteList();
+  }).catch(function(){
+    if(btn){btn.disabled=false;btn.textContent='提交投稿'}
+    if(sayEl){sayEl.className='gb-say bad';sayEl.textContent='服务不可达'}
+  });
+}
 function fLget(k,d){try{var a=JSON.parse(localStorage.getItem(k)||'null');return a==null?d:a}catch(e){return d}}
 function fLset(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function shopBuy(id,x,y){
@@ -1656,7 +1752,6 @@ function startPoll(){
     if(!S.user) return;
     pmRefreshConversations();
     ntRefresh();
-    if(S.user&&S.user.is_admin) loadUsers(true);
     if(S.peer) pmRefreshThread();
   },6000);
 }
@@ -2013,7 +2108,6 @@ function bind(){
     }).catch(function(e){ rkBusy(false,$('gb_risk_all')); say('请求失败，服务器摸鱼了：'+ferr(e.message),false); });
   });
   on('gb_risk_kw','keydown',function(e){ if(e.key==='Enter') riskRun(); });
-  call('/risk_words_get',{}).then(function(j){ rkWShow(j.words||[]); }).catch(function(){});
 
   on('gb_aud_btn','click',function(){
     var A=$('gb_aud'),S2=$('gb_sta');
@@ -2145,6 +2239,16 @@ function bind(){
   on('shopOpen','click',openShop);
   on('shopClose','click',function(){ $('shopMask').classList.remove('on'); });
   on('shopMask','click',function(e){ if(e.target===$('shopMask')) $('shopMask').classList.remove('on'); });
+  on('voteOpen','click',openVote);
+  on('voteClose','click',function(){ $('voteMask').classList.remove('on'); });
+  on('voteMask','click',function(e){ if(e.target===$('voteMask')) $('voteMask').classList.remove('on'); });
+  on('voteList','click',function(e){
+    var b=e.target.closest('[data-vote-id]');
+    if(b) voteCast(b.getAttribute('data-vote-id'),b);
+  });
+  on('voteFile','change',votePick);
+  on('voteSubmit','click',voteSubmit);
+  if(location.hash==='#cmVote') setTimeout(openVote,0);
   on('shopTabs','click',function(e){
     var c=e.target.closest('[data-sk]');
     if(!c) return;
@@ -2199,5 +2303,8 @@ window.pmSend=pmSend;
 window.gbOpenConfig=gbOpenConfig;
 window.gbCloseConfig=gbCloseConfig;
 window.gbSaveConfig=gbSaveConfig;
+window.WZCM={call:call,esc:esc,toast:toast,
+  user:function(){return S.user},
+  api:function(){return S.api}};
 
 })();

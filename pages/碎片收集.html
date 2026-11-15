@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08090A">
+<title>碎片档案 · WTZ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23080A0B'/%3E%3Cpath d='M32 6 L54 20 V44 L32 58 L10 44 V20 Z' fill='none' stroke='%23C8A76C' stroke-width='3'/%3E%3Cpath d='M32 18 L42 24 V38 L32 44 L22 38 V24 Z' fill='%23C8A76C'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../fragments.css">
+</head>
+<body>
+<header class="top">
+  <span class="tl">WTZ // 碎片档案</span>
+  <span class="clk" id="clk">--:--:--</span>
+</header>
+
+<div class="fg-wrap">
+  <div class="fg-crumb">
+    <a href="../index.html">← 返回首页</a>
+    <i></i>
+    <span>ARCHIVE / FRAGMENTS</span>
+    <span style="margin-left:auto" id="fgNet">LOCAL ARCHIVE</span>
+  </div>
+
+  <section class="fg-hero">
+    <div>
+      <div class="fg-kick"><i></i>WORLD FRAGMENTS / 22 PIECES</div>
+      <h1>世界碎片<small>收集档案</small></h1>
+      <p>22 枚碎片散落在站点不同页面。每枚只出现一次，找到它藏身的那一页，点下角落里那枚很淡的菱形。已收集的碎片会在这里留下编号、来源和归档日期。</p>
+    </div>
+    <div class="fg-dial">
+      <div class="fg-dial-n"><b id="fgGot">00</b><span>/ 22</span></div>
+      <div class="fg-bar"><i id="fgBar"></i></div>
+      <div class="fg-meta" id="fgMeta">本地存档 · 登录后可跨设备同步</div>
+      <button class="fg-sync" id="fgSync" type="button" style="display:none">同步到云端</button>
+    </div>
+  </section>
+
+  <section class="fg-time" id="fgTime">
+    <div class="fg-time-k"><span>TEMPORAL FRAGMENT</span><span class="fg-dot"></span></div>
+    <div class="fg-time-main">
+      <div class="fg-count">--:--</div>
+      <div class="fg-time-tx"><b>正在读取时间</b><p>每天随机 4 场，每场 30 分钟。</p></div>
+    </div>
+  </section>
+
+  <section class="fg-list">
+    <div class="fg-listhead">
+      <div><h2>INDEX</h2><p>点任意档案查看线索与来源；未发现的碎片只显示谜语。</p></div>
+      <div class="fg-tabs">
+        <button class="fg-tab on" type="button" data-f="all">全部 <b id="fgCAll">22</b></button>
+        <button class="fg-tab" type="button" data-f="got">已收集 <b id="fgCGot">0</b></button>
+        <button class="fg-tab" type="button" data-f="miss">未收集 <b id="fgCMiss">22</b></button>
+      </div>
+    </div>
+    <div class="fg-grid" id="fgGrid"></div>
+  </section>
+
+  <section class="fg-note">
+    <h3>HOW TO COLLECT</h3>
+    <p>每个主页面角落有一枚很淡的菱形，点下去即可收下该页碎片。碎片会同时写入本地存档与云端账号；登录后可跨设备同步。时间碎片每天 4 场，由服务器时钟判定，刷新不会重置。<b>集齐 22 枚后，档案最深处会留下一条只给收集者看的记录。</b></p>
+  </section>
+</div>
+
+<div class="fg-modal" id="fgModal"></div>
+
+<script src="shared.js"></script>
+<script src="../nav.js"></script>
+<script src="../fragments.js"></script>
+</body>
+</html>

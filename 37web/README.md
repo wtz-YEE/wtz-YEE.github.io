@@ -7,10 +7,10 @@
 ```
 37web/
 ├── index.html                  # 展示页入口（唯一页面）
-├── start.bat                   # 一键启动本地服务器并打开页面
+├── start.bat                   # 一键启动本地静态服务器并打开页面
 ├── README.md
-├── cloud-url.txt               # 线上投稿服务地址（cpolar 公网 URL，线上页面自动读取）
-├── submit_server/              # 投稿服务端（本地运行，不入库）
+├── cloud-url.txt               # 旧投稿服务地址，已停用
+├── submit_server/              # 旧投稿服务端，已停用（数据已迁至 prts/_cloud）
 ├── lib/                        # 本地依赖（全部离线可用，无需外网）
 │   ├── pixi.min.js             # PixiJS 8.22.0
 │   ├── live2dcubismcore.min.js # Live2D Cubism Core（Cubism 5）
@@ -31,9 +31,10 @@
 
 **必须通过本地静态服务器打开**（`file://` 直接双击会被浏览器拦截模型加载）。任选其一：
 
-1. 双击 `start.bat`（自动启动 `http://localhost:8000` 并打开浏览器，需已安装 Python；同时提供投稿 API）；
-2. 命令行手动启动：`python submit_server\server.py`，然后访问 `http://localhost:8000`；
-3. 或 `python -m http.server 8000`（纯静态，无投稿功能）。
+1. 双击 `start.bat`（自动启动 `http://localhost:8000` 并打开浏览器，需已安装 Python）；
+2. 命令行手动启动：`python -m http.server 8000`，然后访问 `http://localhost:8000`。
+
+> 角色投稿与投票已迁至社区 `社区.html#cmVote`，由社区的云端统一提供接口；37Web 本身不再运行 `submit_server`，也不需要单独开 cpolar 隧道。
 
 ## 线上部署
 
@@ -47,7 +48,7 @@ GitHub Pages：`https://wtz-YEE.github.io/37web/`（仓库 `wtz-YEE.github.io`�
 - 头部左右/上下、嘴巴开合滑杆；复位按钮
 - 点击角色随机播放一个动作
 - **加载进度条**（模型加载时显示百分比）
-- **角色投稿**（上传图片 → 访客投票 → 站长选最高票做成 L2D 进站；本地模式同源 API，线上模式读 cloud-url.txt）
+- **角色投稿 / 投票**：已迁至社区 `社区.html#cmVote`，复用社区云端，不再单独占用隧道
 
 ## 自定义
 

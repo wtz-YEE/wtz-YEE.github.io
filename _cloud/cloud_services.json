@@ -13,14 +13,14 @@
   },
   {
     "name": "37web",
-    "desc": "37web 投稿/投票/投票采用",
+    "desc": "已并入社区投票，停用独立隧道",
     "script": "D:/WTZ/37web/submit_server/server.py",
     "port": 8000,
     "tunnel": "web37",
     "health": "/api/list",
     "addrfile": "37web/cloud-url.txt",
     "remote_file": "37web/cloud-url.txt",
-    "push": true,
-    "enabled": true
+    "push": false,
+    "enabled": false
   }
 ]

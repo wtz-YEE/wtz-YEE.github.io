@@ -7,8 +7,9 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#080A0B">
 <link rel="stylesheet" href="portal.css">
+<link rel="stylesheet" href="intro.css">
 </head>
-<body>
+<body data-intro="project">
 
 <header class="top">
   <span class="dot"></span>
@@ -31,7 +32,7 @@
       <h1>项目</h1>
       <p class="dsc">自己写的东西：能跑起来的工程、能玩的作品、能翻的资料站。</p>
     </div>
-    <div class="count"><b>12</b> 个入口</div>
+    <div class="count"><b>8</b> 个入口</div>
   </section>
 
   <div class="ghead">自研作品 · BUILT</div>
@@ -39,16 +40,6 @@
     <a class="pcard" href="pages/mcratch.html">
       <div class="pth">◈</div>
       <div class="pbd"><div class="ptag">MC · 积木编程</div><h3>mcratch</h3><p>拖积木指挥方块人，多角色多脚本，可导入 .mcratch 项目</p></div>
-      <span class="parr">open →</span>
-    </a>
-    <a class="pcard" href="pages/轴数回战.html">
-      <div class="pth">⌁</div>
-      <div class="pbd"><div class="ptag">FUNC · 函数肉鸽</div><h3>轴数回战</h3><p>你是坐标系，编辑函数作咒术，苍赫领域与领域展开</p></div>
-      <span class="parr">open →</span>
-    </a>
-    <a class="pcard" href="pages/SCP-914精炼终端.html">
-      <div class="pth">⌬</div>
-      <div class="pbd"><div class="ptag">SCP · 精炼装置</div><h3>SCP-914 精炼终端</h3><p>输入物品、选择档位、上紧主发条，看它加工万物</p></div>
       <span class="parr">open →</span>
     </a>
     <a class="pcard" href="pages/opusmc/index.html">
@@ -63,26 +54,16 @@
     </a>
     <a class="pcard" href="pages/视频播放.html">
       <div class="pth">▷</div>
-      <div class="pbd"><div class="ptag">VIDEO · 云端视频库</div><h3>视频库</h3><p>投稿即公开，独立播放界面，点赞与评论</p></div>
+      <div class="pbd"><div class="ptag">VIDEO · 完整视频库</div><h3>视频库</h3><p>首页推荐、搜索分区、完整播放、进度记忆、点赞评论与相关推荐</p></div>
       <span class="parr">open →</span>
     </a>
   </section>
 
-  <div class="ghead">玩法工坊 · CRAFT</div>
+  <div class="ghead">开发中 · WORK IN PROGRESS</div>
   <section class="pgrid">
-    <a class="pcard" href="pages/花园.html">
-      <div class="pth">✿</div>
-      <div class="pbd"><div class="ptag">GARDEN · 协作</div><h3>花园</h3><p>64 种植物、14 种风格，照料、收获，星雨之夜全站协作</p></div>
-      <span class="parr">open →</span>
-    </a>
-    <a class="pcard" href="pages/炼金.html">
-      <div class="pth">⚗</div>
-      <div class="pbd"><div class="ptag">ALCHEMY · 配方</div><h3>炼金工坊</h3><p>107 种产物、器材拖放研磨、火候控制与贤者之石</p></div>
-      <span class="parr">open →</span>
-    </a>
-    <a class="pcard" href="pages/锻造.html">
-      <div class="pth">⚒</div>
-      <div class="pbd"><div class="ptag">FORGE · 词缀</div><h3>武器锻造</h3><p>附魔词缀、胚子与材料，武器库跨页共用</p></div>
+    <a class="pcard" href="开发中.html">
+      <div class="pth">▧</div>
+      <div class="pbd"><div class="ptag">WIP · 未完成项目</div><h3>开发中</h3><p>五个还没做完的项目集中在这里，当前只从这里进入预览</p></div>
       <span class="parr">open →</span>
     </a>
   </section>
@@ -126,6 +107,8 @@
   tick();setInterval(tick,1000);
 })();
 </script>
+<script src="nav.js"></script>
+<script src="intro.js"></script>
 
 </body>
 </html>

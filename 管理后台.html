@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CONTROL ROOM · WTZ 管理后台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23070707'/%3E%3Cpath d='M32 8 L54 20 V44 L32 56 L10 44 V20 Z' fill='none' stroke='%23D9FF43' stroke-width='3'/%3E%3Cpath d='M32 22 L42 28 V38 L32 44 L22 38 V28 Z' fill='%23D9FF43'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#070707">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="intro.css">
+</head>
+<body data-intro="admin">
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ================= 登录门 ================= -->
+<section class="gate" id="gate">
+  <div class="gate-main">
+    <div class="gate-top">
+      <span class="live"></span>
+      <span>WTZ / CONTROL PLANE</span>
+      <span class="gate-sec">SECURE CHANNEL</span>
+    </div>
+    <div class="gate-kicker">RESTRICTED ACCESS · LEVEL 09</div>
+    <h1>ADMIN<span>ISTRATION</span></h1>
+    <p class="gate-sub">输入社区管理员账号，进入站点控制平面。所有操作都会被记录。</p>
+    <form id="lgForm" autocomplete="on">
+      <label>
+        <span>OPERATOR</span>
+        <input id="lgUser" name="username" autocomplete="username" maxlength="16" placeholder="管理员账号" required>
+      </label>
+      <label>
+        <span>PASSCODE</span>
+        <input id="lgPwd" name="password" type="password" autocomplete="current-password" maxlength="32" placeholder="登录密码" required>
+      </label>
+      <button class="gate-btn" type="submit">
+        <span>VERIFY IDENTITY</span><b>→</b>
+      </button>
+    </form>
+    <div class="gate-msg" id="gateMsg"></div>
+    <a class="gate-back" href="社区.html">← 返回社区</a>
+  </div>
+  <div class="gate-aside">
+    <div class="gate-aside-line"></div>
+    <div class="gate-aside-t">AUTHORIZED<br>PERSONNEL<br>ONLY</div>
+    <div class="gate-aside-meta">ENCRYPTED SESSION<br>NODE 8701 // WTZ</div>
+  </div>
+</section>
+
+<!-- ================= 控制台 ================= -->
+<div class="app" id="app" hidden>
+
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand-mark">W</span>
+      <span class="brand-t">WTZ<br>CONTROL</span>
+    </div>
+    <div class="rail-label">CONTROL PLANE</div>
+    <nav class="nav" id="nav">
+      <button data-v="dash" class="on"><i>01</i><span>总览</span><b>OVERVIEW</b></button>
+      <button data-v="users"><i>02</i><span>用户</span><b>OPERATORS</b></button>
+      <button data-v="audit"><i>03</i><span>审计</span><b>AUDIT LOG</b></button>
+      <button data-v="risk"><i>04</i><span>风控</span><b>RISK ENGINE</b></button>
+      <button data-v="punish"><i>05</i><span>惩罚</span><b>ENFORCEMENT</b></button>
+    </nav>
+    <div class="rail-foot">
+      <a href="社区.html">← COMMUNITY</a>
+      <button id="logout">退出登录</button>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <header class="topbar">
+      <div class="tb-left">
+        <span class="live"></span>
+        <span>SYSTEM ONLINE</span>
+        <span class="tb-sep">/</span>
+        <span id="apiHost">RESOLVING…</span>
+      </div>
+      <div class="tb-right">
+        <span id="clock">--:--:--</span>
+        <span class="tb-sep">/</span>
+        <span id="operator">--</span>
+      </div>
+    </header>
+
+    <div class="scroll">
+
+      <section class="view on" id="v-dash">
+        <div class="page-h">
+          <div>
+            <div class="kicker">01 / OVERVIEW</div>
+            <h2>总览</h2>
+          </div>
+          <div class="h-tools">
+            <button data-act="dash-refresh">刷新数据</button>
+            <button data-act="backup">备份全站</button>
+          </div>
+        </div>
+        <div class="cards" id="statCards"></div>
+        <div class="dash-grid">
+          <article class="panel">
+            <div class="panel-h"><h3>近 7 天</h3><span>MESSAGES / REGISTRATIONS</span></div>
+            <div id="chart7" class="chart"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-h"><h3>24H 活跃</h3><span>HOURLY TRAFFIC</span></div>
+            <div id="hours" class="hours"></div>
+          </article>
+        </div>
+        <div class="dash-grid two">
+          <article class="panel">
+            <div class="panel-h"><h3>活跃用户</h3><span>TOP OPERATORS</span></div>
+            <div id="topUsers" class="rank"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-h"><h3>最热留言</h3><span>TOP MESSAGES</span></div>
+            <div id="topGuests" class="rank"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="v-users">
+        <div class="page-h">
+          <div>
+            <div class="kicker">02 / OPERATORS</div>
+            <h2>用户</h2>
+          </div>
+          <div class="h-tools">
+            <input id="userSearch" placeholder="搜索账号 / IP" autocomplete="off">
+            <button data-act="users-refresh">刷新</button>
+          </div>
+        </div>
+        <div class="table-meta"><span id="userCount">-- USERS</span><span>ADMIN ACTIONS ARE LOGGED</span></div>
+        <div id="userTable" class="user-table"></div>
+      </section>
+
+      <section class="view" id="v-audit">
+        <div class="page-h">
+          <div>
+            <div class="kicker">03 / AUDIT LOG</div>
+            <h2>审计</h2>
+          </div>
+          <div class="h-tools">
+            <select id="auditDate"><option value="">今天</option></select>
+            <button data-act="audit-json">导出 JSON</button>
+            <button data-act="audit-csv">导出 CSV</button>
+          </div>
+        </div>
+        <div class="table-meta"><span id="auditCount">-- RECORDS</span><span>DELETIONS / BANS / RISK EVENTS</span></div>
+        <div id="auditList" class="audit-list"></div>
+      </section>
+
+      <section class="view" id="v-risk">
+        <div class="page-h">
+          <div>
+            <div class="kicker">04 / RISK ENGINE</div>
+            <h2>风控</h2>
+          </div>
+          <div class="h-tools">
+            <button data-act="risk-scan" class="danger">扫描全部</button>
+          </div>
+        </div>
+        <div class="risk-form">
+          <input id="riskInput" placeholder="多个关键词用逗号分隔，回车即添加" autocomplete="off">
+          <button data-act="risk-add">上传关键词</button>
+        </div>
+        <div class="risk-note"><span class="live"></span> 服务端每 10 秒自动扫描 · 命中即删除用户及其内容</div>
+        <div class="chips" id="riskWords"></div>
+        <div class="risk-result" id="riskResult"></div>
+      </section>
+
+      <section class="view" id="v-punish">
+        <div class="page-h">
+          <div>
+            <div class="kicker">05 / ENFORCEMENT</div>
+            <h2>惩罚</h2>
+          </div>
+        </div>
+        <div class="punish-form">
+          <input id="punIp" placeholder="目标 IP" autocomplete="off">
+          <input id="punName" placeholder="备注（可选）" autocomplete="off">
+          <button data-punish="ban">封禁 IP</button>
+          <button data-punish="panic" class="danger">崩坏惩罚</button>
+        </div>
+        <div class="dash-grid two">
+          <article class="panel">
+            <div class="panel-h"><h3>危险 IP</h3><span>ACTIVE BLOCKS</span></div>
+            <div id="banList" class="rows"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-h"><h3>惩罚记录</h3><span>ENFORCEMENT LOG</span></div>
+            <div id="punishList" class="rows"></div>
+          </article>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="admin.js"></script>
+<script src="intro.js"></script>
+</body>
+</html>

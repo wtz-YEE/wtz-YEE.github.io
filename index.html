@@ -8,8 +8,21 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="stylesheet" href="portal.css">
+<link rel="stylesheet" href="appearance.css">
+<link rel="stylesheet" href="intro.css">
 </head>
-<body class="light">
+<body class="light" data-intro="home">
+<script>
+(function(){
+  try{
+    var x=JSON.parse(localStorage.getItem('wz_look')||'null');
+    var t=x&&x.t?x.t:'paper',l=x&&x.l?x.l:'stack';
+    document.documentElement.setAttribute('data-look-theme',t);
+    document.documentElement.setAttribute('data-look-lay',l);
+    if(t!=='paper')document.body.classList.remove('light');
+  }catch(e){}
+})();
+</script>
 
 <header class="top">
   <span class="dot"></span>
@@ -42,8 +55,8 @@
       <span class="no">01</span><span class="en">PROJECTS</span>
       <span class="glyph">◈</span>
       <h2>项目<small>自研作品 · 工程 · 内容站</small></h2>
-      <p>mcratch、轴数回战、SCP-914、OpusMC、Live2D、视频库，还有炼金 / 花园 / 锻造。</p>
-      <span class="stat"><i></i>12 个作品入口</span>
+      <p>mcratch、OpusMC、Live2D、视频库，以及集中在「开发中」里的未完成项目。</p>
+      <span class="stat"><i></i>8 个作品入口</span>
       <span class="go">进入项目</span>
     </a>
 
@@ -51,8 +64,8 @@
       <span class="no">02</span><span class="en">GAMES</span>
       <span class="glyph">▚</span>
       <h2>游戏<small>小游戏 · 肉鸽 · 方块世界</small></h2>
-      <p>终端接口 24 个小游戏、沉渊讨伐、轴数回战、OpusMC，八组街机直连。</p>
-      <span class="stat"><i></i>12 个游玩入口</span>
+      <p>终端接口 24 个小游戏、沉渊讨伐、OpusMC，八组街机直连。</p>
+      <span class="stat"><i></i>11 个游玩入口</span>
       <span class="go">进入游戏</span>
     </a>
 
@@ -75,6 +88,20 @@
     </a>
   </section>
 
+  <section class="vhome" aria-labelledby="vhomeTitle">
+    <div class="vhead">
+      <div class="vtx">
+        <div class="vkick"><i></i>VIDEO LIBRARY / NOW SHOWING</div>
+        <h2 id="vhomeTitle">视频库<small>云端投稿 · 首页推荐</small></h2>
+        <p>投稿即公开，完整播放、点赞、评论与相关推荐；首页按播放、互动和新鲜度自动挑选。</p>
+      </div>
+      <a class="vall" href="pages/视频播放.html">全部视频 →</a>
+    </div>
+    <div class="vbody" id="vhomeList">
+      <div class="vempty">正在读取云端推荐…</div>
+    </div>
+  </section>
+
   <div class="quick">
     <span class="lbl">QUICK</span>
     <a href="pages/守夜人论坛.html">论坛</a>
@@ -84,6 +111,51 @@
     <a href="pages/guestwall.html">访客墙</a>
   </div>
 
+  <section class="frag-entry" aria-labelledby="fragEntryTitle">
+    <div class="fe-box">
+      <a class="fe-hit" href="pages/碎片收集.html" aria-label="进入世界碎片收集档案"></a>
+      <div class="fe-grid">
+        <div class="fe-art" aria-hidden="true">
+          <svg viewBox="0 0 100 128">
+            <polygon points="49,4 78,31 71,88 51,116 24,86 20,38" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M49 4 L51 72 L51 116 M20 38 L51 72 L78 31 M24 86 L51 72 L71 88" fill="none" stroke="currentColor" stroke-width=".7" opacity=".55"/>
+            <circle cx="51" cy="72" r="2.2" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="fe-copy">
+          <div class="fe-kick">WORLD FRAGMENTS / ARCHIVE 01–22</div>
+          <h2 id="fragEntryTitle">世界碎片<small>收集档案</small></h2>
+          <p>22 枚碎片散落在站点各页。找到角落里的菱形，收进档案；首页这一枚，就在这条入口的最下方。</p>
+        </div>
+        <div class="fe-stat">
+          <div class="fe-num"><b id="fragEntryCount">00</b><span>/ 22</span></div>
+          <div class="fe-mini"><i id="fragEntryBar"></i></div>
+          <div class="fe-go">进入档案 <span>→</span></div>
+        </div>
+      </div>
+      <button class="fe-seed" id="fragSeed" type="button" aria-label="收下首页碎片" title="收下首页碎片"></button>
+    </div>
+  </section>
+
+  <section class="look-entry" aria-labelledby="lookTitle">
+    <div class="lk-box">
+      <button class="lk-hit" id="lookOpen" type="button" aria-label="打开外观系统"></button>
+      <div class="lk-grid">
+        <div class="lk-icon" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="lk-copy">
+          <div class="lk-kick">APPEARANCE / THEME + LAYOUT</div>
+          <h2 id="lookTitle">外观系统<small>配色 · 主题 · 布局</small></h2>
+          <p>纸白、墨黑、终端青、蓝图；经典纵排、双栏工作台、紧凑目录。改动即时生效，下次打开保持。</p>
+        </div>
+        <div class="lk-state">
+          <span class="lk-badge" id="lookTheme">纸白</span>
+          <span class="lk-badge" id="lookLay">经典纵排</span>
+          <b class="lk-go">调整 <span>→</span></b>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer class="foot">
@@ -92,6 +164,32 @@
   <a href="README.md">说明文档</a>
   <a href="404.html">404</a>
 </footer>
+
+<div class="look-modal" id="lookModal">
+  <div class="lk-mask" data-lkclose="1"></div>
+  <div class="lk-panel" role="dialog" aria-modal="true" aria-labelledby="lookTitle">
+    <div class="lk-head">
+      <div><h2>外观系统</h2><p>SELECT A PALETTE / SELECT A LAYOUT</p></div>
+      <button class="lk-close" type="button" data-lkclose="1">关闭</button>
+    </div>
+    <div class="lk-scroll">
+      <section class="lk-sec">
+        <div class="lk-sec-h"><h3>配色 / PALETTE</h3><span>颜色与页面氛围</span></div>
+        <div class="lk-themes" id="lookThemes"></div>
+      </section>
+      <section class="lk-sec">
+        <div class="lk-sec-h"><h3>布局 / LAYOUT</h3><span>内容排布方式</span></div>
+        <div class="lk-lays" id="lookLays"></div>
+      </section>
+      <div class="lk-note">配色与布局保存在本机。旧版的 8 套布局、主题切换器和 `prts_lay` 记录已移除，不会再出现在页面角落。</div>
+    </div>
+    <div class="lk-foot">
+      <button class="lk-reset" id="lookReset" type="button">恢复默认</button>
+      <span>即时生效 · 自动保存</span>
+      <button class="lk-close" type="button" data-lkclose="1">完成</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -111,6 +209,68 @@
     });
   }
 
+  function escV(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function vNum(n){n=Number(n||0);return n>9999?(n/10000).toFixed(1)+'w':String(n)}
+  function vScore(v){
+    var likes=(v.likes||[]).length,cmts=(v.cmts||[]).length,views=Number(v.views||0);
+    var t=Date.parse(v.time||'')||0,age=t?Math.max(0,(Date.now()-t)/86400000):99;
+    return views+likes*4+cmts*3+Math.max(0,14-age)*3;
+  }
+  function vBases(){
+    var a=[],seen={};
+    function add(x){x=String(x||'').trim().replace(/\/+$/,'');if(x.indexOf('http')===0&&!/280c01a7|36c3116e|7326f131|5efbd0d|45f188f2|51f2b4ef/.test(x)&&!seen[x]){seen[x]=1;a.push(x)}}
+    try{(localStorage.getItem('gb_api_url')||'').split(/\n/).forEach(add)}catch(e){}
+    add('https://59a035d9.r20.cpolar.top');
+    return a;
+  }
+  function vList(){
+    var bases=vBases(),i=0;
+    function next(){
+      if(i>=bases.length)return Promise.reject('no-api');
+      var b=bases[i++],ctl=null,opt={method:'GET',cache:'no-store'};
+      try{ctl=new AbortController();opt.signal=ctl.signal;setTimeout(function(){try{ctl.abort()}catch(e){}},8000)}catch(e){}
+      return fetch(b+'/video_list',opt).then(function(r){
+        if(!r.ok)throw 0;
+        return r.json();
+      }).then(function(j){
+        if(!j||!j.ok)throw 0;
+        return j.list||[];
+      })['catch'](function(){return next()});
+    }
+    return next();
+  }
+  function vHome(list){
+    var box=document.getElementById('vhomeList');
+    if(!box)return;
+    list=(list||[]).slice().sort(function(a,b){return vScore(b)-vScore(a)});
+    if(!list.length){
+      box.innerHTML='<div class="vempty">还没有视频 · <a href="pages/视频发布.html" style="color:#00A0B0;border-bottom:1px solid #00A0B0">去投稿第一支 →</a></div>';
+      return;
+    }
+    var top=list.slice(0,3),m=top[0];
+    var ph=m.cov?'<img src="'+escV(m.cov)+'" alt="">':'<div class="vph-f"><b>'+(m.zn||'▶').charAt(0)+'</b><span>PLAY</span></div>';
+    var html='<a class="vmain" href="pages/视频播放.html?id='+encodeURIComponent(m.id)+'">'+
+      '<div class="vph">'+ph+'</div><div class="vinfo">'+
+      '<div class="vlab">01 / 今日主推 · '+escV(m.zn||'未分区')+'</div>'+
+      '<h3>'+escV(m.t||'无标题')+'</h3>'+
+      '<div class="vdesc">'+escV(m.d||'投稿即公开，点开看看。')+'</div>'+
+      '<div class="vm"><span>▶ '+vNum(m.views)+'</span><span>♥ '+vNum((m.likes||[]).length)+'</span><span>评论 '+vNum((m.cmts||[]).length)+'</span><b>推荐 '+Math.round(vScore(m))+'</b></div>'+
+      '</div></a><div class="vside">';
+    top.slice(1).forEach(function(v,i){
+      var th=v.cov?'<img src="'+escV(v.cov)+'" alt="">':(v.zn||'▶').charAt(0);
+      html+='<a class="vrow" href="pages/视频播放.html?id='+encodeURIComponent(v.id)+'">'+
+        '<span class="vth">'+th+'</span><span class="vt"><b>'+escV(v.t||'无标题')+'</b>'+
+        '<span>@'+escV(v.user||'匿名')+' · ▶'+vNum(v.views)+' · ♥'+vNum((v.likes||[]).length)+'</span></span></a>';
+    });
+    if(top.length<3)html+='<a class="vrow" href="pages/视频播放.html"><span class="vth">▤</span><span class="vt"><b>全部视频</b><span>VIDEO LIBRARY / INDEX</span></span></a>';
+    html+='</div>';
+    box.innerHTML=html;
+  }
+  vList().then(vHome)['catch'](function(){
+    var box=document.getElementById('vhomeList');
+    if(box)box.innerHTML='<div class="vempty">云端未连接 · <a href="pages/视频播放.html" style="color:#00A0B0;border-bottom:1px solid #00A0B0">直接进入视频库 →</a></div>';
+  });
+
   var QS=[
     '[ 终端 ] 四条路，选一条走进去',
     '[ 终端 ] 所有页面都不需要登录，除了会说话的那些',
@@ -127,6 +287,72 @@
   if(q) q.addEventListener('click',show);
 })();
 </script>
+<script>
+(function(){
+  var LS='wz_frag2';
+  var ct=document.getElementById('fragEntryCount');
+  var bar=document.getElementById('fragEntryBar');
+  var sd=document.getElementById('fragSeed');
+  if(!ct||!sd)return;
+
+  function read(){
+    try{
+      var a=JSON.parse(localStorage.getItem(LS)||'[]'),o=[],m={};
+      if(!Array.isArray(a))return o;
+      for(var i=0;i<a.length;i++){
+        var x=a[i],n=typeof x==='object'&&x?x.n:x;n=parseInt(n,10);
+        if(n>=1&&n<=22&&!m[n]){m[n]=1;o.push({n:n,t:(typeof x==='object'&&x&&x.t)?String(x.t):''})}
+      }
+      return o;
+    }catch(e){return[]}
+  }
+  function write(a){try{localStorage.setItem(LS,JSON.stringify(a))}catch(e){}}
+  function paint(a){
+    var n=a.length;
+    ct.textContent=(n<10?'0':'')+n;
+    if(bar)bar.style.width=(n/22*100).toFixed(1)+'%';
+    sd.classList.toggle('got',a.indexOf(1)>=0);
+  }
+  function token(){try{var s=JSON.parse(localStorage.getItem('gb_session')||'null');return(s&&s.token)||''}catch(e){return''}}
+  function api(){
+    try{var a=(localStorage.getItem('gb_api_url')||'').split(/\n/).filter(Boolean);if(a[0])return a[0].replace(/\/+$/,'')}catch(e){}
+    return 'https://59a035d9.r20.cpolar.top';
+  }
+  function req(path,body){
+    var b=api();
+    if(!b)return Promise.reject();
+    var opt={method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store'};
+    if(window.AbortController){var c=new AbortController();opt.signal=c.signal;setTimeout(function(){try{c.abort()}catch(e){}},8000)}
+    body=body||{};body.token=token();
+    return fetch(b+path,Object.assign(opt,{body:JSON.stringify(body)})).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){if(!j||!j.ok)throw 0;return j});
+  }
+
+  var local=read();
+  paint(local.map(function(x){return x.n}));
+  if(token()){
+    req('/frags',{}).then(function(j){
+      var o={},n=local.map(function(x){return x.n});
+      n.forEach(function(x){o[x]=1});
+      (j.mine||[]).forEach(function(x){o[x]=1});
+      var all=Object.keys(o).map(Number);
+      if(o[1]&&local.map(function(x){return x.n}).indexOf(1)<0){local.push({n:1,t:''});write(local)}
+      paint(all);
+    }).catch(function(){});
+  }
+
+  sd.addEventListener('click',function(e){
+    e.preventDefault();e.stopPropagation();
+    if(sd.classList.contains('got'))return;
+    var a=read();
+    if(a.map(function(x){return x.n}).indexOf(1)<0){a.push({n:1,t:new Date().toISOString().slice(0,10)});write(a)}
+    paint(a.map(function(x){return x.n}));
+    if(token())req('/frag_get',{n:1}).catch(function(){});
+  });
+})();
+</script>
+<script src="nav.js"></script>
+<script src="intro.js"></script>
+<script src="appearance.js"></script>
 
 </body>
 </html>

@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#FFFFFF">
 <title>视频发布 · WTZ</title>
+<link rel="stylesheet" href="../intro.css">
 <style>
 :root{--bg:#040405;--panel:#0b0b0d;--line2:rgba(255,255,255,.14);--accent:#fff;--ink:#e6edef;--ink3:#6a767d;--gold:#ffd60a;--red:#ff5c5c;--grn:#5cff9a}
 *{box-sizing:border-box}
@@ -80,10 +82,67 @@ textarea{resize:vertical;min-height:88px}
 #pl li .go{font-family:Consolas,monospace;font-size:10px;color:var(--gold);border:1px solid rgba(255,214,10,.4);padding:2px 8px;letter-spacing:.1em;white-space:nowrap}
 #pl .empty{color:var(--ink3);font-size:12px;text-align:center;padding:26px 0;letter-spacing:.1em}
 @media(max-width:860px){.wrap{flex-direction:column}.left,.right{flex:1;width:100%}main{padding:28px 16px}}
+
+/* ===== 视频发布 · 白底 / 青字主题 ===== */
+:root{--bg:#fff;--panel:#fff;--line2:rgba(0,152,168,.22);--accent:#00A0B0;--ink:#123B40;--ink3:#6B8E93;--gold:#0098A8;--red:#C94A4A;--grn:#00897B;--teal:#00A0B0;--teal2:#0098A8;--soft:#F2FBFB}
+body{background:#fff;color:var(--ink)}
+body::after{display:none}
+header{background:rgba(255,255,255,.94);border-bottom:1px solid var(--teal);backdrop-filter:blur(8px)}
+header .logo{color:var(--teal)}
+header nav a{color:#5E858A}
+header nav a:hover{color:var(--teal);border-color:var(--teal)}
+h1{color:#0B3D42}
+h1 b{color:var(--teal)}
+.sub{color:#6B8E93}
+.panel{background:#fff;border-color:var(--line2)}
+.panel h2{color:#5E858A}
+.panel h2::before{color:var(--teal)}
+.panel h2 .n{color:#7C9A9E}
+.up{border-color:rgba(0,152,168,.34);background:var(--soft)}
+.up:hover,.up.drag{border-color:var(--teal);background:#E9F8F9}
+.up .t{color:#0B3D42}
+.up .s{color:#6B8E93}
+.finfo{color:var(--ink)}
+.finfo b{color:var(--teal)}
+.finfo .warn{color:var(--red)}
+.bar{background:rgba(0,152,168,.12)}
+.bar i{background:var(--teal)}
+video{border-color:var(--line2)}
+img.pvi{border-color:var(--line2)}
+input[type=text],input[type=datetime-local],textarea{background:#fff;border-color:var(--line2);color:var(--ink)}
+input:focus,textarea:focus{border-color:var(--teal)}
+.lb{color:#5E858A}
+.lb .c{color:#7C9A9E}
+.z span{color:#5E858A;border-color:var(--line2)}
+.z span:hover{color:var(--teal);border-color:var(--teal)}
+.z span.on{color:var(--teal);border-color:var(--teal);box-shadow:0 0 10px rgba(0,160,176,.12)}
+.tags i{color:var(--teal);border-color:rgba(0,152,168,.45)}
+.sw{color:#5E858A}
+.sw input{accent-color:var(--teal)}
+.sw input:checked~span{color:var(--ink)}
+#submit{background:var(--teal);color:#fff}
+#submit:hover{box-shadow:0 0 26px rgba(0,160,176,.22)}
+#submit:disabled{background:rgba(0,160,176,.35)}
+#msg{border-color:rgba(0,152,168,.45);color:var(--teal)}
+#msg.err{border-color:var(--red);color:var(--red)}
+#pl li{border-bottom-color:rgba(0,152,168,.12)}
+#pl li .d{color:#7C9A9E}
+#pl li .t2 b{color:var(--ink)}
+#pl li .t2 span{color:#6B8E93}
+#pl li .st{color:var(--grn);border-color:rgba(0,137,123,.4)}
+#pl li .x{color:#7C9A9E}
+#pl li .x:hover{color:var(--red)}
+#pl li.vgo:hover{background:var(--soft)}
+#pl li.vgo:hover .t2 b{color:var(--teal)}
+#pl li .go{color:var(--teal);border-color:rgba(0,152,168,.4)}
+#pl .empty{color:#7C9A9E}
+#pl li video{border-color:var(--line2)}
+#gTst{border-color:var(--teal)!important;background:#fff!important;color:var(--ink)!important;box-shadow:0 10px 30px rgba(0,160,176,.14)!important}
+#gTst b{color:var(--teal)!important}
 </style>
 <link rel="stylesheet" href="../shared-ui.css">
 </head>
-<body>
+<body data-intro="video">
 <header>
   <span class="logo">ARCHIVE // UPLOAD</span>
   <nav>
@@ -145,8 +204,8 @@ textarea{resize:vertical;min-height:88px}
     <ul id="vl"></ul>
   </div>
 </main>
-<script src="shared.js?v=20261022"></script>
-<script>try{if(!window.apiList||!window.apiList().length)localStorage.setItem('gb_api_url','https://45f188f2.r20.cpolar.top')}catch(e){}</script>
+<script src="shared.js?v=20261115"></script>
+<script>try{if(!window.apiList||!window.apiList().length)localStorage.setItem('gb_api_url','https://59a035d9.r20.cpolar.top')}catch(e){}</script>
 <script>
 (function(){
   var K='wz_vd',zs=['游戏','科技','知识','生活','音乐','舞蹈','动画','影视','娱乐','美食','鬼畜','专栏'];
@@ -319,5 +378,7 @@ textarea{resize:vertical;min-height:88px}
 })();
 </script>
 <script src="../shared-ui.js"></script>
+<script src="../nav.js"></script>
+<script src="../intro.js"></script>
 </body>
 </html>

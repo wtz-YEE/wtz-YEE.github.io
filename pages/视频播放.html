@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#FFFFFF">
 <title>视频库 · WTZ</title>
+<link rel="stylesheet" href="../intro.css">
 <style>
 :root{--bg:#040405;--panel:#0b0b0d;--line2:rgba(255,255,255,.14);--accent:#fff;--ink:#e6edef;--ink3:#6a767d;--gold:#ffd60a;--red:#ff5c5c}
 *{box-sizing:border-box}
@@ -71,10 +73,114 @@ h1 b{color:var(--gold)}
 .gcard .gi .zn{margin-left:auto;font-size:10.5px;border:1px solid var(--line2);color:var(--ink3);padding:2px 8px}
 .empty{color:var(--ink3);font-size:12px;text-align:center;padding:60px 0;letter-spacing:.1em;border:1px dashed var(--line2)}
 @media(max-width:760px){main{padding:26px 14px}#grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+
+/* ===== 视频库 · 白底 / 青字主题 ===== */
+:root{--bg:#fff;--panel:#fff;--line2:rgba(0,152,168,.22);--accent:#00A0B0;--ink:#123B40;--ink3:#6B8E93;--gold:#0098A8;--red:#C94A4A;--grn:#00897B;--teal:#00A0B0;--teal2:#0098A8;--soft:#F2FBFB}
+body{background:#fff;color:var(--ink)}
+body::after{display:none}
+header{background:rgba(255,255,255,.94);border-bottom:1px solid var(--teal);backdrop-filter:blur(8px)}
+header .logo{color:var(--teal)}
+header nav a{color:#5E858A}
+header nav a:hover{color:var(--teal);border-color:var(--teal)}
+main{padding-top:32px}
+h1{color:#0B3D42}
+h1 b{color:var(--teal)}
+.sub{color:#6B8E93}
+.player{border-color:var(--teal);background:#000}
+.meta{border-bottom-color:var(--line2)}
+.meta h2{color:#0B3D42}
+.meta .row{color:#6B8E93}
+.meta .row .u{color:var(--teal)}
+.meta .row .tg{border-color:rgba(0,152,168,.45);color:var(--teal)}
+.mine-tag{color:var(--grn);border-color:rgba(0,137,123,.4)}
+.mdesc{margin:13px 0 0;max-width:820px;color:#476F74;font-size:13px;line-height:1.75;white-space:pre-wrap}
+.abtn{color:#5E858A;border-color:var(--line2);background:#fff}
+.abtn:hover{color:var(--teal);border-color:var(--teal)}
+.abtn.on{color:var(--teal);border-color:var(--teal);box-shadow:0 0 12px rgba(0,160,176,.12)}
+.abtn .num{color:var(--teal)}
+.auto{display:inline-flex;align-items:center;gap:7px;margin-top:16px;font-size:12px;color:#5E858A;letter-spacing:.04em;user-select:none}
+.auto input{accent-color:var(--teal)}
+.cmt{background:#FAFEFE;border-color:var(--line2)}
+.cmt h3{color:#6B8E93}
+.cmt h3::before{color:var(--teal)}
+.cmt-list li{border-bottom-color:rgba(0,152,168,.12)}
+.cmt-list .av{border-color:rgba(0,152,168,.45);color:var(--teal)}
+.cmt-list .cb .cu{color:var(--teal)}
+.cmt-list .cb .ct{color:#7C9A9E}
+.cmt-list .cb .cc{color:#234C51}
+.cmt .empty{color:#7C9A9E}
+.cmt-in input{background:#fff;border-color:var(--line2);color:var(--ink)}
+.cmt-in input:focus{border-color:var(--teal)}
+.cmt-in button{background:var(--teal);color:#fff}
+.cmt-in button:disabled{background:rgba(0,160,176,.35)}
+.back{color:#5E858A;border-color:var(--line2)}
+.back:hover{color:var(--teal);border-color:var(--teal)}
+.delbtn{color:var(--red);border-color:rgba(201,74,74,.45)}
+.delbtn:hover{background:rgba(201,74,74,.08)}
+#grid{grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px}
+.gcard{border-color:var(--line2);background:#fff}
+.gcard:hover{border-color:var(--teal);box-shadow:0 10px 26px rgba(0,160,176,.13)}
+.gcard .ph{background:linear-gradient(135deg,#F2FBFB,#E7F7F8);color:var(--teal)}
+.gcard .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.gcard .ph::after{background:radial-gradient(rgba(0,160,176,.18) 1px,transparent 1px);background-size:14px 14px;opacity:.28}
+.gcard .gi b{color:#0B3D42}
+.gcard .gi .gm{color:#78979B}
+.gcard .gi .gm .u{color:var(--teal)}
+.gcard .gi .zn{border-color:var(--line2);color:#6B8E93}
+.empty{color:#7C9A9E;border-color:var(--line2)}
+#player-box{display:none}
+#player-box.show{display:block}
+#list-view.hide{display:none}
+#gTst{border-color:var(--teal)!important;background:#fff!important;color:var(--ink)!important;box-shadow:0 10px 30px rgba(0,160,176,.14)!important}
+#gTst b{color:var(--teal)!important}
+
+/* 列表推荐头图 */
+.vhero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);border:1px solid var(--teal);background:var(--soft);margin-bottom:14px;min-height:230px}
+.vhero .hph{position:relative;overflow:hidden;background:#EAF8F9;border-right:1px solid var(--line2);min-height:220px}
+.vhero .hph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vhero .hph .hp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--teal);font-family:Consolas,monospace}
+.vhero .hph .hp b{font-size:34px;font-weight:400;line-height:1}
+.vhero .hph .hp span{font-size:9px;letter-spacing:.24em;color:var(--teal2)}
+.vhero .hinfo{padding:22px 22px 18px;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}
+.vhero .hlab{font-family:Consolas,monospace;font-size:9px;letter-spacing:.22em;color:var(--teal);margin-bottom:auto}
+.vhero h2{font-size:clamp(18px,2.4vw,24px);line-height:1.35;color:#0B3D42;letter-spacing:.03em;margin:16px 0 7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vhero .hpdesc{font-size:12px;line-height:1.6;color:#5E858A;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vhero .hmeta{display:flex;gap:13px;flex-wrap:wrap;margin-top:12px;font-family:Consolas,monospace;font-size:10px;color:#6B8E93}
+.vhero .hmeta b{color:var(--teal);font-weight:400}
+.vhero .hgo{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-family:Consolas,monospace;font-size:10.5px;letter-spacing:.12em;color:#fff;background:var(--teal);padding:9px 15px;width:max-content}
+.vfilter{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 16px;padding:12px 0;border-bottom:1px solid var(--line2)}
+.vfilter input[type=search]{height:34px;border:1px solid var(--line2);background:#fff;color:var(--ink);padding:0 12px;font:inherit;font-size:12px;outline:none;min-width:210px;flex:1;max-width:340px}
+.vfilter input:focus{border-color:var(--teal)}
+.vzones{display:flex;gap:6px;flex-wrap:wrap}
+.vzone{border:1px solid var(--line2);background:#fff;color:#5E858A;padding:5px 10px;font-family:Consolas,monospace;font-size:10px;letter-spacing:.06em;cursor:pointer;transition:.16s}
+.vzone:hover{color:var(--teal);border-color:var(--teal)}
+.vzone.on{color:#fff;background:var(--teal);border-color:var(--teal)}
+.vfilter select{height:34px;border:1px solid var(--line2);background:#fff;color:var(--ink);font:inherit;font-size:11px;padding:0 8px;outline:none;cursor:pointer}
+.vfilter select:focus{border-color:var(--teal)}
+
+/* 相关推荐 */
+.rel-wrap{margin-top:30px}
+.rel-wrap h3{font-family:Consolas,monospace;font-size:11px;letter-spacing:.18em;color:#5E858A;margin:0 0 12px}
+.rel-wrap h3 span{color:var(--teal);margin-left:8px}
+.rel{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.rcard{border:1px solid var(--line2);background:#fff;padding:7px;transition:.18s;min-width:0}
+.rcard:hover{border-color:var(--teal);box-shadow:0 8px 20px rgba(0,160,176,.1)}
+.rcard .rph{height:104px;background:var(--soft);color:var(--teal);display:flex;align-items:center;justify-content:center;font-family:Consolas,monospace;font-size:23px;overflow:hidden}
+.rcard .rph img{width:100%;height:100%;object-fit:cover}
+.rcard b{display:block;margin-top:8px;font-size:11.5px;color:#0B3D42;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcard span{display:block;margin-top:3px;font-family:Consolas,monospace;font-size:9px;color:#7C9A9E}
+@media(max-width:760px){
+  .vhero{grid-template-columns:1fr}
+  .vhero .hph{min-height:0;aspect-ratio:16/9;border-right:none;border-bottom:1px solid var(--line2)}
+  .vhero .hinfo{min-height:150px}
+  .vfilter input[type=search]{max-width:none}
+  .rel{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rcard .rph{height:84px}
+}
 </style>
 <link rel="stylesheet" href="../shared-ui.css">
 </head>
-<body>
+<body data-intro="video">
 <header>
   <span class="logo">ARCHIVE // VIDEO</span>
   <nav>
@@ -83,17 +189,39 @@ h1 b{color:var(--gold)}
   </nav>
 </header>
 <main>
-  <h1>视频<b>库</b></h1>
-  <p class="sub" id="sub">正在连接云端…</p>
+  <div id="list-view">
+    <h1>视频<b>库</b></h1>
+    <p class="sub" id="sub">正在连接云端…</p>
+    <section class="vhero" id="vhero" style="display:none"></section>
+    <div class="vfilter">
+      <input id="vSearch" type="search" placeholder="搜索标题 / 作者 / 标签…" autocomplete="off">
+      <div class="vzones" id="vZones"></div>
+      <select id="vSort" aria-label="排序">
+        <option value="rec">推荐排序</option>
+        <option value="new">最新发布</option>
+        <option value="view">最多播放</option>
+        <option value="like">最多点赞</option>
+      </select>
+    </div>
+    <div id="grid"></div>
+  </div>
   <div id="player-box">
     <video class="player" id="pv" controls preload="metadata" poster=""></video>
     <div class="meta">
       <h2 id="mt"><span id="mineTag" class="mine-tag">MY VIDEO</span></h2>
       <div class="row" id="mrow"></div>
+      <p class="mdesc" id="md"></p>
       <div class="acts" id="acts"></div>
+      <label class="auto"><input type="checkbox" id="autoNext"> 自动连播</label>
+      <button class="abtn" id="nextBtn" type="button">下一支 →</button>
+      <button class="abtn" id="shareBtn" type="button">复制链接</button>
       <button id="del" class="delbtn">✕ 删除视频</button>
     </div>
     <a class="back" href="视频播放.html">◄ 返回全部视频</a>
+    <section class="rel-wrap">
+      <h3>相关推荐 <span>UP NEXT</span></h3>
+      <div class="rel" id="related"></div>
+    </section>
     <div class="cmt" id="cmt">
       <h3>评论区</h3>
       <ul class="cmt-list" id="cmtList"></ul>
@@ -103,15 +231,18 @@ h1 b{color:var(--gold)}
       </div>
     </div>
   </div>
-  <div id="grid"></div>
 </main>
-<script src="shared.js?v=20261022"></script>
-<script>try{if(!window.apiList||!window.apiList().length)localStorage.setItem('gb_api_url','https://45f188f2.r20.cpolar.top')}catch(e){}</script>
+<script src="shared.js?v=20261115"></script>
+<script>try{if(!window.apiList||!window.apiList().length)localStorage.setItem('gb_api_url','https://59a035d9.r20.cpolar.top')}catch(e){}</script>
 <script>
 (function(){
   var g=document.getElementById('grid'),pb=document.getElementById('player-box'),pv=document.getElementById('pv');
   var mt=document.getElementById('mt'),mrow=document.getElementById('mrow'),sub=document.getElementById('sub');
-  var delb=document.getElementById('del');
+  var delb=document.getElementById('del'),lv=document.getElementById('list-view'),vh=document.getElementById('vhero');
+  var vz=document.getElementById('vZones'),vs=document.getElementById('vSort'),vq=document.getElementById('vSearch');
+  var md=document.getElementById('md'),rel=document.getElementById('related'),nx=document.getElementById('nextBtn');
+  var sh=document.getElementById('shareBtn'),an=document.getElementById('autoNext');
+  var ALL=[],CZ='全部',SORT='rec',KW='',CUR_REL=[],VIEWED=false,PK='wtz_vprog_';
   function vsrc(u){try{return (u&&u[0]==='/'?apiBase()+u:u)}catch(e){return u}}
   function esc(s){try{return window.esc?window.esc(s):String(s==null?'':s)}catch(e){return String(s==null?'':s)}}
   function q(name){var m=new RegExp('[?&]'+name+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1]):''}
@@ -130,12 +261,18 @@ h1 b{color:var(--gold)}
     var vb=document.createElement('span');vb.className='abtn';vb.style.cursor='default';
     vb.innerHTML='▶ 播放 <span class="num">'+(v.views||0)+'</span>';
     var cb=document.createElement('span');cb.className='abtn';cb.style.cursor='default';
-    cb.innerHTML='💬 评论 <span class="num">'+(v.cmts||[]).length+'</span>';
+    cb.innerHTML='评论 <span class="num">'+(v.cmts||[]).length+'</span>';
     a.appendChild(lb);a.appendChild(vb);a.appendChild(cb);
   }
   function loadCmt(v){
     var ul=document.getElementById('cmtList');
-    if(!v.cmts){ul.innerHTML='<li class="empty">加载中…</li>';return}
+    if(!v.cmts){
+      ul.innerHTML='<li class="empty">加载中…</li>';
+      call('/video_cmt',{id:v.id}).then(function(j){
+        if(j.ok){v.cmts=j.cmts||[];loadCmt(v)}else ul.innerHTML='<li class="empty">// 加载失败</li>';
+      }).catch(function(){ul.innerHTML='<li class="empty">// 云端中断</li>'});
+      return;
+    }
     ul.innerHTML='';
     if(!v.cmts.length){ul.innerHTML='<li class="empty">// 暂无评论 · 来抢沙发</li>';return}
     v.cmts.forEach(function(c){
@@ -157,71 +294,170 @@ h1 b{color:var(--gold)}
       ul.appendChild(li);
     });
   }
-  function run(list){
-    var id=q('id');
-    if(id){
-      var v=null;
-      for(var i=0;i<list.length;i++){if(String(list[i].id)===id){v=list[i];break}}
-      if(!v){sub.textContent='// 未找到该视频（可能已删除）';g.innerHTML='';pb.classList.remove('show');return}
-      sub.textContent='// 云端播放 · 提交即公开';
-      g.innerHTML='';
-      pb.classList.add('show');
-      pv.src=vsrc(v.src);
-      var firstDone=false;
-      pv.onloadedmetadata=function(){try{pv.currentTime=0.05}catch(e){}};
-      pv.onseeked=function(){try{if(!firstDone){firstDone=true;pv.pause()}}catch(e){}};
-      var tg=document.getElementById('mineTag');
-      mt.textContent=v.t||'无标题';
-      tg.className='mine-tag'+(v.mine?' show':'');
-      var r=document.createElement('div');
-      var h='<span class="u">@'+esc(v.user||'匿名')+'</span><span>'+esc(v.zn||'未分区')+'</span><span>'+new Date(v.time||Date.now()).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span>';
-      (v.tg||[]).forEach(function(x){h+=' <span class="tg">'+esc(x)+'</span>'});
-      r.innerHTML=h;
-      mrow.innerHTML='';mrow.appendChild(r);
-      document.title=(v.t||'视频')+' · 视频库 · WTZ';
-      renderActs(v);
-      delb.className='delbtn'+(v.mine?' show':'');
-      delb.onclick=function(){
-        if(!confirm('确定删除「'+(v.t||'无标题')+'」？'))return;
-        delb.disabled=true;delb.textContent='删除中…';
-        call('/video_del',{id:v.id}).then(function(j){
-          delb.disabled=false;delb.textContent='✕ 删除视频';
-          if(j.ok){try{window.toast?window.toast('已删除'):alert('已删除')}catch(e){}location.href='视频播放.html'}
-          else{try{window.toast?window.toast('删除失败：'+j.msg):alert(j.msg)}catch(e){}}
-        }).catch(function(){delb.disabled=false;delb.textContent='✕ 删除视频';try{window.toast?window.toast('云端中断，删除未完成'):alert('云端中断')}catch(e){}});
-      };
-      pv.onplay=function(){call('/video_view',{id:v.id}).then(function(j){if(j.ok){v.views=j.views;renderActs(v)}})['catch'](function(){})};
-      loadCmt(v);
-      var cin=document.getElementById('cmtIn'),cs=document.getElementById('cmtSend');
-      cin.onkeydown=function(e){if(e.key==='Enter')cs.click()};
-      cs.onclick=function(){
-        var c=cin.value.trim();
-        if(!c)return;
-        if(!apiToken()){try{window.toast?window.toast('请先登录'):alert('请先登录')}catch(e){}return}
-        cs.disabled=true;
-        call('/video_cmt_add',{id:v.id,c:c}).then(function(j){
-          cs.disabled=false;
-          if(j.ok){v.cmts=j.cmts;cin.value='';loadCmt(v);renderActs(v)}
-          else{try{window.toast?window.toast(j.msg):alert(j.msg)}catch(e){}}
-        }).catch(function(){cs.disabled=false;try{window.toast?window.toast('云端中断'):alert('云端中断')}catch(e){}});
-      };
-      return;
-    }
-    sub.textContent='// '+list.length+' 条 · 点击卡片进入播放';
-    pb.classList.remove('show');
+  function n(v){v=Number(v||0);return v>9999?(v/10000).toFixed(1)+'w':String(v)}
+  function sc(v){
+    var likes=(v.likes||[]).length,cmts=(v.cmts||[]).length,views=Number(v.views||0);
+    var t=Date.parse(v.time||'')||0,age=t?Math.max(0,(Date.now()-t)/86400000):99;
+    return views+likes*4+cmts*3+Math.max(0,14-age)*3;
+  }
+  function cover(v,hero){
+    if(v.cov)return '<img src="'+esc(v.cov)+'" alt="">';
+    if(hero)return '<div class="hp"><b>'+esc((v.zn||'▶').charAt(0))+'</b><span>PLAY</span></div>';
+    return '<i>'+esc((v.zn||'▶').charAt(0))+'</i>';
+  }
+  function stamp(s){var d=new Date(s||0);return isNaN(d.getTime())?'—':d.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
+  function renderZones(){
+    var zones=['全部'];
+    ALL.forEach(function(v){if(v.zn&&zones.indexOf(v.zn)<0)zones.push(v.zn)});
+    vz.innerHTML='';
+    zones.forEach(function(z){
+      var b=document.createElement('button');b.type='button';b.className='vzone'+(z===CZ?' on':'');b.textContent=z;
+      b.onclick=function(){CZ=z;renderZones();renderList()};
+      vz.appendChild(b);
+    });
+  }
+  function renderHero(v){
+    if(!v){vh.style.display='none';return}
+    vh.style.display='grid';
+    vh.innerHTML='<div class="hph">'+cover(v,true)+'</div><div class="hinfo">'+
+      '<div class="hlab">01 / 今日推荐 · '+esc(v.zn||'未分区')+'</div>'+
+      '<h2>'+esc(v.t||'无标题')+'</h2>'+
+      '<div class="hpdesc">'+esc(v.d||'投稿即公开，点开看看。')+'</div>'+
+      '<div class="hmeta"><span>@'+esc(v.user||'匿名')+'</span><span>▶ '+n(v.views)+'</span><span>♥ '+n((v.likes||[]).length)+'</span><span>评论 '+n((v.cmts||[]).length)+'</span><b>推荐 '+Math.round(sc(v))+'</b></div>'+
+      '<a class="hgo" href="视频播放.html?id='+encodeURIComponent(v.id)+'">立即观看 →</a></div>';
+  }
+  function renderList(){
+    var arr=ALL.filter(function(v){
+      if(CZ!=='全部'&&v.zn!==CZ)return false;
+      if(!KW)return true;
+      var s=(v.t||'')+' '+(v.user||'')+' '+(v.zn||'')+' '+((v.tg||[]).join(' '));
+      return s.toLowerCase().indexOf(KW.toLowerCase())>=0;
+    });
+    arr.sort(function(a,b){
+      if(SORT==='new')return (Date.parse(b.time||'')||0)-(Date.parse(a.time||'')||0);
+      if(SORT==='view')return Number(b.views||0)-Number(a.views||0);
+      if(SORT==='like')return (b.likes||[]).length-(a.likes||[]).length;
+      return sc(b)-sc(a);
+    });
+    sub.textContent='// '+ALL.length+' 条视频 · 当前显示 '+arr.length+' 条 · 点击卡片进入播放';
+    renderHero(arr[0]);
     g.innerHTML='';
-    if(!list.length){g.innerHTML='<div class="empty">// 暂无视频 · 去投稿页上传第一支</div>';return}
-    list.forEach(function(v){
+    if(!arr.length){g.innerHTML='<div class="empty">'+(ALL.length?'// 没有匹配的视频':'// 暂无视频 · 去投稿页上传第一支')+'</div>';return}
+    arr.slice(1).forEach(function(v){
       var c=document.createElement('div');c.className='gcard';
-      var zn=(v.zn||'未分区').charAt(0);
-      c.innerHTML='<div class="ph"><i>'+zn+'</i></div><div class="gi"><b>'+esc(v.t||'无标题')+'</b><div class="gm"><span class="u">@'+esc(v.user||'匿名')+'</span><span>♥'+(v.likes||[]).length+'</span><span>▶'+(v.views||0)+'</span><span class="zn">'+esc(v.zn||'')+'</span></div></div>';
+      c.innerHTML='<div class="ph">'+cover(v,false)+'</div><div class="gi"><b>'+esc(v.t||'无标题')+'</b><div class="gm"><span class="u">@'+esc(v.user||'匿名')+'</span><span>♥'+n((v.likes||[]).length)+'</span><span>▶'+n(v.views)+'</span><span class="zn">'+esc(v.zn||'')+'</span></div></div>';
       c.onclick=function(){location.href='视频播放.html?id='+encodeURIComponent(v.id)};
       g.appendChild(c);
     });
+    if(arr.length===1)g.innerHTML='<div class="empty">// 只有一条视频 · 去投稿页再传一支</div>';
+  }
+  function bindFilters(){
+    if(vq._bound)return;
+    vq._bound=1;
+    vq.oninput=function(){KW=vq.value.trim();renderList()};
+    vs.onchange=function(){SORT=vs.value;renderList()};
+  }
+  function renderRelated(v){
+    CUR_REL=ALL.filter(function(x){return String(x.id)!==String(v.id)}).sort(function(a,b){
+      return (sc(b)+(b.zn===v.zn?8:0))-(sc(a)+(a.zn===v.zn?8:0));
+    }).slice(0,4);
+    rel.innerHTML='';
+    nx.style.display=CUR_REL.length?'inline-flex':'none';
+    if(!CUR_REL.length){rel.innerHTML='<div class="empty" style="grid-column:1/-1;padding:18px 0">// 暂无更多视频</div>';return}
+    CUR_REL.forEach(function(x){
+      var c=document.createElement('a');c.className='rcard';c.href='视频播放.html?id='+encodeURIComponent(x.id);
+      c.innerHTML='<div class="rph">'+cover(x,false)+'</div><b>'+esc(x.t||'无标题')+'</b><span>@'+esc(x.user||'匿名')+' · ▶'+n(x.views)+' · ♥'+n((x.likes||[]).length)+'</span>';
+      rel.appendChild(c);
+    });
+  }
+  function nextVideo(){
+    if(CUR_REL.length)location.href='视频播放.html?id='+encodeURIComponent(CUR_REL[0].id);
+  }
+  function showDetail(v){
+    lv.classList.add('hide');
+    pb.classList.add('show');
+    g.innerHTML='';
+    sub.textContent='// 云端播放 · 提交即公开';
+    pv.poster=v.cov||'';
+    pv.src=vsrc(v.src);
+    try{pv.load()}catch(e){}
+    var tg=document.getElementById('mineTag');
+    mt.textContent=v.t||'无标题';
+    tg.className='mine-tag'+(v.mine?' show':'');
+    var r=document.createElement('div');
+    var h='<span class="u">@'+esc(v.user||'匿名')+'</span><span>'+esc(v.zn||'未分区')+'</span><span>'+new Date(v.time||Date.now()).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span>';
+    (v.tg||[]).forEach(function(x){h+=' <span class="tg">'+esc(x)+'</span>'});
+    r.innerHTML=h;mrow.innerHTML='';mrow.appendChild(r);
+    md.textContent=v.d||'';
+    document.title=(v.t||'视频')+' · 视频库 · WTZ';
+    renderActs(v);renderRelated(v);
+    delb.className='delbtn'+(v.mine?' show':'');
+    delb.onclick=function(){
+      if(!confirm('确定删除「'+(v.t||'无标题')+'」？'))return;
+      delb.disabled=true;delb.textContent='删除中…';
+      call('/video_del',{id:v.id}).then(function(j){
+        delb.disabled=false;delb.textContent='✕ 删除视频';
+        if(j.ok){try{window.toast?window.toast('已删除'):alert('已删除')}catch(e){}location.href='视频播放.html'}
+        else{try{window.toast?window.toast('删除失败：'+j.msg):alert(j.msg)}catch(e){}}
+      }).catch(function(){delb.disabled=false;delb.textContent='✕ 删除视频';try{window.toast?window.toast('云端中断，删除未完成'):alert('云端中断')}catch(e){}});
+    };
+    VIEWED=false;
+    pv.onplay=function(){
+      if(VIEWED)return;VIEWED=true;
+      call('/video_view',{id:v.id}).then(function(j){if(j.ok){v.views=j.views;renderActs(v)}})['catch'](function(){});
+    };
+    pv.onloadedmetadata=function(){
+      try{var p=Number(localStorage.getItem(PK+v.id)||0);if(p>5&&p<(pv.duration-5))pv.currentTime=p}catch(e){}
+    };
+    var last=0;
+    pv.ontimeupdate=function(){
+      if(Date.now()-last<4000)return;last=Date.now();
+      try{if(pv.duration)localStorage.setItem(PK+v.id,String(pv.currentTime||0))}catch(e){}
+    };
+    pv.onended=function(){if(an.checked)nextVideo()};
+    pv.onerror=function(){sub.textContent='// 播放失败 · 可能是不支持的编码'};
+    an.checked=localStorage.getItem('wtz_autonext')==='1';
+    an.onchange=function(){try{localStorage.setItem('wtz_autonext',an.checked?'1':'0')}catch(e){}};
+    nx.onclick=nextVideo;
+    sh.onclick=function(){
+      var u=location.href.split('#')[0];
+      function ok(){try{window.toast?window.toast('链接已复制'):alert('链接已复制')}catch(e){}}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(ok)['catch'](function(){prompt('复制链接',u)})}
+      else prompt('复制链接',u);
+    };
+    loadCmt(v);
+    var cin=document.getElementById('cmtIn'),cs=document.getElementById('cmtSend');
+    cin.onkeydown=function(e){if(e.key==='Enter')cs.click()};
+    cs.onclick=function(){
+      var c=cin.value.trim();
+      if(!c)return;
+      if(!apiToken()){try{window.toast?window.toast('请先登录'):alert('请先登录')}catch(e){}return}
+      cs.disabled=true;
+      call('/video_cmt_add',{id:v.id,c:c}).then(function(j){
+        cs.disabled=false;
+        if(j.ok){v.cmts=j.cmts;cin.value='';loadCmt(v);renderActs(v)}
+        else{try{window.toast?window.toast(j.msg):alert(j.msg)}catch(e){}}
+      }).catch(function(){cs.disabled=false;try{window.toast?window.toast('云端中断'):alert('云端中断')}catch(e){}});
+    };
+  }
+  function run(list){
+    ALL=list||[];bindFilters();renderZones();
+    var id=q('id');
+    if(id){
+      var v=null;
+      for(var i=0;i<ALL.length;i++){if(String(ALL[i].id)===id){v=ALL[i];break}}
+      if(!v){lv.classList.remove('hide');pb.classList.remove('show');sub.textContent='// 未找到该视频（可能已删除）';g.innerHTML='<div class="empty">// 未找到视频</div>';return}
+      showDetail(v);return;
+    }
+    lv.classList.remove('hide');pb.classList.remove('show');
+    document.title='视频库 · WTZ';
+    renderList();
   }
   if(!cloud()){sub.textContent='// 无云端连接 · 仅显示本地草稿（无视频）';g.innerHTML='<div class="empty">// 云端未连接</div>';return}
   call('/video_list').then(function(j){if(j.ok)run(j.list||[]);else{sub.textContent='// 拉取失败：'+j.msg;g.innerHTML='';pb.classList.remove('show')}}).catch(function(e){sub.textContent='// 云端中断 · 稍后重试';g.innerHTML='<div class="empty">// 网络错误</div>';pb.classList.remove('show')});
 })();
 </script>
+<script src="../nav.js"></script>
+<script src="../intro.js"></script>
 </body>
 </html>

@@ -1,0 +1,112 @@
+/* ===== 全站通用导航条 · nav.css ===== */
+.unav{
+  position:sticky;top:0;z-index:90;
+  background:rgba(8,8,8,.94);
+  border-bottom:1px solid rgba(255,255,255,.14);
+  color:#F2F2EA;
+  font-family:"Cascadia Mono",Consolas,"Courier New",monospace;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.unav-in{
+  max-width:1320px;margin:0 auto;min-height:58px;
+  display:flex;align-items:center;gap:20px;padding:0 18px;
+}
+.unav-brand{
+  display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;
+  padding:4px 0;flex:none;
+}
+.unav-mark{
+  width:26px;height:26px;flex:none;color:#F2F2EA;
+  transition:transform .25s cubic-bezier(.2,1,.3,1),color .2s;
+}
+.unav-brand:hover .unav-mark{transform:rotate(30deg);color:#fff}
+.unav-mark svg{width:100%;height:100%;display:block}
+.unav-brandtext b{display:block;font-size:12px;letter-spacing:.24em;line-height:1.1;color:#fff;font-weight:600}
+.unav-brandtext i{display:block;margin-top:4px;font-style:normal;font-size:8px;letter-spacing:.22em;color:#6D6D68}
+.unav-page{
+  flex:none;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  padding-left:18px;border-left:1px solid rgba(255,255,255,.14);
+  color:#7B7B75;font-size:9px;letter-spacing:.16em;
+}
+.unav-links{display:flex;align-items:center;gap:1px;margin-left:6px;min-width:0}
+.unav-links a{
+  position:relative;display:flex;align-items:center;gap:7px;
+  padding:9px 11px;color:#A5A59E;text-decoration:none;font-size:11px;letter-spacing:.12em;
+  transition:color .18s,background .18s;
+}
+.unav-links a i{font-style:normal;font-size:8px;letter-spacing:.02em;color:#5D5D58;transition:color .18s}
+.unav-links a:hover{color:#fff;background:rgba(255,255,255,.06)}
+.unav-links a:hover i{color:#BDBDB6}
+.unav-links a.on{color:#fff}
+.unav-links a.on::after{content:"";position:absolute;left:11px;right:11px;bottom:3px;height:2px;background:#fff}
+.unav-links a.on i{color:#fff}
+.unav-links a.hot{border:1px solid rgba(255,255,255,.22);margin-left:6px;color:#fff}
+.unav-links a.hot:hover{background:#fff;color:#080808}
+.unav-links a.hot:hover i{color:#080808}
+.unav-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
+.unav-clock{font-size:10px;letter-spacing:.08em;color:#74746E;font-variant-numeric:tabular-nums;white-space:nowrap}
+.unav-local{display:flex;align-items:center;gap:6px;flex-wrap:wrap;max-width:270px}
+.unav-local > *{flex:none;margin:0!important}
+.unav-local .nav-login{margin-left:0!important}
+.unav-local .nav-burger{display:none!important}
+.unav-local .cm-ic,.unav-local .nt-badge,.unav-local .pbadge{
+  border:1px solid rgba(255,255,255,.2)!important;color:#D8D8D0!important;
+  background:transparent!important;border-radius:2px!important;
+  min-height:28px!important;font-size:10px!important;padding:4px 8px!important;
+}
+.unav-local .cm-ic:hover,.unav-local .nt-badge:hover,.unav-local .pbadge:hover{border-color:#fff!important;color:#fff!important}
+.unav-menu{
+  display:none;align-items:center;gap:7px;height:32px;padding:0 10px;
+  border:1px solid rgba(255,255,255,.22);background:none;color:#F2F2EA;cursor:pointer;
+  font-family:inherit;font-size:10px;letter-spacing:.12em;
+}
+.unav-menu:hover{background:#fff;color:#080808}
+.unav-menu .um-i{display:flex;flex-direction:column;gap:3px}
+.unav-menu .um-i i{display:block;width:12px;height:1px;background:currentColor}
+
+.unav-scrim{
+  position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.72);
+  display:none;justify-content:flex-end;backdrop-filter:blur(4px);
+}
+.unav-scrim.on{display:flex}
+.unav-drawer{
+  width:min(360px,88vw);height:100%;background:#080808;border-left:1px solid rgba(255,255,255,.18);
+  padding:20px 22px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box;
+  animation:unavDrawer .28s cubic-bezier(.2,1,.3,1) both;
+}
+@keyframes unavDrawer{from{transform:translateX(36px);opacity:.4}to{transform:none;opacity:1}}
+.unav-dhead{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.16);padding-bottom:12px;font-size:10px;letter-spacing:.2em;color:#8B8B84}
+.unav-dhead button{background:none;border:1px solid rgba(255,255,255,.24);color:#F2F2EA;padding:5px 10px;font:inherit;font-size:9px;letter-spacing:.1em;cursor:pointer;min-height:30px}
+.unav-dhead button:hover{background:#fff;color:#080808}
+.unav-dlinks{display:flex;flex-direction:column;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:14px}
+.unav-dlinks a{display:flex;align-items:center;gap:14px;padding:11px 0;color:#A5A59E;text-decoration:none;font-size:14px;letter-spacing:.14em;border-bottom:1px solid rgba(255,255,255,.05)}
+.unav-dlinks a i{font-style:normal;font-size:9px;color:#63635D;width:20px}
+.unav-dlinks a:hover,.unav-dlinks a.on{color:#fff}
+.unav-dlinks a.on i{color:#fff}
+.unav-dfoot{margin-top:auto;font-size:9px;line-height:1.9;letter-spacing:.12em;color:#63635D}
+.unav-dfoot b{display:block;color:#BDBDB6;font-weight:400}
+body.unav-open{overflow:hidden}
+
+@media(max-width:1020px){
+  .unav-page{display:none}
+  .unav-links a{padding:9px 9px;gap:5px;font-size:10px}
+  .unav-links a i{display:none}
+  .unav-clock{display:none}
+}
+@media(max-width:960px){
+  .unav-links{display:none}
+  .unav-menu{display:inline-flex}
+  .unav-in{min-height:54px;gap:12px;padding:0 12px}
+  .unav-local{max-width:190px}
+  .unav-clock{display:inline;font-size:9px}
+}
+@media(max-width:480px){
+  .unav-page,.unav-clock{display:none}
+  .unav-local{max-width:110px}
+  .unav-brandtext i{display:none}
+  .unav-mark{width:22px;height:22px}
+}
+@media(prefers-reduced-motion:reduce){
+  .unav *{animation:none!important;transition:none!important}
+}

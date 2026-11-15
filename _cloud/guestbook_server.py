@@ -20,6 +20,14 @@ BANNED_IP_FILE = os.path.join(_BASE, "banned_ips.json")
 GARDEN_FILE = os.path.join(_BASE, "garden.json")
 FORGE_FILE = os.path.join(_BASE, "forge.json")
 PANIC_FILE = os.path.join(_BASE, "panic_ips.json")
+VOTE37_FILE = os.path.join(_BASE, "37votes.json")
+VOTE37_LOG = os.path.join(_BASE, "37votes_log.json")
+VOTE37_DIR = os.path.join(_BASE, "37vote_imgs")
+import threading as _threading
+VOTE37_LOCK = _threading.Lock()
+DEBATE_FILE = os.path.join(_BASE, "debate.json")
+DEBATE_AI_FILE = os.path.join(_BASE, "debate_ai.json")
+DEBATE_LOCK = _threading.Lock()
 
 import time as _t
 DEL_LOG = []
@@ -1165,6 +1173,101 @@ def api_uploads(fn):
     return send_from_directory(UP_DIR, fn)
 
 
+# ---------- 37Web 角色投稿 / 投票（并入社区，复用同一条 cpolar） ----------
+os.makedirs(VOTE37_DIR, exist_ok=True)
+VOTE37_RISK = ["赌博", "博彩", "诈骗", "代购", "发票", "刷单", "裸聊", "援交", "约炮", "卖淫",
+               "毒品", "冰毒", "摇头丸", "枪支", "弹药", "管制刀具", "作弊", "外挂", "黑客攻击"]
+
+
+def _vote37_list():
+    items = _load(VOTE37_FILE, [])
+    if not isinstance(items, list):
+        items = []
+    items = sorted(items, key=lambda x: (-(1 if x.get("adopted") else 0), -int(x.get("votes") or 0), -float(x.get("t") or 0)))
+    return [{"id": str(i.get("id") or ""), "title": str(i.get("title") or ""),
+             "desc": str(i.get("desc") or ""), "votes": int(i.get("votes") or 0),
+             "t": float(i.get("t") or 0), "adopted": bool(i.get("adopted"))}
+            for i in items if i.get("id")]
+
+
+@app.route("/37_list", methods=["GET", "POST"])
+def api_37_list():
+    return jsonify({"ok": True, "list": _vote37_list()})
+
+
+@app.route("/37_img/<iid>", methods=["GET"])
+def api_37_img(iid):
+    if not re.fullmatch(r"[a-f0-9]{10}", str(iid or "")):
+        return jsonify({"ok": False, "msg": "not found"}), 404
+    return send_from_directory(VOTE37_DIR, iid + ".png")
+
+
+@app.route("/37_submit", methods=["POST"])
+def api_37_submit():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token") or "")
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录后再投稿"})
+    u = _load(USER_FILE, {}).get(cu) or {}
+    if u.get("banned"):
+        return jsonify({"ok": False, "msg": "你已被拉黑，无法投稿"})
+    title = str(p.get("title") or "").strip()[:40]
+    desc = str(p.get("desc") or "").strip()[:200]
+    img = str(p.get("img") or "")
+    if not title or not img:
+        return jsonify({"ok": False, "msg": "缺标题或图片"})
+    for w in VOTE37_RISK:
+        if w in title + desc:
+            return jsonify({"ok": False, "msg": "含敏感词"})
+    if "," in img:
+        img = img.split(",", 1)[1]
+    try:
+        raw = _b64.b64decode(img)
+    except Exception:
+        return jsonify({"ok": False, "msg": "图片解码失败"})
+    if not raw or len(raw) > 4 * 1024 * 1024:
+        return jsonify({"ok": False, "msg": "图片无效或超过 4MB"})
+    iid = _uuid.uuid4().hex[:10]
+    with VOTE37_LOCK:
+        with open(os.path.join(VOTE37_DIR, iid + ".png"), "wb") as f:
+            f.write(raw)
+        items = _load(VOTE37_FILE, [])
+        if not isinstance(items, list):
+            items = []
+        items.append({"id": iid, "title": title, "desc": desc, "votes": 0,
+                      "t": _time.time(), "adopted": False})
+        _save(VOTE37_FILE, items)
+    return jsonify({"ok": True, "id": iid})
+
+
+@app.route("/37_vote", methods=["POST"])
+def api_37_vote():
+    p = request.get_json() or {}
+    iid = str(p.get("id") or "")
+    if not iid:
+        return jsonify({"ok": False, "msg": "缺 id"})
+    ip = (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip() or (request.remote_addr or "")
+    day = _time.strftime("%Y-%m-%d")
+    with VOTE37_LOCK:
+        items = _load(VOTE37_FILE, [])
+        if not isinstance(items, list):
+            items = []
+        v = _load(VOTE37_LOG, {})
+        if not isinstance(v, dict):
+            v = {}
+        k = ip + "|" + iid + "|" + day
+        if k in v:
+            return jsonify({"ok": False, "msg": "今日已投过"})
+        for i in items:
+            if str(i.get("id")) == iid:
+                i["votes"] = int(i.get("votes") or 0) + 1
+                _save(VOTE37_FILE, items)
+                v[k] = 1
+                _save(VOTE37_LOG, v)
+                return jsonify({"ok": True, "votes": i["votes"]})
+    return jsonify({"ok": False, "msg": "投稿不存在"})
+
+
 VID_DIR = os.path.join(_BASE, "videos")
 os.makedirs(VID_DIR, exist_ok=True)
 
@@ -1216,9 +1319,11 @@ def api_video_add():
     nid = 1
     for x in v:
         nid = max(nid, int(x.get("id", 0) or 0) + 1)
+    covp = str(p.get("cov") or "")
+    cov = covp[:600000] if covp.startswith(("data:image/jpeg;base64,", "data:image/png;base64,")) else ""
     v.append({"id": nid, "user": cu, "t": t, "d": str(p.get("d") or "")[:1000], "zn": zn,
               "tg": tags, "time": _now(), "src": src, "fn": str(p.get("fn") or "")[:120],
-              "sz": int(p.get("sz") or 0)})
+              "sz": int(p.get("sz") or 0), "cov": cov})
     _save(VIDEO_FILE, v)
     _add_exp(_load(USER_FILE, {}), cu, 10)
     return jsonify({"ok": True, "id": nid})
@@ -1238,7 +1343,7 @@ def api_video_mine():
 
 @app.route("/video_list", methods=["GET", "POST"])
 def api_video_list():
-    p = request.get_json() or {}
+    p = request.get_json(silent=True) or {}
     cu = _cur_user(p.get("token") or "")
     us = _load(USER_FILE, {})
     adm = bool(us.get(cu, {}).get("is_admin")) or cu == ROOT
@@ -2647,6 +2752,451 @@ def api_export_me():
         "guests": g, "posts": ps, "comments": cm, "pms": pm}})
 
 
+# ---------- 社区论战 ----------
+DEBATE_RANKS = [
+    ("论战小区", 0), ("论战区", 100), ("论战大区", 250),
+    ("论战小狗", 500), ("论战中狗", 800), ("论战大狗", 1200),
+    ("论战野狗", 1700), ("论战小猪", 2300), ("论战中猪", 3000),
+    ("论战大猪", 3800), ("论战野猪", 4700)
+]
+
+def _debate_payload():
+    if request.method == "GET":
+        return request.args.to_dict()
+    d = request.get_json(silent=True)
+    return d if isinstance(d, dict) else {}
+
+def _debate_exp(name, users):
+    return max(0, int((users.get(name) or {}).get("debate_exp") or 0))
+
+def _debate_rank(exp):
+    e = max(0, int(exp or 0))
+    i = 0
+    for n, (_, t) in enumerate(DEBATE_RANKS):
+        if e >= t:
+            i = n
+    name, base = DEBATE_RANKS[i]
+    nxt = DEBATE_RANKS[i + 1] if i + 1 < len(DEBATE_RANKS) else None
+    return {
+        "name": name, "index": i, "base": base,
+        "next": nxt[0] if nxt else "", "next_exp": nxt[1] if nxt else None,
+        "progress": e - base, "span": (nxt[1] - base) if nxt else 0
+    }
+
+def _debate_delta(my_exp, opp_exp, win):
+    my_r = _debate_rank(my_exp)["index"]
+    opp_r = _debate_rank(opp_exp)["index"]
+    if win:
+        return 14 + opp_r * 6 + max(0, opp_r - my_r) * 8
+    return 6 + opp_r * 3 + max(0, my_r - opp_r) * 2
+
+def _debate_user(users, name):
+    e = _debate_exp(name, users)
+    r = _debate_rank(e)
+    rec = users.get(name) or {}
+    return {"name": name, "exp": e, "rank": r["name"], "rank_i": r["index"],
+            "wins": int(rec.get("debate_wins") or 0),
+            "losses": int(rec.get("debate_losses") or 0)}
+
+def _debate_admin(cu, users):
+    if not cu:
+        return False
+    if cu == "wtz":
+        return True
+    rec = users.get(cu) or {}
+    return bool(rec.get("is_admin") or rec.get("is_root"))
+
+def _debate_write_exp(users, name, delta, win):
+    rec = users.setdefault(name, {})
+    rec["debate_exp"] = max(0, int(rec.get("debate_exp") or 0) + int(delta))
+    key = "debate_wins" if win else "debate_losses"
+    rec[key] = int(rec.get(key) or 0) + 1
+    return rec["debate_exp"]
+
+def _debate_public(post, users):
+    args = []
+    for a in post.get("args") or []:
+        args.append({
+            "id": a.get("id") or "", "user": a.get("user") or "",
+            "char": a.get("char") or "", "text": a.get("text") or "", "time": a.get("time") or "",
+            "result": a.get("result") or "", "host_delta": a.get("host_delta"),
+            "ch_delta": a.get("ch_delta"), "resolved_at": a.get("resolved_at") or "",
+            "ai": a.get("ai") or {},
+            "author": _debate_user(users, a.get("user") or "")
+        })
+    return {
+        "id": post.get("id") or "", "user": post.get("user") or "",
+        "char": post.get("char") or "", "target": post.get("target") or "",
+        "body": post.get("body") or "", "time": post.get("time") or "",
+        "status": post.get("status") or "open",
+        "host": _debate_user(users, post.get("user") or ""),
+        "args": args
+    }
+
+@app.route("/debate_list", methods=["GET", "POST"])
+def api_debate_list():
+    p = _debate_payload()
+    d = _load(DEBATE_FILE, {"posts": []})
+    posts = d.get("posts") if isinstance(d.get("posts"), list) else []
+    users = _load(USER_FILE, {})
+    out = [_debate_public(x, users) for x in posts if isinstance(x, dict)]
+    out = sorted(out, key=lambda x: x.get("time") or "", reverse=True)
+    try:
+        lim = max(1, min(100, int(p.get("limit") or 50)))
+    except Exception:
+        lim = 50
+    return jsonify({"ok": True, "posts": out[:lim], "total": len(out),
+                    "ranks": [{"name": n, "exp": t} for n, t in DEBATE_RANKS]})
+
+@app.route("/debate_add", methods=["POST"])
+def api_debate_add():
+    p = _debate_payload()
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录"})
+    char = str(p.get("char") or "").strip()[:24]
+    target = str(p.get("target") or "").strip()[:30]
+    body = str(p.get("body") or "").strip()[:300]
+    if not char or not target:
+        return jsonify({"ok": False, "msg": "角色和挑战目标不能为空"})
+    with DEBATE_LOCK:
+        d = _load(DEBATE_FILE, {"posts": []})
+        if not isinstance(d.get("posts"), list):
+            d["posts"] = []
+        pid = "db" + str(int(_time.time() * 1000)) + str(_random.random())[2:7]
+        post = {"id": pid, "user": cu, "char": char, "target": target,
+                "body": body, "time": _now(), "status": "open", "args": []}
+        d["posts"].append(post)
+        _save(DEBATE_FILE, d)
+    return jsonify({"ok": True, "msg": "论战已发布", "id": pid})
+
+@app.route("/debate_arg", methods=["POST"])
+def api_debate_arg():
+    p = _debate_payload()
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录"})
+    pid = str(p.get("pid") or "").strip()
+    text = str(p.get("text") or "").strip()[:300]
+    char = str(p.get("char") or "").strip()[:24]
+    if not pid or not text:
+        return jsonify({"ok": False, "msg": "论战帖和发言不能为空"})
+    if not char:
+        return jsonify({"ok": False, "msg": "请填写你的角色名"})
+    with DEBATE_LOCK:
+        d = _load(DEBATE_FILE, {"posts": []})
+        posts = d.get("posts") or []
+        post = next((x for x in posts if x.get("id") == pid), None)
+        if not post:
+            return jsonify({"ok": False, "msg": "论战帖不存在"})
+        if post.get("user") == cu:
+            return jsonify({"ok": False, "msg": "发布者不能挑战自己的论战"})
+        if any((x.get("user") or "") == cu for x in (post.get("args") or [])):
+            return jsonify({"ok": False, "msg": "你已经参与过这场论战"})
+        if post.get("status") == "closed":
+            return jsonify({"ok": False, "msg": "该论战已封盘"})
+        aid = "da" + str(int(_time.time() * 1000)) + str(_random.random())[2:7]
+        post.setdefault("args", []).append({
+            "id": aid, "user": cu, "char": char, "text": text, "time": _now(),
+            "result": "", "host_delta": None, "ch_delta": None, "resolved_at": "",
+            "ai_state": "pending"
+        })
+        _save(DEBATE_FILE, d)
+    try:
+        _th.Thread(target=_debate_ai_worker, args=(pid, aid), daemon=True).start()
+    except Exception:
+        pass
+    return jsonify({"ok": True, "msg": "发言已加入论战", "id": aid, "ai_pending": True})
+
+@app.route("/debate_resolve", methods=["POST"])
+def api_debate_resolve():
+    p = _debate_payload()
+    cu = _cur_user(p.get("token"))
+    pid = str(p.get("pid") or "").strip()
+    aid = str(p.get("aid") or "").strip()
+    winner = str(p.get("winner") or "").strip()
+    if winner not in ("host", "challenger"):
+        return jsonify({"ok": False, "msg": "请选择胜方"})
+    with DEBATE_LOCK:
+        users = _load(USER_FILE, {})
+        if not _debate_admin(cu, users):
+            return jsonify({"ok": False, "msg": "只有管理员可以定胜负"})
+        d = _load(DEBATE_FILE, {"posts": []})
+        post = next((x for x in (d.get("posts") or []) if x.get("id") == pid), None)
+        if not post:
+            return jsonify({"ok": False, "msg": "论战帖不存在"})
+        arg = next((x for x in (post.get("args") or []) if x.get("id") == aid), None)
+        if not arg:
+            return jsonify({"ok": False, "msg": "发言记录不存在"})
+        if arg.get("result"):
+            return jsonify({"ok": False, "msg": "这条论战已经定过胜负"})
+        host = post.get("user") or ""
+        ch = arg.get("user") or ""
+        if host not in users or ch not in users:
+            return jsonify({"ok": False, "msg": "参与者账号已不存在"})
+        host_exp = _debate_exp(host, users)
+        ch_exp = _debate_exp(ch, users)
+        if winner == "host":
+            hd = _debate_delta(host_exp, ch_exp, True)
+            cd = -_debate_delta(ch_exp, host_exp, False)
+        else:
+            hd = -_debate_delta(host_exp, ch_exp, False)
+            cd = _debate_delta(ch_exp, host_exp, True)
+        before_host = _debate_rank(host_exp)["name"]
+        before_ch = _debate_rank(ch_exp)["name"]
+        _debate_write_exp(users, host, hd, winner == "host")
+        _debate_write_exp(users, ch, cd, winner == "challenger")
+        arg["result"] = winner
+        arg["host_delta"] = hd
+        arg["ch_delta"] = cd
+        arg["resolved_at"] = _now()
+        arg["resolved_by"] = cu
+        _save(USER_FILE, users)
+        _save(DEBATE_FILE, d)
+        after_host = _debate_rank(_debate_exp(host, users))["name"]
+        after_ch = _debate_rank(_debate_exp(ch, users))["name"]
+    return jsonify({
+        "ok": True, "msg": "胜负已记录",
+        "host": {"name": host, "delta": hd, "rank_before": before_host,
+                 "rank_after": after_host, "rank": _debate_rank(_debate_exp(host, users))["name"]},
+        "challenger": {"name": ch, "delta": cd, "rank_before": before_ch,
+                       "rank_after": after_ch, "rank": _debate_rank(_debate_exp(ch, users))["name"]}
+    })
+
+@app.route("/debate_profile", methods=["POST"])
+def api_debate_profile():
+    p = _debate_payload()
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录"})
+    users = _load(USER_FILE, {})
+    e = _debate_exp(cu, users)
+    r = _debate_rank(e)
+    rec = users.get(cu) or {}
+    return jsonify({"ok": True, "profile": {
+        "name": cu, "exp": e, "rank": r["name"], "rank_i": r["index"],
+        "next": r["next"], "next_exp": r["next_exp"], "progress": r["progress"],
+        "span": r["span"], "wins": int(rec.get("debate_wins") or 0),
+        "losses": int(rec.get("debate_losses") or 0)
+    }})
+
+
+def _debate_ai_conf():
+    cfg = _load(DEBATE_AI_FILE, {})
+    fb = cfg.get("fallbacks") or os.environ.get("DEBATE_AI_FALLBACKS") or []
+    if isinstance(fb, str):
+        fb = [x.strip() for x in fb.split(",") if x.strip()]
+    if not isinstance(fb, list):
+        fb = []
+    return {
+        "base": str(cfg.get("base") or os.environ.get("DEBATE_AI_BASE") or "https://eazydata.org/v1").strip().rstrip("/"),
+        "key": str(cfg.get("key") or os.environ.get("DEBATE_AI_KEY") or "").strip(),
+        "model": str(cfg.get("model") or os.environ.get("DEBATE_AI_MODEL") or "gpt-5.6-luna").strip(),
+        "fallbacks": [str(x).strip() for x in fb if str(x).strip()]
+    }
+
+def _debate_ai_parse(txt):
+    m = re.search(r"\{[\s\S]*\}", str(txt or ""))
+    if not m:
+        return None
+    try:
+        x = json.loads(m.group(0))
+    except Exception:
+        return None
+    try:
+        hw = float(x.get("host_win"))
+        cw = float(x.get("ch_win"))
+        if hw <= 1 and cw <= 1 and hw + cw <= 2:
+            hw *= 100; cw *= 100
+    except Exception:
+        return None
+    hw = max(0, min(100, round(hw)))
+    cw = max(0, min(100, round(cw)))
+    if hw + cw == 0:
+        return None
+    if hw + cw != 100:
+        hw = round((hw / (hw + cw)) * 100)
+        cw = 100 - hw
+    loser = str(x.get("loser") or "").strip()
+    if loser not in ("host", "challenger"):
+        loser = ""
+    if loser and min(hw, cw) > 20:
+        loser = ""
+    reason = str(x.get("reason") or "").strip()[:160]
+    return {"host_win": hw, "ch_win": cw, "loser": loser,
+            "winner": ("challenger" if loser == "host" else "host") if loser else "",
+            "reason": reason}
+
+
+def _debate_ai_snap(post, arg):
+    history = []
+    for x in (post.get("args") or []):
+        if x.get("id") == arg.get("id"):
+            break
+        history.append("挑战者「" + str(x.get("char") or "挑战者") + "」：" + str(x.get("text") or ""))
+    return {
+        "host_char": post.get("char") or "",
+        "target": post.get("target") or "",
+        "host_body": post.get("body") or "",
+        "ch_char": arg.get("char") or "挑战者",
+        "ch_text": arg.get("text") or "",
+        "history": "\n".join(history[-6:])[-1200:]
+    }
+
+
+def _debate_ai_request(cfg, snap):
+    import json as _j, urllib.request as _ur, urllib.error as _ue
+    sys = ("你是中文论战裁判。根据双方角色、宣言和本轮发言判断气势、逻辑、攻击性与说服力。"
+           "只输出一个 JSON，不要输出解释文字。格式："
+           '{"host_win":0-100,"ch_win":0-100,"loser":"host|challenger|","reason":"不超过80字"}。'
+           "双方胜率相加为100；只有当一方胜率不高于20时，loser 才填那一方，否则 loser 为空字符串。")
+    user = (
+        "【发布者角色】" + str(snap.get("host_char") or "") + "\n"
+        "【挑战目标】" + str(snap.get("target") or "") + "\n"
+        "【发布者宣言】" + (str(snap.get("host_body") or "") or "（未写宣言）") + "\n"
+        "【挑战者角色】" + str(snap.get("ch_char") or "挑战者") + "\n"
+        "【挑战者本轮发言】" + str(snap.get("ch_text") or "") + "\n" +
+        ("【此前交锋】\n" + str(snap.get("history") or "") + "\n" if snap.get("history") else "") +
+        "请给出本轮双方胜率和将失败的一方；若尚不构成明显败势，loser 留空。"
+    )
+    models = []
+    for m in [cfg["model"]] + cfg["fallbacks"]:
+        if m and m not in models:
+            models.append(m)
+    last = "AI 暂无可用模型"
+    for model in models:
+        body = _j.dumps({
+            "model": model,
+            "messages": [{"role": "system", "content": sys}, {"role": "user", "content": user}],
+            "temperature": 0.2, "max_tokens": 260
+        }).encode("utf-8")
+        req = _ur.Request(cfg["base"] + "/chat/completions", data=body, headers={
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + cfg["key"],
+            "User-Agent": "Mozilla/5.0"
+        })
+        try:
+            with _ur.urlopen(req, timeout=30) as r:
+                data = _j.loads(r.read().decode("utf-8", "replace"))
+            content = data["choices"][0]["message"]["content"]
+            if isinstance(content, list):
+                content = "".join(str(x.get("text") or "") for x in content if isinstance(x, dict))
+            ai = _debate_ai_parse(content)
+            if ai:
+                return ai, model, ""
+            last = "AI 返回格式无法解析（" + model + "）"
+        except _ue.HTTPError as e:
+            err = ""
+            try:
+                err = e.read().decode("utf-8", "ignore")[:240]
+            except Exception:
+                pass
+            last = "AI 网关错误 " + str(e.code) + ("：" + err if err else "")
+            if e.code not in (429, 500, 502, 503, 504) and "model_not_found" not in err:
+                return None, "", last
+        except Exception as e:
+            last = "AI 请求失败：" + str(e)[:160]
+    return None, "", last
+
+
+def _debate_ai_worker(pid, aid):
+    try:
+        with DEBATE_LOCK:
+            d = _load(DEBATE_FILE, {"posts": []})
+            post = next((x for x in (d.get("posts") or []) if x.get("id") == pid), None)
+            arg = next((x for x in (post.get("args") or []) if x.get("id") == aid), None) if post else None
+            if not post or not arg or arg.get("ai") or arg.get("result"):
+                return
+            if arg.get("ai_state") != "pending":
+                return
+            snap = _debate_ai_snap(post, arg)
+        cfg = _debate_ai_conf()
+        if not cfg["key"]:
+            ai, model, err = None, "", "论战 AI 未配置密钥（_cloud/debate_ai.json）"
+        else:
+            ai, model, err = _debate_ai_request(cfg, snap)
+        with DEBATE_LOCK:
+            d = _load(DEBATE_FILE, {"posts": []})
+            post = next((x for x in (d.get("posts") or []) if x.get("id") == pid), None)
+            arg = next((x for x in (post.get("args") or []) if x.get("id") == aid), None) if post else None
+            if not post or not arg or arg.get("result"):
+                return
+            if ai:
+                ai["at"] = _now()
+                ai["model"] = model
+                arg["ai"] = ai
+                arg["ai_state"] = "done"
+                arg.pop("ai_error", None)
+            else:
+                arg["ai_state"] = "error"
+                arg["ai_error"] = str(err or "AI 研判失败")[:180]
+            _save(DEBATE_FILE, d)
+    except Exception as e:
+        try:
+            with DEBATE_LOCK:
+                d = _load(DEBATE_FILE, {"posts": []})
+                post = next((x for x in (d.get("posts") or []) if x.get("id") == pid), None)
+                arg = next((x for x in (post.get("args") or []) if x.get("id") == aid), None) if post else None
+                if post and arg and not arg.get("ai") and not arg.get("result"):
+                    arg["ai_state"] = "error"
+                    arg["ai_error"] = ("AI 研判异常：" + str(e))[:180]
+                    _save(DEBATE_FILE, d)
+        except Exception:
+            pass
+
+
+@app.route("/debate_ai", methods=["POST"])
+def api_debate_ai():
+    import json as _j, urllib.request as _ur, urllib.error as _ue
+    p = _debate_payload()
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录"})
+    pid = str(p.get("pid") or "").strip()
+    aid = str(p.get("aid") or "").strip()
+    if not pid or not aid:
+        return jsonify({"ok": False, "msg": "论战记录不完整"})
+    users = _load(USER_FILE, {})
+    with DEBATE_LOCK:
+        d = _load(DEBATE_FILE, {"posts": []})
+        post = next((x for x in (d.get("posts") or []) if x.get("id") == pid), None)
+        arg = next((x for x in (post.get("args") or []) if x.get("id") == aid), None) if post else None
+        if not post or not arg:
+            return jsonify({"ok": False, "msg": "论战记录不存在"})
+        if arg.get("ai"):
+            return jsonify({"ok": True, "ai": arg["ai"], "cached": True})
+        if arg.get("result"):
+            return jsonify({"ok": False, "msg": "这条论战已经定过胜负"})
+        if arg.get("ai_state") == "pending":
+            return jsonify({"ok": True, "pending": True, "msg": "AI 研判中"})
+        if cu not in (post.get("user"), arg.get("user")) and not _debate_admin(cu, users):
+            return jsonify({"ok": False, "msg": "只有参与者或管理员可以触发研判"})
+        snap = _debate_ai_snap(post, arg)
+    cfg = _debate_ai_conf()
+    if not cfg["key"]:
+        return jsonify({"ok": False, "msg": "论战 AI 未配置密钥（_cloud/debate_ai.json）"})
+    ai, model, err = _debate_ai_request(cfg, snap)
+    if not ai:
+        return jsonify({"ok": False, "msg": err})
+    ai["at"] = _now()
+    ai["model"] = model
+    with DEBATE_LOCK:
+        d = _load(DEBATE_FILE, {"posts": []})
+        post = next((x for x in (d.get("posts") or []) if x.get("id") == pid), None)
+        arg = next((x for x in (post.get("args") or []) if x.get("id") == aid), None) if post else None
+        if not post or not arg:
+            return jsonify({"ok": False, "msg": "论战记录不存在"})
+        if arg.get("result"):
+            return jsonify({"ok": False, "msg": "这条论战已经定过胜负"})
+        if arg.get("ai"):
+            return jsonify({"ok": True, "ai": arg["ai"], "cached": True})
+        arg["ai"] = ai
+        arg["ai_state"] = "done"
+        arg.pop("ai_error", None)
+        _save(DEBATE_FILE, d)
+    return jsonify({"ok": True, "ai": ai, "model": model})
+
+
 # ---------- 写接口限流 ----------
 import time as _rl_t
 _RL = {}
@@ -2656,7 +3206,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/guest_report", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/guest_report", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch", "/debate_add", "/debate_arg", "/debate_resolve")
 
 @app.before_request
 def _rate():

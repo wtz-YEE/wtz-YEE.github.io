@@ -8,8 +8,10 @@
 <meta name="theme-color" content="#080A0B">
 <link rel="stylesheet" href="index.css">
 <link rel="stylesheet" href="community.css">
+<link rel="stylesheet" href="debate.css">
+<link rel="stylesheet" href="intro.css">
 </head>
-<body class="cm-body">
+<body class="cm-body" data-intro="community">
 
 <header class="cm-top">
   <span class="dot"></span>
@@ -41,7 +43,31 @@
     </div>
   </section>
 
+  <!-- 管理员入口 -->
+  <div class="cm-admin-entry" id="gb_users_panel" style="display:none">
+    <a href="管理后台.html">
+      <span class="ca-k">ROOT ACCESS // CONTROL PLANE</span>
+      <span class="ca-t">管理后台</span>
+      <span class="ca-d">用户管理 · 风控 · 审计 · 数据 · 惩罚 · 备份</span>
+      <span class="ca-a">进入 <b>→</b></span>
+    </a>
+  </div>
+
   <div class="cm-lay">
+
+    <!-- 左列：频道导航 -->
+    <aside class="cm-rail" aria-label="社区频道">
+      <div class="cm-rail-h">CHANNELS</div>
+      <a class="on" href="#gbRoot"><span>01</span>留言板</a>
+      <a href="#cmCompose"><span>02</span>发帖</a>
+      <a href="#gb_notes"><span>03</span>公告</a>
+      <a href="#gb_pm_panel"><span>04</span>私聊</a>
+      <a href="#debate"><span>05</span>论战</a>
+      <div class="cm-rail-h">OUTSIDE</div>
+      <a href="pages/守夜人论坛.html"><span>↗</span>守夜人论坛</a>
+      <a href="pages/guestwall.html"><span>↗</span>访客墙</a>
+      <div class="cm-rail-tip">发言与私聊需要账号<br>云端未连接时只存本机</div>
+    </aside>
 
     <!-- 主列：留言板 -->
     <div class="cm-maincol">
@@ -90,50 +116,6 @@
           <div class="gb-say" id="gb_say"></div>
         </div>
 
-        <!-- 管理员 -->
-        <div class="gb-users" id="gb_users_panel" style="display:none">
-          <div class="gb-conv-h">当前用户 <span id="gb_ucnt"></span><button class="gb-btn ghost" id="gb_uref" style="float:right;padding:2px 10px;font-size:11px">刷新</button></div>
-          <div class="cm-riskbox">
-            <div class="cm-risk-t">风控管理 · 命中即删用户及其内容 <span>· 服务端每 10 秒自动扫描</span></div>
-            <div class="cm-risk-row">
-              <input id="gb_risk_kw" placeholder="多个关键词用逗号分隔，回车即扫">
-              <button class="gb-btn" id="gb_risk_btn">上传关键词</button>
-              <button class="gb-btn" id="gb_risk_all">扫描全部</button>
-            </div>
-            <div id="gb_risk_words"></div>
-          </div>
-          <div class="cm-adm-row">
-            <button class="gb-btn" id="gb_aud_btn">▦ 审计日志</button>
-            <button class="gb-btn" id="gb_sta_btn">▤ 数据面板</button>
-            <button class="gb-btn" id="gb_ban_btn">⛔ 危险账号</button>
-            <button class="gb-btn" id="gb_punish_btn">☠ 惩罚管理</button>
-            <button class="gb-btn ghost" id="gb_aud_close" style="display:none">收起</button>
-            <button class="gb-btn ghost" id="gb_bak_btn">⬇ 备份全站</button>
-          </div>
-          <div id="gb_ban_list" class="cm-mini" style="display:none"></div>
-          <div id="gb_punish_list" class="cm-mini" style="display:none"></div>
-          <div id="gb_aud" style="display:none">
-            <div class="cm-aud-h">
-              <span>操作日志 · 删帖/删用户/拉黑/风控留痕</span>
-              <span id="gb_aud_total"></span>
-              <select id="gb_aud_date"><option value="">今天</option></select>
-              <button class="gb-btn ghost" id="gb_aud_json">导出 JSON</button>
-              <button class="gb-btn ghost" id="gb_aud_csv">导出 CSV</button>
-            </div>
-            <div id="gb_aud_list"></div>
-          </div>
-          <div id="gb_sta" style="display:none">
-            <div class="cm-aud-h">
-              <span>站点数据 · 仅管理员可见</span>
-              <button class="gb-btn ghost" id="gb_sta_ref">↻ 刷新</button>
-            </div>
-            <div id="gb_sta_tot"></div>
-            <div id="gb_sta_trend"></div>
-            <div id="gb_sta_hours"></div>
-          </div>
-          <div id="gb_ulist"></div>
-        </div>
-
         <!-- 私聊 -->
         <div class="gb-pm" id="gb_pm_panel">
           <div class="gb-conv">
@@ -155,7 +137,7 @@
         </div>
 
         <!-- 发留言 -->
-        <div class="gb-form">
+        <div class="gb-form" id="cmCompose">
           <div class="gb-row cm-form-row">
             <input id="gb_name" placeholder="昵称（访客）" maxlength="16">
           </div>
@@ -181,11 +163,18 @@
 
     <!-- 侧列 -->
     <aside class="cm-side">
-      <a class="cm-card" href="pages/守夜人论坛.html">
-        <div class="cm-card-h"><span>FORUM</span><b>论坛</b></div>
+      <a class="cm-card cm-card-forum" href="pages/守夜人论坛.html">
+        <div class="cm-card-h"><span>FORUM</span><b>守夜人论坛</b></div>
         <p>发帖、评论、标签、Markdown、@提醒，另一处人多的地方。</p>
         <span class="cm-go">去水一帖 →</span>
       </a>
+
+      <div class="cm-card cm-vote-card" id="cmVote">
+        <div class="cm-card-h"><span>37WEB</span><b>角色投票</b></div>
+        <p>角色投稿榜已迁入社区，投票选最高票做成 L2D 进 37Web。</p>
+        <button class="cm-btn" id="voteOpen">查看投稿榜</button>
+        <a class="cm-go" href="37web/index.html">37Web 展示 →</a>
+      </div>
 
       <div class="cm-card">
         <div class="cm-card-h"><span>VISIT</span><b>访客墙</b></div>
@@ -195,25 +184,85 @@
       </div>
 
       <div class="cm-card">
-        <div class="cm-card-h"><span>RANK</span><b>排行榜</b></div>
-        <p>经验、积分、成就三榜，看谁是卷王。</p>
-        <button class="cm-btn" id="rankOpen">打开排行榜</button>
+        <div class="cm-card-h"><span>TOOLS</span><b>社区工具</b></div>
+        <p>经验、积分、成就三榜；签到积分可换称号、头像框与材料。</p>
+        <div class="cm-tool-row">
+          <button class="cm-btn" id="rankOpen">排行榜</button>
+          <button class="cm-btn" id="shopOpen">积分商店</button>
+        </div>
       </div>
 
-      <div class="cm-card">
-        <div class="cm-card-h"><span>SHOP</span><b>积分商店</b></div>
-        <p>签到和游戏攒的积分，换称号、头像框、材料。</p>
-        <button class="cm-btn" id="shopOpen">逛商店</button>
-      </div>
-
-      <div class="cm-card">
-        <div class="cm-card-h"><span>NOTE</span><b>说明</b></div>
-        <p>留言与私聊需要账号。云端未连接时仅在本机保存，换设备看不到。</p>
-        <a class="cm-go" href="杂项.html">杂项与工具 →</a>
+      <div class="cm-side-note">
+        留言与私聊需要账号。云端未连接时数据只保存在本机，换设备看不到。<a href="杂项.html">杂项与工具 →</a>
       </div>
     </aside>
 
   </div>
+
+  <section class="db" id="debate" aria-labelledby="dbTitle">
+    <div class="db-head">
+      <div class="db-head-l">
+        <div class="db-kick"><i></i>SECTION 03.5 / DEBATE ARENA</div>
+        <h2 id="dbTitle">论战<small>选角色 · 立目标 · 开战</small></h2>
+        <p>挑一个角色，向一个目标宣战。所有人可围观、发言；胜负由管理员裁定，赢家涨经验，输家掉经验。</p>
+      </div>
+      <div class="db-me" id="dbMe">
+        <span class="db-me-k">MY RECORD</span>
+        <b id="dbMeRank">未登录</b>
+        <div class="db-me-bar"><i id="dbMeBar"></i></div>
+        <span id="dbMeExp">登录后查看论战经验</span>
+      </div>
+    </div>
+
+    <div class="db-grid">
+      <aside class="db-side">
+        <div class="db-panel">
+          <div class="db-panel-h"><b>段位 / LADDER</b><span>11 级</span></div>
+          <div class="db-ladder" id="dbLadder"></div>
+        </div>
+        <div class="db-panel db-rules">
+          <div class="db-panel-h"><b>规则 / RULES</b><span>ADMIN DECIDES</span></div>
+          <ol>
+            <li>发布者选角色与挑战目标，立帖。</li>
+            <li>其他用户发言，和发布者论战。</li>
+            <li>管理员为每条发言裁定胜方。</li>
+            <li>胜方获得经验，败方扣除经验。</li>
+            <li>对手段位越高，赢得的经验越多，输掉时损失也越重。</li>
+            <li class="db-rule-note">经验：胜方 14 + 对方段位×6；败方 6 + 对方段位×3；越级挑战额外加成。</li>
+          </ol>
+        </div>
+      </aside>
+
+      <div class="db-main">
+        <form class="db-form" id="dbForm">
+          <div class="db-form-h"><b>发起论战</b><span>OPEN A DEBATE</span></div>
+          <div class="db-fields">
+            <label>角色<input id="dbChar" maxlength="24" placeholder="输入角色名称"></label>
+            <label>挑战目标<input id="dbTarget" maxlength="30" placeholder="输入挑战对象"></label>
+          </div>
+          <textarea id="dbBody" maxlength="300" placeholder="一句话宣言，可留空"></textarea>
+          <div class="db-form-a">
+            <button class="db-btn" type="submit" id="dbPublish">发布论战</button>
+            <span class="db-say" id="dbSay"></span>
+            <span class="db-login-hint" id="dbLoginHint">登录后才能发起</span>
+          </div>
+        </form>
+
+        <div class="db-list-h"><b>当前论战</b><span id="dbCount">读取中…</span></div>
+        <div class="db-list" id="dbList"><div class="db-empty">正在读取论战档案…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="db-verdict" id="dbVerdict" role="dialog" aria-modal="true" aria-labelledby="dbVerdictText">
+    <div class="db-verdict-mask" data-verdict-close="1"></div>
+    <div class="db-verdict-box">
+      <div class="db-verdict-k">DEBATE VERDICT / AI</div>
+      <p id="dbVerdictText"></p>
+      <div class="db-verdict-a"><button type="button" data-verdict-close="1">知道了</button></div>
+    </div>
+  </div>
+
 </main>
 
 <footer class="cm-foot">
@@ -329,7 +378,39 @@
   </div>
 </div>
 
+<!-- 37Web 角色投票 -->
+<div class="memo-mask" id="voteMask">
+  <div class="memo-box" style="width:min(760px,94vw);height:auto;max-height:88vh">
+    <div class="memo-h">37WEB 角色投票
+      <span class="memo-act"><button class="gb-btn ghost" id="voteClose">✕</button></span>
+    </div>
+    <div class="memo-bd" style="display:block;overflow-y:auto;padding:14px">
+      <div class="cm-vote-head">
+        <b>投稿榜 · 投票</b>
+        <span id="voteStat">加载中…</span>
+      </div>
+      <div class="cm-vote-list" id="voteList"></div>
+
+      <div class="cm-vote-sub" id="voteSubWrap" style="display:none">
+        <div class="cm-vote-sub-h">投稿角色 <span>上传图片 · 最高票做成 L2D</span></div>
+        <input type="file" id="voteFile" accept="image/*">
+        <img class="cm-vote-prev" id="votePrev" alt="预览">
+        <input type="text" id="voteTitle" maxlength="40" placeholder="角色名字 / 主题">
+        <textarea id="voteDesc" maxlength="200" placeholder="一句话介绍"></textarea>
+        <div class="cm-vote-sub-a">
+          <button class="gb-btn" id="voteSubmit">提交投稿</button>
+          <span class="gb-say" id="voteSay"></span>
+        </div>
+      </div>
+      <div class="cm-vote-login" id="voteLoginHint">登录后可投稿；投票无需登录。</div>
+    </div>
+  </div>
+</div>
+
 <script src="community.js"></script>
+<script src="debate.js"></script>
+<script src="nav.js"></script>
+<script src="intro.js"></script>
 
 </body>
 </html>
