@@ -66,7 +66,7 @@ function lposts(d){
   return d.posts.map(function(p){
     return {
       id:p.id,user:p.user,char:p.char,target:p.target,body:p.body,time:p.time,
-      status:p.status||'open',host:lview(d,p.user),
+      status:p.status||'open',host:lview(d,p.user),_local:true,
       args:(p.args||[]).map(function(a){
         return {id:a.id,user:a.user,char:a.char||'',text:a.text,time:a.time,result:a.result||'',
           host_delta:a.host_delta,ch_delta:a.ch_delta,resolved_at:a.resolved_at||'',
@@ -294,6 +294,35 @@ function closeVerdict(){
 }
 function renderAll(){renderLadder(state.profile?state.profile.rank_i:null);renderList();renderMe(state.profile,me());checkVerdicts()}
 
+function syncLocalPosts(){
+  var u=me();
+  if(!u||state.local)return;
+  var d=ldb();
+  var cloud=state.posts.filter(function(p){return !p._local});
+  var mine=d.posts.filter(function(p){return p.user===u.username});
+  var same=function(a,b){
+    return a.user===b.user&&a.char===b.char&&a.target===b.target&&(a.body||'')===(b.body||'');
+  };
+  var matched=mine.filter(function(p){return cloud.some(function(c){return same(c,p)})});
+  if(matched.length){
+    matched.forEach(function(p){d.posts=d.posts.filter(function(x){return x.id!==p.id})});
+    lsave(d);
+  }
+  var pending=mine.filter(function(p){
+    return !cloud.some(function(c){return same(c,p)})&&!matched.some(function(m){return m.id===p.id});
+  });
+  if(!pending.length)return;
+  var p=pending[0];
+  callApi('/debate_add',{char:p.char,target:p.target,body:p.body}).then(function(j){
+    if(!j||!j.ok||j._local)return;
+    var d2=ldb();
+    d2.posts=d2.posts.filter(function(x){return x.id!==p.id});
+    lsave(d2);
+    say('本机论战已同步到云端',true);
+    load();
+  }).catch(function(){});
+}
+
 /* ---------- 数据 ---------- */
 function load(silent){
   if(!silent){state.loading=true;renderList();}
@@ -308,6 +337,7 @@ function load(silent){
     state.loading=false;
     renderAll();
     refreshProfile();
+    syncLocalPosts();
   }).catch(function(e){
     state.posts=local.posts||[];
     state.local=true;state.loading=false;
