@@ -9,29 +9,47 @@ CFG = os.path.join(BASE, 'cloud_services.json')
 def load_cfg():
     return json.load(open(CFG, encoding='utf-8'))
 
-def scan_tunnel(name):
-    pat = re.compile(r'\\"TunnelName\\":\\"' + name + r'\\".{0,300}?\\"Url\\":\\"http://([^"]+\.cpolar\.(?:top|cn))\\"')
-    pat2 = re.compile(r'https://([0-9a-z]+\.r\d+\.cpolar\.(?:top|cn))')
+def tail_text(p, n=400000):
+    try:
+        with open(p, 'rb') as f:
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - n))
+            return f.read().decode('utf-8', 'replace')
+    except Exception:
+        return ''
+
+def recent_urls(name, limit=8):
     files = sorted(glob.glob(os.path.join(LOGDIR, 'cpolar_*.log*')),
                    key=lambda p: os.path.getmtime(p), reverse=True)
-    for f in files:
-        if name in os.path.basename(f):
-            try:
-                c = open(f, encoding='utf-8', errors='replace').read()
-            except Exception:
-                continue
-            ms = pat2.findall(c)
-            if ms:
-                return 'https://' + ms[-1]
-    for f in files:
-        try:
-            c = open(f, encoding='utf-8', errors='replace').read()
-        except Exception:
-            continue
-        m = pat.search(c)
-        if m:
-            return 'https://' + m.group(1)
-    return ''
+    mine = [f for f in files if name in os.path.basename(f)]
+    urls = []
+    for f in mine[:2]:
+        c = tail_text(f)
+        for u in re.findall(r'https://[0-9a-z]+\.r\d+\.cpolar\.(?:top|cn)', c):
+            if u not in urls:
+                urls.append(u)
+    return urls[-limit:][::-1]
+
+def scan_tunnel(name):
+    urls = recent_urls(name)
+    return urls[0] if urls else ''
+
+def pick_url(svc):
+    urls = recent_urls(svc['tunnel'])
+    af = os.path.join(REPO, svc.get('addrfile', ''))
+    try:
+        for x in open(af, encoding='utf-8').read().splitlines():
+            x = x.strip()
+            if x.startswith('http') and x not in urls:
+                urls.append(x)
+    except Exception:
+        pass
+    urls = urls[:6]
+    for u in urls:
+        if probe(u, svc.get('health', '/health')):
+            return u
+    return urls[0] if urls else ''
 
 def probe(u, path):
     try:
@@ -79,37 +97,21 @@ def push_github(remote_file, content):
 
 def main():
     cfg = load_cfg()
+    scan_only = '--scan-only' in sys.argv
     res = []
     for svc in cfg:
         if not svc.get('enabled', True):
             continue
-        u = scan_tunnel(svc['tunnel'])
-        if not u:
+        u = pick_url(svc)
+        if u and not scan_only:
             af = os.path.join(REPO, svc['addrfile'])
-            old = ''
-            try:
-                old = open(af, encoding='utf-8').read().strip().split('\n')[0]
-            except Exception:
-                old = ''
-            if old and probe(old, svc.get('health', '/health')):
-                u = old
-        if u:
-            af = os.path.join(REPO, svc['addrfile'])
-            lines = []
-            try:
-                txt = open(af, encoding='utf-8').read()
-                lines = [x.strip() for x in txt.splitlines() if x.strip()]
-            except Exception:
-                pass
-            if u not in lines:
-                lines.append(u)
             try:
                 with open(af, 'w', encoding='utf-8') as f:
-                    f.write('\n'.join(lines) + ('\n' if lines else ''))
+                    f.write(u + '\n')
             except Exception:
                 pass
-            if svc.get('push') and '--scan-only' not in sys.argv:
-                push_github(svc.get('remote_file', svc['addrfile']), '\n'.join(lines))
+            if svc.get('push'):
+                push_github(svc.get('remote_file', svc['addrfile']), u + '\n')
         res.append(svc['name'] + '=' + (u or 'NONE'))
     print(' '.join(res), flush=True)
 

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>社区 · WTZ 个人网站</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#080A0B">
+<link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="community.css">
+</head>
+<body class="cm-body">
+
+<header class="cm-top">
+  <span class="dot"></span>
+  <span class="tl">WTZ // 社区</span>
+  <span class="clk" id="cmClock">--:--:--</span>
+  <nav>
+    <a href="index.html">首页</a>
+    <a href="项目.html">项目</a>
+    <a href="游戏.html">游戏</a>
+    <a class="on" href="社区.html">社区</a>
+    <a href="杂项.html">杂项</a>
+  </nav>
+  <button class="cm-ic" id="pmBadge" title="私聊未读" style="display:none">✉</button>
+  <button class="cm-ic nt-badge" id="ntBadge" title="通知" style="display:none">🔔<span class="nt-dot" id="ntDot">0</span></button>
+</header>
+
+<main class="cm-main">
+
+  <section class="cm-hero">
+    <div class="cm-hero-no">03</div>
+    <div class="cm-hero-tx">
+      <div class="en">SECTION 03 / COMMUNITY</div>
+      <h1>社区</h1>
+      <p>留言板、私聊、公告与在线用户，都在这一页。需要登录才能发言。</p>
+    </div>
+    <div class="cm-hero-st">
+      <span>GUESTBOOK</span>
+      <b id="cmSt">READY</b>
+    </div>
+  </section>
+
+  <div class="cm-lay">
+
+    <!-- 主列：留言板 -->
+    <div class="cm-maincol">
+      <div class="gb" id="gbRoot">
+        <div class="gb-head">
+          <b>GUESTBOOK</b>
+          <span>留言板 · 私聊频道</span>
+          <span class="gb-mode" id="gb_status" title="点击配置云端接口">本地模式</span>
+          <span class="gb-mode" id="gb_online" style="display:none"></span>
+          <select id="gb_sort" title="留言排序">
+            <option value="new">最新</option><option value="old">最早</option><option value="hot">赞最多</option>
+          </select>
+          <button class="gb-refresh" id="gb_refresh">刷新留言</button>
+        </div>
+
+        <!-- 公告 -->
+        <div class="gb-notes" id="gb_notes" style="display:none">
+          <div class="gb-conv-h">公告<span id="gb_n_btns"></span></div>
+          <div id="gb_n_list"></div>
+          <div class="gb-n-form" id="gb_n_form" style="display:none">
+            <input id="gb_n_text" placeholder="发布公告…" maxlength="120">
+            <button class="gb-btn" id="gb_n_send">发布</button>
+            <button class="gb-btn ghost" id="gb_n_cancel">取消</button>
+          </div>
+        </div>
+
+        <!-- 账号 -->
+        <div class="gb-auth">
+          <div class="gb-row" id="gb_login_area">
+            <input id="gb_user" placeholder="账号" autocomplete="username" maxlength="16">
+            <input id="gb_pwd" type="password" placeholder="密码" autocomplete="current-password" maxlength="32">
+            <button class="gb-btn" id="gb_btn_login">登 录</button>
+            <button class="gb-btn ghost" id="gb_btn_reg">注 册</button>
+            <button class="gb-btn ghost" id="gb_btn_recover" style="font-size:11px">忘记密码</button>
+          </div>
+          <div class="gb-row" id="gb_userinfo" style="display:none">
+            <span class="gb-who">已登录 · <b id="gb_curuser"></b></span>
+            <span class="gb-tag" id="gb_isadmin" style="display:none">管理员</span>
+            <button class="gb-btn ghost" id="gb_btn_ck">签到</button>
+            <button class="gb-btn ghost" id="gb_me_btn" style="font-size:11px">导出数据</button>
+            <span class="gb-tag" id="gb_ckinfo" style="display:none"></span>
+            <button class="gb-btn ghost" id="gb_btn_pwd">改密</button>
+            <button class="gb-btn ghost" id="gb_btn_sec">安全问题</button>
+            <button class="gb-btn ghost" id="gb_btn_logout">登 出</button>
+          </div>
+          <div class="gb-say" id="gb_say"></div>
+        </div>
+
+        <!-- 管理员 -->
+        <div class="gb-users" id="gb_users_panel" style="display:none">
+          <div class="gb-conv-h">当前用户 <span id="gb_ucnt"></span><button class="gb-btn ghost" id="gb_uref" style="float:right;padding:2px 10px;font-size:11px">刷新</button></div>
+          <div class="cm-riskbox">
+            <div class="cm-risk-t">风控管理 · 命中即删用户及其内容 <span>· 服务端每 10 秒自动扫描</span></div>
+            <div class="cm-risk-row">
+              <input id="gb_risk_kw" placeholder="多个关键词用逗号分隔，回车即扫">
+              <button class="gb-btn" id="gb_risk_btn">上传关键词</button>
+              <button class="gb-btn" id="gb_risk_all">扫描全部</button>
+            </div>
+            <div id="gb_risk_words"></div>
+          </div>
+          <div class="cm-adm-row">
+            <button class="gb-btn" id="gb_aud_btn">▦ 审计日志</button>
+            <button class="gb-btn" id="gb_sta_btn">▤ 数据面板</button>
+            <button class="gb-btn" id="gb_ban_btn">⛔ 危险账号</button>
+            <button class="gb-btn" id="gb_punish_btn">☠ 惩罚管理</button>
+            <button class="gb-btn ghost" id="gb_aud_close" style="display:none">收起</button>
+            <button class="gb-btn ghost" id="gb_bak_btn">⬇ 备份全站</button>
+          </div>
+          <div id="gb_ban_list" class="cm-mini" style="display:none"></div>
+          <div id="gb_punish_list" class="cm-mini" style="display:none"></div>
+          <div id="gb_aud" style="display:none">
+            <div class="cm-aud-h">
+              <span>操作日志 · 删帖/删用户/拉黑/风控留痕</span>
+              <span id="gb_aud_total"></span>
+              <select id="gb_aud_date"><option value="">今天</option></select>
+              <button class="gb-btn ghost" id="gb_aud_json">导出 JSON</button>
+              <button class="gb-btn ghost" id="gb_aud_csv">导出 CSV</button>
+            </div>
+            <div id="gb_aud_list"></div>
+          </div>
+          <div id="gb_sta" style="display:none">
+            <div class="cm-aud-h">
+              <span>站点数据 · 仅管理员可见</span>
+              <button class="gb-btn ghost" id="gb_sta_ref">↻ 刷新</button>
+            </div>
+            <div id="gb_sta_tot"></div>
+            <div id="gb_sta_trend"></div>
+            <div id="gb_sta_hours"></div>
+          </div>
+          <div id="gb_ulist"></div>
+        </div>
+
+        <!-- 私聊 -->
+        <div class="gb-pm" id="gb_pm_panel">
+          <div class="gb-conv">
+            <div class="gb-conv-h">会话列表</div>
+            <div id="pm_conv"></div>
+          </div>
+          <div class="gb-pm-main">
+            <div class="gb-conv-h" id="pm_title">选择会话，或直接输入对方账号</div>
+            <div class="gb-msgs" id="pm_box"></div>
+            <div class="gb-pm-input">
+              <input id="pm_target" placeholder="对方账号" maxlength="16">
+              <input id="pm_msg" placeholder="输入消息，回车发送" maxlength="500">
+              <button class="gb-btn" id="pm_img_btn" title="附带图片">图</button>
+              <input type="file" id="pm_file" accept="image/*" style="display:none">
+              <button class="gb-btn" id="pm_send_btn">发送</button>
+            </div>
+            <div id="pm_att" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- 发留言 -->
+        <div class="gb-form">
+          <div class="gb-row cm-form-row">
+            <input id="gb_name" placeholder="昵称（访客）" maxlength="16">
+          </div>
+          <div class="gb-row cm-form-row">
+            <span class="gb-who">头像</span>
+            <span class="gb-pick" id="gb_pick"></span>
+          </div>
+          <textarea id="gb_text" placeholder="写下留言…" maxlength="500"></textarea>
+          <div class="gb-row" style="margin-top:10px">
+            <span class="gb-emoji-w"><button class="gb-emoji-btn" id="gb_emoji_btn" type="button" aria-label="表情">☺ 表情</button><div class="gb-emoji-panel" id="gb_emoji_panel"></div></span>
+            <button class="gb-btn" id="gb_img_btn">发图</button>
+            <button class="gb-btn" id="gb_submit">提交留言</button>
+            <span class="gb-say" id="gb_say2" style="margin:0"></span>
+          </div>
+          <div class="gb-att" id="gb_att" style="display:none"></div>
+          <input type="file" id="gb_file" accept="image/*" style="display:none">
+          <input type="file" id="gb_av_file" accept="image/*" style="display:none">
+        </div>
+
+        <div class="gb-list" id="guestbookList"></div>
+      </div>
+    </div>
+
+    <!-- 侧列 -->
+    <aside class="cm-side">
+      <a class="cm-card" href="pages/守夜人论坛.html">
+        <div class="cm-card-h"><span>FORUM</span><b>论坛</b></div>
+        <p>发帖、评论、标签、Markdown、@提醒，另一处人多的地方。</p>
+        <span class="cm-go">去水一帖 →</span>
+      </a>
+
+      <div class="cm-card">
+        <div class="cm-card-h"><span>VISIT</span><b>访客墙</b></div>
+        <div class="cm-wall-t" id="wall_tot">加载中…</div>
+        <div class="cm-wall" id="wall_list"></div>
+        <a class="cm-go" href="pages/guestwall.html">完整访客墙 →</a>
+      </div>
+
+      <div class="cm-card">
+        <div class="cm-card-h"><span>RANK</span><b>排行榜</b></div>
+        <p>经验、积分、成就三榜，看谁是卷王。</p>
+        <button class="cm-btn" id="rankOpen">打开排行榜</button>
+      </div>
+
+      <div class="cm-card">
+        <div class="cm-card-h"><span>SHOP</span><b>积分商店</b></div>
+        <p>签到和游戏攒的积分，换称号、头像框、材料。</p>
+        <button class="cm-btn" id="shopOpen">逛商店</button>
+      </div>
+
+      <div class="cm-card">
+        <div class="cm-card-h"><span>NOTE</span><b>说明</b></div>
+        <p>留言与私聊需要账号。云端未连接时仅在本机保存，换设备看不到。</p>
+        <a class="cm-go" href="杂项.html">杂项与工具 →</a>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<footer class="cm-foot">
+  <span>03 / 社区 · WTZ</span>
+  <a href="index.html">回首页</a>
+  <a href="项目.html">← 项目</a>
+  <a href="游戏.html">← 游戏</a>
+  <a href="杂项.html">杂项 →</a>
+  <a href="pages/changelog.html">更新日志</a>
+</footer>
+
+<!-- 云端配置 -->
+<div id="gb_config_dialog" class="gb-dlg" style="display:none">
+  <div class="gb-dlg-c">
+    <h4>云端接口配置</h4>
+    <p>填入后端地址（如 <code>http://127.0.0.1:8701</code>）即可启用云端账号 / 私聊；留空则使用本地模式，数据只保存在本机浏览器。</p>
+    <input id="gb_api_input" placeholder="https://example.com/api">
+    <div class="gb-row" style="margin-top:16px;justify-content:flex-end">
+      <button class="gb-btn ghost" id="gb_cfg_cancel">取消</button>
+      <button class="gb-btn" id="gb_cfg_save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修改密码 -->
+<div id="gb_pwd_dialog" class="gb-dlg" style="display:none">
+  <div class="gb-dlg-c">
+    <h4>修改密码</h4>
+    <input id="gb_pwd_old" type="password" placeholder="旧密码" maxlength="32">
+    <input id="gb_pwd_new" type="password" placeholder="新密码（4-32 位）" maxlength="32">
+    <div class="gb-row" style="margin-top:16px;justify-content:flex-end">
+      <button class="gb-btn ghost" id="gb_pwd_cancel">取消</button>
+      <button class="gb-btn" id="gb_pwd_save">确认修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- 找回密码 -->
+<div id="gbRecMask" style="display:none;position:fixed;inset:0;z-index:990;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px;font-size:12px;font-family:var(--mono)">
+    <div style="font-size:13px;margin-bottom:10px;letter-spacing:.1em">找回密码 · RECOVER</div>
+    <div style="color:var(--ink2);margin-bottom:8px;line-height:1.6">输入账号获取安全问题，验证通过后即可重置密码。</div>
+    <input id="gb_rc_user" placeholder="账号" maxlength="16" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px">
+    <div id="gb_rc_q" style="color:var(--ok);margin-bottom:8px;min-height:16px;display:none;line-height:1.5"></div>
+    <input id="gb_rc_ans" placeholder="安全问题答案" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px;display:none">
+    <input id="gb_rc_pwd" type="password" placeholder="新密码" maxlength="32" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:10px;font-size:12px;display:none">
+    <div style="display:flex;gap:8px">
+      <button class="gb-btn" id="gb_rc_go" style="flex:1">获取问题</button>
+      <button class="gb-btn ghost" id="gb_rc_ok" style="flex:1;display:none">重置密码</button>
+      <button class="gb-btn ghost" id="gb_rc_x" style="flex:1">关闭</button>
+    </div>
+    <div class="gb-say" id="gb_rc_say" style="margin-top:8px;min-height:14px"></div>
+  </div>
+</div>
+
+<!-- 安全问题 -->
+<div id="gbSecMask" style="display:none;position:fixed;inset:0;z-index:990;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px;font-size:12px;font-family:var(--mono)">
+    <div style="font-size:13px;margin-bottom:10px;letter-spacing:.1em">设置安全问题 · SECURITY</div>
+    <div style="color:var(--ink2);margin-bottom:8px;line-height:1.6">设置后可用它找回密码。请牢记问题与答案。</div>
+    <input id="gb_sec_q" placeholder="问题（如：你的第一个网名是？）" maxlength="60" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px">
+    <input id="gb_sec_a" placeholder="答案" maxlength="60" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:10px;font-size:12px">
+    <div style="display:flex;gap:8px">
+      <button class="gb-btn" id="gb_sec_ok" style="flex:1">保存</button>
+      <button class="gb-btn ghost" id="gb_sec_x" style="flex:1">关闭</button>
+    </div>
+    <div class="gb-say" id="gb_sec_say" style="margin-top:8px;min-height:14px"></div>
+  </div>
+</div>
+
+<!-- 通知中心 -->
+<div id="ntPanel">
+  <h4>通知中心 <span id="ntClear" style="cursor:pointer;font-size:10.5px;color:var(--ink3);letter-spacing:.1em">全部已读</span></h4>
+  <div id="ntTabs" style="display:flex;border-bottom:1px solid var(--line)">
+    <span class="nt-tab on" data-f="all">全部</span><span class="nt-tab" data-f="at">@</span><span class="nt-tab" data-f="reply">评论</span><span class="nt-tab" data-f="pm">私信</span><span class="nt-tab" data-f="sys">系统</span>
+  </div>
+  <div id="ntNotices" style="display:none;padding:8px 14px;border-bottom:1px dashed var(--line);font-size:11.5px;color:var(--ink2);line-height:1.7"></div>
+  <div id="ntList" style="font-size:12px;color:var(--ink3);padding:12px 14px">加载中…</div>
+</div>
+
+<!-- 个人主页 -->
+<div id="pfMask"><div id="pfBox">
+  <button class="pf-close" id="pfClose">✕</button>
+  <div id="pfBody"></div>
+</div></div>
+
+<!-- 排行榜 -->
+<div class="memo-mask" id="rankMask">
+  <div class="memo-box" style="width:min(560px,94vw);height:auto;max-height:86vh">
+    <div class="memo-h">全站排行榜
+      <span class="memo-act"><button class="gb-btn ghost" id="rankClose">✕</button></span>
+    </div>
+    <div class="memo-bd" style="display:block;padding:14px">
+      <div class="th-grid" id="rankTabs" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px"></div>
+      <div id="rankBody" style="min-height:120px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 积分商店 -->
+<div class="memo-mask" id="shopMask">
+  <div class="memo-box" style="width:min(680px,94vw);height:auto;max-height:86vh">
+    <div class="memo-h">积分商店
+      <span class="memo-act">
+        <span id="shopPts" class="shop-pts">-- 积分</span>
+        <button class="gb-btn ghost" id="shopClose">✕</button>
+      </span>
+    </div>
+    <div class="memo-bd" style="display:block;overflow-y:auto;padding:14px">
+      <div class="th-grid" id="shopTabs" style="grid-template-columns:repeat(2,1fr);margin-bottom:12px"></div>
+      <div id="shopBody" style="min-height:140px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="community.js"></script>
+
+</body>
+</html>

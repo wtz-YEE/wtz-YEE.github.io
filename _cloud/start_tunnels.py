@@ -9,28 +9,24 @@ CFG = os.path.join(BASE, 'cloud_services.json')
 def load_cfg():
     return json.load(open(CFG, encoding='utf-8'))
 
+def tail_text(p, n=400000):
+    try:
+        with open(p, 'rb') as f:
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - n))
+            return f.read().decode('utf-8', 'replace')
+    except Exception:
+        return ''
+
 def scan_tunnel(name):
-    pat = re.compile(r'\\"TunnelName\\":\\"' + name + r'\\".{0,300}?\\"Url\\":\\"http://([^"]+\.cpolar\.(?:top|cn))\\"')
-    pat2 = re.compile(r'https://([0-9a-z]+\.r\d+\.cpolar\.(?:top|cn))')
     files = sorted(glob.glob(os.path.join(LOGDIR, 'cpolar_*.log*')),
                    key=lambda p: os.path.getmtime(p), reverse=True)
-    for f in files:
-        if name in os.path.basename(f):
-            try:
-                c = open(f, encoding='utf-8', errors='replace').read()
-            except Exception:
-                continue
-            ms = pat2.findall(c)
-            if ms:
-                return 'https://' + ms[-1]
-    for f in files:
-        try:
-            c = open(f, encoding='utf-8', errors='replace').read()
-        except Exception:
-            continue
-        m = pat.search(c)
-        if m:
-            return 'https://' + m.group(1)
+    mine = [f for f in files if name in os.path.basename(f)]
+    for f in mine[:2]:
+        ms = re.findall(r'https://[0-9a-z]+\.r\d+\.cpolar\.(?:top|cn)', tail_text(f))
+        if ms:
+            return ms[-1]
     return ''
 
 def probe(u, path):
@@ -44,19 +40,27 @@ def tunnels_alive(cfg):
     for svc in cfg:
         if not svc.get('enabled', True):
             continue
+        cands = []
         u = scan_tunnel(svc['tunnel'])
-        if u and probe(u, svc.get('health', '/health')):
-            continue
-        u = ''
+        if u:
+            cands.append(u)
         af = os.path.join(REPO, svc['addrfile'])
-        old = ''
         try:
-            old = open(af, encoding='utf-8').read().strip().split('\n')[0]
+            for x in open(af, encoding='utf-8').read().splitlines():
+                x = x.strip()
+                if x.startswith('http') and x not in cands:
+                    cands.append(x)
         except Exception:
-            old = ''
-        if old and probe(old, svc.get('health', '/health')):
-            continue
-        return False
+            pass
+        if not cands:
+            return False
+        ok = False
+        for x in cands[:4]:
+            if probe(x, svc.get('health', '/health')):
+                ok = True
+                break
+        if not ok:
+            return False
     return True
 
 def main():

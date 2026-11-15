@@ -40,3 +40,4 @@ _cloud/_ci_*
 _g*.txt
 _ci_*
 
+_cloud/monitor_snap.json

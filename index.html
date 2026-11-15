@@ -2,1157 +2,131 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>WTZ 的个人网站</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0A0C0E">
-<link rel="stylesheet" href="index.css">
-<link rel="stylesheet" href="layout.css">
-
-
-
+<meta name="theme-color" content="#080A0B">
+<link rel="stylesheet" href="portal.css">
+</head>
 <body>
 
-<script>
-/* 关键全局兜底：不依赖任何 defer 脚本，即使 index-core 中断也保证 $/esc 可用 */
-window.$=window.$||function(i){return document.getElementById(i)};
-window.esc=window.esc||function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
-window.call=window.call||function(){return new Promise(function(r){r({ok:false,msg:'本地模式'})})};
-window.go=window.go||function(){};
-window.S=window.S||{};
-/* 绝对启动兜底：独立于所有脚本，任何崩溃都不会卡在启动动画 */
-(function(){function h(){var b=document.getElementById('boot'),d=document.body;if(!b)return;if(!d.classList.contains('ready')){d.classList.add('ready');b.style.display='none'}}setTimeout(h,2500);setTimeout(h,5000);setTimeout(h,9000)})();
-</script>
-
-<div id="fixMask" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#0a0a0a;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:Consolas,monospace;text-align:center"><div style="font-size:min(9vw,110px);letter-spacing:.35em;color:#ff5c7a;text-shadow:0 0 34px rgba(255,92,122,.45);font-weight:bold">维修中</div><div style="width:56px;height:2px;background:#ff5c7a;opacity:.5"></div><div id="fixReason" style="font-size:min(1.6vw,16px);color:#8a8a8a;letter-spacing:.22em">系统维护 · 请稍后刷新页面</div><div id="fixEta" style="font-size:min(1.3vw,13px);color:#5a5a5a;letter-spacing:.18em"></div></div>
-
-<div id="updBar" class="hidden">
-  <span class="u-ic">◈</span>
-  <span>主机检测到更新发布 · <b>手动刷新以同步</b></span>
-  <button class="u-btn" id="updBtn">刷新</button>
-</div>
-
-<div id="boot" role="status" aria-label="系统启动中">
-  <div class="bt">
-    <div class="bt-top"><span>FILE WTZ · BOOTSTRAP</span><span class="bt-sec">SEQUENCE v3</span></div>
-    <div class="bt-zone">
-      <pre class="bt-art" id="btArt"></pre>
-      <div class="bt-ty" id="btTy"></div>
-      <div class="bt-lines" id="btLines"></div>
-      <div class="bt-bar"><i id="btBar"></i><b id="btP">0%</b></div>
-    </div>
-    <div class="bt-foot"><span>ARCHIVE OS</span><span id="btFoot">BOOTING…</span></div>
-  </div>
-</div>
-
-
-<canvas id="fx" style="position:fixed;inset:0;z-index:6;pointer-events:none;display:none;transition:opacity .9s ease"></canvas>
-<div id="fxTag" style="position:fixed;right:16px;bottom:14px;z-index:7;display:none;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ink2);border:1px solid var(--line);padding:6px 12px;background:rgba(7,9,10,.85);backdrop-filter:blur(6px);opacity:0;transition:opacity .9s ease">[ HOLIDAY ] <span id="fxTagN"></span></div>
-<header id="status">
-  <span class="st-dot"></span><span class="st-l">WTZ // 个人网站 · 黑白</span>
-  <span class="st-c" id="clock">--:--:--</span>
-  <nav class="st-nav"><a href="pages/prts.html">档案室</a><a href="pages/守夜人论坛.html">论坛</a><a href="pages/卡塞尔学院官网.html">学院</a><a href="pages/changelog.html">日志</a><a href="index.html#map">地图</a></nav>
-  <span class="pbadge" id="permBadge">LV 0</span>
-  <button class="th-btn" id="lvBtn" title="签到 · 经验等级" style="display:none">LV 1</button>
-  <button class="th-btn" id="pmBadge" title="私聊未读" style="display:none">✉</button>
-  <button class="th-btn nt-badge" id="ntBadge" title="通知" style="display:none">🔔<span class="nt-dot" id="ntDot">0</span></button>
-  <button class="th-btn" id="bgmBtn" title="背景音乐">♪</button>
-  <button class="th-btn" id="srchBtn" title="站内搜索">⌕ 搜索</button>
-  <button class="th-btn" id="thBtn" title="界面配色">◐ 配色</button>
-  <button class="th-btn" id="uiBtn" title="界面主题">▣ 界面</button>
-  <button class="th-btn" id="vmBtn" title="切换手机/电脑界面">▦ 视图</button>
+<header class="top">
+  <span class="dot"></span>
+  <span class="tl">WTZ // 个人网站</span>
+  <span class="clk" id="clk">--:--:--</span>
+  <nav>
+    <a href="项目.html">项目</a>
+    <a href="游戏.html">游戏</a>
+    <a href="社区.html">社区</a>
+    <a href="杂项.html">杂项</a>
+  </nav>
 </header>
 
 <main>
-  <section id="v-home" class="view on">
-  <div id="heroMain" class="hero">
-    <div class="h-grid"></div>
-    <div class="h-eyebrow">WTZ // 个人网站</div>
+
+  <section class="cover">
+    <div class="eyebrow">WTZ ARCHIVE OS · 2026</div>
     <h1>
-      <span class="h-badge"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8 L52 21 V43 L32 56 L12 43 V21 Z" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M32 20 L41 26 V38 L32 44 L23 38 V26 Z" fill="currentColor"/></svg></span>
-      <span class="h-char">个</span><span class="h-char">人</span><span class="h-char">网</span><span class="h-char">站</span>
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 L54 20 V44 L32 58 L10 44 V20 Z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M32 18 L42 24 V38 L32 44 L22 38 V24 Z" fill="currentColor"/></svg>
+      <span class="ch">个</span><span class="ch">人</span><span class="ch">网</span><span class="ch">站</span>
     </h1>
-    <p class="h-sub">黑白终端 · 数字宇宙入口</p>
-    <p class="h-mono">档案 · 终端 · 技能 · 模组 · 日志 · 云端留言板</p>
-    <div class="h-q" id="qotd" title="点击换一句">[ 语录 ] ▸ LOADING…</div>
-    <nav class="hero-nav" id="heroNav"></nav>
-  </div>
+    <p class="sub">黑白终端 · 四个分区</p>
+    <p class="meta">PROJECTS · GAMES · COMMUNITY · MISC</p>
+    <div class="rule"></div>
+    <div class="quot" id="quot" title="点击换一句">[ 终端 ] ▸ LOADING…</div>
+  </section>
 
-<div class="block" style="padding-top:0">
-    <div class="sec-tabs">
-  <button class="sec-tab on" type="button" data-s="1">入口</button>
-  <button class="sec-tab" type="button" data-s="2">工具</button>
-  <button class="sec-tab" type="button" data-s="3">社区</button>
-  <button class="sec-tab" type="button" data-s="4">设置</button>
-</div>
-<div class="sec" id="sec1">
-<div class="b-head"><span class="b-no">01</span><h2>入口</h2><span class="b-code">BENTO · 9CARD</span></div>
-<div class="grid bento" style="max-width:980px;margin:0 auto">
-      <a class="card g7" href="pages/prts.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs><linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect x="30" y="22" width="96" height="16" rx="2" fill="none" stroke="#454545" stroke-width="1"/>
-            <rect x="38" y="27" width="44" height="6" fill="#555"/>
-            <circle cx="104" cy="30" r="3" fill="#666"/>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg1)" opacity="0"/>
-            <g class="t-drift">
-              <path d="M200 20 L340 88 V154 L200 180 L60 154 V88 Z" fill="none" stroke="#FFFFFF" stroke-width="2.6"/>
-              <path d="M200 20 L200 180 M60 88 L340 154 M340 88 L60 154" stroke="#5a5a5a" stroke-width="1.2"/>
-              <path d="M200 42 L302 93 V147 L200 168 L98 147 V93 Z" fill="none" stroke="#888" stroke-width="1.1"/>
-              <rect x="154" y="60" width="92" height="92" rx="5" fill="none" stroke="#E8E8E8" stroke-width="2"/>
-              <circle class="t-pulse" cx="200" cy="106" r="16" fill="none" stroke="#fff" stroke-width="1.5"/>
-              <circle cx="200" cy="106" r="5.5" fill="#E8E8E8"/>
-              <circle class="t-pulse" cx="200" cy="106" r="2.2" fill="#fff"/>
-              <path d="M200 106 L232 74" stroke="#E8E8E8" stroke-width="1.6"/>
-              <circle cx="232" cy="74" r="2.6" fill="#fff"/>
-              <path d="M168 106 H182 M218 106 H232" stroke="#E8E8E8" stroke-width="1.4"/>
-            </g>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
-              <text x="200" y="190" letter-spacing="7">PRTS ARCHIVE</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">ARCHIVE · 主站</div>
-          <h3>PRTS 档案室</h3>
-          <p>技能树 · 终端接口 · 模组开发，三大领域都在这</p>
-          <span class="c-go">进档案室
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g5" href="pages/守夜人论坛.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs><linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg2)" opacity="0"/>
-            <g class="t-drift">
-              <rect x="58" y="42" width="176" height="116" rx="6" fill="none" stroke="#FFFFFF" stroke-width="2.6"/>
-              <rect x="58" y="42" width="176" height="26" fill="rgba(255,255,255,.10)"/>
-              <circle cx="76" cy="55" r="4" fill="#E8E8E8"/><circle cx="94" cy="55" r="4" fill="#909090"/><circle cx="112" cy="55" r="4" fill="#555"/>
-              <rect x="132" y="51" width="58" height="7" fill="#6a6a6a"/>
-              <rect x="76" y="82" width="118" height="9" fill="#808080"/>
-              <rect x="76" y="100" width="140" height="9" fill="#5a5a5a"/>
-              <rect x="76" y="118" width="96" height="9" fill="#454545"/>
-              <rect x="188" y="118" width="28" height="9" fill="#3a3a3a"/>
-              <path d="M202 120 l8 3 -8 3" fill="#FF5C7A"/>
-              <circle class="t-pulse" cx="212" cy="140" r="6" fill="#FF5C7A"/>
-            </g>
-            <g>
-              <circle cx="312" cy="74" r="22" fill="none" stroke="#C9C9C9" stroke-width="2"/>
-              <path d="M292 74 a20 20 0 0 1 40 0 z" fill="#C9C9C9"/>
-              <path d="M312 74 L312 60 M312 74 L322 68 M312 74 L302 68" stroke="#0A0A0A" stroke-width="2"/>
-              <path d="M312 74 q-10 10 0 18 q10 -8 0 -18" fill="none" stroke="#0A0A0A" stroke-width="1.4"/>
-              <circle cx="336" cy="140" r="4" fill="#FF5C7A" class="t-blink"/>
-            </g>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <path d="M112 187 H288" stroke="#444" stroke-width="1"/>
-              <text x="200" y="186" letter-spacing="5">NIGHT WATCH FORUM</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">FORUM · 社区广场</div>
-          <h3>守夜人论坛</h3>
-          <p>发帖 · 附图 · 标签 · 评论，深夜开摆好去处</p>
-          <span class="c-go">去水一帖
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g6" href="pages/changelog.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs><linearGradient id="sg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg3)" opacity="0"/>
-            <g class="t-drift">
-              <path d="M104 44 V166 M272 44 V166" stroke="#444" stroke-width="1.2"/>
-              <path d="M104 52 H272 M104 76 H272 M104 100 H272 M104 124 H272 M104 148 H272" stroke="#2e2e2e" stroke-width="1"/>
-              <circle class="t-pulse" cx="104" cy="52" r="5" fill="#E8E8E8"/>
-              <rect x="120" y="47" width="96" height="8" fill="#808080"/>
-              <rect x="224" y="47" width="34" height="8" fill="#3a3a3a"/>
-              <circle cx="104" cy="76" r="3.5" fill="#666"/>
-              <rect x="120" y="72" width="130" height="8" fill="#5a5a5a"/>
-              <circle cx="104" cy="100" r="3.5" fill="#666"/>
-              <rect x="120" y="96" width="76" height="8" fill="#454545"/>
-              <rect x="204" y="96" width="48" height="8" fill="#3a3a3a"/>
-              <circle cx="104" cy="124" r="3.5" fill="#666"/>
-              <rect x="120" y="120" width="112" height="8" fill="#4a4a4a"/>
-              <circle cx="104" cy="148" r="3.5" fill="#555"/>
-              <rect x="120" y="144" width="88" height="8" fill="#3a3a3a"/>
-              <rect x="284" y="46" width="44" height="22" rx="3" fill="none" stroke="#E8E8E8" stroke-width="1.6"/>
-              <text x="306" y="61" font-family="monospace" font-size="11" fill="#E8E8E8" text-anchor="middle">V2</text>
-              <rect x="284" y="76" width="44" height="22" rx="3" fill="none" stroke="#777" stroke-width="1.2"/>
-              <text x="306" y="91" font-family="monospace" font-size="11" fill="#777" text-anchor="middle">V1</text>
-            </g>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <path d="M126 187 H274" stroke="#444" stroke-width="1"/>
-              <text x="200" y="186" letter-spacing="6">CHANGELOG</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">LOG · 版本历史</div>
-          <h3>更新日志</h3>
-          <p>改过啥都记这，站长一键发更新</p>
-          <span class="c-go">看更新
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g4" href="pages/卡塞尔学院官网.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs>
-              <linearGradient id="sg4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-              <radialGradient id="rg4" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#C9A961" stop-opacity=".28"/><stop offset="1" stop-color="#C9A961" stop-opacity="0"/></radialGradient>
-            </defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg4)" opacity="0"/>
-            <circle cx="200" cy="104" r="76" fill="url(#rg4)" class="t-glow"/>
-            <g class="t-drift">
-              <path d="M200 22 L300 70 V124 L200 176 L100 124 V70 Z" fill="none" stroke="#C9A961" stroke-width="2.8"/>
-              <path d="M200 22 L200 176 M100 70 L300 124 M300 70 L100 124" stroke="#8A7448" stroke-width="1.3"/>
-              <path d="M200 52 L258 84 L246 142 L154 142 L142 84 Z" fill="rgba(201,169,97,.14)" stroke="#C9A961" stroke-width="1.6"/>
-              <path d="M200 62 C186 72 178 82 178 92 C178 104 190 110 200 104 C210 110 222 104 222 92 C222 82 214 72 200 62 Z" fill="none" stroke="#8A7448" stroke-width="1.2"/>
-              <path d="M200 66 C196 80 192 88 192 94 M200 66 C204 80 208 88 208 94" stroke="#C9A961" stroke-width="1.4" fill="none"/>
-              <path d="M200 104 L200 132 M188 122 L200 132 L212 122" stroke="#C9A961" stroke-width="1.6" fill="none"/>
-              <circle class="t-pulse" cx="200" cy="104" r="8" fill="none" stroke="#E8DCC0" stroke-width="1.5"/>
-              <circle cx="200" cy="104" r="2.6" fill="#E8DCC0"/>
-              <circle cx="200" cy="104" r="13" fill="none" stroke="#C9A961" stroke-width=".8" opacity=".6"/>
-            </g>
-            <g font-family="monospace" font-size="11" fill="#8A7448" text-anchor="middle">
-              <path d="M118 191 H282" stroke="#5a4c2a" stroke-width="1"/>
-              <text x="200" y="190" letter-spacing="5">CASSEL COLLEGE</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">COLLEGE · 学院官网</div>
-          <h3>卡塞尔学院</h3>
-          <p>血统测评 · 诺玛 AI · 原著资料，龙族含量极高</p>
-          <span class="c-go">去学院
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g4" href="pages/模组开发.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs><linearGradient id="sg5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg5)" opacity="0"/>
-            <g class="t-drift">
-              <rect x="56" y="40" width="150" height="118" rx="4" fill="none" stroke="#E8E8E8" stroke-width="2.2"/>
-              <rect x="56" y="40" width="150" height="22" fill="rgba(255,255,255,.08)"/>
-              <circle cx="72" cy="51" r="3.5" fill="#FF5C7A"/><circle cx="88" cy="51" r="3.5" fill="#C9A961"/><circle cx="104" cy="51" r="3.5" fill="#4A6CF7"/>
-              <rect x="120" y="47" width="58" height="8" fill="#666"/>
-              <rect x="70" y="74" width="104" height="7" fill="#8a8a8a"/>
-              <rect x="70" y="88" width="122" height="7" fill="#5a5a5a"/>
-              <rect x="70" y="102" width="92" height="7" fill="#808080"/>
-              <rect x="82" y="116" width="104" height="7" fill="#454545"/>
-              <rect class="t-blink" x="176" y="74" width="5" height="7" fill="#E8E8E8"/>
-              <path d="M238 96 L294 124 V162 L238 190 L182 162 V124 Z" fill="none" stroke="#C9A961" stroke-width="2.2"/>
-              <path d="M238 96 L238 190 M182 124 L294 162 M294 124 L182 162" stroke="#6a5a30" stroke-width="1.1"/>
-              <path d="M238 122 L272 139 V164 L238 178 L204 164 V139 Z" fill="none" stroke="#E8E8E8" stroke-width="1.6"/>
-              <circle class="t-pulse" cx="238" cy="150" r="4" fill="#E8E8E8"/>
-            </g>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
-              <text x="200" y="190" letter-spacing="6">GAME DEV</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">DEV · 开发工坊</div>
-          <h3>游戏开发</h3>
-          <p>模组 · 引擎 · 世界工坊，游戏自己造</p>
-          <span class="c-go">去开发
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g4" href="pages/opusmc/index.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs><linearGradient id="sg6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg6)" opacity="0"/>
-            <g class="t-drift">
-              <path d="M200 34 L300 76 V128 L200 170 L100 128 V76 Z" fill="none" stroke="#C9A961" stroke-width="2.2"/>
-              <path d="M200 34 L200 170 M100 76 L300 128 M300 76 L100 128" stroke="#6a5a30" stroke-width="1.1"/>
-              <path d="M200 34 L258 63 L200 92 L142 63 Z" fill="rgba(201,169,97,.10)" stroke="#8A7448" stroke-width="1.2"/>
-              <rect x="170" y="55" width="10" height="10" fill="#C9A961"/>
-              <rect x="196" y="52" width="10" height="10" fill="#6a5a30"/>
-              <rect x="222" y="58" width="10" height="10" fill="#C9A961"/>
-              <rect x="120" y="104" width="12" height="12" fill="#5a4c2a"/>
-              <rect x="150" y="96" width="12" height="12" fill="#8A7448"/>
-              <rect x="238" y="104" width="12" height="12" fill="#5a4c2a"/>
-              <rect x="268" y="118" width="12" height="12" fill="#8A7448"/>
-              <g stroke="#E8E8E8" stroke-width="2.4"><path d="M304 44 L346 86 M346 44 L304 86" stroke-linecap="round"/></g>
-              <rect x="338" y="50" width="30" height="7" fill="#E8E8E8" transform="rotate(45 353 53)"/>
-              <rect x="258" y="120" width="16" height="16" fill="none" stroke="#777" stroke-width="1.2"/>
-              <rect x="78" y="150" width="14" height="14" fill="none" stroke="#555" stroke-width="1"/>
-            </g>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
-              <text x="200" y="190" letter-spacing="6">OPUS MC</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">MINECRAFT · 浏览器复刻</div>
-          <h3>OpusMC</h3>
-          <p>方块世界 · 生存 / 创造 / 红石，浏览器直玩</p>
-          <span class="c-go">进游戏
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g6" href="https://wtz-yee.github.io/37web/" target="_blank" rel="noopener">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs><linearGradient id="sg8" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg8)" opacity="0"/>
-            <g class="t-drift">
-              <g fill="none" stroke="#FFFFFF" stroke-width="2.2">
-                <circle cx="178" cy="70" r="22"/>
-                <path d="M178 92 L178 146"/>
-                <path d="M178 104 L154 128 M178 104 L202 128"/>
-                <path d="M178 146 L158 172 M178 146 L198 172"/>
-                <path d="M163 60 Q178 47 193 60" stroke="#C9A961"/>
-              </g>
-              <circle class="t-pulse" cx="171" cy="66" r="3" fill="#E8E8E8"/>
-              <circle class="t-pulse" cx="185" cy="66" r="3" fill="#E8E8E8"/>
-              <path d="M173 80 Q178 84 183 80" fill="none" stroke="#E8E8E8" stroke-width="1.6"/>
-              <rect x="244" y="44" width="102" height="122" rx="4" fill="none" stroke="#777" stroke-width="1.2"/>
-              <rect x="254" y="56" width="22" height="10" fill="#555"/>
-              <rect x="254" y="74" width="82" height="8" fill="#3a3a3a"/>
-              <rect x="254" y="90" width="64" height="8" fill="#454545"/>
-              <rect x="254" y="106" width="82" height="8" fill="#3a3a3a"/>
-              <rect x="254" y="122" width="52" height="8" fill="#454545"/>
-              <circle class="t-pulse" cx="322" cy="148" r="5" fill="#FF5C7A"/>
-            </g>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
-              <text x="200" y="190" letter-spacing="5">LIVE2D MODEL</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">LIVE2D · 可交互立绘</div>
-          <h3>Live2D 角色展示</h3>
-          <p>表情动作 · 鼠标跟随 · 点头摇头，网页直玩</p>
-          <span class="c-go">去看看
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g5" href="pages/mcratch.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs><linearGradient id="sg7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg7)" opacity="0"/>
-            <g shape-rendering="crispEdges">
-              <rect x="40" y="40" width="80" height="18" fill="#FFCF00" stroke="#000" stroke-width="2"/>
-              <rect x="40" y="62" width="80" height="18" fill="#4C97FF" stroke="#000" stroke-width="2"/>
-              <rect x="40" y="84" width="80" height="18" fill="#FFAB19" stroke="#000" stroke-width="2"/>
-              <rect x="40" y="106" width="80" height="18" fill="#59C034" stroke="#000" stroke-width="2"/>
-              <rect x="40" y="128" width="80" height="18" fill="#FF6680" stroke="#000" stroke-width="2"/>
-              <rect x="336" y="122" width="44" height="44" fill="#7A5230" stroke="#000" stroke-width="2"/>
-              <rect x="336" y="108" width="44" height="14" fill="#83B45C" stroke="#000" stroke-width="2"/>
-              <rect x="336" y="108" width="14" height="14" fill="#77A84F"/>
-            </g>
-            <g transform="translate(232,84)" shape-rendering="crispEdges">
-              <rect x="-44" y="-44" width="88" height="88" fill="#5FA64F" stroke="#000" stroke-width="2"/>
-              <rect x="-44" y="-44" width="88" height="30" fill="#4A8A3E"/>
-              <rect x="-38" y="-22" width="18" height="18" fill="#6FB85C"/>
-              <rect x="20" y="-22" width="18" height="18" fill="#6FB85C"/>
-              <rect x="-32" y="-12" width="5" height="5" fill="#111"/>
-              <rect x="27" y="-12" width="5" height="5" fill="#111"/>
-              <rect x="-14" y="-10" width="28" height="10" fill="#111"/>
-              <rect x="-14" y="10" width="5" height="10" fill="#3E6E34"/>
-              <rect x="9" y="10" width="5" height="10" fill="#3E6E34"/>
-              <rect x="-7" y="10" width="14" height="14" fill="#111"/>
-            </g>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <path d="M138 191 H262" stroke="#444" stroke-width="1"/>
-              <text x="200" y="190" letter-spacing="6">MCRATCH</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">MC 编程 · 方块积木</div>
-          <h3>mcratch</h3>
-          <p>拖积木，指挥方块人在世界行动 · 场景 / 节点 / 大地图</p>
-          <span class="c-go">去编程
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g6" href="pages/轴数回战.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <rect width="400" height="200" fill="#07090F"/>
-            <g stroke="#1A2230" stroke-width="1">
-              <path d="M20 0 V200 M60 0 V200 M100 0 V200 M140 0 V200 M180 0 V200 M220 0 V200 M260 0 V200 M300 0 V200 M340 0 V200 M380 0 V200"/>
-              <path d="M0 20 H400 M0 60 H400 M0 100 H400 M0 140 H400 M0 180 H400"/>
-            </g>
-            <g stroke="#2E3A4E" stroke-width="2">
-              <path d="M200 0 V200"/>
-              <path d="M0 100 H400"/>
-            </g>
-            <path d="M20 162 Q90 40 180 96 T380 120" stroke="#C44DFF" stroke-width="3.5" fill="none"/>
-            <circle cx="20" cy="162" r="6" fill="#C44DFF"/>
-            <circle cx="320" cy="66" r="9" fill="#7B2FBF"/>
-            <circle cx="110" cy="44" r="6" fill="#FF4D4D"/>
-            <circle cx="300" cy="152" r="6" fill="#FF4D4D"/>
-            <path d="M308 60 L332 72 M314 54 L326 78" stroke="#4D9FFF" stroke-width="1.5" opacity=".7"/>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <path d="M138 191 H262" stroke="#444" stroke-width="1"/>
-              <text x="200" y="190" letter-spacing="6">轴数回战</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">函数咒术 · 肉鸽</div>
-          <h3>轴数回战</h3>
-          <p>你是坐标系——编辑函数作咒术，苍赫领域，收集手指</p>
-          <span class="c-go">去战斗
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g4" href="pages/视频播放.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs><linearGradient id="sg8" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg8)" opacity="0"/>
-            <rect x="42" y="40" width="316" height="118" fill="#0D0D10" stroke="#ffd60a" stroke-width="1.5"/>
-            <path d="M170 78 L230 99 L170 120 Z" fill="#ffd60a"/>
-            <rect x="56" y="134" width="288" height="4" fill="#2a2a2a"/>
-            <rect x="56" y="134" width="132" height="4" fill="#ffd60a"/>
-            <circle cx="188" cy="136" r="6" fill="#ffd60a"/>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <path d="M138 175 H262" stroke="#444" stroke-width="1"/>
-              <text x="200" y="174" letter-spacing="6">VIDEO</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">VIDEO · 云端视频</div>
-          <h3>视频库</h3>
-          <p>独立播放界面 · 提交即公开</p>
-          <span class="c-go">去看片
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-      <a class="card g6" href="pages/SCP-914精炼终端.html">
-        <div class="spot" aria-hidden="true"></div>
-        <div class="thumb">
-          <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-            <defs><linearGradient id="sg9" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-            <rect width="400" height="200" fill="#0A0A0A"/>
-            <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-            <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-            <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg9)" opacity="0"/>
-            <g>
-              <animateTransform attributeName="transform" type="rotate" from="0 200 100" to="360 200 100" dur="24s" repeatCount="indefinite"/>
-              <circle cx="200" cy="100" r="50" fill="none" stroke="#E8E8E8" stroke-width="2"/>
-              <g stroke="#E8E8E8" stroke-width="2">
-                <path d="M200 42v14M200 144v14M142 100h14M244 100h14M158 58l10 10M232 132l10 10M242 58l-10 10M168 132l-10 10"/>
-              </g>
-              <circle cx="200" cy="100" r="28" fill="none" stroke="#777" stroke-width="1.4"/>
-              <circle cx="200" cy="100" r="6" fill="#E8E8E8"/>
-            </g>
-            <path d="M120 168 H280" stroke="#444" stroke-width="1"/>
-            <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-              <text x="200" y="182" letter-spacing="5">SCP-914 REFINER</text>
-            </g>
-          </svg>
-        </div>
-        <div class="card-bd">
-          <div class="c-tag">FOUNDATION · 机密</div>
-          <h3>SCP-914 精炼终端</h3>
-          <p>输入物品 · 选择档位 · 上紧主发条，看异常发条装置加工万物</p>
-          <span class="c-go">进入精炼终端
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </a>
-</div>
-</div>
-<div class="sec" id="sec2">
-<div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">02</span><h2>工具</h2><span class="b-code">GRID · 3CARD</span></div>
-<div class="card is-tool" id="extraCard">
-  <div class="spot" aria-hidden="true"></div>
-  <div class="thumb">
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-      <rect width="400" height="200" fill="#0A0A0A"/>
-      <g stroke="#2a2a2a" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400"/></g>
-      <g fill="none" stroke="#FFFFFF" stroke-width="1.6">
-        <path d="M56 44 c-14-18 26-18 12 0 M56 44 v26 M56 70 h0"/>
-        <rect x="118" y="30" width="40" height="44" rx="5"/>
-        <path d="M118 54 H158 M128 30 V22 M148 30 V22"/>
-        <circle cx="232" cy="56" r="15"/>
-        <path d="M232 41 v-12 M224 29 h16"/>
-        <path d="M232 56 c8 0 10 12 4 18 c-6 6-18 4-18-4 c0-8 4-14 14-14"/>
-        <path d="M288 52 h34 M288 36 h22"/>
-        <rect x="288" y="52" width="34" height="26" rx="3"/>
-      </g>
-      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-        <path d="M116 186 H284" stroke="#444" stroke-width="1"/>
-        <text x="200" y="191" letter-spacing="7">EXTRA LABS</text>
-      </g>
-    </svg>
-  </div>
-  <div class="card-bd">
-    <div class="c-tag">EXTRA · 附加功能</div>
-    <h3>附加功能</h3>
-    <p>炼金 · 花园 · 锻造 · 肉鸽 · 视频发布</p>
-    <div class="x-grid">
-      <a class="x-item" href="pages/炼金.html"><span class="x-ic">⚗</span><span class="x-nm">炼金工坊</span><span class="x-ds">万炼成金</span></a>
-      <a class="x-item" href="pages/花园.html"><span class="x-ic">✿</span><span class="x-nm">协作花园</span><span class="x-ds">64 种植物</span></a>
-      <a class="x-item" href="pages/锻造.html"><span class="x-ic">⚒</span><span class="x-nm">武器锻造</span><span class="x-ds">附魔词缀</span></a>
-      <a class="x-item" href="pages/肉鸽.html"><span class="x-ic">⬇</span><span class="x-nm">沉渊讨伐</span><span class="x-ds">横板肉鸽</span></a>
-      <a class="x-item" href="pages/视频发布.html"><span class="x-ic">🎬</span><span class="x-nm">视频发布</span><span class="x-ds">投稿即公开</span></a>
-    </div>
-  </div>
-</div>
-<div class="card is-tool" id="rankCard" style="cursor:pointer">
-  <div class="spot" aria-hidden="true"></div>
-  <div class="thumb">
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-      <rect width="400" height="200" fill="#0A0A0A"/>
-      <g stroke="#2a2a2a" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400"/></g>
-      <g fill="#7a7a7a">
-        <rect x="150" y="120" width="100" height="40" fill="none" stroke="#FFFFFF" stroke-width="2"/>
-        <rect x="96" y="88" width="46" height="72" fill="none" stroke="#8f8f8f" stroke-width="1.6"/>
-        <rect x="258" y="104" width="46" height="56" fill="none" stroke="#8f8f8f" stroke-width="1.6"/>
-        <path d="M112 106 h14 v10 h-14z" fill="#FFFFFF"/>
-        <path d="M166 138 h20 v10 h-20z" fill="#FFFFFF"/>
-        <path d="M274 122 h14 v10 h-14z" fill="#8f8f8f"/>
-      </g>
-      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-        <path d="M118 176 H282" stroke="#444" stroke-width="1"/>
-        <text x="200" y="190" letter-spacing="6">RANKING</text>
-      </g>
-    </svg>
-  </div>
-  <div class="card-bd">
-    <div class="c-tag">RANK · 全站</div>
-    <h3>排行榜</h3>
-    <p>经验 / 积分 / 成就三榜，谁是卷王一目了然</p>
-    <span class="c-go">看榜
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-    </span>
-  </div>
-</div>
-<div class="card is-tool" id="shopCard" style="cursor:pointer">
-  <div class="spot" aria-hidden="true"></div>
-  <div class="thumb">
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-      <rect width="400" height="200" fill="#0A0A0A"/>
-      <g stroke="#2a2a2a" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400"/></g>
-      <g fill="none" stroke="#FFFFFF" stroke-width="2">
-        <path d="M168 70 h64 l-6 66 a10 10 0 0 1 -10 9 h-32 a10 10 0 0 1 -10 -9 z"/>
-        <path d="M186 70 v-8 a14 14 0 0 1 28 0 v8"/>
-      </g>
-      <g fill="#8f8f8f">
-        <rect x="176" y="92" width="48" height="6"/>
-        <rect x="176" y="106" width="34" height="6"/>
-      </g>
-      <circle cx="200" cy="130" r="9" fill="none" stroke="#FFC24B" stroke-width="2"/>
-      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-        <path d="M118 176 H282" stroke="#444" stroke-width="1"/>
-        <text x="200" y="190" letter-spacing="6">POINTS SHOP</text>
-      </g>
-    </svg>
-  </div>
-  <div class="card-bd">
-    <div class="c-tag">SHOP · 积分</div>
-    <h3>积分商店</h3>
-    <p>签到和游戏攒的积分，换称号和头像框</p>
-    <span class="c-go">逛商店
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-    </span>
-  </div>
-</div>
-<div class="card is-tool" data-memo style="cursor:pointer">
-  <div class="spot" aria-hidden="true"></div>
-  <div class="thumb">
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-      <defs><linearGradient id="sg5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-      <rect width="400" height="200" fill="#0A0A0A"/>
-      <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-      <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-      <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg5)" opacity="0"/>
-      <g class="t-drift">
-        <rect x="120" y="34" width="160" height="132" rx="6" fill="none" stroke="#FFFFFF" stroke-width="2.4"/>
-        <rect x="128" y="44" width="56" height="8" fill="#6a6a6a"/>
-        <g transform="translate(120,66)">
-          <rect x="12" y="0" width="136" height="9" fill="#808080"/>
-          <rect x="12" y="16" width="120" height="9" fill="#5a5a5a"/>
-          <rect x="12" y="32" width="132" height="9" fill="#454545"/>
-          <rect x="12" y="48" width="102" height="9" fill="#3a3a3a"/>
-          <rect x="12" y="72" width="14" height="14" fill="none" stroke="#FF5C7A" stroke-width="2"/>
-          <path d="M15 79 l4 4 7 -8" stroke="#FF5C7A" stroke-width="2.4" fill="none"/>
-          <rect x="34" y="74" width="92" height="9" fill="#555"/>
-          <rect x="12" y="94" width="14" height="14" fill="none" stroke="#555" stroke-width="2"/>
-          <rect x="34" y="96" width="76" height="9" fill="#3a3a3a"/>
-        </g>
-      </g>
-      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-        <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
-        <text x="200" y="190" letter-spacing="7">MEMO NOTES</text>
-      </g>
-    </svg>
-  </div>
-  <div class="card-bd">
-    <div class="c-tag">NOTES · 个人</div>
-    <h3>备忘录</h3>
-    <p>Markdown 编辑 · 打勾清单，随写随存</p>
-    <span class="c-go">打开便签
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-    </span>
-  </div>
-</div>
-<div class="card is-tool">
-  <div class="spot" aria-hidden="true"></div>
-  <div class="thumb">
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-      <defs><linearGradient id="sg7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-      <rect width="400" height="200" fill="#0A0A0A"/>
-      <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-      <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-      <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg7)" opacity="0"/>
-      <g class="t-drift">
-        <path d="M148 60 H252 M148 60 L156 46 M148 60 L156 74 M252 60 L244 46 M252 60 L244 74" stroke="#E8E8E8" stroke-width="1.6" fill="none"/>
-        <path d="M172 88 C186 118 214 118 228 88" stroke="#888" stroke-width="1.3" fill="none"/>
-        <path d="M164 112 C178 142 222 142 236 112" stroke="#5a5a5a" stroke-width="1.3" fill="none"/>
-        <path d="M156 136 C170 166 230 166 244 136" stroke="#444" stroke-width="1.3" fill="none"/>
-        <circle class="t-pulse" cx="148" cy="60" r="5" fill="#E8E8E8"/>
-      </g>
-      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-        <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
-        <text x="200" y="190" letter-spacing="7">VISITOR WALL</text>
-      </g>
-    </svg>
-  </div>
-  <div class="card-bd">
-    <div class="c-tag">VISIT · 访客墙</div>
-    <h3>访客墙</h3>
-    <p>谁来过这里，都有脚印</p>
-    <div class="wall-tot" id="wall_tot">加载中…</div>
-    <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
-      <button class="gb-btn ghost" id="wall_sw" style="padding:2px 10px;font-size:10.5px">足迹</button>
-      <a class="gb-btn ghost" href="pages/guestwall.html" style="padding:2px 10px;font-size:10.5px;text-decoration:none;display:inline-block">完整访客墙 →</a>
-    </div>
-    <div class="wall-list" id="wall_list"></div>
-  </div>
-</div>
-<div class="card is-tool" id="map">
-  <div class="spot" aria-hidden="true"></div>
-  <div class="thumb">
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-      <defs><linearGradient id="sg9" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-      <rect width="400" height="200" fill="#0A0A0A"/>
-      <g stroke="#333" stroke-width="1"><path d="M0 50 H400 M0 100 H400 M0 150 H400 M100 0 V200 M200 0 V200 M300 0 V200"/></g>
-      <g stroke="#242424" stroke-width=".5"><path d="M0 25 H400 M0 75 H400 M0 125 H400 M0 175 H400 M50 0 V200 M150 0 V200 M250 0 V200 M350 0 V200"/></g>
-      <rect class="t-scan" x="0" y="0" width="400" height="30" fill="url(#sg9)" opacity="0"/>
-      <g class="t-drift">
-        <circle cx="200" cy="100" r="52" fill="none" stroke="#444" stroke-width="1"/>
-        <path d="M148 100 H252 M200 48 V152" stroke="#333" stroke-width=".8"/>
-        <path d="M200 100 L162 60 M200 100 L238 60 M200 100 L154 132 M200 100 L246 132" stroke="#555" stroke-width="1"/>
-        <circle class="t-pulse" cx="200" cy="100" r="6" fill="none" stroke="#E8E8E8" stroke-width="1.4"/>
-        <circle cx="162" cy="60" r="4" fill="#666"/>
-        <circle cx="238" cy="60" r="4" fill="#666"/>
-        <circle cx="154" cy="132" r="4" fill="#666"/>
-        <circle cx="246" cy="132" r="4" fill="#666"/>
-      </g>
-      <g font-family="monospace" font-size="11" fill="#777" text-anchor="middle">
-        <path d="M118 191 H282" stroke="#444" stroke-width="1"/>
-        <text x="200" y="190" letter-spacing="7">SITE MAP</text>
-      </g>
-    </svg>
-  </div>
-  <div class="card-bd">
-    <div class="c-tag">MAP · 终端地图</div>
-    <h3>站点地图</h3>
-    <p>探索过的子站自动点亮，迷雾自己揭开</p>
-    <div class="map-grid" id="map_grid"></div>
-  </div>
-</div>
-</div>
+  <section class="tiles">
+    <a class="tile" href="项目.html">
+      <span class="no">01</span><span class="en">PROJECTS</span>
+      <span class="glyph">◈</span>
+      <h2>项目<small>自研作品 · 工程 · 内容站</small></h2>
+      <p>mcratch、轴数回战、SCP-914、OpusMC、Live2D、视频库，还有炼金 / 花园 / 锻造。</p>
+      <span class="stat"><i></i>12 个作品入口</span>
+      <span class="go">进入项目</span>
+    </a>
 
-</div>
-<div class="sec" id="sec3">
-<div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">03</span><h2>社区</h2><span class="b-code">GUESTBOOK · FOLD</span></div>
-<div class="gb-card" id="gbCard">
-  <div class="gb-card-h" id="gbCardH"><b>GUESTBOOK</b><span>留言板</span><span class="gb-fold">▾ 展开</span></div>
-  <div class="gb-body" id="gbBody">
-<!-- ============ GUESTBOOK / 私聊 ============ -->
-<div class="gb" id="gbRoot">
-  <div class="gb-head">
-    <b>GUESTBOOK</b>
-    <span>留言板 · 私聊频道</span>
-    <span class="gb-mode" id="gb_status" title="点击配置云端接口">本地模式</span>
-    <span class="gb-mode" id="gb_online" style="display:none"></span>
-    <select id="gb_sort" title="留言排序" style="background:var(--bg2);color:var(--ink2);border:1px solid var(--line);font-size:10.5px;padding:2px 4px;border-radius:3px;font-family:var(--mono)">
-      <option value="new">最新</option><option value="old">最早</option><option value="hot">赞最多</option>
-    </select>
-    <button class="gb-refresh" id="gb_refresh">刷新留言</button>
-  </div>
+    <a class="tile" href="游戏.html">
+      <span class="no">02</span><span class="en">GAMES</span>
+      <span class="glyph">▚</span>
+      <h2>游戏<small>小游戏 · 肉鸽 · 方块世界</small></h2>
+      <p>终端接口 24 个小游戏、沉渊讨伐、轴数回战、OpusMC，八组街机直连。</p>
+      <span class="stat"><i></i>12 个游玩入口</span>
+      <span class="go">进入游戏</span>
+    </a>
 
-  <!-- 公告区 -->
-  <div class="gb-notes" id="gb_notes" style="display:none">
-    <div class="gb-conv-h">公告<span id="gb_n_btns"></span></div>
-    <div id="gb_n_list"></div>
-    <div class="gb-n-form" id="gb_n_form" style="display:none">
-      <input id="gb_n_text" placeholder="发布公告…" maxlength="120">
-      <button class="gb-btn" id="gb_n_send">发布</button>
-      <button class="gb-btn ghost" id="gb_n_cancel">取消</button>
-    </div>
-  </div>
+    <a class="tile" href="社区.html">
+      <span class="no">03</span><span class="en">COMMUNITY</span>
+      <span class="glyph">≋</span>
+      <h2>社区<small>留言板 · 私聊 · 论坛</small></h2>
+      <p>云端留言板、私聊频道、公告、排行榜与积分商店，夜里有人的地方。</p>
+      <span class="stat"><i></i>留言板 · 守夜人论坛</span>
+      <span class="go">进入社区</span>
+    </a>
 
-  <!-- 账号区 -->
-  <div class="gb-auth">
-    <div class="gb-row" id="gb_login_area">
-      <input id="gb_user" placeholder="账号" autocomplete="username" maxlength="16">
-      <input id="gb_pwd" type="password" placeholder="密码" autocomplete="current-password" maxlength="32">
-      <button class="gb-btn" id="gb_btn_login">登 录</button>
-      <button class="gb-btn ghost" id="gb_btn_reg">注 册</button>
-      <button class="gb-btn ghost" id="gb_btn_recover" style="font-size:11px">忘记密码</button>
-    </div>
-    <div class="gb-row" id="gb_userinfo" style="display:none">
-      <span class="gb-who">已登录 · <b id="gb_curuser"></b></span>
-      <span class="gb-tag" id="gb_isadmin" style="display:none">管理员</span>
-      <button class="gb-btn ghost" id="gb_btn_ck">签到</button>
-      <button class="gb-btn ghost" id="gb_me_btn" style="font-size:11px">导出数据</button>
-      <span class="gb-tag" id="gb_ckinfo" style="display:none"></span>
-      <button class="gb-btn ghost" id="gb_btn_pwd">改密</button>
-      <button class="gb-btn ghost" id="gb_btn_sec">安全问题</button>
-      <button class="gb-btn ghost" id="gb_btn_logout">登 出</button>
-    </div>
-    <div class="gb-say" id="gb_say"></div>
-  </div>
+    <a class="tile" href="杂项.html">
+      <span class="no">04</span><span class="en">MISC</span>
+      <span class="glyph">⌗</span>
+      <h2>杂项<small>日志 · 技能树 · 终端 · 笔记</small></h2>
+      <p>更新日志、技能树、机密终端、密文解码器、泰拉大典、备忘录与站点地图。</p>
+      <span class="stat"><i></i>杂项与工具合集</span>
+      <span class="go">进入杂项</span>
+    </a>
+  </section>
 
-  <!-- 管理员：当前用户列表 -->
-  <div class="gb-users" id="gb_users_panel" style="display:none">
-    <div class="gb-conv-h">当前用户 <span id="gb_ucnt"></span><button class="gb-btn ghost" id="gb_uref" style="float:right;padding:2px 10px;font-size:11px">刷新</button></div>
-    <div style="padding:6px 2px;border-bottom:1px solid var(--line)">
-      <div style="font-size:11px;color:var(--dim);margin-bottom:4px">风控管理 · 命中即删用户及其内容 <span style="color:var(--ok);letter-spacing:.05em">· 服务端每 10 秒自动扫描</span></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <input id="gb_risk_kw" placeholder="多个关键词用逗号分隔，回车即扫" style="flex:1;min-width:120px;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:6px 8px;font-size:12px">
-        <button class="gb-btn" id="gb_risk_btn" style="padding:6px 12px;border-color:var(--bad);color:var(--bad)">上传关键词</button>
-        <button class="gb-btn" id="gb_risk_all" style="padding:6px 12px;border-color:var(--bad);color:var(--bad)">扫描全部</button>
-      </div>
-      <div id="gb_risk_words" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px"></div>
-    </div>
-    <div style="display:flex;gap:6px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap">
-      <button class="gb-btn" id="gb_aud_btn" style="padding:5px 12px;font-size:11px">▦ 审计日志</button>
-      <button class="gb-btn" id="gb_sta_btn" style="padding:5px 12px;font-size:11px">▤ 数据面板</button>
-      <button class="gb-btn" id="gb_ban_btn" style="padding:5px 12px;font-size:11px">⛔ 危险账号</button>
-      <div id="gb_ban_list" style="display:none;width:100%;margin-top:6px;border:1px solid var(--bad);padding:6px;font-size:12px"></div>
-      <button class="gb-btn" id="gb_punish_btn" style="padding:5px 12px;font-size:11px">☠ 惩罚管理</button>
-      <div id="gb_punish_list" style="display:none;width:100%;margin-top:6px;border:1px solid var(--bad);padding:6px;font-size:12px"></div>
-      <button class="gb-btn ghost" id="gb_aud_close" style="padding:5px 12px;font-size:11px;display:none">收起</button>
-      <button class="gb-btn ghost" id="gb_bak_btn" style="padding:5px 12px;font-size:11px">⬇ 备份全站</button>
-    </div>
-    <div id="gb_aud" style="display:none;padding:8px 0;border-bottom:1px solid var(--line)">
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
-        <span style="font-size:11px;color:var(--ink3);letter-spacing:.12em">操作日志 · 删帖/删用户/拉黑/风控留痕</span>
-        <span id="gb_aud_total" style="font-size:10.5px;color:var(--dim)"></span>
-        <select id="gb_aud_date" style="background:var(--bg2);color:var(--ink2);border:1px solid var(--line);font-size:10.5px;padding:2px 4px;border-radius:3px;font-family:var(--mono)">
-          <option value="">今天</option>
-        </select>
-        <button class="gb-btn ghost" id="gb_aud_json" style="margin-left:auto;padding:3px 10px;font-size:10.5px">导出 JSON</button>
-        <button class="gb-btn ghost" id="gb_aud_csv" style="padding:3px 10px;font-size:10.5px">导出 CSV</button>
-      </div>
-      <div id="gb_aud_list" style="font-size:11px;line-height:1.8;max-height:240px;overflow-y:auto;color:var(--ink2)"></div>
-    </div>
-    <div id="gb_sta" style="display:none;padding:8px 0;border-bottom:1px solid var(--line)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <span style="font-size:11px;color:var(--ink3);letter-spacing:.12em">站点数据 · 仅管理员可见</span>
-        <button class="gb-btn ghost" id="gb_sta_ref" style="margin-left:auto;padding:3px 10px;font-size:10.5px">↻ 刷新</button>
-      </div>
-      <div id="gb_sta_tot" style="font-size:11px;color:var(--ink3);letter-spacing:.06em;margin-bottom:8px"></div>
-      <div id="gb_sta_trend" style="margin-bottom:10px"></div>
-      <div id="gb_sta_hours"></div>
-    </div>
-    <div id="gb_ulist"></div>
+  <div class="quick">
+    <span class="lbl">QUICK</span>
+    <a href="pages/守夜人论坛.html">论坛</a>
+    <a href="pages/changelog.html">更新日志</a>
+    <a href="pages/prts.html">档案室</a>
+    <a href="pages/终端接口.html">终端接口</a>
+    <a href="pages/guestwall.html">访客墙</a>
   </div>
-
-  <!-- 私聊区 -->
-  <div class="gb-pm" id="gb_pm_panel">
-    <div class="gb-conv">
-      <div class="gb-conv-h">会话列表</div>
-      <div id="pm_conv"></div>
-    </div>
-    <div class="gb-pm-main">
-      <div class="gb-conv-h" id="pm_title">选择会话，或直接输入对方账号</div>
-      <div class="gb-msgs" id="pm_box"></div>
-      <div class="gb-pm-input">
-        <input id="pm_target" placeholder="对方账号" maxlength="16">
-        <input id="pm_msg" placeholder="输入消息，回车发送" maxlength="500">
-        <button class="gb-btn" id="pm_img_btn" title="附带图片">图</button>
-        <input type="file" id="pm_file" accept="image/*" style="display:none">
-        <button class="gb-btn" id="pm_send_btn">发送</button>
-      </div>
-      <div id="pm_att" style="display:none"></div>
-    </div>
-  </div>
-
-  <!-- 留言输入 -->
-  <div class="gb-form">
-    <div class="gb-row" style="margin-bottom:8px">
-      <input id="gb_name" placeholder="昵称（访客）" maxlength="16">
-    </div>
-    <div class="gb-row" style="margin-bottom:8px">
-      <span class="gb-who" style="letter-spacing:.14em">头像</span>
-      <span class="gb-pick" id="gb_pick"></span>
-    </div>
-    <textarea id="gb_text" placeholder="写下留言…" maxlength="500"></textarea>
-    <div class="gb-row" style="margin-top:10px">
-      <span class="gb-emoji-w"><button class="gb-emoji-btn" id="gb_emoji_btn" type="button" aria-label="表情">☺ 表情</button><div class="gb-emoji-panel" id="gb_emoji_panel"></div></span>
-      <button class="gb-btn" id="gb_img_btn">发图</button>
-      <button class="gb-btn" id="gb_submit">提交留言</button>
-      <span class="gb-say" id="gb_say2" style="margin:0"></span>
-    </div>
-    <div class="gb-att" id="gb_att" style="display:none"></div>
-    <input type="file" id="gb_file" accept="image/*" style="display:none">
-    <input type="file" id="gb_av_file" accept="image/*" style="display:none">
-  </div>
-
-  <!-- 留言列表 -->
-  <div class="gb-list" id="guestbookList"></div>
-</div>
-  </div>
-</div>
-
-</div>
-<div class="sec" id="sec4">
-<div class="b-head" style="margin-top:var(--sp-6)"><span class="b-no">04</span><h2>设置</h2><span class="b-code">THEME · VIEW</span></div>
-<div class="st-set">
-  <div class="card is-tool" id="stTh" style="cursor:pointer">
-    <div class="spot" aria-hidden="true"></div>
-    <div class="thumb">
-      <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-        <rect width="400" height="200" fill="#0A0A0A"/>
-        <rect x="40" y="52" width="92" height="96" fill="#1C1C1E"/>
-        <rect x="154" y="52" width="92" height="96" fill="#E8E8E8"/>
-        <rect x="268" y="52" width="92" height="96" fill="#4A6CF7"/>
-        <g stroke="#333" stroke-width="1"><path d="M40 40 H360 M40 160 H360"/></g>
-      </svg>
-    </div>
-    <div class="card-bd">
-      <div class="c-tag">THEME · 配色</div>
-      <h3>配色</h3>
-      <p>换一整套皮肤配色</p>
-      <span class="c-go">打开</span>
-    </div>
-  </div>
-  <div class="card is-tool" id="stUi" style="cursor:pointer">
-    <div class="spot" aria-hidden="true"></div>
-    <div class="thumb">
-      <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-        <rect width="400" height="200" fill="#0A0A0A"/>
-        <rect x="60" y="46" width="280" height="108" rx="12" fill="none" stroke="#E8E8E8" stroke-width="2"/>
-        <rect x="80" y="72" width="140" height="20" rx="3" fill="#555"/>
-        <rect x="80" y="104" width="220" height="12" fill="#333"/>
-        <rect x="80" y="124" width="180" height="12" fill="#333"/>
-        <rect x="300" y="68" width="26" height="30" rx="4" fill="none" stroke="#777" stroke-width="2"/>
-      </svg>
-    </div>
-    <div class="card-bd">
-      <div class="c-tag">UI · 主题</div>
-      <h3>界面</h3>
-      <p>换界面皮肤风格</p>
-      <span class="c-go">打开</span>
-    </div>
-  </div>
-  <div class="card is-tool" id="stVm" style="cursor:pointer">
-    <div class="spot" aria-hidden="true"></div>
-    <div class="thumb">
-      <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block" aria-hidden="true">
-        <rect width="400" height="200" fill="#0A0A0A"/>
-        <rect x="86" y="40" width="228" height="118" rx="6" fill="none" stroke="#E8E8E8" stroke-width="2"/>
-        <rect x="102" y="56" width="196" height="86" rx="2" fill="#141414"/>
-        <rect x="196" y="142" width="20" height="10" fill="#555"/>
-        <g stroke="#444" stroke-width="1.5"><path d="M120 176 H288 M150 176 V192 H262"/></g>
-      </svg>
-    </div>
-    <div class="card-bd">
-      <div class="c-tag">VIEW · 视图</div>
-      <h3>视图</h3>
-      <p>手机 / 电脑界面随便切</p>
-      <span class="c-go">打开</span>
-    </div>
-  </div>
-  <div class="card is-tool" id="stLay" style="cursor:default">
-    <div class="card-bd">
-      <div class="c-tag">LAYOUT · 布局</div>
-      <h3>界面布局</h3>
-      <p>切换首页展示方式（共 8 套）</p>
-      <div class="lay-switch" id="laySwitch"></div>
-    </div>
-  </div>
-</div>
-</div>
-
-<!-- 云端配置弹窗 -->
-<div id="gb_config_dialog" class="gb-dlg" style="display:none">
-  <div class="gb-dlg-c">
-    <h4>云端接口配置</h4>
-    <p>填入后端地址（如 <code>http://127.0.0.1:8787</code>）即可启用云端账号 / 私聊；留空则使用本地模式，数据只保存在本机浏览器。</p>
-    <input id="gb_api_input" placeholder="https://example.com/api">
-    <div class="gb-row" style="margin-top:16px;justify-content:flex-end">
-      <button class="gb-btn ghost" id="gb_cfg_cancel">取消</button>
-      <button class="gb-btn" id="gb_cfg_save">保存</button>
-    </div>
-  </div>
-</div>
-
-<!-- 修改密码弹窗 -->
-<div id="gb_pwd_dialog" class="gb-dlg" style="display:none">
-  <div class="gb-dlg-c">
-    <h4>修改密码</h4>
-    <input id="gb_pwd_old" type="password" placeholder="旧密码" maxlength="32">
-    <input id="gb_pwd_new" type="password" placeholder="新密码（4-32 位）" maxlength="32">
-    <div class="gb-row" style="margin-top:16px;justify-content:flex-end">
-      <button class="gb-btn ghost" id="gb_pwd_cancel">取消</button>
-      <button class="gb-btn" id="gb_pwd_save">确认修改</button>
-    </div>
-  </div>
-</div>
-
-
-<div id="gbRecMask" style="display:none;position:fixed;inset:0;z-index:990;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
-  <div style="width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px;font-size:12px;font-family:var(--mono)">
-    <div style="font-size:13px;margin-bottom:10px;letter-spacing:.1em">找回密码 · RECOVER</div>
-    <div style="color:var(--ink2);margin-bottom:8px;line-height:1.6">输入账号获取安全问题，验证通过后即可重置密码。</div>
-    <input id="gb_rc_user" placeholder="账号" maxlength="16" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px">
-    <div id="gb_rc_q" style="color:var(--ok);margin-bottom:8px;min-height:16px;display:none;line-height:1.5"></div>
-    <input id="gb_rc_ans" placeholder="安全问题答案" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px;display:none">
-    <input id="gb_rc_pwd" type="password" placeholder="新密码" maxlength="32" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:10px;font-size:12px;display:none">
-    <div style="display:flex;gap:8px">
-      <button class="gb-btn" id="gb_rc_go" style="flex:1">获取问题</button>
-      <button class="gb-btn ghost" id="gb_rc_ok" style="flex:1;display:none">重置密码</button>
-      <button class="gb-btn ghost" id="gb_rc_x" style="flex:1">关闭</button>
-    </div>
-    <div class="gb-say" id="gb_rc_say" style="margin-top:8px;min-height:14px"></div>
-  </div>
-</div>
-<div id="gbSecMask" style="display:none;position:fixed;inset:0;z-index:990;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
-  <div style="width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px;font-size:12px;font-family:var(--mono)">
-    <div style="font-size:13px;margin-bottom:10px;letter-spacing:.1em">设置安全问题 · SECURITY</div>
-    <div style="color:var(--ink2);margin-bottom:8px;line-height:1.6">设置后可用它找回密码。请牢记问题与答案。</div>
-    <input id="gb_sec_q" placeholder="问题（如：你的第一个网名是？）" maxlength="60" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:8px;font-size:12px">
-    <input id="gb_sec_a" placeholder="答案" maxlength="60" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;margin-bottom:10px;font-size:12px">
-    <div style="display:flex;gap:8px">
-      <button class="gb-btn" id="gb_sec_ok" style="flex:1">保存</button>
-      <button class="gb-btn ghost" id="gb_sec_x" style="flex:1">关闭</button>
-    </div>
-    <div class="gb-say" id="gb_sec_say" style="margin-top:8px;min-height:14px"></div>
-  </div>
-</div>
-<div id="srchM" style="display:none;position:fixed;inset:0;z-index:995;background:rgba(7,9,10,.7);align-items:flex-start;justify-content:center;padding-top:56px" onclick="if(event.target===this)this.style.display='none'">
-  <div style="width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);padding:16px">
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <input id="srchIn" style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px 10px;font-family:inherit;font-size:13px" placeholder="搜索留言 / 论坛帖子 / 私聊…">
-      <button class="gb-btn" id="srchGo" style="padding:8px 14px">搜索</button>
-    </div>
-    <div id="srchOut" style="max-height:52vh;overflow-y:auto;font-size:12px;line-height:1.7;color:var(--ink2)"></div>
-  </div>
-</div>
-
-<div id="ntPanel">
-  <h4>通知中心 <span id="ntClear" style="cursor:pointer;font-size:10.5px;color:var(--ink3);letter-spacing:.1em">全部已读</span></h4>
-  <div id="ntTabs" style="display:flex;border-bottom:1px solid var(--line)">
-    <span class="nt-tab on" data-f="all">全部</span><span class="nt-tab" data-f="at">@</span><span class="nt-tab" data-f="reply">评论</span><span class="nt-tab" data-f="pm">私信</span><span class="nt-tab" data-f="sys">系统</span>
-  </div>
-  <div id="ntNotices" style="display:none;padding:8px 14px;border-bottom:1px dashed var(--line);font-size:11.5px;color:var(--ink2);line-height:1.7"></div>
-  <div id="ntList" style="font-size:12px;color:var(--ink3);padding:12px 14px">加载中…</div>
-</div>
-
-<div id="pfMask"><div id="pfBox">
-  <button class="pf-close" id="pfClose">✕</button>
-  <div id="pfBody"></div>
-</div></div>
-
-<div class="memo-mask" id="rankMask">
-  <div class="memo-box" style="width:min(560px,94vw);height:auto;max-height:86vh">
-    <div class="memo-h">全站排行榜
-      <span class="memo-act">
-        <button class="gb-btn ghost" id="rankClose" style="padding:3px 12px;font-size:11px">✕</button>
-      </span>
-    </div>
-    <div class="memo-bd" style="display:block">
-      <div class="th-grid" id="rankTabs" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px"></div>
-      <div id="rankBody" style="min-height:120px"></div>
-    </div>
-  </div>
-</div>
-
-<div class="memo-mask" id="shopMask">
-  <div class="memo-box" style="width:min(680px,94vw);height:auto;max-height:86vh">
-    <div class="memo-h">积分商店
-      <span class="memo-act">
-        <span id="shopPts" class="shop-pts">-- 积分</span>
-        <button class="gb-btn ghost" id="shopClose" style="padding:3px 12px;font-size:11px">✕</button>
-      </span>
-    </div>
-    <div class="memo-bd" style="display:block;overflow-y:auto">
-      <div class="th-grid" id="shopTabs" style="grid-template-columns:repeat(2,1fr);margin-bottom:12px"></div>
-      <div id="shopBody" style="min-height:140px"></div>
-    </div>
-  </div>
-</div>
-
-<div class="memo-mask" id="memoMask">
-  <div class="memo-box">
-    <div class="memo-h">备忘录 <span class="memo-st" id="memoStat"></span>
-      <span class="memo-act">
-        <button class="gb-btn ghost" id="memoMode" style="padding:3px 12px;font-size:11px;color:var(--ok);border-color:var(--ok)">代码</button>
-        <button class="gb-btn ghost" id="memoExport" style="padding:3px 12px;font-size:11px">导出</button>
-        <button class="gb-btn ghost" id="memoClear" style="padding:3px 12px;font-size:11px;color:var(--bad);border-color:var(--bad)">清空</button>
-        <button class="gb-btn ghost" id="memoClose" style="padding:3px 12px;font-size:11px">✕</button>
-      </span>
-    </div>
-    <div class="memo-bd">
-      <textarea id="memoSrc" spellcheck="false" placeholder="在这里书写 Markdown / 代码……"></textarea>
-      <div class="memo-pv" id="memoPv"></div>
-    </div>
-  </div>
-</div>
-
-
-  </div>
-
-</section>
 
 </main>
-<div id="sphereView">
-  <div class="sphere-tip"><div class="sp-dot"></div><i class="sp-c c1"></i><i class="sp-c c2"></i><i class="sp-c c3"></i><i class="sp-c c4"></i></div>
-  <div id="sphere"></div>
-  <div class="sphere-hud"><span>W·A·S·D 移动视角</span><span>准星 ▸ <b id="spAim">—</b></span><span>空格 / 点击 进入</span></div>
-  <button class="sphere-back" id="spBack">退出视角</button>
-</div>
 
 <footer class="foot">
-  <span>WTZ v2.2 · 个人网站 · 双入口 · 云端留言板</span>
-  <a class="f-switch" href="pages/守夜人论坛.html">切换：论坛</a>
+  <span class="l">WTZ v3.0 · 个人网站 · 四分区入口</span>
+  <a href="pages/changelog.html">更新日志</a>
+  <a href="README.md">说明文档</a>
+  <a href="404.html">404</a>
 </footer>
 
-<div class="crt" aria-hidden="true"></div>
+<script>
+(function(){
+  var el=document.getElementById('clk');
+  function tick(){
+    var d=new Date(),p=function(n){return n<10?'0'+n:n};
+    if(el) el.textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  tick();setInterval(tick,1000);
 
-<div id="tvLayer" aria-hidden="true">
-  <div class="tv-grid"></div>
-  <div class="tv-scan"></div>
-  <div class="tv-txt">LOADING // 正在接入<span id="tvLbl">…</span><small id="tvSub">ARCHIVE OS · TRANSIT</small></div>
-  <div class="tv-bar"><i></i></div>
-</div>
+  var tiles=document.querySelectorAll('.tile');
+  for(var i=0;i<tiles.length;i++){
+    tiles[i].addEventListener('mousemove',function(e){
+      var r=this.getBoundingClientRect();
+      this.style.setProperty('--mx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+      this.style.setProperty('--my',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
+    });
+  }
 
+  var QS=[
+    '[ 终端 ] 四条路，选一条走进去',
+    '[ 终端 ] 所有页面都不需要登录，除了会说话的那些',
+    '[ 终端 ] 这里没有彩蛋，只有还没点到的入口',
+    '[ 终端 ] 项目写给以后的自己，游戏写给现在的自己',
+    '[ 终端 ] 深夜的留言板比白天热闹',
+    '[ 终端 ] 代码跑通了就别再动它',
+    '[ 终端 ] 档案室的门一直开着',
+    '[ 终端 ] 第四个分区放着所有说不清的东西'
+  ];
+  var qi=Math.floor(Math.random()*QS.length),q=document.getElementById('quot');
+  function show(){ if(q) q.textContent=QS[qi%QS.length]; qi++; }
+  show();
+  if(q) q.addEventListener('click',show);
+})();
+</script>
 
-<div id="vbox" class="site-visitor" style="position:relative;z-index:25;text-align:center;padding:12px 10px 0;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:11px;letter-spacing:.18em;color:inherit;opacity:.75">
-<span id="vlabel">GUEST // 输入访客名</span>
-<input id="vinput" maxlength="12" placeholder="你的名字" style="width:120px;background:rgba(127,127,127,.08);border:1px solid rgba(127,127,127,.35);color:inherit;padding:3px 8px;margin:0 8px;font-family:inherit;font-size:11px;outline:none">
-<button id="vbtn" style="border:1px solid rgba(127,127,127,.45);color:inherit;padding:3px 12px;font-family:inherit;font-size:11px;letter-spacing:.1em;cursor:pointer">确认</button>
-</div>
-
-
-<div class="site-stat" style="position:relative;z-index:25;text-align:center;padding:16px 10px 28px;font-family:'Cascadia Mono',Consolas,'Courier New',monospace;font-size:10.5px;letter-spacing:.2em;color:inherit;opacity:.75">SITE // <span id="busuanzi_value_site_pv">0</span> VIEWS · <span id="busuanzi_value_site_uv">0</span> VISITORS</div>
-
-
-
-
-
-<!-- ============ 配色主题面板 ============ -->
-<div id="thMask" class="hidden">
-  <div class="thBox" id="thBox" style="position:relative">
-    <button class="th-close" id="thClose" title="关闭">✕</button>
-    <h2>界面配色</h2>
-    <div class="th-sub"><span id="thN">24</span> 套内置配色 · 亦可自定义主色与底色</div>
-    <div class="th-grid" id="thGrid"></div>
-    <div class="th-custom">
-      <label>主色 <input type="color" id="thC" value="#3FE0C8"></label>
-      <label>底色 <input type="color" id="thB" value="#0A1012"></label>
-      <button class="btn prim" id="thApply">应用自定义</button>
-      <button class="btn" id="thReset">恢复默认</button>
-    </div>
-  </div>
-</div>
-
-<div id="uiMask" class="hidden">
-  <div class="thBox" id="uiBox" style="position:relative">
-    <button class="th-close" id="uiClose" title="关闭">✕</button>
-    <h2>界面主题</h2>
-    <div class="th-sub"><span id="uiN">14</span> 种界面风格 · 与配色叠加使用</div>
-    <div class="th-grid" id="uiGrid"></div>
-  </div>
-</div>
-
-
-
-
-<div id="wNav" class="w-nav"><a href="index.html" data-w="index">◈ 指挥中心</a><a href="pages/守夜人论坛.html" data-w="forum">守夜人论坛</a><a href="pages/卡塞尔学院官网.html" data-w="cassel">卡塞尔学院</a><a href="pages/changelog.html" data-w="chg">更新日志</a><a id="wNavUpd" class="w-upd" href="javascript:void 0" title="检查 GitHub 是否有新版本">⚡ 更新</a><span id="wNavDot" class="w-dot off" title="云端状态未检测">●</span></div>
-
-
-<!-- 新访客引导 -->
-<div class="wz-guide" id="wzGuide" style="display:none">
-  <div class="wz-guide-mask" id="wzGuideMask"></div>
-  <div class="wz-guide-box">
-    <div class="wz-guide-h">FIRST TIME · 首次引导<span id="wzGClose">跳过</span></div>
-    <div class="wz-guide-body" id="wzGBody"></div>
-    <div class="wz-guide-f"><span id="wzGDot"></span><button id="wzGNext" class="gb-btn" style="padding:5px 16px">下一步</button></div>
-  </div>
-</div>
-
-
-
-
-<script src="index-core.js?v=20261017" defer></script>
-<script src="index-app.js?v=20261017" defer></script>
-<script src="index-lay.js?v=20261017" defer></script>
-<script src="shared-nav.js" defer></script>
 </body>
 </html>
-

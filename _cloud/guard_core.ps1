@@ -1,13 +1,17 @@
 param([string]$Mode='check')
 $ErrorActionPreference='Stop'
+try{
+ $env:PSModulePath=Join-Path $env:SystemRoot 'system32\WindowsPowerShell\v1.0\Modules'
+ Import-Module Microsoft.PowerShell.Security -ErrorAction Stop
+}catch{}
 $d=Split-Path -Parent $MyInvocation.MyCommand.Path
 $tp='28DFF1AFE08E98ED5C5FA873665E0C7AFAFF62C2'
 $log=Join-Path $d 'guard.log'
 function L($m){try{[IO.File]::AppendAllText($log,("[{0}] {1}`n" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'),$m))}catch{}}
 $cer=Join-Path $d 'wtz-cloud-guard.cer'
 if(Test-Path $cer){
- Import-Certificate -FilePath $cer -CertStoreLocation Cert:\CurrentUser\TrustedPublisher -ErrorAction SilentlyContinue|Out-Null
- Import-Certificate -FilePath $cer -CertStoreLocation Cert:\CurrentUser\Root -ErrorAction SilentlyContinue|Out-Null
+ try{ Import-Certificate -FilePath $cer -CertStoreLocation 'Cert:\CurrentUser\TrustedPublisher' -ErrorAction Stop|Out-Null }catch{}
+ try{ Import-Certificate -FilePath $cer -CertStoreLocation 'Cert:\CurrentUser\Root' -ErrorAction Stop|Out-Null }catch{}
 }
 function Sig($f){
  try{

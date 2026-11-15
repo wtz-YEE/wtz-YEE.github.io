@@ -8,6 +8,7 @@ CFG = os.path.join(BASE, 'cloud_services.json')
 HEART = os.path.join(BASE, 'guard.heartbeat')
 GLOG = os.path.join(BASE, 'guard.log')
 SYNC = os.path.join(BASE, 'sync.log')
+SNAP_FILE = os.path.join(BASE, 'monitor_snap.json')
 PORT = 8702
 CNW = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 OPS = []
@@ -31,7 +32,7 @@ def port_pid(port):
 
 def http_status(port, path='/health'):
     try:
-        r = urllib.request.urlopen('http://127.0.0.1:%s%s' % (port, path), timeout=1.5)
+        r = urllib.request.urlopen('http://127.0.0.1:%s%s' % (port, path), timeout=1.2)
         return r.status
     except urllib.error.HTTPError as e:
         return e.code
@@ -115,12 +116,22 @@ def tunnel_url(patname):
 def probe_https(u, path='/health'):
     for i in range(2):
         try:
-            urllib.request.urlopen(u + path, timeout=2.5)
+            urllib.request.urlopen(u + path, timeout=2)
             return True
         except Exception:
             if i == 0:
-                time.sleep(1)
+                time.sleep(0.5)
     return False
+
+_PROBE = {}
+
+def probe_cached(u, path='/health'):
+    hit = _PROBE.get(u)
+    if hit and time.time() - hit[0] < 60:
+        return hit[1]
+    ok = probe_https(u, path)
+    _PROBE[u] = (time.time(), ok)
+    return ok
 
 def svc_status():
     out = []
@@ -165,7 +176,7 @@ def guard_status():
     running = '正在运行' in w or 'Running' in w
     return {'age': age, 'alive': alive, 'watchdog': configured, 'watch_run': running}
 
-def compute_status():
+def compute_status(fast=False):
     svcs = svc_status()
     guard = guard_status()
     cfgs = [s for s in load_cfg() if s.get('enabled', True) and s.get('tunnel')]
@@ -184,11 +195,15 @@ def compute_status():
                 url = tunnel_url(s.get('tunnel', ''))
             tunnels.append({'name': s.get('tunnel', ''), 'svc': s['name'],
                             'url': url, 'ok': False})
-        with ThreadPoolExecutor(max_workers=8) as ex:
-            oks = list(ex.map(probe_https, [t['url'] for t in tunnels],
-                              [s.get('health', '/health') for s in cfgs]))
-        for i, t in enumerate(tunnels):
-            t['ok'] = oks[i] if t['url'] else False
+        if fast:
+            for t in tunnels:
+                t['ok'] = False
+        else:
+            with ThreadPoolExecutor(max_workers=8) as ex:
+                oks = list(ex.map(probe_cached, [t['url'] for t in tunnels],
+                                  [s.get('health', '/health') for s in cfgs]))
+            for i, t in enumerate(tunnels):
+                t['ok'] = oks[i] if t['url'] else False
     addrs = {}
     for svc in svcs:
         if svc['addrfile']:
@@ -204,19 +219,50 @@ def compute_status():
     }
 
 def snap():
-    with _SNAP['lock']:
-        if _SNAP['d'] is None:
-            _SNAP['d'] = compute_status()
-        return _SNAP['d']
+    d = _SNAP['d']
+    if d is None:
+        d = placeholder()
+    return d
+
+def placeholder():
+    svcs = []
+    for s in load_cfg():
+        if not s.get('enabled', True):
+            continue
+        svcs.append({'name': s['name'], 'desc': s.get('desc', ''), 'port': str(s.get('port', '')),
+                     'pid': '', 'alive': False, 'http': 0, 'mem': 0, 'up': 0,
+                     'script': s.get('script', ''), 'health': s.get('health', '/health'),
+                     'tunnel': s.get('tunnel', ''), 'addrfile': s.get('addrfile', '')})
+    tunnels = []
+    for s in load_cfg():
+        if s.get('enabled', True) and s.get('tunnel'):
+            tunnels.append({'name': s.get('tunnel', ''), 'svc': s['name'], 'url': '', 'ok': False})
+    return {'time': 0, 'guard': {'age': -1, 'alive': False, 'watchdog': False, 'watch_run': False},
+            'services': svcs, 'tunnels': tunnels, 'addrs': {}, 'ops': OPS[-20:], 'monitor': ''}
+
+try:
+    _d0 = json.load(open(SNAP_FILE, encoding='utf-8'))
+    _SNAP['d'] = _d0 if isinstance(_d0, dict) and 'services' in _d0 else None
+except Exception:
+    _SNAP['d'] = None
 
 def _loop():
+    first = True
     while True:
         try:
-            with _SNAP['lock']:
-                _SNAP['d'] = compute_status()
+            d = compute_status(fast=first)
+            first = False
+            _SNAP['d'] = d
+            try:
+                tmp = SNAP_FILE + '.tmp'
+                with open(tmp, 'w', encoding='utf-8') as f:
+                    json.dump(d, f, ensure_ascii=False)
+                os.replace(tmp, SNAP_FILE)
+            except Exception:
+                pass
         except Exception:
             pass
-        time.sleep(3)
+        time.sleep(5)
 
 threading.Thread(target=_loop, daemon=True).start()
 
@@ -322,6 +368,8 @@ class H(BaseHTTPRequestHandler):
             if path in ('/', '/monitor.html'):
                 html = open(os.path.join(BASE, 'monitor.html'), encoding='utf-8').read()
                 return self._h(200, html, 'text/html; charset=utf-8')
+            if path == '/health':
+                return self._h(200, json.dumps({'ok': True, 'time': int(time.time())}, ensure_ascii=False))
             if path == '/api/status':
                 return self._h(200, json.dumps(snap(), ensure_ascii=False))
             if path == '/api/log':

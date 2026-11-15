@@ -1,7 +1,16 @@
-var C='wtz-site-v9';
+var C='wtz-site-v10';
 var U=[
   './',
   './index.html',
+  './项目.html',
+  './游戏.html',
+  './社区.html',
+  './杂项.html',
+  './portal.css',
+  './community.css',
+  './index.css',
+  './community.js',
+  './misc.js',
   './pages/prts.html',
   './pages/守夜人论坛.html',
   './pages/卡塞尔学院官网.html',
