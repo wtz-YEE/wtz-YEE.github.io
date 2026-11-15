@@ -23,7 +23,6 @@ if errorlevel 1 exit /b 1
 set HB2=
 for /f "delims=" %%h in ('type "%CLOUD%guard.heartbeat" 2^>nul') do set HB2=%%h
 for /f %%t in ('powershell -NoProfile -Command "[DateTimeOffset]::Now.ToUnixTimeSeconds()"') do set HB=%%t
-echo %HB%> "%CLOUD%guard.heartbeat"
 if defined HB2 (
   set /a D2=!HB!-!HB2!
   if !D2! lss 150 (
@@ -31,6 +30,7 @@ if defined HB2 (
     exit /b 2
   )
 )
+echo %HB%> "%CLOUD%guard.heartbeat"
 echo [%date% %time%] 守护已启动
 set FAIL=0
 set CF=0
@@ -62,7 +62,7 @@ if errorlevel 1 (
   echo [%date% %time%] 本机服务异常 (连续失败 !FAIL!)
   if !FAIL! geq 5 (
     echo   终极修复：重启 cpolar 隧道 + 服务
-python "%CLOUD%start_tunnels.py"
+"%PY%" "%CLOUD%start_tunnels.py"
 ping -n 4 127.0.0.1 >nul
     set FAIL=3
   )
@@ -108,12 +108,12 @@ if !N! geq 4 (
         echo [%date% %time%] 公网隧道失联 (连续失败 !CF!)
         if !CF! geq 4 (
           echo   终极修复：强杀 cpolar 进程并重启
-          python "%CLOUD%start_tunnels.py"
+          "%PY%" "%CLOUD%start_tunnels.py"
           ping -n 4 127.0.0.1 >nul
           set CF=1
         ) else (
           echo   重启 cpolar 隧道
-python "%CLOUD%start_tunnels.py"
+"%PY%" "%CLOUD%start_tunnels.py"
 ping -n 4 127.0.0.1 >nul
         )
         ping -n 15 127.0.0.1 >nul
@@ -123,7 +123,7 @@ ping -n 4 127.0.0.1 >nul
       )
     )
   )
-  python "%CLOUD%get_url.py"
+  "%PY%" "%CLOUD%get_url.py"
   powershell -NoProfile -ExecutionPolicy Bypass -File "%CLOUD%push_cloud.ps1"
 )
 timeout /t 15 /nobreak >nul
