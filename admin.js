@@ -542,14 +542,15 @@ function rowDebate(x){
        '<button class="host" data-cres="'+esc(x.id)+'|'+esc(a.id)+'|challenger">挑战者胜</button>'+
        '<button data-cres="'+esc(x.id)+'|'+esc(a.id)+'|draw">平局</button>'+
        '<button data-cres="'+esc(x.id)+'|'+esc(a.id)+'|void">无效</button></div>');
-    return '<div class="c-cmt"><span>'+esc(a.char||'')+' · '+esc(a.user||'')+'</span>'+
+    return '<div class="c-cmt"><span>'+esc(a.char||'')+' · '+esc(a.user||'')+(a.ai_player?' · AI 陪练':'')+'</span>'+
       '<p>'+esc(cut(a.text||'',150))+'<br>'+tail+'</p><span></span></div>';
   }).join('');
-  var stateTxt=(x.winner&&x.status==='closed')?(WIN[x.winner]||x.winner):(x.status||'open');
+  var stateTxt=(x.winner&&x.status==='closed')?(WIN[x.winner]||x.winner):(x.status==='waiting'?'待裁定':(x.status||'open'));
+  var extra=(x.ai_spar?' · AI 陪练':'')+((+x.bet_total||0)>0?' · 竞猜 '+x.bet_total+' 分':'');
   return '<div class="c-row">'+
     '<div class="c-main"><div class="c-text"><b>'+esc(x.char||'')+'</b> vs <b>'+esc(x.target||'')+'</b>'+
       (body?' — '+esc(body):'')+'</div>'+
-    '<div class="c-sub">'+esc(x.user||'')+' · '+esc(x.time||'')+' · 比分 H '+sh+' : '+sc+' · '+esc(stateTxt)+' · 发言 '+args.length+'</div>'+
+    '<div class="c-sub">'+esc(x.user||'')+' · '+esc(x.time||'')+' · 比分 H '+sh+' : '+sc+' · '+esc(stateTxt)+' · 回合 '+Math.min(3,Math.floor(args.length/2)+1)+'/3 · 发言 '+args.length+'/6'+esc(extra)+'</div>'+
       (open?'<div class="c-comments on">'+(ar||'<div class="empty">暂无发言</div>')+'</div>':'')+
     '</div>'+
     '<div class="c-meta">论战<br>'+esc(stateTxt)+'<br>H '+sh+' : '+sc+'</div>'+

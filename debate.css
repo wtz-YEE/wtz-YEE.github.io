@@ -186,6 +186,40 @@
 .db-reply button:disabled{opacity:.35;cursor:not-allowed}
 .db-reply-note{margin-top:5px;font-family:var(--mono);font-size:8px;color:var(--ink3)}
 
+.db-post-h .db-status.wait{color:#8A6B00;border-color:#8A6B00}
+.db-spar-tag{
+  font-family:var(--mono);font-size:8px;font-style:normal;letter-spacing:.08em;
+  color:#FFF;background:var(--db-hot);padding:3px 6px;
+}
+.db-spar{margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.db-spar button{
+  border:1px solid var(--db-hot);background:#FFF;color:var(--db-hot);
+  padding:6px 10px;font-family:var(--mono);font-size:9px;letter-spacing:.06em;cursor:pointer;
+}
+.db-spar button:hover{background:var(--db-hot);color:#FFF}
+.db-spar button:disabled{opacity:.35;cursor:not-allowed}
+.db-spar span{font-family:var(--mono);font-size:8px;color:var(--ink3);line-height:1.6}
+
+.db-bet{margin-top:9px;border:1px dashed #BBB;background:#FAFAFA;padding:8px 9px}
+.db-bet-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.db-bet-h span{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;color:var(--db-hot)}
+.db-bet-h em{font-family:var(--mono);font-size:8px;font-style:normal;color:var(--ink3)}
+.db-bet-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.db-bet-row input{
+  flex:0 0 88px;min-width:0;border:1px solid #111;background:#FFF;color:var(--ink);
+  padding:6px 7px;font-family:var(--mono);font-size:10px;outline:none;
+}
+.db-bet-row input:focus{border-color:var(--db-hot)}
+.db-bet-row button{
+  border:1px solid #111;background:#FFF;color:var(--ink);
+  padding:0 9px;font-family:var(--mono);font-size:8.5px;cursor:pointer;white-space:nowrap;
+}
+.db-bet-row button:hover{background:var(--db-hot);border-color:var(--db-hot);color:#FFF}
+.db-bet-row button:disabled{opacity:.35;cursor:not-allowed}
+.db-bet-mine{margin-top:5px;font-family:var(--mono);font-size:8.5px;color:var(--ink)}
+.db-bet-tip{margin-top:5px;font-family:var(--mono);font-size:7.5px;line-height:1.6;color:var(--ink3)}
+.db-bet.done{opacity:.85}
+
 .db-verdict{--db-hot:#E60012;--db-gold:#111;--ink:#111;--ink2:#333;--ink3:#666;position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;padding:20px}
 .db-verdict.on{display:flex}
 .db-verdict-mask{position:absolute;inset:0;background:rgba(0,0,0,.76);backdrop-filter:blur(5px)}

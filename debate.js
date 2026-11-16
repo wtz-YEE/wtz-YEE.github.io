@@ -113,20 +113,27 @@ function localApi(path,p){
     for(var i=0;i<d.posts.length;i++) if(d.posts[i].id===p.pid) post=d.posts[i];
     if(!post) return {ok:false,msg:'论战帖不存在'};
     var args=post.args||[],isHost=post.user===u.username,side='challenger';
+    if(post.status==='closed') return {ok:false,msg:'该论战已封盘'};
+    if(args.length>=6||post.status==='waiting') return {ok:false,msg:'本场 3 回合已满，等待裁定'};
+    var chN=args.filter(function(a){return (a.side||'challenger')==='challenger'}).length;
+    var hostN=args.length-chN;
     if(isHost){
-      var challengers=args.filter(function(a){return (a.side||'challenger')==='challenger'});
-      if(!challengers.length) return {ok:false,msg:'需要挑战者先发言'};
+      if(chN<=hostN) return {ok:false,msg:'等待挑战者发言后再反击'};
       char=post.char;side='host';
     }else{
+      if(post.challenger&&post.challenger!==u.username) return {ok:false,msg:'本场已由 '+post.challenger+' 应战，无法再加入'};
+      if(chN>=3) return {ok:false,msg:'本场 3 回合已打满'};
+      if(chN>hostN) return {ok:false,msg:'等待发布者反击后再发言'};
       if(!char) return {ok:false,msg:'请选择你的角色'};
       if([post.char,post.target].indexOf(char)<0) return {ok:false,msg:'只能选择帖主指定的角色或对手'};
+      post.challenger=u.username;
     }
     if(!char) return {ok:false,msg:'请填写你的角色名'};
-    if(post.status==='closed') return {ok:false,msg:'该论战已封盘'};
     var aid=rid('da');
     d.users[u.username]=d.users[u.username]||{exp:0,wins:0,losses:0};
     post.args=args;
     post.args.push({id:aid,user:u.username,char:char,text:text,time:now(),side:side,result:'',host_delta:null,ch_delta:null,resolved_at:'',ai:{}});
+    if(post.args.length>=6) post.status='waiting';
     lsave(d);
     return {ok:true,msg:(side==='host'?'反击':'发言')+'已加入论战 · 本机暂存',id:aid,side:side,_local:true};
   }
@@ -238,10 +245,10 @@ function argHTML(a,hostChar,chChar){
     deltaTxt='发布者 '+(a.host_delta>0?'+':'')+(a.host_delta==null?'':a.host_delta)+' / 挑战者 '+(a.ch_delta>0?'+':'')+(a.ch_delta==null?'':a.ch_delta);
   }
   return '<div class="'+cls+'">'+
-    '<div class="db-arg-h"><b>'+esc(a.author?a.author.name:a.user)+'</b><em>'+esc(a.author?a.author.rank:'')+' · '+escapeExp(a.author)+(a.char?' · 角色「'+esc(a.char)+'」':'')+' · '+(a.side==='host'?'发布者':'挑战者')+'</em>'+
+    '<div class="db-arg-h"><b>'+esc(a.author?a.author.name:a.user)+'</b><em>'+esc(a.author?a.author.rank:'')+' · '+escapeExp(a.author)+(a.char?' · 角色「'+esc(a.char)+'」':'')+' · '+(a.side==='host'?'发布者':'挑战者')+(a.ai_player?' · AI 陪练':'')+'</em>'+
     (res?'<span class="db-result '+esc(a.result)+'">'+res+'</span>':'')+'</div>'+
     '<p>'+esc(a.text)+'</p>'+
-    pkHTML(a,hostChar,chChar)+
+    (a.ai_player?'':pkHTML(a,hostChar,chChar))+
     (deltaTxt?'<div class="db-arg-delta">'+deltaTxt+' · '+esc(a.resolved_at||'')+'</div>':'')+
     '</div>';
 }
@@ -254,6 +261,21 @@ function chCharBefore(p,a){
     if((x.side||'challenger')==='challenger'&&x.char)c=x.char;
   }
   return c;
+}
+function betHTML(p,u,ended){
+  if(state.local||!u||ended||p.ai_spar)return '';
+  if(p.user===u.username||p.challenger===u.username)return '';
+  var total=+p.bet_total||0,ph=+p.pool_host||0,pc=+p.pool_ch||0;
+  var head='<div class="db-bet-h"><span>观战竞猜</span><em>奖池 '+total+' 分 · 发布者 '+ph+' / 挑战者 '+pc+'</em></div>';
+  if(p.my_bet){
+    return '<div class="db-bet done">'+head+'<div class="db-bet-mine">已押 '+esc(p.my_bet.amount)+' 分 · '+(p.my_bet.pick==='host'?'发布者胜':'挑战者胜')+'</div></div>';
+  }
+  if(p.settled)return '';
+  return '<div class="db-bet">'+head+
+    '<div class="db-bet-row"><input type="number" min="1" max="50" step="1" value="10" data-bet-amount="1">'+
+    '<button type="button" data-bet="host" data-pid="'+esc(p.id)+'">押发布者</button>'+
+    '<button type="button" data-bet="challenger" data-pid="'+esc(p.id)+'">押挑战者</button></div>'+
+    '<div class="db-bet-tip">单注 1~50 分，每人一次，押错不退；平局或无效全额退款。</div></div>';
 }
 function postHTML(p,u){
   var isHost=!!(u&&p.user===u.username);
@@ -274,6 +296,11 @@ function postHTML(p,u){
   }
   var winTxt=winner==='host'?'发布者胜':(winner==='challenger'?'挑战者胜':(winner==='draw'?'平局':(winner==='void'?'无效':'')));
   var scoreTxt='H '+sh+' : '+sc;
+  var argsLen=(p.args||[]).length;
+  var rounds=p.rounds||3,maxArgs=p.max_args||6;
+  var roundNow=Math.min(rounds,Math.floor(argsLen/2)+1);
+  var waiting=p.status==='waiting'||argsLen>=maxArgs;
+  var aiSpar=!!p.ai_spar;
   var args='',hasChallengerArg=false;
   (p.args||[]).forEach(function(a){
     if((a.side||'challenger')==='challenger')hasChallengerArg=true;
@@ -301,33 +328,41 @@ function postHTML(p,u){
   });
   if(ended){
     reply='<div class="db-reply-note">本场已裁定，帖子已移入历史。</div>';
+  }else if(waiting){
+    reply='<div class="db-reply-note">本场 '+rounds+' 回合已满，等待管理员裁定。</div>';
   }else if(u&&isHost){
-    if(hasChallengerArg){
-      reply='<div class="db-reply db-reply-host"><input type="hidden" data-arg-char="1" value="'+esc(p.char)+'"><input data-arg-input="1" maxlength="300" placeholder="以「'+esc(p.char)+'」继续反击…"><button type="button" data-reply="'+esc(p.id)+'">反击</button></div>'+
-        '<div class="db-reply-note">你是发布者，可以用自己的角色无限次反击；AI 每轮重新研判胜率。</div>';
+    if(aiSpar&&!hasChallengerArg){
+      reply='<div class="db-reply-note">AI 陪练正在组织开场发言…</div>';
+    }else if(hasChallengerArg){
+      reply='<div class="db-reply db-reply-host"><input type="hidden" data-arg-char="1" value="'+esc(p.char)+'"><input data-arg-input="1" maxlength="300" placeholder="以「'+esc(p.char)+'」反击…"><button type="button" data-reply="'+esc(p.id)+'">反击</button></div>'+
+        '<div class="db-reply-note">回合制：挑战者先发言、你反击，交替进行，共 '+rounds+' 回合；满 '+maxArgs+' 条自动进入待裁定。</div>';
     }else{
-      reply='<div class="db-reply-note">这是你的论战，等待挑战者发言后再反击。</div>';
+      reply='<div class="db-reply-note">等待挑战者发言后再反击。没人应战可以让 AI 当陪练。</div>'+
+        (state.local?'':'<div class="db-spar"><button type="button" data-spar="'+esc(p.id)+'">召唤 AI 陪练</button><span>以「'+esc(p.target)+'」身份接战，不计经验、不开放竞猜</span></div>');
     }
   }else if(u&&!isHost){
-    if(p.challenger&&p.challenger!==u.username){
+    if(aiSpar){
+      reply='<div class="db-reply-note">本场由 AI 陪练接战，其他账号无法加入。</div>';
+    }else if(p.challenger&&p.challenger!==u.username){
       reply='<div class="db-reply-note">本场已由「'+esc(p.challenger)+'」应战，其他账号无法再加入。</div>';
     }else{
       reply='<div class="db-reply"><select data-arg-char="1">'+pick+'</select><input data-arg-input="1" maxlength="300" placeholder="发表你的言论，和发布者论战…"><button type="button" data-reply="'+esc(p.id)+'">发言</button></div>'+
-        '<div class="db-reply-note">只能选择帖主指定的角色或对手；一场论战只允许一位挑战者，所有发言裁定完后统一结算经验。</div>';
+        '<div class="db-reply-note">一场论战只允许一位挑战者；挑战者先发言，发布者反击，交替 '+rounds+' 回合，共 '+maxArgs+' 条。</div>';
     }
   }else{
     reply='<div class="db-reply-note">登录后可以发言，和发布者论战。</div>';
   }
+  var bet=betHTML(p,u,ended);
   return '<article class="db-post" data-post="'+esc(p.id)+'">'+
     '<div class="db-post-h"><span class="db-ava">◆</span><div class="db-who"><b>'+esc(p.host?p.host.name:p.user)+'</b><em>'+esc(p.host?p.host.rank:'')+' · EXP '+esc(p.host?p.host.exp:0)+' · 胜 '+esc(p.host?p.host.wins:0)+' / 负 '+esc(p.host?p.host.losses:0)+'</em></div>'+
-    '<span class="db-status '+(ended?'':'open')+'">'+(ended?'CLOSED':'OPEN')+'</span>'+
+    '<span class="db-status '+(ended?'':(waiting?'wait':'open'))+'">'+(ended?'CLOSED':(waiting?'WAIT':'OPEN'))+'</span>'+
     (canDel?'<button type="button" class="db-del" data-del="'+esc(p.id)+'">删除</button>':'')+'</div>'+
-    '<div class="db-match"><b>「'+esc(p.char)+'」</b><i>CHALLENGE</i><span>挑战「'+esc(p.target)+'」</span></div>'+
+    '<div class="db-match"><b>「'+esc(p.char)+'」</b><i>CHALLENGE</i><span>挑战「'+esc(p.target)+'」</span>'+(aiSpar?'<em class="db-spar-tag">AI 陪练</em>':'')+'</div>'+
     (p.body?'<p class="db-body">'+esc(p.body)+'</p>':'')+
-    '<div class="db-meta">'+esc(p.time)+' · 比分 '+scoreTxt+(pending?' · '+pending+' 条待裁定':'')+
-      (ended?(winTxt?' · '+winTxt+' · 已结算':' · 已封盘'):'')+'</div>'+
-    '<div class="db-args"><div class="db-args-h"><b>ARGUMENTS / '+((p.args||[]).length)+'</b><span>'+(pending?'等待管理员':'已全部裁定')+'</span></div>'+
-    (args||'<div class="db-reply-note">还没有人发言。登录后成为第一个挑战者。</div>')+reply+'</div></article>';
+    '<div class="db-meta">'+esc(p.time)+' · 比分 '+scoreTxt+' · 回合 '+roundNow+'/'+rounds+' · 发言 '+argsLen+'/'+maxArgs+(pending?' · '+pending+' 条待裁定':'')+
+      (ended?(winTxt?' · '+winTxt+' · 已结算':' · 已封盘'):(waiting?' · 回合已满，待裁定':''))+'</div>'+
+    '<div class="db-args"><div class="db-args-h"><b>ARGUMENTS / '+argsLen+'</b><span>'+(waiting?'3 回合已满 · 等待管理员':(pending?'等待管理员':'已全部裁定'))+'</span></div>'+
+    (args||'<div class="db-reply-note">还没有人发言。登录后成为第一个挑战者。</div>')+reply+bet+'</div></article>';
 }
 function renderList(){
   var box=$('dbList'),cnt=$('dbCount');if(!box)return;
@@ -550,6 +585,42 @@ function unresolve(pid,aid,btn){
     say('撤销失败：'+errText(err),false);
   });
 }
+function placeBet(pid,pick,btn){
+  var u=me();
+  if(!u){say('请先登录再下注',false);return}
+  if(state.local){say('本机模式不支持竞猜',false);return}
+  var wrap=btn.closest('.db-bet'),input=wrap?wrap.querySelector('[data-bet-amount]'):null;
+  var amount=parseInt(input?input.value:'',10);
+  if(!amount||amount<1||amount>50){say('单注积分需在 1~50 之间',false);return}
+  var btns=wrap?wrap.querySelectorAll('button'):[btn];
+  for(var i=0;i<btns.length;i++)btns[i].disabled=true;
+  callApi('/debate_bet',{pid:pid,pick:pick,amount:amount}).then(function(j){
+    for(var i=0;i<btns.length;i++)btns[i].disabled=false;
+    if(!j.ok){say(j.msg||'下注失败',false);return}
+    say(j.msg||'已下注',true);load();
+  }).catch(function(err){
+    for(var i=0;i<btns.length;i++)btns[i].disabled=false;
+    say('下注失败：'+errText(err),false);
+  });
+}
+function summonSpar(pid,btn){
+  var u=me();
+  if(!u){say('请先登录',false);return}
+  if(state.local){say('本机模式不支持 AI 陪练',false);return}
+  if(!confirm('召唤 AI 以「挑战目标」身份接战？AI 发言不计经验、不开放竞猜。'))return;
+  btn.disabled=true;btn.textContent='召唤中…';
+  callApi('/debate_ai_spar',{pid:pid}).then(function(j){
+    btn.disabled=false;btn.textContent='召唤 AI 陪练';
+    if(!j.ok){say(j.msg||'召唤失败',false);return}
+    say(j.msg||'AI 陪练已接战',true);
+    setTimeout(function(){load(true)},4000);
+    setTimeout(function(){load(true)},12000);
+    setTimeout(function(){load(true)},25000);
+  }).catch(function(err){
+    btn.disabled=false;btn.textContent='召唤 AI 陪练';
+    say('召唤失败：'+errText(err),false);
+  });
+}
 function bind(){
   var form=$('dbForm');if(form)form.addEventListener('submit',publish);  var list=$('dbList');
   if(list){
@@ -562,6 +633,10 @@ function bind(){
       if(win){resolve(win.getAttribute('data-pid'),win.getAttribute('data-aid'),win.getAttribute('data-win'),win);return}
       var un=e.target.closest('[data-unresolve]');
       if(un){unresolve(un.getAttribute('data-pid'),un.getAttribute('data-aid'),un);return}
+      var bet=e.target.closest('[data-bet]');
+      if(bet){placeBet(bet.getAttribute('data-pid'),bet.getAttribute('data-bet'),bet);return}
+      var sp=e.target.closest('[data-spar]');
+      if(sp){summonSpar(sp.getAttribute('data-spar'),sp);return}
     });
     list.addEventListener('keydown',function(e){
       if(e.key!=='Enter')return;
