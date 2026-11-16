@@ -1,4 +1,4 @@
-var C='wtz-site-v26';
+var C='wtz-site-v31';
 var U=[
   './',
   './index.html',
@@ -72,6 +72,16 @@ self.addEventListener('fetch',function(e){
       return res;
     }).catch(function(){
       return caches.match(r).then(function(hit){ return hit||caches.match('./index.html'); });
+    }));
+    return;
+  }
+  if(/\/(?:[^\/]*\.)?(?:css|js)$/i.test(u.pathname)){
+    e.respondWith(fetch(r).then(function(res){
+      var cp=res.clone();
+      if(res.ok) caches.open(C).then(function(c){ c.put(r,cp); });
+      return res;
+    }).catch(function(){
+      return caches.match(r).then(function(hit){ return hit||fetch(r); });
     }));
     return;
   }

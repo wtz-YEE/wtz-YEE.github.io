@@ -24,7 +24,7 @@
   function css(){
     if(document.querySelector('link[data-unav-css]')) return;
     var l=document.createElement('link');
-    l.rel='stylesheet';l.href=base+'nav.css';l.setAttribute('data-unav-css','1');
+    l.rel='stylesheet';l.href=base+'nav.css?v=31';l.setAttribute('data-unav-css','1');
     document.head.appendChild(l);
   }
   function findOld(){

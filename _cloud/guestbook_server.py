@@ -2870,6 +2870,29 @@ def api_debate_add():
         _save(DEBATE_FILE, d)
     return jsonify({"ok": True, "msg": "论战已发布", "id": pid})
 
+@app.route("/debate_del", methods=["POST"])
+def api_debate_del():
+    p = _debate_payload()
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录"})
+    pid = str(p.get("pid") or "").strip()
+    if not pid:
+        return jsonify({"ok": False, "msg": "论战帖不存在"})
+    with DEBATE_LOCK:
+        users = _load(USER_FILE, {})
+        d = _load(DEBATE_FILE, {"posts": []})
+        posts = d.get("posts") or []
+        post = next((x for x in posts if x.get("id") == pid), None)
+        if not post:
+            return jsonify({"ok": False, "msg": "论战帖不存在"})
+        if post.get("user") != cu and not _debate_admin(cu, users):
+            return jsonify({"ok": False, "msg": "只有帖主或管理员可以删除"})
+        d["posts"] = [x for x in posts if x.get("id") != pid]
+        _save(DEBATE_FILE, d)
+    return jsonify({"ok": True, "msg": "论战帖已删除", "id": pid})
+
+
 @app.route("/debate_arg", methods=["POST"])
 def api_debate_arg():
     p = _debate_payload()
@@ -2881,24 +2904,33 @@ def api_debate_arg():
     char = str(p.get("char") or "").strip()[:24]
     if not pid or not text:
         return jsonify({"ok": False, "msg": "论战帖和发言不能为空"})
-    if not char:
-        return jsonify({"ok": False, "msg": "请填写你的角色名"})
     with DEBATE_LOCK:
         d = _load(DEBATE_FILE, {"posts": []})
         posts = d.get("posts") or []
         post = next((x for x in posts if x.get("id") == pid), None)
         if not post:
             return jsonify({"ok": False, "msg": "论战帖不存在"})
-        if post.get("user") == cu:
-            return jsonify({"ok": False, "msg": "发布者不能挑战自己的论战"})
-        if any((x.get("user") or "") == cu for x in (post.get("args") or [])):
-            return jsonify({"ok": False, "msg": "你已经参与过这场论战"})
         if post.get("status") == "closed":
             return jsonify({"ok": False, "msg": "该论战已封盘"})
+        args = post.get("args") or []
+        is_host = post.get("user") == cu
+        if is_host:
+            challengers = [x for x in args if (x.get("side") or "challenger") == "challenger"]
+            if not challengers:
+                return jsonify({"ok": False, "msg": "需要挑战者先发言"})
+            char = str(post.get("char") or "")[:24]
+            side = "host"
+        else:
+            if not char:
+                return jsonify({"ok": False, "msg": "请选择你的角色"})
+            allowed = [str(post.get("char") or ""), str(post.get("target") or "")]
+            if char not in allowed:
+                return jsonify({"ok": False, "msg": "只能选择帖主指定的角色或对手"})
+            side = "challenger"
         aid = "da" + str(int(_time.time() * 1000)) + str(_random.random())[2:7]
         post.setdefault("args", []).append({
             "id": aid, "user": cu, "char": char, "text": text, "time": _now(),
-            "result": "", "host_delta": None, "ch_delta": None, "resolved_at": "",
+            "side": side, "result": "", "host_delta": None, "ch_delta": None, "resolved_at": "",
             "ai_state": "pending"
         })
         _save(DEBATE_FILE, d)
@@ -2906,7 +2938,7 @@ def api_debate_arg():
         _th.Thread(target=_debate_ai_worker, args=(pid, aid), daemon=True).start()
     except Exception:
         pass
-    return jsonify({"ok": True, "msg": "发言已加入论战", "id": aid, "ai_pending": True})
+    return jsonify({"ok": True, "msg": ("反击" if side == "host" else "发言") + "已加入论战", "id": aid, "side": side, "ai_pending": True})
 
 @app.route("/debate_resolve", methods=["POST"])
 def api_debate_resolve():
@@ -2931,7 +2963,18 @@ def api_debate_resolve():
         if arg.get("result"):
             return jsonify({"ok": False, "msg": "这条论战已经定过胜负"})
         host = post.get("user") or ""
-        ch = arg.get("user") or ""
+        side = arg.get("side") or "challenger"
+        if side == "host":
+            ch = ""
+            for x in (post.get("args") or []):
+                if x.get("id") == arg.get("id"):
+                    break
+                if (x.get("side") or "challenger") == "challenger":
+                    ch = x.get("user") or ch
+        else:
+            ch = arg.get("user") or ""
+        if not ch:
+            return jsonify({"ok": False, "msg": "挑战者记录不存在"})
         if host not in users or ch not in users:
             return jsonify({"ok": False, "msg": "参与者账号已不存在"})
         host_exp = _debate_exp(host, users)
@@ -2951,6 +2994,10 @@ def api_debate_resolve():
         arg["ch_delta"] = cd
         arg["resolved_at"] = _now()
         arg["resolved_by"] = cu
+        args_all = post.get("args") or []
+        if args_all and all(x.get("result") for x in args_all):
+            post["status"] = "closed"
+            post["closed_at"] = _now()
         _save(USER_FILE, users)
         _save(DEBATE_FILE, d)
         after_host = _debate_rank(_debate_exp(host, users))["name"]
@@ -3029,17 +3076,30 @@ def _debate_ai_parse(txt):
 
 
 def _debate_ai_snap(post, arg):
+    side = arg.get("side") or "challenger"
     history = []
+    host_text = post.get("body") or ""
+    challenger = None
     for x in (post.get("args") or []):
         if x.get("id") == arg.get("id"):
             break
-        history.append("挑战者「" + str(x.get("char") or "挑战者") + "」：" + str(x.get("text") or ""))
+        xs = x.get("side") or "challenger"
+        who = "发布者" if xs == "host" else "挑战者"
+        history.append(who + "「" + str(x.get("char") or who) + "」：" + str(x.get("text") or ""))
+        if xs == "challenger":
+            challenger = x
+        elif xs == "host":
+            host_text = x.get("text") or host_text
+    if side == "host":
+        host_text = arg.get("text") or host_text
+    else:
+        challenger = arg
     return {
         "host_char": post.get("char") or "",
         "target": post.get("target") or "",
-        "host_body": post.get("body") or "",
-        "ch_char": arg.get("char") or "挑战者",
-        "ch_text": arg.get("text") or "",
+        "host_body": host_text,
+        "ch_char": (challenger or {}).get("char") or "挑战者",
+        "ch_text": (challenger or {}).get("text") or "（尚未发言）",
         "history": "\n".join(history[-6:])[-1200:]
     }
 
@@ -3053,9 +3113,9 @@ def _debate_ai_request(cfg, snap):
     user = (
         "【发布者角色】" + str(snap.get("host_char") or "") + "\n"
         "【挑战目标】" + str(snap.get("target") or "") + "\n"
-        "【发布者宣言】" + (str(snap.get("host_body") or "") or "（未写宣言）") + "\n"
+        "【发布者本轮发言】" + (str(snap.get("host_body") or "") or "（尚未发言）") + "\n"
         "【挑战者角色】" + str(snap.get("ch_char") or "挑战者") + "\n"
-        "【挑战者本轮发言】" + str(snap.get("ch_text") or "") + "\n" +
+        "【挑战者本轮发言】" + str(snap.get("ch_text") or "（尚未发言）") + "\n" +
         ("【此前交锋】\n" + str(snap.get("history") or "") + "\n" if snap.get("history") else "") +
         "请给出本轮双方胜率和将失败的一方；若尚不构成明显败势，loser 留空。"
     )

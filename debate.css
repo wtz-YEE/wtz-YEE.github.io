@@ -13,6 +13,7 @@
   border:1px solid #111;
   background:#FFF;
   scroll-margin-top:52px;
+  overflow-wrap:anywhere;
 }
 
 .db-head{
@@ -102,17 +103,20 @@
 .db-list-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:20px 0 9px}
 .db-list-h b{font-size:13px;letter-spacing:.1em}
 .db-list-h span{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--ink3)}
-.db-list{display:flex;flex-direction:column;gap:12px}
+.db-list{display:flex;flex-direction:column;gap:12px;min-width:0}
+.db-history-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:18px 0 2px;padding-top:16px;border-top:1px solid #111}
+.db-history-head b{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--db-hot);font-weight:400}
+.db-history-head span{font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--ink3)}
 .db-empty{padding:28px 14px;border:1px dashed #BBB;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink3)}
 
-.db-post{border:1px solid #111;background:#FFF}
-.db-post-h{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid #111}
+.db-post{border:1px solid #111;background:#FFF;min-width:0}
+.db-post-h{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid #111;flex-wrap:wrap;min-width:0}
 .db-ava{
   width:28px;height:28px;display:grid;place-items:center;flex:none;
   border:1px solid #111;background:#FFF;color:var(--db-hot);
   font-family:var(--mono);font-size:11px;
 }
-.db-who{min-width:0}
+.db-who{min-width:0;flex:1 1 140px}
 .db-who b{display:block;font-size:11.5px;font-weight:500;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .db-who em{display:block;margin-top:2px;font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;color:var(--ink3);font-style:normal}
 .db-post-h .db-status{
@@ -120,6 +124,9 @@
   border:1px solid #111;padding:3px 6px;color:var(--ink);white-space:nowrap;
 }
 .db-post-h .db-status.open{color:var(--db-hot);border-color:var(--db-hot)}
+.db-post-h .db-del{flex:none;border:1px solid #111;background:#FFF;color:var(--ink3);padding:3px 6px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;cursor:pointer}
+.db-post-h .db-del:hover{border-color:var(--db-hot);color:#FFF;background:var(--db-hot)}
+.db-post-h .db-del:disabled{opacity:.35;cursor:not-allowed}
 
 .db-match{display:flex;align-items:center;gap:10px;padding:14px 13px 0;flex-wrap:wrap}
 .db-match b{font-size:clamp(18px,2.2vw,26px);letter-spacing:.08em;color:var(--ink)}
@@ -143,7 +150,8 @@
 .db-arg-h .db-result.challenger{color:var(--ink);border-color:var(--ink)}
 .db-arg p{margin:4px 0 0;font-size:10.5px;line-height:1.7;color:var(--ink2);word-break:break-word}
 .db-pk{margin-top:7px;border:1px solid #111;background:#F5F5F5;padding:6px 8px}
-.db-pk-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:8.5px;letter-spacing:.05em;color:var(--ink3)}
+.db-pk-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:8.5px;letter-spacing:.05em;color:var(--ink3)}
+.db-pk-top span{min-width:0;overflow-wrap:anywhere}
 .db-pk-top b{font-size:11px;font-weight:500;color:var(--ink)}
 .db-pk-top span:first-child b{color:var(--ink)}
 .db-pk-top span:last-child b{color:var(--db-hot)}
@@ -163,9 +171,10 @@
 .db-resolve button[data-win="host"]:hover{border-color:var(--ink);color:#FFF;background:var(--ink)}
 .db-resolve button[data-win="challenger"]:hover{border-color:var(--db-hot);color:#FFF;background:var(--db-hot)}
 
-.db-reply{display:flex;gap:7px;margin-top:2px}
-.db-reply [data-arg-char]{flex:0 0 108px}
-.db-reply input{flex:1;min-width:0;padding:7px 8px;font-size:10.5px}
+.db-reply{display:flex;gap:7px;margin-top:2px;flex-wrap:wrap}
+.db-reply [data-arg-char]{flex:0 0 118px}
+.db-reply input,.db-reply select{flex:1;min-width:0;padding:7px 8px;font-size:10.5px;border:1px solid #111;background:#FFF;color:var(--ink);font-family:inherit}
+.db-reply select{flex:0 0 118px;cursor:pointer}
 .db-reply button{
   border:1px solid #111;background:#FFF;color:var(--ink);
   padding:0 10px;font-family:var(--mono);font-size:9px;cursor:pointer;white-space:nowrap;
@@ -205,6 +214,11 @@ body.db-verdict-lock{overflow:hidden}
   .db-login-hint{margin-left:0;flex-basis:100%}
   .db-match{gap:7px}
   .db-post-h{padding:9px 10px}
+  .db-post-h .db-status{margin-left:0}
+  .db-post-h .db-del{margin-left:auto}
+  .db-reply select{flex:0 0 100%}
+  .db-reply input{flex:0 0 100%}
+  .db-reply button{flex:0 0 auto;min-height:34px}
   .db-match,.db-body,.db-meta,.db-args{padding-left:10px;padding-right:10px}
 }
 

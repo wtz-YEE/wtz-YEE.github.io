@@ -6,10 +6,10 @@
 <title>社区 · WTZ 个人网站</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#080A0B">
-<link rel="stylesheet" href="index.css">
-<link rel="stylesheet" href="community.css">
-<link rel="stylesheet" href="debate.css">
-<link rel="stylesheet" href="intro.css">
+<link rel="stylesheet" href="index.css?v=31">
+<link rel="stylesheet" href="community.css?v=31">
+<link rel="stylesheet" href="debate.css?v=31">
+<link rel="stylesheet" href="intro.css?v=31">
 </head>
 <body class="cm-body" data-intro="community">
 
@@ -204,7 +204,7 @@
       <div class="db-head-l">
         <div class="db-kick"><i></i>SECTION 03.5 / DEBATE ARENA</div>
         <h2 id="dbTitle">论战<small>选角色 · 立目标 · 开战</small></h2>
-        <p>挑一个角色，向一个目标宣战。所有人可围观、发言；胜负由管理员裁定，赢家涨经验，输家掉经验。</p>
+        <p>挑一个角色，向一个目标宣战。后来者只能从这两个身份中选择；发布者也可反击，全部裁定后帖子进入历史。</p>
       </div>
       <div class="db-me" id="dbMe">
         <span class="db-me-k">MY RECORD</span>
@@ -224,8 +224,8 @@
           <div class="db-panel-h"><b>规则 / RULES</b><span>ADMIN DECIDES</span></div>
           <ol>
             <li>发布者选角色与挑战目标，立帖。</li>
-            <li>其他用户发言，和发布者论战。</li>
-            <li>管理员为每条发言裁定胜方。</li>
+            <li>其他用户只能从发布者角色或挑战目标中选择身份参与；双方发言次数不限，发布者也可无限反击。</li>
+            <li>管理员为每条发言裁定胜方；全部裁定后帖子移入底部历史。</li>
             <li>胜方获得经验，败方扣除经验。</li>
             <li>对手段位越高，赢得的经验越多，输掉时损失也越重。</li>
             <li class="db-rule-note">经验：胜方 14 + 对方段位×6；败方 6 + 对方段位×3；越级挑战额外加成。</li>
@@ -238,7 +238,7 @@
           <div class="db-form-h"><b>发起论战</b><span>OPEN A DEBATE</span></div>
           <div class="db-fields">
             <label>角色<input id="dbChar" maxlength="24" placeholder="输入角色名称"></label>
-            <label>挑战目标<input id="dbTarget" maxlength="30" placeholder="输入挑战对象"></label>
+            <label>挑战目标 / 对手角色<input id="dbTarget" maxlength="30" placeholder="输入挑战对象，同时作为可选身份"></label>
           </div>
           <textarea id="dbBody" maxlength="300" placeholder="一句话宣言，可留空"></textarea>
           <div class="db-form-a">
@@ -407,10 +407,10 @@
   </div>
 </div>
 
-<script src="community.js"></script>
-<script src="debate.js"></script>
-<script src="nav.js"></script>
-<script src="intro.js"></script>
+<script src="community.js?v=31"></script>
+<script src="debate.js?v=31"></script>
+<script src="nav.js?v=31"></script>
+<script src="intro.js?v=31"></script>
 
 </body>
 </html>
