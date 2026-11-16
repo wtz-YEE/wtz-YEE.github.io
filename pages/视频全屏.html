@@ -23,6 +23,8 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
 .gatebox em{display:inline-block;margin-top:16px;border-top:1px solid rgba(255,255,255,.6);padding-top:6px;font:10px Consolas,monospace;letter-spacing:.2em;color:#fff;font-style:normal}
 .sound{position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));z-index:30;transform:translateX(-50%);border:1px solid rgba(255,255,255,.36);background:rgba(0,0,0,.72);color:#fff;padding:9px 14px;font:11px Consolas,monospace;letter-spacing:.08em;cursor:pointer;display:none;white-space:nowrap}
 .sound.show{display:block}
+.fs{position:fixed;right:16px;top:max(16px,env(safe-area-inset-top));z-index:30;border:1px solid rgba(255,255,255,.36);background:rgba(0,0,0,.72);color:#fff;padding:9px 14px;font:11px Consolas,monospace;letter-spacing:.08em;cursor:pointer;display:none;white-space:nowrap}
+.fs.show{display:block}
 .err{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:24px;background:#000;color:#fff;text-align:center}
 .err.show{display:flex}
 .err p{max-width:360px;margin:0;font:12px/1.8 Consolas,monospace;color:rgba(255,255,255,.7);letter-spacing:.05em}
@@ -40,6 +42,7 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
   </div>
 </div>
 <button class="sound" id="sound" type="button">点击开启声音</button>
+<button class="fs" id="fs" type="button">全屏</button>
 <div class="err" id="err"><p><b id="errTitle">链接无效</b><span id="errMsg">没有找到可播放的视频。</span></p></div>
 <script src="shared.js?v=20261115"></script>
 <script>
@@ -48,10 +51,11 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
   var v=document.getElementById('v'),gate=document.getElementById('gate');
   var gateTitle=document.getElementById('gateTitle'),gateMsg=document.getElementById('gateMsg');
   var sound=document.getElementById('sound'),err=document.getElementById('err');
+  var fsbtn=document.getElementById('fs');
   var errTitle=document.getElementById('errTitle'),errMsg=document.getElementById('errMsg');
   var qv=new URLSearchParams(location.search);
   var id=qv.get('id')||'',src=qv.get('src')||'',t=Math.max(0,Math.floor(Number(qv.get('t'))||0));
-  var loop=qv.get('loop')==='1',loaded=false,started=false,fsAttempt=false;
+  var loop=qv.get('loop')==='1',loaded=false,started=false,played=false,fsAttempt=false;
 
   function fail(msg){errTitle.textContent='无法播放';errMsg.textContent=msg;err.classList.add('show');gate.classList.add('hide');sound.classList.remove('show')}
   function srcUrl(u){if(!u)return '';if(u.charAt(0)==='/'){try{return apiBase()+u}catch(e){return u}}return u}
@@ -71,7 +75,8 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
   function sync(){
     if(err.classList.contains('show'))return;
     var full=isFs();
-    if(full){gate.classList.add('hide')}else{gate.classList.remove('hide')}
+    if(full||played){gate.classList.add('hide')}else{gate.classList.remove('hide')}
+    fsbtn.classList.toggle('show',played&&!full);
     sound.classList.toggle('show',!!v.muted&&!v.paused);
   }
   function tryPlay(){
@@ -93,7 +98,7 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
     v.muted=false;gate.classList.remove('hide');
     try{v.play()}catch(e){}
     v.controls=true;
-    enterFs().then(function(){gate.classList.add('hide');setTimeout(sync,200)}).catch(function(){gateTitle.textContent='点击重试全屏';gateMsg.textContent='如果浏览器不允许全屏，视频会在当前页面继续播放。';setTimeout(sync,200)});
+    enterFs().then(function(){gate.classList.add('hide');setTimeout(sync,200)}).catch(function(){v.controls=true;played=true;gate.classList.add('hide');setTimeout(sync,200)});
   }
   function boot(){
     if(!src&&!id){fail('链接缺少视频编号。');return}
@@ -123,7 +128,7 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
   }
   v.addEventListener('loadedmetadata',onMeta);
   v.addEventListener('canplay',function(){tryPlay();sync()});
-  v.addEventListener('playing',sync);
+  v.addEventListener('playing',function(){played=true;sync()});
   v.addEventListener('volumechange',sync);
   v.addEventListener('error',function(){if(loaded)fail('视频文件无法加载，可能是不支持的编码或网络中断。')});
   document.addEventListener('fullscreenchange',sync);
@@ -131,6 +136,7 @@ html,body{height:100%;margin:0;background:#000;overflow:hidden}
   document.addEventListener('msfullscreenchange',sync);
   gate.addEventListener('click',enter);
   gate.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')enter()});
+  fsbtn.addEventListener('click',function(e){e.stopPropagation();enter()});
   sound.addEventListener('click',function(){v.muted=false;try{v.play()}catch(e){};sync()});
   v.addEventListener('click',function(){if(v.muted){v.muted=false;sync()}});
   setTimeout(function(){

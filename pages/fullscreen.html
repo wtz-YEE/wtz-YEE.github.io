@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#000000">
+<title>▶ PLAY</title>
+<script>
+if(location.protocol==='http:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1'&&location.hostname!=='::1'){
+  location.replace('https://'+location.host+location.pathname+location.search+location.hash);
+}
+</script>
+<link rel="icon" href="../icon-192.png">
+<style>
+html,body{height:100%;margin:0;background:#000;overflow:hidden}
+#v{position:fixed;inset:0;width:100%;height:100%;object-fit:contain;background:#000;outline:none}
+.gate{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.58);cursor:pointer;text-align:center;color:#fff}
+.gate.hide{display:none}
+.gatebox{max-width:420px}
+.gatebox b{display:block;font:600 17px/1.5 "Segoe UI","Microsoft YaHei",sans-serif;letter-spacing:.08em}
+.gatebox span{display:block;margin-top:9px;color:rgba(255,255,255,.62);font-size:11.5px;line-height:1.7;letter-spacing:.04em}
+.gatebox em{display:inline-block;margin-top:16px;border-top:1px solid rgba(255,255,255,.6);padding-top:6px;font:10px Consolas,monospace;letter-spacing:.2em;color:#fff;font-style:normal}
+.sound{position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));z-index:30;transform:translateX(-50%);border:1px solid rgba(255,255,255,.36);background:rgba(0,0,0,.72);color:#fff;padding:9px 14px;font:11px Consolas,monospace;letter-spacing:.08em;cursor:pointer;display:none;white-space:nowrap}
+.sound.show{display:block}
+.fs{position:fixed;right:16px;top:max(16px,env(safe-area-inset-top));z-index:30;border:1px solid rgba(255,255,255,.36);background:rgba(0,0,0,.72);color:#fff;padding:9px 14px;font:11px Consolas,monospace;letter-spacing:.08em;cursor:pointer;display:none;white-space:nowrap}
+.fs.show{display:block}
+.err{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:24px;background:#000;color:#fff;text-align:center}
+.err.show{display:flex}
+.err p{max-width:360px;margin:0;font:12px/1.8 Consolas,monospace;color:rgba(255,255,255,.7);letter-spacing:.05em}
+.err b{display:block;margin-bottom:10px;font-size:15px;color:#fff;letter-spacing:.08em}
+@media(max-width:600px){.gatebox b{font-size:15px}.gatebox span{font-size:11px}}
+</style>
+</head>
+<body>
+<video id="v" playsinline webkit-playsinline preload="auto" controlslist="nodownload"></video>
+<div class="gate" id="gate" role="button" tabindex="0" aria-label="进入全屏播放">
+  <div class="gatebox">
+    <b id="gateTitle">点击进入全屏播放</b>
+    <span id="gateMsg">浏览器要求一次点击才能全屏；点击后自动开启声音。</span>
+    <em>PLAY FULLSCREEN</em>
+  </div>
+</div>
+<button class="sound" id="sound" type="button">点击开启声音</button>
+<button class="fs" id="fs" type="button">全屏</button>
+<div class="err" id="err"><p><b id="errTitle">链接无效</b><span id="errMsg">没有找到可播放的视频。</span></p></div>
+<script src="shared.js?v=20261115"></script>
+<script>
+(function(){
+  'use strict';
+  var v=document.getElementById('v'),gate=document.getElementById('gate');
+  var gateTitle=document.getElementById('gateTitle'),gateMsg=document.getElementById('gateMsg');
+  var sound=document.getElementById('sound'),err=document.getElementById('err');
+  var fsbtn=document.getElementById('fs');
+  var errTitle=document.getElementById('errTitle'),errMsg=document.getElementById('errMsg');
+  var qv=new URLSearchParams(location.search);
+  var id=qv.get('id')||'',src=qv.get('src')||'',t=Math.max(0,Math.floor(Number(qv.get('t'))||0));
+  var loop=qv.get('loop')==='1',loaded=false,started=false,played=false,fsAttempt=false;
+
+  function fail(msg){errTitle.textContent='无法播放';errMsg.textContent=msg;err.classList.add('show');gate.classList.add('hide');sound.classList.remove('show')}
+  function srcUrl(u){if(!u)return '';if(u.charAt(0)==='/'){try{return apiBase()+u}catch(e){return u}}return u}
+  function isFs(){return !!(document.fullscreenElement||document.webkitFullscreenElement||document.msFullscreenElement||v.webkitDisplayingFullscreen)}
+  function reqFs(){
+    var el=document.documentElement;
+    var fn=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+    if(!fn)return Promise.reject();
+    try{var r=fn.call(el);return r&&r.then?r:Promise.resolve()}catch(e){return Promise.reject(e)}
+  }
+  function enterFs(){
+    if(v.webkitEnterFullscreen&&(v.webkitEnterFullscreen instanceof Function)){
+      try{v.webkitEnterFullscreen();return Promise.resolve()}catch(e){}
+    }
+    return reqFs();
+  }
+  function sync(){
+    if(err.classList.contains('show'))return;
+    var full=isFs();
+    if(full||played){gate.classList.add('hide')}else{gate.classList.remove('hide')}
+    fsbtn.classList.toggle('show',played&&!full);
+    sound.classList.toggle('show',!!v.muted&&!v.paused);
+  }
+  function tryPlay(){
+    if(started)return;started=true;
+    var p=v.play();
+    if(p&&p.catch){
+      p.catch(function(){
+        try{
+          v.muted=true;
+          var q=v.play();
+          if(q&&q.catch)q.catch(function(){});
+        }catch(e){}
+        gateMsg.textContent='点击进入全屏并开启声音。';
+        sync();
+      });
+    }
+  }
+  function enter(){
+    v.muted=false;gate.classList.remove('hide');
+    try{v.play()}catch(e){}
+    v.controls=true;
+    enterFs().then(function(){gate.classList.add('hide');setTimeout(sync,200)}).catch(function(){v.controls=true;played=true;gate.classList.add('hide');setTimeout(sync,200)});
+  }
+  function boot(){
+    if(!src&&!id){fail('链接缺少视频编号。');return}
+    if(src&&!(/^https:\/\//i.test(src)||/^\/videos\//.test(src))){fail('视频地址无效。');return}
+    if(src){apply(src,'');return}
+    if(typeof call!=='function'){fail('云端组件未加载。');return}
+    call('/video_list').then(function(j){
+      if(!j||!j.ok){fail((j&&j.msg)||'视频列表读取失败。');return}
+      var list=j.list||[],x=null;
+      for(var i=0;i<list.length;i++){if(String(list[i].id)===String(id)){x=list[i];break}}
+      if(!x){fail('视频不存在或已被删除。');return}
+      apply(x.src,x.cov||'');
+    }).catch(function(){fail('云端连接失败，稍后重试。')});
+  }
+  function apply(u,poster){
+    if(!u){fail('视频地址为空。');return}
+    if(poster)v.poster=poster;
+    v.src=srcUrl(u);
+    v.loop=loop;
+    v.load();
+    loaded=true;
+    tryPlay();
+  }
+  function onMeta(){
+    if(t>2&&t<(v.duration-1)){try{v.currentTime=t}catch(e){}}
+    tryPlay();
+  }
+  v.addEventListener('loadedmetadata',onMeta);
+  v.addEventListener('canplay',function(){tryPlay();sync()});
+  v.addEventListener('playing',function(){played=true;sync()});
+  v.addEventListener('volumechange',sync);
+  v.addEventListener('error',function(){if(loaded)fail('视频文件无法加载，可能是不支持的编码或网络中断。')});
+  document.addEventListener('fullscreenchange',sync);
+  document.addEventListener('webkitfullscreenchange',sync);
+  document.addEventListener('msfullscreenchange',sync);
+  gate.addEventListener('click',enter);
+  gate.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')enter()});
+  fsbtn.addEventListener('click',function(e){e.stopPropagation();enter()});
+  sound.addEventListener('click',function(){v.muted=false;try{v.play()}catch(e){};sync()});
+  v.addEventListener('click',function(){if(v.muted){v.muted=false;sync()}});
+  setTimeout(function(){
+    if(!fsAttempt&&!isFs()&&v.readyState>=1){fsAttempt=true;enterFs().then(sync).catch(sync)}
+  },700);
+  try{enterFs().then(function(){setTimeout(sync,300)}).catch(function(){})}catch(e){}
+  boot();
+  sync();
+})();
+</script>
+</body>
+</html>

@@ -39,6 +39,7 @@ var U=[
   './pages/guestwall.html',
   './pages/视频播放.html',
   './pages/视频全屏.html',
+  './pages/fullscreen.html',
   './pages/视频发布.html',
   './pages/碎片收集.html',
   './pages/PRTS泰拉大典终端.html',

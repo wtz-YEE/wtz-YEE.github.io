@@ -360,7 +360,7 @@ body.share-open{overflow:hidden}
   function buildPrankURL(v){
     var t=shAt.checked?Math.max(0,Math.floor(pv.currentTime||0)):0;
     var src=String(v.src||'');
-    return pageURL('视频全屏.html')+'?id='+encodeURIComponent(String(v.id||''))+(src?'&src='+encodeURIComponent(src):'')+(t>0?'&t='+t:'');
+    return pageURL('fullscreen.html')+'?id='+encodeURIComponent(String(v.id||''))+(src?'&src='+encodeURIComponent(src):'')+(t>0?'&t='+t:'');
   }
   function doPrank(){
     if(!SHV)return;var u=buildPrankURL(SHV);
