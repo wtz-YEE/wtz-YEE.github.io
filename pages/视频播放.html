@@ -298,6 +298,7 @@ body.share-open{overflow:hidden}
       <button class="sh-opt" id="shCopy" type="button"><b>COPY</b>复制链接</button>
       <button class="sh-opt" id="shNative" type="button"><b>SYSTEM</b>系统分享</button>
       <button class="sh-opt" id="shQr" type="button"><b>QR</b>二维码</button>
+      <button class="sh-opt" id="shPrank" type="button"><b>PRANK</b>整蛊链接</button>
     </div>
     <div class="sh-qr" id="shQrPanel">
       <div class="qrbox" id="shQrBox"></div>
@@ -321,7 +322,7 @@ body.share-open{overflow:hidden}
   var shMeta=document.getElementById('shMeta'),shCover=document.getElementById('shCover'),shAt=document.getElementById('shAt');
   var shAtHint=document.getElementById('shAtHint'),shCopy=document.getElementById('shCopy'),shNative=document.getElementById('shNative');
   var shQrBtn=document.getElementById('shQr'),shQrPanel=document.getElementById('shQrPanel'),shQrBox=document.getElementById('shQrBox');
-  var shQrTip=document.getElementById('shQrTip'),shCloseBtn=document.getElementById('shClose');
+  var shQrTip=document.getElementById('shQrTip'),shCloseBtn=document.getElementById('shClose'),shPrank=document.getElementById('shPrank');
   var ALL=[],CZ='全部',SORT='rec',KW='',CUR_REL=[],VIEWED=false,PK='wtz_vprog_',SHV=null,SHURL='',QRSHOWN=false;
   function fmtT(s){s=Math.max(0,Math.floor(Number(s)||0));var m=Math.floor(s/60),x=s%60;return m+':'+(x<10?'0':'')+x}
   function shareCount(v){return Number(v&&v.shares||0)}
@@ -340,6 +341,26 @@ body.share-open{overflow:hidden}
     SHURL=buildShareURL(SHV);shURL.value=SHURL;
     var t=shAt.checked?Math.max(0,Math.floor(pv.currentTime||0)):0;
     shAtHint.textContent=t>0?('从 '+fmtT(t)+' 开始'):'从头播放';
+  }
+  function pageURL(name){
+    var p=location.href.split('?')[0].split('#')[0];
+    return p.replace(/[^\/]*$/,name);
+  }
+  function buildPrankURL(v){
+    var t=shAt.checked?Math.max(0,Math.floor(pv.currentTime||0)):0;
+    var src=String(v.src||'');
+    return pageURL('视频全屏.html')+'?id='+encodeURIComponent(String(v.id||''))+(src?'&src='+encodeURIComponent(src):'')+(t>0?'&t='+t:'');
+  }
+  function doPrank(){
+    if(!SHV)return;var u=buildPrankURL(SHV);
+    function done(){try{window.toast?window.toast('整蛊链接已复制'):alert('整蛊链接已复制')}catch(e){}updateShareURL();countShare(SHV,'prank')}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(u).then(done).catch(function(){
+        try{shURL.value=u;shURL.select();document.execCommand('copy');done()}catch(e){var r=prompt('整蛊链接',u);if(r!==null)done()}
+      });
+    }else{
+      try{shURL.value=u;shURL.select();document.execCommand('copy');done()}catch(e){var r=prompt('整蛊链接',u);if(r!==null)done()}
+    }
   }
   function closeShare(){
     shMask.classList.remove('show');shMask.setAttribute('aria-hidden','true');
@@ -405,6 +426,7 @@ body.share-open{overflow:hidden}
     shCopy.onclick=doCopy;
     shNative.onclick=doNative;
     shQrBtn.onclick=doQR;
+    shPrank.onclick=doPrank;
     if(!navigator.share)shNative.classList.add('hide');
     try{shURL.onclick=function(){shURL.select()}}catch(e){}
   }

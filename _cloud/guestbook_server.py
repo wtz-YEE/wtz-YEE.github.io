@@ -1607,7 +1607,7 @@ def api_video_view():
 def api_video_share():
     p = request.get_json() or {}
     kind = str(p.get("kind") or "copy").strip().lower()
-    if kind not in ("copy", "native", "qr", "share"):
+    if kind not in ("copy", "native", "qr", "prank", "share"):
         kind = "copy"
     v = _load(VIDEO_FILE, [])
     for x in v:
