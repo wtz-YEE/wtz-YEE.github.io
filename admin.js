@@ -529,22 +529,30 @@ function rowPost(x){
 function rowDebate(x){
   var args=x.args||[], open=S.openPost===('d'+x.id);
   var body=cut(x.body||'',200);
+  var WIN={host:'发布者胜',challenger:'挑战者胜',draw:'平局',void:'无效'};
+  var sh=(typeof x.score_host==='number')?x.score_host:args.filter(function(a){return a.result==='host'}).length;
+  var sc=(typeof x.score_ch==='number')?x.score_ch:args.filter(function(a){return a.result==='challenger'}).length;
   var ar=args.map(function(a){
-    var tail=a.result?('<span class="c-sub">已裁定 · '+(a.result==='host'?'发布者胜':'挑战者胜')+
-        (a.resolved_at?' · '+esc(a.resolved_at):'')+'</span>'):
+    var tail=a.result?('<span class="c-sub">已裁定 · '+(WIN[a.result]||esc(a.result))+
+        (a.resolved_at?' · '+esc(a.resolved_at):'')+'</span>'+
+        '<div class="c-acts" style="justify-content:flex-start;margin-top:4px">'+
+        '<button data-ures="'+esc(x.id)+'|'+esc(a.id)+'">撤销裁定</button></div>'):
       ('<div class="c-acts" style="justify-content:flex-start;margin-top:4px">'+
        '<button class="host" data-cres="'+esc(x.id)+'|'+esc(a.id)+'|host">发布者胜</button>'+
-       '<button class="host" data-cres="'+esc(x.id)+'|'+esc(a.id)+'|challenger">挑战者胜</button></div>');
+       '<button class="host" data-cres="'+esc(x.id)+'|'+esc(a.id)+'|challenger">挑战者胜</button>'+
+       '<button data-cres="'+esc(x.id)+'|'+esc(a.id)+'|draw">平局</button>'+
+       '<button data-cres="'+esc(x.id)+'|'+esc(a.id)+'|void">无效</button></div>');
     return '<div class="c-cmt"><span>'+esc(a.char||'')+' · '+esc(a.user||'')+'</span>'+
       '<p>'+esc(cut(a.text||'',150))+'<br>'+tail+'</p><span></span></div>';
   }).join('');
+  var stateTxt=(x.winner&&x.status==='closed')?(WIN[x.winner]||x.winner):(x.status||'open');
   return '<div class="c-row">'+
     '<div class="c-main"><div class="c-text"><b>'+esc(x.char||'')+'</b> vs <b>'+esc(x.target||'')+'</b>'+
       (body?' — '+esc(body):'')+'</div>'+
-    '<div class="c-sub">'+esc(x.user||'')+' · '+esc(x.time||'')+' · '+esc(x.status||'')+' · 发言 '+args.length+'</div>'+
+    '<div class="c-sub">'+esc(x.user||'')+' · '+esc(x.time||'')+' · 比分 H '+sh+' : '+sc+' · '+esc(stateTxt)+' · 发言 '+args.length+'</div>'+
       (open?'<div class="c-comments on">'+(ar||'<div class="empty">暂无发言</div>')+'</div>':'')+
     '</div>'+
-    '<div class="c-meta">论战<br>'+esc(x.status||'')+'</div>'+
+    '<div class="c-meta">论战<br>'+esc(stateTxt)+'<br>H '+sh+' : '+sc+'</div>'+
     '<div class="c-acts">'+
       '<button data-ctoggle="d'+esc(x.id)+'">'+(open?'收起发言':'发言 '+args.length)+'</button>'+
       '<button class="bad" data-cdel="debate|'+esc(x.id)+'">删除论战</button>'+
@@ -581,6 +589,13 @@ function debateResolve(pid,aid,winner){
     toast(j&&j.msg||(j&&j.ok?'已裁定':'裁定失败'),!(j&&j.ok));
     if(j&&j.ok) loadContent('debate');
   }).catch(function(e){toast('裁定失败：'+ferr(e.message),true)});
+}
+function debateUnresolve(pid,aid){
+  if(!window.confirm('撤销这条裁定？若本场已结算，经验与胜负会一并回滚。')) return;
+  call('/debate_unresolve',{pid:pid,aid:aid}).then(function(j){
+    toast(j&&j.msg||(j&&j.ok?'已撤销':'撤销失败'),!(j&&j.ok));
+    if(j&&j.ok) loadContent('debate');
+  }).catch(function(e){toast('撤销失败：'+ferr(e.message),true)});
 }
 function togglePost(key){
   S.openPost=(S.openPost===key)?null:key;
@@ -710,6 +725,8 @@ function bind(){
     if(cm){var cp=cm.getAttribute('data-cmt').split('|');commentDel(cp[0],cp[1]);return}
     var cr=e.target.closest('[data-cres]');
     if(cr){var crs=cr.getAttribute('data-cres').split('|');debateResolve(crs[0],crs[1],crs[2]);return}
+    var ur=e.target.closest('[data-ures]');
+    if(ur){var urs=ur.getAttribute('data-ures').split('|');debateUnresolve(urs[0],urs[1]);return}
     var nd=e.target.closest('[data-ndel]');
     if(nd){delNotice(nd.getAttribute('data-ndel'));return}
     var cld=e.target.closest('[data-cldel]');

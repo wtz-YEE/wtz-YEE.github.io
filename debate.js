@@ -231,10 +231,10 @@ function pkHTML(a,hostChar,chChar){
 }
 function argHTML(a,hostChar,chChar){
   var speaker=(a.side||'challenger');
-  var cls='db-arg'+(a.result?(a.result===speaker?' win':' lose'):'');
-  var res=a.result==='host'?'发布者胜':(a.result==='challenger'?'挑战者胜':'');
+  var cls='db-arg'+((a.result==='host'||a.result==='challenger')?(a.result===speaker?' win':' lose'):(a.result?' draw':''));
+  var res=a.result==='host'?'发布者胜':(a.result==='challenger'?'挑战者胜':(a.result==='draw'?'平局':(a.result==='void'?'无效':'')));
   var deltaTxt='';
-  if(a.result){
+  if(a.result&&(a.host_delta!=null||a.ch_delta!=null)){
     deltaTxt='发布者 '+(a.host_delta>0?'+':'')+(a.host_delta==null?'':a.host_delta)+' / 挑战者 '+(a.ch_delta>0?'+':'')+(a.ch_delta==null?'':a.ch_delta);
   }
   return '<div class="'+cls+'">'+
@@ -260,8 +260,20 @@ function postHTML(p,u){
   var admin=!!(u&&u.is_admin);
   var canDel=!!(u&&(isHost||admin));
   var ended=p.status==='closed'||((p.args||[]).length>0&&(p.args||[]).every(function(a){return !!a.result}));
-  var pending=0;
-  (p.args||[]).forEach(function(a){if(!a.result)pending++});
+  var pending=0,sh=0,sc=0;
+  (p.args||[]).forEach(function(a){
+    if(!a.result)pending++;
+    if(a.result==='host')sh++;
+    else if(a.result==='challenger')sc++;
+  });
+  if(typeof p.score_host==='number')sh=p.score_host;
+  if(typeof p.score_ch==='number')sc=p.score_ch;
+  var winner=p.winner||'';
+  if(ended&&!winner){
+    if(sh>sc)winner='host';else if(sc>sh)winner='challenger';else winner=(sh||sc)?'draw':'void';
+  }
+  var winTxt=winner==='host'?'发布者胜':(winner==='challenger'?'挑战者胜':(winner==='draw'?'平局':(winner==='void'?'无效':'')));
+  var scoreTxt='H '+sh+' : '+sc;
   var args='',hasChallengerArg=false;
   (p.args||[]).forEach(function(a){
     if((a.side||'challenger')==='challenger')hasChallengerArg=true;
@@ -271,7 +283,12 @@ function postHTML(p,u){
       args+='<div class="db-resolve" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">'+
         '<span>裁定 / ADMIN</span>'+
         '<button type="button" data-win="host" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">发布者胜</button>'+
-        '<button type="button" data-win="challenger" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">挑战者胜</button></div>';
+        '<button type="button" data-win="challenger" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">挑战者胜</button>'+
+        '<button type="button" data-win="draw" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">平局</button>'+
+        '<button type="button" data-win="void" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">无效</button></div>';
+    }else if(a.result&&admin){
+      args+='<div class="db-resolve done"><span>已裁定</span>'+
+        '<button type="button" data-unresolve="1" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">撤销裁定</button></div>';
     }
   });
   var reply='';
@@ -292,8 +309,12 @@ function postHTML(p,u){
       reply='<div class="db-reply-note">这是你的论战，等待挑战者发言后再反击。</div>';
     }
   }else if(u&&!isHost){
-    reply='<div class="db-reply"><select data-arg-char="1">'+pick+'</select><input data-arg-input="1" maxlength="300" placeholder="发表你的言论，和发布者论战…"><button type="button" data-reply="'+esc(p.id)+'">发言</button></div>'+
-      '<div class="db-reply-note">只能选择帖主指定的角色或对手；双方可无限次发言，AI 每轮给出胜率，管理员裁定胜负。</div>';
+    if(p.challenger&&p.challenger!==u.username){
+      reply='<div class="db-reply-note">本场已由「'+esc(p.challenger)+'」应战，其他账号无法再加入。</div>';
+    }else{
+      reply='<div class="db-reply"><select data-arg-char="1">'+pick+'</select><input data-arg-input="1" maxlength="300" placeholder="发表你的言论，和发布者论战…"><button type="button" data-reply="'+esc(p.id)+'">发言</button></div>'+
+        '<div class="db-reply-note">只能选择帖主指定的角色或对手；一场论战只允许一位挑战者，所有发言裁定完后统一结算经验。</div>';
+    }
   }else{
     reply='<div class="db-reply-note">登录后可以发言，和发布者论战。</div>';
   }
@@ -303,7 +324,8 @@ function postHTML(p,u){
     (canDel?'<button type="button" class="db-del" data-del="'+esc(p.id)+'">删除</button>':'')+'</div>'+
     '<div class="db-match"><b>「'+esc(p.char)+'」</b><i>CHALLENGE</i><span>挑战「'+esc(p.target)+'」</span></div>'+
     (p.body?'<p class="db-body">'+esc(p.body)+'</p>':'')+
-    '<div class="db-meta">'+esc(p.time)+(pending?' · '+pending+' 条待裁定':'')+'</div>'+
+    '<div class="db-meta">'+esc(p.time)+' · 比分 '+scoreTxt+(pending?' · '+pending+' 条待裁定':'')+
+      (ended?(winTxt?' · '+winTxt+' · 已结算':' · 已封盘'):'')+'</div>'+
     '<div class="db-args"><div class="db-args-h"><b>ARGUMENTS / '+((p.args||[]).length)+'</b><span>'+(pending?'等待管理员':'已全部裁定')+'</span></div>'+
     (args||'<div class="db-reply-note">还没有人发言。登录后成为第一个挑战者。</div>')+reply+'</div></article>';
 }
@@ -497,23 +519,39 @@ function removePost(pid,btn){
     say('删除失败：'+errText(err),false);
   });
 }
+var WIN_LABEL={host:'发布者胜',challenger:'挑战者胜',draw:'平局',void:'无效'};
 function resolve(pid,aid,win,btn){
   var u=me();
   if(!u||!u.is_admin){say('只有管理员可以定胜负',false);return}
+  if(state.local&&(win==='draw'||win==='void')){say('本机模式暂不支持平局/无效',false);return}
   btn.disabled=true;btn.textContent='裁定中…';
   callApi('/debate_resolve',{pid:pid,aid:aid,winner:win}).then(function(j){
-    btn.disabled=false;btn.textContent=win==='host'?'发布者胜':'挑战者胜';
+    btn.disabled=false;btn.textContent=WIN_LABEL[win]||'裁定';
     if(!j.ok){say(j.msg||'裁定失败',false);return}
     say(j.msg||'胜负已记录',true);load();
   }).catch(function(err){
-    btn.disabled=false;btn.textContent=win==='host'?'发布者胜':'挑战者胜';
+    btn.disabled=false;btn.textContent=WIN_LABEL[win]||'裁定';
     say('裁定失败：'+errText(err),false);
   });
 }
 
+function unresolve(pid,aid,btn){
+  var u=me();
+  if(!u||!u.is_admin){say('只有管理员可以撤销裁定',false);return}
+  if(state.local){say('本机模式不支持撤销裁定',false);return}
+  if(!window.confirm('撤销这条裁定？若本场已结算，经验与胜负会一并回滚。'))return;
+  btn.disabled=true;btn.textContent='撤销中…';
+  callApi('/debate_unresolve',{pid:pid,aid:aid}).then(function(j){
+    btn.disabled=false;btn.textContent='撤销裁定';
+    if(!j.ok){say(j.msg||'撤销失败',false);return}
+    say(j.msg||'已撤销',true);load();
+  }).catch(function(err){
+    btn.disabled=false;btn.textContent='撤销裁定';
+    say('撤销失败：'+errText(err),false);
+  });
+}
 function bind(){
-  var form=$('dbForm');if(form)form.addEventListener('submit',publish);
-  var list=$('dbList');
+  var form=$('dbForm');if(form)form.addEventListener('submit',publish);  var list=$('dbList');
   if(list){
     list.addEventListener('click',function(e){
       var del=e.target.closest('[data-del]');
@@ -522,6 +560,8 @@ function bind(){
       if(rb){reply(rb.getAttribute('data-reply'),rb);return}
       var win=e.target.closest('[data-win]');
       if(win){resolve(win.getAttribute('data-pid'),win.getAttribute('data-aid'),win.getAttribute('data-win'),win);return}
+      var un=e.target.closest('[data-unresolve]');
+      if(un){unresolve(un.getAttribute('data-pid'),un.getAttribute('data-aid'),un);return}
     });
     list.addEventListener('keydown',function(e){
       if(e.key!=='Enter')return;

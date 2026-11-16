@@ -3015,7 +3015,8 @@ def _debate_user(users, name):
     rec = users.get(name) or {}
     return {"name": name, "exp": e, "rank": r["name"], "rank_i": r["index"],
             "wins": int(rec.get("debate_wins") or 0),
-            "losses": int(rec.get("debate_losses") or 0)}
+            "losses": int(rec.get("debate_losses") or 0),
+            "draws": int(rec.get("debate_draws") or 0)}
 
 def _debate_admin(cu, users):
     if not cu:
@@ -3032,6 +3033,123 @@ def _debate_write_exp(users, name, delta, win):
     rec[key] = int(rec.get(key) or 0) + 1
     return rec["debate_exp"]
 
+def _debate_score(post):
+    h = c = 0
+    for a in (post.get("args") or []):
+        r = a.get("result")
+        if r == "host":
+            h += 1
+        elif r == "challenger":
+            c += 1
+    return h, c
+
+def _debate_challenger(post):
+    ch = post.get("challenger") or ""
+    if ch:
+        return ch
+    for a in (post.get("args") or []):
+        if (a.get("side") or "challenger") == "challenger" and a.get("user"):
+            return a.get("user") or ""
+    return ""
+
+def _debate_post_state(post):
+    args = post.get("args") or []
+    h, c = _debate_score(post)
+    done = bool(args) and all(a.get("result") for a in args)
+    winner = post.get("winner") or ""
+    if not winner and done:
+        if h > c:
+            winner = "host"
+        elif c > h:
+            winner = "challenger"
+        else:
+            winner = "draw" if (h or c) else "void"
+    return h, c, done, winner
+
+def _debate_settle(post, users, cu):
+    """一场一结算：所有发言裁定完才结算经验，重复调用幂等。"""
+    h, c, done, winner = _debate_post_state(post)
+    if post.get("settled") or not done:
+        return None
+    host = post.get("user") or ""
+    ch = _debate_challenger(post)
+    hd = cd = 0
+    legacy = any((a.get("host_delta") is not None or a.get("ch_delta") is not None)
+                 for a in (post.get("args") or []))
+    if legacy:
+        # 旧版逐条结算帖：不再重复发放经验，只补记比分与胜方
+        post["score_host"] = h
+        post["score_ch"] = c
+        post["winner"] = winner
+        post["settled"] = True
+        post["settle"] = {"winner": winner, "host": host, "ch": ch,
+                          "host_delta": 0, "ch_delta": 0, "legacy": True,
+                          "at": _now(), "by": cu}
+        post["status"] = "closed"
+        post["closed_at"] = _now()
+        return post["settle"]
+    if winner in ("host", "challenger"):
+        if not ch or host not in users or ch not in users:
+            return None
+        he = _debate_exp(host, users)
+        ce = _debate_exp(ch, users)
+        if winner == "host":
+            hd = _debate_delta(he, ce, True)
+            cd = -_debate_delta(ce, he, False)
+        else:
+            hd = -_debate_delta(he, ce, False)
+            cd = _debate_delta(ce, he, True)
+        # 记录实际生效的增量（负值可能被 0 下限截断），保证撤销能精确回滚
+        h_new = _debate_write_exp(users, host, hd, winner == "host")
+        c_new = _debate_write_exp(users, ch, cd, winner == "challenger")
+        hd = h_new - he
+        cd = c_new - ce
+    elif winner == "draw":
+        for n in (host, ch):
+            if n in users:
+                users[n]["debate_draws"] = int(users[n].get("debate_draws") or 0) + 1
+    post["score_host"] = h
+    post["score_ch"] = c
+    post["winner"] = winner
+    post["settled"] = True
+    post["settle"] = {"winner": winner, "host": host, "ch": ch,
+                      "host_delta": hd, "ch_delta": cd, "at": _now(), "by": cu}
+    post["status"] = "closed"
+    post["closed_at"] = _now()
+    return post["settle"]
+
+def _debate_unsettle(post, users):
+    """撤销一场结算，按记录精确回滚经验与胜负场次。"""
+    if not post.get("settled"):
+        return True
+    st = post.get("settle") or {}
+    w = st.get("winner") or ""
+    host = st.get("host") or ""
+    ch = st.get("ch") or ""
+    hd = int(st.get("host_delta") or 0)
+    cd = int(st.get("ch_delta") or 0)
+    if w in ("host", "challenger"):
+        if host in users:
+            r = users[host]
+            r["debate_exp"] = max(0, int(r.get("debate_exp") or 0) - hd)
+            k = "debate_wins" if w == "host" else "debate_losses"
+            r[k] = max(0, int(r.get(k) or 0) - 1)
+        if ch in users and ch != host:
+            r = users[ch]
+            r["debate_exp"] = max(0, int(r.get("debate_exp") or 0) - cd)
+            k = "debate_wins" if w == "challenger" else "debate_losses"
+            r[k] = max(0, int(r.get(k) or 0) - 1)
+    elif w == "draw":
+        for n in (host, ch):
+            if n in users:
+                users[n]["debate_draws"] = max(0, int(users[n].get("debate_draws") or 0) - 1)
+    post["settled"] = False
+    post["settle"] = {}
+    post["winner"] = ""
+    post["status"] = "open"
+    post.pop("closed_at", None)
+    return True
+
 def _debate_public(post, users):
     args = []
     for a in post.get("args") or []:
@@ -3043,11 +3161,16 @@ def _debate_public(post, users):
             "ai": a.get("ai") or {},
             "author": _debate_user(users, a.get("user") or "")
         })
+    h, c, done, winner = _debate_post_state(post)
     return {
         "id": post.get("id") or "", "user": post.get("user") or "",
         "char": post.get("char") or "", "target": post.get("target") or "",
         "body": post.get("body") or "", "time": post.get("time") or "",
         "status": post.get("status") or "open",
+        "winner": winner, "score_host": h, "score_ch": c,
+        "challenger": _debate_challenger(post),
+        "settled": bool(post.get("settled")),
+        "settle": post.get("settle") or {},
         "host": _debate_user(users, post.get("user") or ""),
         "args": args
     }
@@ -3084,7 +3207,9 @@ def api_debate_add():
             d["posts"] = []
         pid = "db" + str(int(_time.time() * 1000)) + str(_random.random())[2:7]
         post = {"id": pid, "user": cu, "char": char, "target": target,
-                "body": body, "time": _now(), "status": "open", "args": []}
+                "body": body, "time": _now(), "status": "open", "args": [],
+                "winner": "", "score_host": 0, "score_ch": 0,
+                "challenger": "", "settled": False}
         d["posts"].append(post)
         _save(DEBATE_FILE, d)
     return jsonify({"ok": True, "msg": "论战已发布", "id": pid})
@@ -3140,24 +3265,41 @@ def api_debate_arg():
             char = str(post.get("char") or "")[:24]
             side = "host"
         else:
+            ch0 = _debate_challenger(post)
+            if ch0 and ch0 != cu:
+                return jsonify({"ok": False, "msg": "本场已由 " + ch0 + " 应战，无法再加入"})
             if not char:
                 return jsonify({"ok": False, "msg": "请选择你的角色"})
             allowed = [str(post.get("char") or ""), str(post.get("target") or "")]
             if char not in allowed:
                 return jsonify({"ok": False, "msg": "只能选择帖主指定的角色或对手"})
             side = "challenger"
+            post["challenger"] = cu
         aid = "da" + str(int(_time.time() * 1000)) + str(_random.random())[2:7]
+        ai_state = "pending"
+        ai_err = ""
+        now_ts = int(_time.time())
+        if now_ts - int(post.get("ai_last") or 0) < AI_POST_GAP:
+            ai_state = "throttled"
+            ai_err = "同一帖 " + str(AI_POST_GAP) + " 秒内只研判一次"
+        else:
+            post["ai_last"] = now_ts
+            st = _debate_ai_schedule(pid, aid)
+            if st == "queued":
+                ai_state = "pending"
+            elif st == "backoff":
+                ai_state = "error"
+                ai_err = "AI 网关退避中，本轮不研判"
+            else:
+                ai_state = "throttled"
+                ai_err = "AI 队列已满，本轮不研判"
         post.setdefault("args", []).append({
             "id": aid, "user": cu, "char": char, "text": text, "time": _now(),
             "side": side, "result": "", "host_delta": None, "ch_delta": None, "resolved_at": "",
-            "ai_state": "pending"
+            "ai_state": ai_state, "ai_error": ai_err
         })
         _save(DEBATE_FILE, d)
-    try:
-        _th.Thread(target=_debate_ai_worker, args=(pid, aid), daemon=True).start()
-    except Exception:
-        pass
-    return jsonify({"ok": True, "msg": ("反击" if side == "host" else "发言") + "已加入论战", "id": aid, "side": side, "ai_pending": True})
+    return jsonify({"ok": True, "msg": ("反击" if side == "host" else "发言") + "已加入论战", "id": aid, "side": side, "ai_pending": ai_state == "pending"})
 
 @app.route("/debate_resolve", methods=["POST"])
 def api_debate_resolve():
@@ -3166,12 +3308,55 @@ def api_debate_resolve():
     pid = str(p.get("pid") or "").strip()
     aid = str(p.get("aid") or "").strip()
     winner = str(p.get("winner") or "").strip()
-    if winner not in ("host", "challenger"):
-        return jsonify({"ok": False, "msg": "请选择胜方"})
+    if winner not in ("host", "challenger", "draw", "void"):
+        return jsonify({"ok": False, "msg": "请选择裁定结果（胜 / 平局 / 无效）"})
     with DEBATE_LOCK:
         users = _load(USER_FILE, {})
-        if not _debate_admin(cu, users):
+        if not cu or not _debate_admin(cu, users):
             return jsonify({"ok": False, "msg": "只有管理员可以定胜负"})
+        d = _load(DEBATE_FILE, {"posts": []})
+        post = next((x for x in (d.get("posts") or []) if x.get("id") == pid), None)
+        if not post:
+            return jsonify({"ok": False, "msg": "论战帖不存在"})
+        if post.get("status") == "closed":
+            return jsonify({"ok": False, "msg": "该论战已封盘，如需改判请先撤销裁定"})
+        arg = next((x for x in (post.get("args") or []) if x.get("id") == aid), None)
+        if not arg:
+            return jsonify({"ok": False, "msg": "发言记录不存在"})
+        if arg.get("result"):
+            return jsonify({"ok": False, "msg": "这条论战已经定过胜负"})
+        arg["result"] = winner
+        arg["resolved_at"] = _now()
+        arg["resolved_by"] = cu
+        arg["host_delta"] = None
+        arg["ch_delta"] = None
+        h, c, done, _w = _debate_post_state(post)
+        post["score_host"] = h
+        post["score_ch"] = c
+        settle = _debate_settle(post, users, cu)
+        _save(USER_FILE, users)
+        _save(DEBATE_FILE, d)
+        _audit(cu, "debate_resolve", pid + "/" + aid, winner)
+    label = {"host": "发布者胜", "challenger": "挑战者胜", "draw": "平局", "void": "无效"}[winner]
+    return jsonify({"ok": True,
+                    "msg": label + (" · 本场结算完成" if settle else " · 记录已保存"),
+                    "winner": winner, "score_host": h, "score_ch": c,
+                    "closed": post.get("status") == "closed",
+                    "settle": settle or {}})
+
+
+@app.route("/debate_unresolve", methods=["POST"])
+def api_debate_unresolve():
+    p = _debate_payload()
+    cu = _cur_user(p.get("token"))
+    pid = str(p.get("pid") or "").strip()
+    aid = str(p.get("aid") or "").strip()
+    if not pid or not aid:
+        return jsonify({"ok": False, "msg": "论战帖或发言记录不存在"})
+    with DEBATE_LOCK:
+        users = _load(USER_FILE, {})
+        if not cu or not _debate_admin(cu, users):
+            return jsonify({"ok": False, "msg": "只有管理员可以撤销裁定"})
         d = _load(DEBATE_FILE, {"posts": []})
         post = next((x for x in (d.get("posts") or []) if x.get("id") == pid), None)
         if not post:
@@ -3179,55 +3364,29 @@ def api_debate_resolve():
         arg = next((x for x in (post.get("args") or []) if x.get("id") == aid), None)
         if not arg:
             return jsonify({"ok": False, "msg": "发言记录不存在"})
-        if arg.get("result"):
-            return jsonify({"ok": False, "msg": "这条论战已经定过胜负"})
-        host = post.get("user") or ""
-        side = arg.get("side") or "challenger"
-        if side == "host":
-            ch = ""
-            for x in (post.get("args") or []):
-                if x.get("id") == arg.get("id"):
-                    break
-                if (x.get("side") or "challenger") == "challenger":
-                    ch = x.get("user") or ch
-        else:
-            ch = arg.get("user") or ""
-        if not ch:
-            return jsonify({"ok": False, "msg": "挑战者记录不存在"})
-        if host not in users or ch not in users:
-            return jsonify({"ok": False, "msg": "参与者账号已不存在"})
-        host_exp = _debate_exp(host, users)
-        ch_exp = _debate_exp(ch, users)
-        if winner == "host":
-            hd = _debate_delta(host_exp, ch_exp, True)
-            cd = -_debate_delta(ch_exp, host_exp, False)
-        else:
-            hd = -_debate_delta(host_exp, ch_exp, False)
-            cd = _debate_delta(ch_exp, host_exp, True)
-        before_host = _debate_rank(host_exp)["name"]
-        before_ch = _debate_rank(ch_exp)["name"]
-        _debate_write_exp(users, host, hd, winner == "host")
-        _debate_write_exp(users, ch, cd, winner == "challenger")
-        arg["result"] = winner
-        arg["host_delta"] = hd
-        arg["ch_delta"] = cd
-        arg["resolved_at"] = _now()
-        arg["resolved_by"] = cu
-        args_all = post.get("args") or []
-        if args_all and all(x.get("result") for x in args_all):
-            post["status"] = "closed"
-            post["closed_at"] = _now()
+        if not arg.get("result"):
+            return jsonify({"ok": False, "msg": "这条发言尚未裁定"})
+        if post.get("status") == "closed" and (not post.get("settled") or (post.get("settle") or {}).get("legacy")):
+            return jsonify({"ok": False, "msg": "该帖为旧版逐条结算，无法自动回滚经验，请先手动修正用户经验"})
+        rolled = bool(post.get("settled"))
+        if rolled:
+            _debate_unsettle(post, users)
+        arg["result"] = ""
+        arg["resolved_at"] = ""
+        arg["resolved_by"] = ""
+        arg["host_delta"] = None
+        arg["ch_delta"] = None
+        post["status"] = "open"
+        post.pop("closed_at", None)
+        post["winner"] = ""
+        h, c, _done, _w = _debate_post_state(post)
+        post["score_host"] = h
+        post["score_ch"] = c
         _save(USER_FILE, users)
         _save(DEBATE_FILE, d)
-        after_host = _debate_rank(_debate_exp(host, users))["name"]
-        after_ch = _debate_rank(_debate_exp(ch, users))["name"]
-    return jsonify({
-        "ok": True, "msg": "胜负已记录",
-        "host": {"name": host, "delta": hd, "rank_before": before_host,
-                 "rank_after": after_host, "rank": _debate_rank(_debate_exp(host, users))["name"]},
-        "challenger": {"name": ch, "delta": cd, "rank_before": before_ch,
-                       "rank_after": after_ch, "rank": _debate_rank(_debate_exp(ch, users))["name"]}
-    })
+        _audit(cu, "debate_unresolve", pid + "/" + aid, "撤销裁定" + ("并回滚经验" if rolled else ""))
+    return jsonify({"ok": True, "msg": "已撤销该条裁定" + ("，经验与胜负已回滚" if rolled else ""),
+                    "rolled": rolled, "score_host": h, "score_ch": c})
 
 @app.route("/debate_profile", methods=["POST"])
 def api_debate_profile():
@@ -3243,7 +3402,8 @@ def api_debate_profile():
         "name": cu, "exp": e, "rank": r["name"], "rank_i": r["index"],
         "next": r["next"], "next_exp": r["next_exp"], "progress": r["progress"],
         "span": r["span"], "wins": int(rec.get("debate_wins") or 0),
-        "losses": int(rec.get("debate_losses") or 0)
+        "losses": int(rec.get("debate_losses") or 0),
+        "draws": int(rec.get("debate_draws") or 0)
     }})
 
 
@@ -3378,7 +3538,52 @@ def _debate_ai_request(cfg, snap):
     return None, "", last
 
 
+AI_POST_GAP = 60          # 同一帖 60s 内只研判一次
+AI_MAX_ACTIVE = 2         # 全局同时最多 2 个外部 AI 请求
+AI_MAX_QUEUE = 12         # 待研判队列上限，超出直接跳过
+AI_FAIL_BACKOFF = 120     # 失败后全局退避 120s
+AI_QUEUE = []
+AI_ACTIVE = 0
+AI_LOCK = _threading.Lock()
+AI_BACKOFF_UNTIL = 0.0
+
+
+def _debate_ai_schedule(pid, aid):
+    global AI_ACTIVE
+    with AI_LOCK:
+        if _time.time() < AI_BACKOFF_UNTIL:
+            return "backoff"
+        if len(AI_QUEUE) >= AI_MAX_QUEUE:
+            return "busy"
+        AI_QUEUE.append((pid, aid))
+        start = AI_ACTIVE < AI_MAX_ACTIVE
+    if start:
+        try:
+            _threading.Thread(target=_debate_ai_pump, daemon=True).start()
+        except Exception:
+            pass
+    return "queued"
+
+
+def _debate_ai_pump():
+    global AI_ACTIVE
+    while True:
+        with AI_LOCK:
+            if not AI_QUEUE or AI_ACTIVE >= AI_MAX_ACTIVE:
+                return
+            job = AI_QUEUE.pop(0)
+            AI_ACTIVE += 1
+        try:
+            _debate_ai_worker(job[0], job[1])
+        except Exception:
+            pass
+        finally:
+            with AI_LOCK:
+                AI_ACTIVE -= 1
+
+
 def _debate_ai_worker(pid, aid):
+    global AI_BACKOFF_UNTIL
     try:
         with DEBATE_LOCK:
             d = _load(DEBATE_FILE, {"posts": []})
@@ -3390,10 +3595,17 @@ def _debate_ai_worker(pid, aid):
                 return
             snap = _debate_ai_snap(post, arg)
         cfg = _debate_ai_conf()
-        if not cfg["key"]:
+        with AI_LOCK:
+            in_backoff = _time.time() < AI_BACKOFF_UNTIL
+        if in_backoff:
+            ai, model, err = None, "", "AI 网关退避中，本轮不研判"
+        elif not cfg["key"]:
             ai, model, err = None, "", "论战 AI 未配置密钥（_cloud/debate_ai.json）"
         else:
             ai, model, err = _debate_ai_request(cfg, snap)
+            if not ai:
+                with AI_LOCK:
+                    AI_BACKOFF_UNTIL = _time.time() + AI_FAIL_BACKOFF
         with DEBATE_LOCK:
             d = _load(DEBATE_FILE, {"posts": []})
             post = next((x for x in (d.get("posts") or []) if x.get("id") == pid), None)
@@ -3421,7 +3633,11 @@ def _debate_ai_worker(pid, aid):
                     arg["ai_error"] = ("AI 研判异常：" + str(e))[:180]
                     _save(DEBATE_FILE, d)
         except Exception:
-            pass
+            try:
+                with AI_LOCK:
+                    AI_BACKOFF_UNTIL = _time.time() + AI_FAIL_BACKOFF
+            except Exception:
+                pass
 
 
 @app.route("/tech_ai", methods=["POST"])
@@ -3569,7 +3785,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/post_poll_vote", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/guest_report", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/audio_up", "/video_up", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch", "/debate_add", "/debate_arg", "/debate_resolve")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/post_poll_vote", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/guest_report", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/audio_up", "/video_up", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch", "/debate_add", "/debate_arg", "/debate_resolve", "/debate_unresolve")
 
 @app.before_request
 def _rate():
