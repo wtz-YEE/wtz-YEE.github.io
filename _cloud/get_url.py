@@ -58,6 +58,12 @@ def probe(u, path):
     except Exception:
         return False
 
+def read_text(p):
+    try:
+        return open(p, encoding='utf-8').read()
+    except Exception:
+        return ''
+
 def push_github(remote_file, content):
     try:
         tf = os.path.join(BASE, '_ci_' + str(int(time.time() * 1000)) + '.txt')
@@ -81,11 +87,15 @@ def push_github(remote_file, content):
         H = {'Authorization': 'token ' + tok, 'User-Agent': 'wtz', 'Content-Type': 'application/json'}
         api = 'https://api.github.com/repos/wtz-YEE/wtz-YEE.github.io/contents/' + remote_file
         sha = None
+        remote = ''
         try:
             m = json.loads(urllib.request.urlopen(urllib.request.Request(api, headers=H), timeout=60).read().decode('utf-8'))
             sha = m.get('sha')
+            remote = base64.b64decode((m.get('content') or '').replace('\n', '')).decode('utf-8', 'replace')
         except Exception:
             pass
+        if remote.strip() == content.strip():
+            return
         body = {'message': 'cloud: update ' + remote_file,
                 'content': base64.b64encode(content.encode('utf-8')).decode('ascii')}
         if sha:
@@ -105,11 +115,12 @@ def main():
         u = pick_url(svc)
         if u and not scan_only:
             af = os.path.join(REPO, svc['addrfile'])
-            try:
-                with open(af, 'w', encoding='utf-8') as f:
-                    f.write(u + '\n')
-            except Exception:
-                pass
+            if read_text(af).strip() != u.strip():
+                try:
+                    with open(af, 'w', encoding='utf-8') as f:
+                        f.write(u + '\n')
+                except Exception:
+                    pass
             if svc.get('push'):
                 push_github(svc.get('remote_file', svc['addrfile']), u + '\n')
         res.append(svc['name'] + '=' + (u or 'NONE'))
