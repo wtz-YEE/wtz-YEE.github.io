@@ -14,6 +14,11 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" id="twTitle" content="视频库 · WTZ">
 <meta name="twitter:description" id="twDesc" content="WTZ 视频库：云端播放、点赞、评论与分享。">
+<script>
+if(location.protocol==='http:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1'&&location.hostname!=='::1'){
+  location.replace('https://'+location.host+location.pathname+location.search+location.hash);
+}
+</script>
 <link rel="stylesheet" href="../intro.css">
 <style>
 :root{--bg:#040405;--panel:#0b0b0d;--line2:rgba(255,255,255,.14);--accent:#fff;--ink:#e6edef;--ink3:#6a767d;--gold:#ffd60a;--red:#ff5c5c}
@@ -327,6 +332,12 @@ body.share-open{overflow:hidden}
   function fmtT(s){s=Math.max(0,Math.floor(Number(s)||0));var m=Math.floor(s/60),x=s%60;return m+':'+(x<10?'0':'')+x}
   function shareCount(v){return Number(v&&v.shares||0)}
   function renderShareBtn(v){try{sh.innerHTML='分享 <span class="num">'+shareCount(v)+'</span>'}catch(e){}}
+  function secureUrl(u){
+    if(!u)return u;
+    var host=location.hostname||'';
+    if(/^http:\/\//i.test(u)&&host!=='localhost'&&host!=='127.0.0.1'&&host!=='::1')return u.replace(/^http:/i,'https:');
+    return u;
+  }
   function buildShareURL(v){
     var t=shAt.checked?Math.max(0,Math.floor(pv.currentTime||0)):0;
     var u;
@@ -334,7 +345,7 @@ body.share-open{overflow:hidden}
     var base=(u&&u.protocol!=='file:')?u.origin+u.pathname:location.href.split('?')[0].split('#')[0];
     var qs='?id='+encodeURIComponent(String(v.id||''));
     if(t>0)qs+='&t='+t;
-    return base+qs;
+    return secureUrl(base+qs);
   }
   function updateShareURL(){
     if(!SHV)return;
@@ -344,7 +355,7 @@ body.share-open{overflow:hidden}
   }
   function pageURL(name){
     var p=location.href.split('?')[0].split('#')[0];
-    return p.replace(/[^\/]*$/,name);
+    return secureUrl(p.replace(/[^\/]*$/,name));
   }
   function buildPrankURL(v){
     var t=shAt.checked?Math.max(0,Math.floor(pv.currentTime||0)):0;
