@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import subprocess, os, time, shutil, json, re, glob, urllib.request
+import subprocess, os, time, shutil, json, re, glob, urllib.request, sys
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE)
+import paths
 REPO = os.path.dirname(BASE)
 LOGDIR = os.path.join(os.path.expanduser('~'), '.cpolar', 'logs')
 CFG = os.path.join(BASE, 'cloud_services.json')
@@ -44,7 +46,7 @@ def tunnels_alive(cfg):
         u = scan_tunnel(svc['tunnel'])
         if u:
             cands.append(u)
-        af = os.path.join(REPO, svc['addrfile'])
+        af = paths.addrfile(svc['addrfile'])
         try:
             for x in open(af, encoding='utf-8').read().splitlines():
                 x = x.strip()
@@ -72,7 +74,7 @@ def main():
         os.makedirs(LOGDIR, exist_ok=True)
     except Exception:
         pass
-    cp = shutil.which('cpolar')
+    cp = paths.find_cpolar()
     if not cp:
         print('NO_CPOLAR', flush=True)
         return 1

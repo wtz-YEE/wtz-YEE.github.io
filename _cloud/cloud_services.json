@@ -14,7 +14,7 @@
   {
     "name": "37web",
     "desc": "已并入社区投票，停用独立隧道",
-    "script": "D:/WTZ/37web/submit_server/server.py",
+    "script": "../37web/submit_server/server.py",
     "port": 8000,
     "tunnel": "web37",
     "health": "/api/list",

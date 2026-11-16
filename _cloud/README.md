@@ -7,9 +7,10 @@
 1. **装 Python 3**：https://www.python.org/downloads/ ，安装时勾选 **Add python.exe to PATH**
 2. **装 cpolar**：https://www.cpolar.com/ 下载安装；注册账号后在个人后台复制你的 **authtoken**
 3. **双击 `一键启动云端.cmd`**，按提示输入 authtoken（首次），脚本会自动：
+   - 自动查找 Python（PATH / `py -3` / 用户目录 / Program Files，不依赖固定盘符）
    - 检测 Python 并自动安装 `flask` / `flask-cors` 依赖
    - 把 authtoken 写入 cpolar 配置，并定义 `guestbook` 隧道(8701)
-   - 启动留言服务（后台）
+   - 启动留言服务（后台，会自动挑选装了 flask 的解释器）
    - 启动 cpolar 隧道
    - 抓取本机公网地址，合并进 `../cloud.txt`
    - 通过 GitHub API 推送 `cloud.txt`（前端自动读取）
@@ -25,11 +26,15 @@
 | `一键启动云端.cmd` | 新电脑一键启动：装依赖 → 起服务 → 起隧道 → 抓地址 → 推送 |
 | `云端守护.cmd` | 守护进程：每 60s 检测 8701 / cpolar，异常自动重启并刷新推送地址 |
 | `启动留言服务.cmd` | 仅启动留言服务 |
+| `start_services.py` | 按 `cloud_services.json` 拉起本地服务（自动挑选有 flask 的 Python，健康轮询 60s） |
+| `paths.py` | 统一路径探测：Python / cpolar / cloud.txt 位置 |
+| `start_tunnels.py` | 按配置拉起 cpolar 隧道 |
+| `monitor.py` | 监视面板后端（端口 8702），可自动拉起守护 |
 | `get_url.py` | 从 cpolar 日志抓本机公网地址，多主机合并写入 cloud.txt |
 | `push_cloud.ps1` | API 推送 cloud.txt 到 GitHub（带去重，地址未变则跳过） |
 | `changelog.json` / `scores.json` 等 | 数据文件，首次启动服务自动创建 |
 
-> 所有脚本均已改为**相对路径**（`%~dp0` / `__file__`），拷到任意目录无需改路径。
+> 所有脚本均已改为**路径无关**：只以脚本自身位置（`%~dp0` / `__file__`）推导目录，不再引用 `D:\WTZ\...`、`C:\Users\...`、`C:\Python3xx` 等原机器绝对路径。
 
 ## 三、cpolar 配置说明
 
@@ -89,3 +94,38 @@ tunnels:
 - 云端地址变化后，index 从 GitHub `cloud.txt` 自动同步（也可在配置面板手动改）
 - 数据文件（`users.json` / `guestbook.json` / `pm.json` / `notifications.json` / `posts.json` / `audit_log.json`）首次启动自动创建，位于本脚本同目录
 - cpolar 免费版公网地址会变，长期运行请使用 `云端守护.cmd`（自动刷新推送）
+
+## 十、可移植性与环境变量（换机部署必读）
+
+**路径规则**
+- 整包 `_cloud` 可以放在任意目录（U 盘、桌面、其他盘符均可），不需要父目录里存在 `pages/` 或 `cloud.txt`。
+- 在站点仓库内部运行时（父目录有 `pages/` 或 `cloud.txt`），地址文件写到仓库根 `../cloud.txt`；单独拷出运行时自动改为写在 `_cloud/cloud.txt`，两者都不会越界写到别的目录。
+- 数据、上传、视频、投票图片目录都相对脚本目录自动创建，不需要预建。
+
+**Python 查找顺序**（第 1 个可用的即采用）
+1. `PATH` 里的 `python`
+2. `py -3` 启动器
+3. `%LOCALAPPDATA%\Programs\Python\Python3*`
+4. `%LOCALAPPDATA%\Python\pythoncore-*`、`%LOCALAPPDATA%\Python\bin`
+5. `%ProgramFiles%\Python3*`、`%ProgramFiles%\Python\Python3*`
+6. `%SystemDrive%\Python3*`
+
+`start_services.py` 还会在候选里挑选**真正能 `import flask`** 的解释器，避免多 Python 机器上拉起即退。
+
+**cpolar 查找顺序**
+1. 环境变量 `WTZ_CPOLAR`（直接指向 `cpolar.exe`）
+2. `PATH`
+3. 各盘符 `cpolar\cpolar.exe`、`Program Files\cpolar(.exe)`、`Program Files (x86)\cpolar(.exe)`
+4. `%USERPROFILE%\.cpolar\cpolar.exe`
+
+cpolar 未加入 PATH 也能被找到；`setup.py --check` 会明确打印实际使用的路径。
+
+**端口覆盖**（新机端口冲突时使用，设置环境变量后重启对应脚本）
+- `WTZ_CLOUD_PORT`：留言服务端口（默认取 `cloud_services.json` 的 8701）
+- `WTZ_MONITOR_PORT`：监视面板端口（默认 8702）
+
+> 只改环境变量时，建议同时把 `cloud_services.json` 的 `port` 改成同一值（守护/健康检查也读它），避免“服务在 A 端口、守护查 B 端口”。
+
+**包内数据提醒**
+- 包内带有真实运行数据（`users.json`、`pm.json`、`posts.json`、`uploads/` 等）与密钥（`debate_ai.json`、`sync_key.txt`）。
+- 复制给别人或上传公开仓库前先确认是否需要清空这些文件；只在自己机器间迁移则保持原样即可。

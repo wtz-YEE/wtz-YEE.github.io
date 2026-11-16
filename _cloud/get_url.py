@@ -2,6 +2,8 @@
 import re, glob, os, json, time, base64, subprocess, sys, urllib.request
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE)
+import paths
 REPO = os.path.dirname(BASE)
 LOGDIR = os.path.join(os.path.expanduser('~'), '.cpolar', 'logs')
 CFG = os.path.join(BASE, 'cloud_services.json')
@@ -37,7 +39,7 @@ def scan_tunnel(name):
 
 def pick_url(svc):
     urls = recent_urls(svc['tunnel'])
-    af = os.path.join(REPO, svc.get('addrfile', ''))
+    af = paths.addrfile(svc.get('addrfile', ''))
     try:
         for x in open(af, encoding='utf-8').read().splitlines():
             x = x.strip()
@@ -114,7 +116,7 @@ def main():
             continue
         u = pick_url(svc)
         if u and not scan_only:
-            af = os.path.join(REPO, svc['addrfile'])
+            af = paths.addrfile(svc['addrfile'])
             if read_text(af).strip() != u.strip():
                 try:
                     with open(af, 'w', encoding='utf-8') as f:

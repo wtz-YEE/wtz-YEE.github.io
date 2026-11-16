@@ -4,12 +4,14 @@ from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE)
+import paths
 CFG = os.path.join(BASE, 'cloud_services.json')
 HEART = os.path.join(BASE, 'guard.heartbeat')
 GLOG = os.path.join(BASE, 'guard.log')
 SYNC = os.path.join(BASE, 'sync.log')
 SNAP_FILE = os.path.join(BASE, 'monitor_snap.json')
-PORT = 8702
+PORT = int(os.environ.get('WTZ_MONITOR_PORT') or 8702)
 CNW = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 OPS = []
 _SNAP = {'d': None, 'lock': threading.Lock()}
@@ -56,16 +58,7 @@ def proc_batch(pids):
     return info
 
 def find_pythonw():
-    out = sh('where pythonw')
-    if out.strip():
-        return out.splitlines()[0].strip()
-    hits = glob.glob(os.path.expanduser(r'C:\Users\*\AppData\Local\Programs\Python\*\pythonw.exe'))
-    if hits:
-        return hits[0]
-    for c in (r'C:\Python312\pythonw.exe', r'C:\Python311\pythonw.exe', r'C:\Python310\pythonw.exe'):
-        if os.path.exists(c):
-            return c
-    return None
+    return paths.find_python('pythonw.exe') or paths.find_python('python.exe')
 
 def load_cfg():
     try:

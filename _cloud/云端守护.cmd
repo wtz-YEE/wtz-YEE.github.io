@@ -4,6 +4,7 @@ title WTZ 云端守护
 setlocal enabledelayedexpansion
 set CLOUD=%~dp0
 set ARG=%1
+if not defined WTZ_CLOUD_PORT set "WTZ_CLOUD_PORT=8701"
 echo ============================================
 echo   云端守护（黑曜石版）
 echo   15 秒轮询 · 本机/公网双轨探测 · 分级自愈
@@ -64,25 +65,24 @@ set N=0
 :loop
 for /f %%t in ('powershell -NoProfile -Command "[DateTimeOffset]::Now.ToUnixTimeSeconds()"') do set HB=%%t
 echo %HB%> "%CLOUD%guard.heartbeat"
-set PY=
-for /f "delims=" %%i in ('where python 2^>nul') do (set PY=%%i & goto :pyf)
-:pyf
-if not defined PY (
-  for /f "delims=" %%i in ('dir /b /s "C:\Users\*\AppData\Local\Programs\Python\python.exe" 2^>nul') do (set PY=%%i & goto :pyf2)
-)
-:pyf2
-if not defined PY if exist "C:\Python312\python.exe" set PY=C:\Python312\python.exe
-if not defined PY if exist "C:\Python311\python.exe" set PY=C:\Python311\python.exe
-if not defined PY if exist "C:\Python310\python.exe" set PY=C:\Python310\python.exe
-if not defined PY if exist "C:\Python39\python.exe" set PY=C:\Python39\python.exe
+set "PY="
+for /f "delims=" %%i in ('where python 2^>nul') do if not defined PY set "PY=%%i"
+if not defined PY for /f "delims=" %%i in ('py -3 -c "import sys;print(sys.executable)" 2^>nul') do if not defined PY set "PY=%%i"
+if not defined PY for /d %%d in ("%LOCALAPPDATA%\Programs\Python\Python3*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+if not defined PY for /d %%d in ("%LOCALAPPDATA%\Python\pythoncore-*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+if not defined PY for /d %%d in ("%LOCALAPPDATA%\Python\bin") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+if not defined PY for /d %%d in ("%ProgramFiles%\Python3*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+if not defined PY for /d %%d in ("%ProgramFiles%\Python\Python3*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+if not defined PY for /d %%d in ("%SystemDrive%\Python3*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
 if not defined PY (
   echo [%date% %time%] 未找到 Python，稍后重试
   timeout /t 15 /nobreak >nul
   goto loop
 )
-set PYW=%PY:~0,-3%pythonw.exe
-if not exist "%PYW%" set PYW=pythonw.exe
-powershell -NoProfile -Command "try{$r=Invoke-WebRequest 'http://127.0.0.1:8701/health' -UseBasicParsing -TimeoutSec 4;if($r.StatusCode -eq 200){'ok'}else{'no'}}catch{'no'}" | findstr /i "ok" >nul 2>&1
+for %%I in ("%PY%") do set "PYD=%%~dpI"
+set "PYW=%PYD%pythonw.exe"
+if not exist "%PYW%" set "PYW=%PY%"
+powershell -NoProfile -Command "try{$r=Invoke-WebRequest 'http://127.0.0.1:%WTZ_CLOUD_PORT%/health' -UseBasicParsing -TimeoutSec 4;if($r.StatusCode -eq 200){'ok'}else{'no'}}catch{'no'}" | findstr /i "ok" >nul 2>&1
 if errorlevel 1 (
   set /a FAIL+=1
   echo [%date% %time%] 本机服务异常 (连续失败 !FAIL!)
@@ -94,18 +94,18 @@ ping -n 4 127.0.0.1 >nul
   )
   if !FAIL! geq 3 (
     echo   强杀残留进程并重启服务
-    for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":8701 "') do taskkill /f /pid %%p >nul 2>&1
+    for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":%WTZ_CLOUD_PORT% "') do taskkill /f /pid %%p >nul 2>&1
     powershell -NoProfile -Command "Get-CimInstance Win32_Process ^| Where-Object {$_.CommandLine -like '*guestbook_server.py*'} ^| ForEach-Object {Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue}" >nul 2>&1
     ping -n 2 127.0.0.1 >nul
-    start "" /min "%PYW%" "%CLOUD%guestbook_server.py"
+    "%PY%" "%CLOUD%start_services.py"
     set FAIL=1
   ) else (
     echo   拉起服务
-    netstat -ano | findstr "LISTENING" | findstr ":8701 " >nul 2>&1
+    netstat -ano | findstr "LISTENING" | findstr ":%WTZ_CLOUD_PORT% " >nul 2>&1
     if not errorlevel 1 (
       echo   已存在监听，跳过重复拉起
     ) else (
-      start "" /min "%PYW%" "%CLOUD%guestbook_server.py"
+      "%PY%" "%CLOUD%start_services.py"
     )
   )
   ping -n 5 127.0.0.1 >nul
@@ -117,7 +117,7 @@ ping -n 4 127.0.0.1 >nul
     echo 检测到多实例，清理为单实例
     powershell -NoProfile -Command "Get-CimInstance Win32_Process ^| Where-Object {$_.CommandLine -like '*guestbook_server.py*'} ^| ForEach-Object {Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue}" >nul 2>&1
     ping -n 2 127.0.0.1 >nul
-    start "" /min "%PYW%" "%CLOUD%guestbook_server.py"
+    "%PY%" "%CLOUD%start_services.py"
   )
 )
 set /a N+=1

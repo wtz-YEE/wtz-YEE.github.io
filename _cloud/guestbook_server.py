@@ -32,6 +32,10 @@ DEBATE_LOCK = _threading.Lock()
 import time as _t
 DEL_LOG = []
 SYNC_KEY_FILE = os.path.join(_BASE, "sync_key.txt")
+try:
+    import paths as _paths
+except Exception:
+    _paths = None
 ACH_LIST = {"n": 20, "items": [
     ("初入终端", 0), ("数字猎人", 0), ("2048 大师", 0), ("远古跑者", 0), ("贪吃蛇大师", 0),
     ("方块消行者", 0), ("扫雷先锋", 0), ("砖块粉碎者", 0), ("像素鸟", 0), ("太空卫士", 0),
@@ -115,7 +119,12 @@ FRAGS = [
 
 
 SYNC_LOG = os.path.join(_BASE, "sync.log")
-CLOUD_TXT = os.path.join(_BASE, "..", "cloud.txt")
+if _paths:
+    CLOUD_TXT = _paths.cloud_txt()
+else:
+    _parent = os.path.join(_BASE, "..", "cloud.txt")
+    CLOUD_TXT = _parent if os.path.isfile(_parent) else os.path.join(_BASE, "cloud.txt")
+PORT = int(os.environ.get("WTZ_CLOUD_PORT") or (_paths.svc_port() if _paths else 8701))
 
 
 def _save(p, x):
@@ -4064,4 +4073,4 @@ def api_noma_ai():
         return jsonify({"ok": False, "a": "AI 请求失败：" + str(e) + "。"})
 
 
-app.run(host="0.0.0.0", port=8701, debug=False)
+app.run(host="0.0.0.0", port=PORT, debug=False)

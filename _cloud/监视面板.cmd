@@ -3,9 +3,10 @@ chcp 936 >nul
 title WTZ ÔÆ¶Ë¼àÊÓÃæ°å
 setlocal
 set "CLOUD=%~dp0"
-set "URL=http://127.0.0.1:8702/"
+if not defined WTZ_MONITOR_PORT set "WTZ_MONITOR_PORT=8702"
+set "URL=http://127.0.0.1:%WTZ_MONITOR_PORT%/"
 
-netstat -ano | findstr /i "LISTENING" | findstr ":8702 " >nul 2>&1
+netstat -ano | findstr /i "LISTENING" | findstr ":%WTZ_MONITOR_PORT% " >nul 2>&1
 if errorlevel 1 goto START
 call :HEALTH
 if not errorlevel 1 goto OPEN
@@ -15,11 +16,15 @@ ping -n 2 127.0.0.1 >nul
 
 :START
 set "PYW="
-if exist "%LOCALAPPDATA%\Python\bin\pythonw.exe" set "PYW=%LOCALAPPDATA%\Python\bin\pythonw.exe"
-if not defined PYW for /d %%d in ("%LOCALAPPDATA%\Python\pythoncore-*") do if exist "%%d\pythonw.exe" if not defined PYW set "PYW=%%d\pythonw.exe"
+for /f "delims=" %%p in ('where pythonw 2^>nul') do if not defined PYW set "PYW=%%p"
+if not defined PYW for /f "delims=" %%i in ('where python 2^>nul') do if not defined PYW for %%I in ("%%i") do if exist "%%~dpIpythonw.exe" set "PYW=%%~dpIpythonw.exe"
+if not defined PYW for /f "delims=" %%i in ('py -3 -c "import sys;print(sys.executable)" 2^>nul') do if not defined PYW for %%I in ("%%i") do if exist "%%~dpIpythonw.exe" set "PYW=%%~dpIpythonw.exe"
 if not defined PYW for /d %%d in ("%LOCALAPPDATA%\Programs\Python\Python3*") do if exist "%%d\pythonw.exe" if not defined PYW set "PYW=%%d\pythonw.exe"
-if not defined PYW for /d %%d in ("C:\Python3*") do if exist "%%d\pythonw.exe" if not defined PYW set "PYW=%%d\pythonw.exe"
-if not defined PYW for /f "delims=" %%p in ('where pythonw 2^>nul') do if not defined PYW set "PYW=%%p"
+if not defined PYW for /d %%d in ("%LOCALAPPDATA%\Python\pythoncore-*") do if exist "%%d\pythonw.exe" if not defined PYW set "PYW=%%d\pythonw.exe"
+if not defined PYW for /d %%d in ("%LOCALAPPDATA%\Python\bin") do if exist "%%d\pythonw.exe" if not defined PYW set "PYW=%%d\pythonw.exe"
+if not defined PYW for /d %%d in ("%ProgramFiles%\Python3*") do if exist "%%d\pythonw.exe" if not defined PYW set "PYW=%%d\pythonw.exe"
+if not defined PYW for /d %%d in ("%ProgramFiles%\Python\Python3*") do if exist "%%d\pythonw.exe" if not defined PYW set "PYW=%%d\pythonw.exe"
+if not defined PYW for /d %%d in ("%SystemDrive%\Python3*") do if exist "%%d\pythonw.exe" if not defined PYW set "PYW=%%d\pythonw.exe"
 if not defined PYW goto NOPY
 
 start "" "%PYW%" "%CLOUD%monitor.py"
@@ -54,9 +59,9 @@ exit /b 1
 :HEALTH
 where curl.exe >nul 2>&1
 if errorlevel 1 goto HPWS
-curl.exe -s -f --max-time 1 -o nul "http://127.0.0.1:8702/health" >nul 2>&1
+curl.exe -s -f --max-time 1 -o nul "%URL%health" >nul 2>&1
 exit /b %errorlevel%
 
 :HPWS
-powershell -NoProfile -Command "try{if((Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:8702/health' -TimeoutSec 2).StatusCode -eq 200){exit 0}}catch{};exit 1" >nul 2>&1
+powershell -NoProfile -Command "try{if((Invoke-WebRequest -UseBasicParsing -Uri '%URL%health' -TimeoutSec 2).StatusCode -eq 200){exit 0}}catch{};exit 1" >nul 2>&1
 exit /b %errorlevel%

@@ -17,11 +17,14 @@ if errorlevel 1 (
 )
 
 set "PY="
-if exist "%LOCALAPPDATA%\Python\bin\python.exe" set "PY=%LOCALAPPDATA%\Python\bin\python.exe"
-if not defined PY for /d %%d in ("%LOCALAPPDATA%\Python\pythoncore-*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+for /f "delims=" %%i in ('where python 2^>nul') do if not defined PY set "PY=%%i"
+if not defined PY for /f "delims=" %%i in ('py -3 -c "import sys;print(sys.executable)" 2^>nul') do if not defined PY set "PY=%%i"
 if not defined PY for /d %%d in ("%LOCALAPPDATA%\Programs\Python\Python3*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
-if not defined PY for /d %%d in ("C:\Python3*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
-if not defined PY for /f "delims=" %%i in ('where python 2^>nul') do if not defined PY set "PY=%%i"
+if not defined PY for /d %%d in ("%LOCALAPPDATA%\Python\pythoncore-*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+if not defined PY for /d %%d in ("%LOCALAPPDATA%\Python\bin") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+if not defined PY for /d %%d in ("%ProgramFiles%\Python3*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+if not defined PY for /d %%d in ("%ProgramFiles%\Python\Python3*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
+if not defined PY for /d %%d in ("%SystemDrive%\Python3*") do if exist "%%d\python.exe" if not defined PY set "PY=%%d\python.exe"
 if not defined PY ( echo [失败] 未找到 Python & pause & exit /b 1 )
 
 powershell -NoProfile -ExecutionPolicy Bypass -File "%CLOUD%guard_core.ps1"
@@ -36,14 +39,14 @@ echo [2/6] 启动本地服务 ...
 
 echo [3/6] 启动 cpolar 隧道 ...
 "%PY%" "%CLOUD%start_tunnels.py"
-if errorlevel 1 ( echo [失败] cpolar 启动失败，请确认已安装并加入 PATH & pause & exit /b 1 )
+if errorlevel 1 ( echo [失败] cpolar 启动失败，请安装 cpolar 或设置 WTZ_CPOLAR 指向 cpolar.exe & pause & exit /b 1 )
 
 echo [4/6] 等待隧道分配地址并同步 ...
 set /a n=0
 :wait3
 set /a n+=1
 "%PY%" "%CLOUD%get_url.py" --scan-only > "%LOGDIR%\_sync.out" 2>nul
-findstr /i "37web=" "%LOGDIR%\_sync.out" >nul 2>&1
+findstr /i "guestbook=" "%LOGDIR%\_sync.out" >nul 2>&1
 if not errorlevel 1 goto ok3
 if !n! geq 20 goto warn3
 echo   等待隧道就绪 (!n!/20) ...

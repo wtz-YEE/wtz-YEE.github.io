@@ -8,6 +8,9 @@ Usage:
 import os, sys, subprocess, re, json
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE)
+import paths
+
 HOME = os.path.expanduser("~")
 CFG = os.path.join(BASE, 'cloud_services.json')
 
@@ -29,17 +32,10 @@ def find_python():
     exe = sys.executable or "python"
     if os.path.isfile(exe):
         return exe
-    w = which("python")
-    return w if w else None
+    return paths.find_python() or which("python")
 
 def find_cpolar():
-    for c in [which("cpolar"),
-              r"D:\Program Files\cpolar\cpolar.exe",
-              r"C:\Program Files\cpolar\cpolar.exe",
-              r"C:\Program Files (x86)\cpolar\cpolar.exe"]:
-        if c and os.path.isfile(c):
-            return c
-    return None
+    return paths.find_cpolar()
 
 def cpolar_yml_path():
     return os.path.join(HOME, ".cpolar", "cpolar.yml")
@@ -119,7 +115,9 @@ def main():
                 print("[deps] install failed: %s" % out)
                 print("run manually: %s -m pip install flask flask-cors" % py)
                 return 1
-    print("[deps] flask / flask-cors OK")
+            print("[deps] flask / flask-cors OK")
+    else:
+        print("[deps] flask / flask-cors OK")
 
     cpolar = find_cpolar()
     if cpolar:
@@ -127,6 +125,7 @@ def main():
     else:
         print("[cpolar] NOT FOUND")
         print("install cpolar first: https://www.cpolar.com/  (add cpolar to PATH)")
+        print("or set WTZ_CPOLAR to the full path of cpolar.exe")
         return 1
 
     p, has_auth, missing, changed = ensure_cpolar_yml(token)
