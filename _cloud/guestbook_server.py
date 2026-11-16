@@ -3415,6 +3415,90 @@ def _debate_ai_worker(pid, aid):
             pass
 
 
+@app.route("/tech_ai", methods=["POST"])
+def api_tech_ai():
+    import json as _j, urllib.request as _ur, urllib.error as _ue
+    p = _debate_payload()
+    items = p.get("techniques")
+    if not isinstance(items, list) or not items:
+        return jsonify({"ok": False, "msg": "术式列表为空"})
+    items = items[:4]
+    cleaned = []
+    for x in items:
+        if not isinstance(x, dict):
+            continue
+        cleaned.append({
+            "idx": x.get("idx", 0),
+            "source": str(x.get("source") or "自定义")[:20],
+            "name": str(x.get("name") or "")[:80],
+            "type": str(x.get("type") or "")[:40],
+            "style": str(x.get("style") or "")[:40],
+            "effect": str(x.get("effect") or "")[:60],
+            "cost": str(x.get("cost") or "")[:40],
+            "power": str(x.get("power") or "")[:40],
+            "desc": str(x.get("desc") or "")[:160],
+        })
+    if not cleaned:
+        return jsonify({"ok": False, "msg": "术式列表无效"})
+    cfg = _debate_ai_conf()
+    if not cfg["key"]:
+        return jsonify({"ok": False, "msg": "术式 AI 未配置密钥（_cloud/debate_ai.json）"})
+    out = []
+    for x in cleaned:
+        detail, model, err = _tech_ai_request(cfg, x)
+        out.append({"idx": x.get("idx"), "detail": detail, "model": model, "error": err})
+    return jsonify({"ok": True, "items": out})
+
+
+def _tech_ai_request(cfg, item):
+    import json as _j, urllib.request as _ur, urllib.error as _ue
+    sys = ("你是《咒术回战》二创设定助手。根据术式信息生成具体、可玩的术式效果说明。"
+           "保留原著术语，不改变术式归属。只输出一个 JSON，不要输出解释。"
+           '格式：{"idx":数字,"detail":"不超过120字的中文说明"}。')
+    user = "术式信息：" + _j.dumps(item, ensure_ascii=False)
+    models = []
+    for m in [cfg["model"]] + cfg["fallbacks"]:
+        if m and m not in models:
+            models.append(m)
+    last = "AI 暂无可用模型"
+    for model in models:
+        body = _j.dumps({
+            "model": model,
+            "messages": [{"role": "system", "content": sys}, {"role": "user", "content": user}],
+            "temperature": 0.4, "max_tokens": 220
+        }).encode("utf-8")
+        req = _ur.Request(cfg["base"] + "/chat/completions", data=body, headers={
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + cfg["key"],
+            "User-Agent": "Mozilla/5.0"
+        })
+        try:
+            with _ur.urlopen(req, timeout=30) as r:
+                data = _j.loads(r.read().decode("utf-8", "replace"))
+            content = data["choices"][0]["message"]["content"]
+            if isinstance(content, list):
+                content = "".join(str(x.get("text") or "") for x in content if isinstance(x, dict))
+            m = re.search(r"\{[\s\S]*\}", str(content or ""))
+            if m:
+                obj = _j.loads(m.group(0))
+                detail = str(obj.get("detail") or "").strip()[:180]
+                if detail:
+                    return detail, model, ""
+            last = "AI 返回格式无法解析（" + model + "）"
+        except _ue.HTTPError as e:
+            err = ""
+            try:
+                err = e.read().decode("utf-8", "ignore")[:200]
+            except Exception:
+                pass
+            last = "AI 网关错误 " + str(e.code) + ("：" + err if err else "")
+            if e.code not in (429, 500, 502, 503, 504) and "model_not_found" not in err:
+                return "", "", last
+        except Exception as e:
+            last = "AI 请求失败：" + str(e)[:160]
+    return "", "", last
+
+
 @app.route("/debate_ai", methods=["POST"])
 def api_debate_ai():
     import json as _j, urllib.request as _ur, urllib.error as _ue
