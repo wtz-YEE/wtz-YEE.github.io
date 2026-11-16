@@ -204,6 +204,8 @@
 .db-bet-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .db-bet-h span{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;color:var(--db-hot)}
 .db-bet-h em{font-family:var(--mono);font-size:8px;font-style:normal;color:var(--ink3)}
+.db-bet-odds{display:flex;gap:10px;flex-wrap:wrap;margin-top:5px;font-family:var(--mono);font-size:8.5px;line-height:1.7;color:var(--ink3)}
+.db-bet-odds b{color:var(--ink);font-weight:500}
 .db-bet-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .db-bet-row input{
   flex:0 0 88px;min-width:0;border:1px solid #111;background:#FFF;color:var(--ink);

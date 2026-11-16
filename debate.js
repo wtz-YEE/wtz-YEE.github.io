@@ -263,19 +263,39 @@ function chCharBefore(p,a){
   return c;
 }
 function betHTML(p,u,ended){
-  if(state.local||!u||ended||p.ai_spar)return '';
-  if(p.user===u.username||p.challenger===u.username)return '';
-  var total=+p.bet_total||0,ph=+p.pool_host||0,pc=+p.pool_ch||0;
-  var head='<div class="db-bet-h"><span>观战竞猜</span><em>奖池 '+total+' 分 · 发布者 '+ph+' / 挑战者 '+pc+'</em></div>';
-  if(p.my_bet){
-    return '<div class="db-bet done">'+head+'<div class="db-bet-mine">已押 '+esc(p.my_bet.amount)+' 分 · '+(p.my_bet.pick==='host'?'发布者胜':'挑战者胜')+'</div></div>';
+  if(state.local||!u||ended)return '';
+  var mk=p.market||{};
+  var total=+mk.total||0,ph=+mk.pool_host||0,pc=+mk.pool_ch||0;
+  var open=!!mk.open&&!p.ai_spar&&!ended;
+  var st=mk.settled?'已结算':(open?'下注中':'已封盘');
+  var head='<div class="db-bet-h"><span>盘口 / MARKET</span><em>'+st+' · 抽水 8% 销毁</em></div>';
+  if(p.ai_spar){
+    return '<div class="db-bet">'+head+'<div class="db-bet-tip">AI 陪练场不开放竞猜。</div></div>';
   }
-  if(p.settled)return '';
-  return '<div class="db-bet">'+head+
-    '<div class="db-bet-row"><input type="number" min="1" max="50" step="1" value="10" data-bet-amount="1">'+
-    '<button type="button" data-bet="host" data-pid="'+esc(p.id)+'">押发布者</button>'+
-    '<button type="button" data-bet="challenger" data-pid="'+esc(p.id)+'">押挑战者</button></div>'+
-    '<div class="db-bet-tip">单注 1~50 分，每人一次，押错不退；平局或无效全额退款。</div></div>';
+  var participant=(p.user===u.username)||(p.challenger&&p.challenger===u.username);
+  var odds='';
+  if(total>0){
+    odds='<div class="db-bet-odds">'+
+      '<span>发布者池 <b>'+ph+'</b> 分 · 赔率 '+(ph?'×'+mk.host_odds:'—')+' · '+esc(mk.host_count||0)+' 人</span>'+
+      '<span>挑战者池 <b>'+pc+'</b> 分 · 赔率 '+(pc?'×'+mk.ch_odds:'—')+' · '+esc(mk.ch_count||0)+' 人</span>'+
+      '</div>';
+  }else{
+    odds='<div class="db-bet-odds"><span>暂无下注 · 发帖后、挑战者发言前可下注</span></div>';
+  }
+  var mine='';
+  if(mk.my_bet){
+    mine='<div class="db-bet-mine">你已押 '+esc(mk.my_bet.amount)+' 分 · '+(mk.my_bet.side==='host'?'发布者胜':'挑战者胜')+'</div>';
+  }
+  var body='';
+  if(open&&participant){
+    mine='<div class="db-bet-mine">你是本场参与者，不能下注。</div>';
+  }else if(open&&!mk.my_bet){
+    body='<div class="db-bet-row"><input type="number" min="1" max="50" step="1" value="10" data-bet-amount="1">'+
+      '<button type="button" data-bet="host" data-pid="'+esc(p.id)+'">押发布者</button>'+
+      '<button type="button" data-bet="challenger" data-pid="'+esc(p.id)+'">押挑战者</button></div>';
+  }
+  var tip='<div class="db-bet-tip">彩池赔率：赢家按押注占比分输家池；单注 1~50 分且不超过当日所得/余额的 50%；一人一边、不可重复；平局/无效全退不抽水。</div>';
+  return '<div class="db-bet">'+head+odds+mine+body+tip+'</div>';
 }
 function postHTML(p,u){
   var isHost=!!(u&&p.user===u.username);
@@ -362,7 +382,7 @@ function postHTML(p,u){
     '<div class="db-meta">'+esc(p.time)+' · 比分 '+scoreTxt+' · 回合 '+roundNow+'/'+rounds+' · 发言 '+argsLen+'/'+maxArgs+(pending?' · '+pending+' 条待裁定':'')+
       (ended?(winTxt?' · '+winTxt+' · 已结算':' · 已封盘'):(waiting?' · 回合已满，待裁定':''))+'</div>'+
     '<div class="db-args"><div class="db-args-h"><b>ARGUMENTS / '+argsLen+'</b><span>'+(waiting?'3 回合已满 · 等待管理员':(pending?'等待管理员':'已全部裁定'))+'</span></div>'+
-    (args||'<div class="db-reply-note">还没有人发言。登录后成为第一个挑战者。</div>')+reply+bet+'</div></article>';
+    (args||'<div class="db-reply-note">还没有人发言。登录后成为第一个挑战者。</div>')+bet+reply+'</div></article>';
 }
 function renderList(){
   var box=$('dbList'),cnt=$('dbCount');if(!box)return;
@@ -451,7 +471,7 @@ function syncLocalPosts(){
 function load(silent){
   if(!silent){state.loading=true;renderList();}
   var local=localApi('/debate_list',{});
-  callApi('/debate_list',{limit:50}).then(function(j){
+  callApi('/debate_list',{limit:50,sort:'hot'}).then(function(j){
     if(!j||!j.ok) throw new Error(j&&j.msg?j.msg:'读取失败');
     var posts=(j.posts||[]).slice(),ids={};
     posts.forEach(function(p){ids[p.id]=1});

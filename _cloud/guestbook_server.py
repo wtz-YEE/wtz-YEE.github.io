@@ -519,6 +519,12 @@ def _award(cu, pts=0, exp=0):
     rec = us.setdefault(cu, {})
     rec["pts"] = int(rec.get("pts") or 0) + int(pts)
     rec["exp"] = int(rec.get("exp") or 0) + int(exp)
+    d = _time.strftime("%Y-%m-%d")
+    if str(rec.get("pts_day_date") or "") != d:
+        rec["pts_day_date"] = d
+        rec["pts_day"] = 0
+    if int(pts) > 0:
+        rec["pts_day"] = int(rec.get("pts_day") or 0) + int(pts)
     _save(USER_FILE, us)
     return int(rec["pts"]), int(rec["exp"])
 
@@ -3071,50 +3077,123 @@ def _debate_post_state(post):
             winner = "draw" if (h or c) else "void"
     return h, c, done, winner
 
-def _debate_bet_pool(post):
-    bets = post.get("bets") or {}
+def _debate_market(post, create=False):
+    mk = post.get("market")
+    if not isinstance(mk, dict):
+        if not create:
+            return None
+        mk = {}
+        post["market"] = mk
+    mk.setdefault("open_at", post.get("time") or _now())
+    mk.setdefault("close_at", "")
+    mk.setdefault("pool_host", 0)
+    mk.setdefault("pool_ch", 0)
+    mk.setdefault("bets", [])
+    mk.setdefault("rake", 0.08)
+    mk.setdefault("settled", False)
+    return mk
+
+
+def _debate_market_pools(mk):
     ph = pc = 0
-    for b in bets.values():
+    for b in (mk.get("bets") or []):
         amt = max(0, int(b.get("amount") or 0))
-        if b.get("pick") == "host":
+        if b.get("side") == "host":
             ph += amt
         else:
             pc += amt
+    mk["pool_host"] = ph
+    mk["pool_ch"] = pc
     return ph, pc
 
-def _debate_settle_bets(post, users, winner):
-    """观战竞猜派奖：命中方拿回本金并按比例分输家奖池；平局/无效全额退款。"""
-    bets = post.get("bets") or {}
-    payout = {}
-    if not bets:
-        return payout
-    ph, pc = _debate_bet_pool(post)
+
+def _debate_market_view(post, cu=None):
+    mk = _debate_market(post)
+    if not mk:
+        args = post.get("args") or []
+        can_bet = (not post.get("ai_spar") and post.get("status") != "closed"
+                   and not any((a.get("side") or "challenger") == "challenger" for a in args))
+        return {"open": can_bet, "open_at": post.get("time") or "", "close_at": "",
+                "pool_host": 0, "pool_ch": 0, "total": 0, "bet_count": 0,
+                "host_count": 0, "ch_count": 0, "host_odds": 0, "ch_odds": 0,
+                "rake": 0.08, "settled": False, "burned": 0, "my_bet": None}
+    ph, pc = _debate_market_pools(mk)
     total = ph + pc
+    bets = [b for b in (mk.get("bets") or []) if int(b.get("amount") or 0) > 0]
+    mine = next((b for b in bets if b.get("user") == cu), None)
+    return {
+        "open": bool(not mk.get("close_at") and not mk.get("settled")),
+        "open_at": mk.get("open_at") or "", "close_at": mk.get("close_at") or "",
+        "pool_host": ph, "pool_ch": pc, "total": total,
+        "bet_count": len(bets),
+        "host_count": len([b for b in bets if b.get("side") == "host"]),
+        "ch_count": len([b for b in bets if b.get("side") != "host"]),
+        "host_odds": (round(float(total) / ph, 2) if ph else 0),
+        "ch_odds": (round(float(total) / pc, 2) if pc else 0),
+        "rake": float(mk.get("rake") or 0.08),
+        "settled": bool(mk.get("settled")),
+        "burned": int(mk.get("burned") or 0),
+        "my_bet": ({"side": mine.get("side"), "amount": int(mine.get("amount") or 0)}
+                   if mine else None)
+    }
+
+
+def _debate_settle_market(post, users, winner):
+    """彩池派奖（parimutuel）：总池扣 8% 销毁，赢家按押注占比分剩余；平/无效全退不抽水。"""
+    mk = _debate_market(post)
+    if not mk:
+        return {}
+    bets = [b for b in (mk.get("bets") or []) if int(b.get("amount") or 0) > 0]
+    if mk.get("settled") or not bets:
+        mk["settled"] = True
+        return {}
+    ph, pc = _debate_market_pools(mk)
+    total = ph + pc
+    payout = {}
+    burned = 0
     if winner in ("host", "challenger"):
         wp = ph if winner == "host" else pc
-        if wp <= 0 or wp >= total:
-            for u, b in bets.items():
+        if wp <= 0:
+            for b in bets:
+                u = b.get("user") or ""
                 amt = max(0, int(b.get("amount") or 0))
                 if amt and u in users:
                     users[u]["pts"] = int(users[u].get("pts") or 0) + amt
-                    payout[u] = amt
-            return payout
-        for u, b in bets.items():
-            if b.get("pick") != winner:
-                continue
-            amt = max(0, int(b.get("amount") or 0))
-            if not amt or u not in users:
-                continue
-            gain = int(round(float(total - wp) * amt / wp))
-            pay = amt + gain
-            users[u]["pts"] = int(users[u].get("pts") or 0) + pay
-            payout[u] = pay
+                    payout[u] = int(payout.get(u) or 0) + amt
+        else:
+            rake = int(round(float(total) * float(mk.get("rake") or 0.08)))
+            dist = max(wp, total - rake)
+            floor_sum = 0
+            rows = []
+            for b in bets:
+                if b.get("side") != winner:
+                    continue
+                u = b.get("user") or ""
+                amt = max(0, int(b.get("amount") or 0))
+                if not amt or u not in users:
+                    continue
+                pay = int(float(dist) * amt / wp)
+                rows.append([u, amt, pay])
+                floor_sum += pay
+            rest = dist - floor_sum
+            if rows and rest > 0:
+                rows.sort(key=lambda x: (-x[1], x[0]))
+                rows[0][2] += rest
+            for u, amt, pay in rows:
+                users[u]["pts"] = int(users[u].get("pts") or 0) + pay
+                payout[u] = int(payout.get(u) or 0) + pay
+            burned = total - sum(payout.values())
     else:
-        for u, b in bets.items():
+        for b in bets:
+            u = b.get("user") or ""
             amt = max(0, int(b.get("amount") or 0))
             if amt and u in users:
                 users[u]["pts"] = int(users[u].get("pts") or 0) + amt
-                payout[u] = amt
+                payout[u] = int(payout.get(u) or 0) + amt
+        burned = 0
+    mk["settled"] = True
+    mk["payout"] = payout
+    mk["burned"] = max(0, int(burned))
     return payout
 
 def _debate_settle(post, users, cu):
@@ -3137,7 +3216,7 @@ def _debate_settle(post, users, cu):
         st = {"winner": winner, "host": host, "ch": ch,
               "host_delta": 0, "ch_delta": 0, "legacy": True,
               "spar": spar, "at": _now(), "by": cu}
-        st["bet_payout"] = _debate_settle_bets(post, users, winner)
+        st["bet_payout"] = _debate_settle_market(post, users, winner)
         post["settle"] = st
         post["status"] = "closed"
         post["closed_at"] = _now()
@@ -3169,7 +3248,7 @@ def _debate_settle(post, users, cu):
     st = {"winner": winner, "host": host, "ch": ch,
           "host_delta": hd, "ch_delta": cd, "spar": spar,
           "at": _now(), "by": cu}
-    st["bet_payout"] = _debate_settle_bets(post, users, winner)
+    st["bet_payout"] = _debate_settle_market(post, users, winner)
     post["settle"] = st
     post["status"] = "closed"
     post["closed_at"] = _now()
@@ -3203,6 +3282,11 @@ def _debate_unsettle(post, users):
     for u, pay in (st.get("bet_payout") or {}).items():
         if u in users:
             users[u]["pts"] = max(0, int(users[u].get("pts") or 0) - int(pay))
+    mk = _debate_market(post)
+    if mk:
+        mk["settled"] = False
+        mk["payout"] = {}
+        mk["burned"] = 0
     post["settled"] = False
     post["settle"] = {}
     post["winner"] = ""
@@ -3222,9 +3306,7 @@ def _debate_public(post, users, cu=None):
             "author": _debate_user(users, a.get("user") or "")
         })
     h, c, done, winner = _debate_post_state(post)
-    pool_h, pool_c = _debate_bet_pool(post)
-    bets = post.get("bets") or {}
-    my_bet = bets.get(cu) if cu else None
+    market = _debate_market_view(post, cu)
     return {
         "id": post.get("id") or "", "user": post.get("user") or "",
         "char": post.get("char") or "", "target": post.get("target") or "",
@@ -3236,10 +3318,10 @@ def _debate_public(post, users, cu=None):
         "settle": post.get("settle") or {},
         "ai_spar": bool(post.get("ai_spar")),
         "rounds": DEBATE_ROUNDS, "max_args": DEBATE_MAX_ARGS, "args_count": len(args),
-        "pool_host": pool_h, "pool_ch": pool_c, "bet_total": pool_h + pool_c,
-        "my_bet": ({"pick": my_bet.get("pick"), "amount": int(my_bet.get("amount") or 0)}
-                   if isinstance(my_bet, dict) else None),
-        "bet_count": len(bets),
+        "market": market,
+        "pool_host": market.get("pool_host") or 0, "pool_ch": market.get("pool_ch") or 0,
+        "bet_total": market.get("total") or 0, "bet_count": market.get("bet_count") or 0,
+        "my_bet": market.get("my_bet"),
         "host": _debate_user(users, post.get("user") or ""),
         "args": args
     }
@@ -3252,7 +3334,10 @@ def api_debate_list():
     users = _load(USER_FILE, {})
     cu = _cur_user(p.get("token"))
     out = [_debate_public(x, users, cu) for x in posts if isinstance(x, dict)]
-    out = sorted(out, key=lambda x: x.get("time") or "", reverse=True)
+    if str(p.get("sort") or "") == "hot":
+        out.sort(key=lambda x: ((x.get("market") or {}).get("bet_count") or 0, x.get("time") or ""), reverse=True)
+    else:
+        out = sorted(out, key=lambda x: x.get("time") or "", reverse=True)
     try:
         lim = max(1, min(100, int(p.get("limit") or 50)))
     except Exception:
@@ -3279,7 +3364,9 @@ def api_debate_add():
         post = {"id": pid, "user": cu, "char": char, "target": target,
                 "body": body, "time": _now(), "status": "open", "args": [],
                 "winner": "", "score_host": 0, "score_ch": 0,
-                "challenger": "", "settled": False, "ai_spar": False, "bets": {}}
+                "challenger": "", "settled": False, "ai_spar": False,
+                "market": {"open_at": _now(), "close_at": "", "pool_host": 0, "pool_ch": 0,
+                           "bets": [], "rake": 0.08, "settled": False}}
         d["posts"].append(post)
         _save(DEBATE_FILE, d)
     return jsonify({"ok": True, "msg": "论战已发布", "id": pid})
@@ -3303,8 +3390,10 @@ def api_debate_del():
         if post.get("user") != cu and not _debate_admin(cu, users):
             return jsonify({"ok": False, "msg": "只有帖主或管理员可以删除"})
         refund = 0
-        if not post.get("settled"):
-            for u, b in (post.get("bets") or {}).items():
+        mk = _debate_market(post)
+        if mk and not mk.get("settled"):
+            for b in (mk.get("bets") or []):
+                u = b.get("user") or ""
                 amt = max(0, int(b.get("amount") or 0))
                 if amt and u in users:
                     users[u]["pts"] = int(users[u].get("pts") or 0) + amt
@@ -3354,6 +3443,9 @@ def api_debate_arg():
                 return jsonify({"ok": False, "msg": "本场 3 回合已打满"})
             if ch_n > host_n:
                 return jsonify({"ok": False, "msg": "等待发布者反击后再发言"})
+            mk = _debate_market(post)
+            if mk and any((b.get("user") or "") == cu for b in (mk.get("bets") or [])):
+                return jsonify({"ok": False, "msg": "你已在本场下注，不能作为挑战者应战"})
             if not char:
                 return jsonify({"ok": False, "msg": "请选择你的角色"})
             allowed = [str(post.get("char") or ""), str(post.get("target") or "")]
@@ -3384,6 +3476,10 @@ def api_debate_arg():
             "side": side, "result": "", "host_delta": None, "ch_delta": None, "resolved_at": "",
             "ai_state": ai_state, "ai_error": ai_err
         })
+        if side == "challenger":
+            mk = _debate_market(post)
+            if mk and not mk.get("close_at"):
+                mk["close_at"] = _now()
         spar_pending = False
         if post.get("ai_spar") and side == "host":
             ch_n = sum(1 for x in post["args"] if (x.get("side") or "challenger") == "challenger")
@@ -3405,9 +3501,6 @@ def api_debate_ai_spar():
     pid = str(p.get("pid") or "").strip()
     if not pid:
         return jsonify({"ok": False, "msg": "论战帖不存在"})
-    cfg = _debate_ai_conf()
-    if not cfg["key"]:
-        return jsonify({"ok": False, "msg": "AI 陪练未配置密钥（_cloud/debate_ai.json）"})
     with DEBATE_LOCK:
         users = _load(USER_FILE, {})
         d = _load(DEBATE_FILE, {"posts": []})
@@ -3424,6 +3517,14 @@ def api_debate_ai_spar():
             return jsonify({"ok": False, "msg": "AI 陪练已在本场接战"})
         if _debate_challenger(post):
             return jsonify({"ok": False, "msg": "本场已有挑战者，无需 AI 陪练"})
+        mk = _debate_market(post)
+        if mk and any(int(b.get("amount") or 0) > 0 for b in (mk.get("bets") or [])):
+            return jsonify({"ok": False, "msg": "本场已有竞猜，不能转为 AI 陪练"})
+        cfg = _debate_ai_conf()
+        if not cfg["key"]:
+            return jsonify({"ok": False, "msg": "AI 陪练未配置密钥（_cloud/debate_ai.json）"})
+        if mk and not mk.get("close_at"):
+            mk["close_at"] = _now()
         post["ai_spar"] = True
         post["spar_last"] = 0
         _save(DEBATE_FILE, d)
@@ -3456,6 +3557,7 @@ def api_debate_bet():
         return jsonify({"ok": False, "msg": "下注积分格式错误"})
     if amount < DEBATE_BET_MIN or amount > DEBATE_BET_MAX:
         return jsonify({"ok": False, "msg": "单注积分需在 %d~%d 之间" % (DEBATE_BET_MIN, DEBATE_BET_MAX)})
+    ip = (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip() or (request.remote_addr or "")
     with DEBATE_LOCK:
         users = _load(USER_FILE, {})
         rec = users.get(cu)
@@ -3471,21 +3573,39 @@ def api_debate_bet():
             return jsonify({"ok": False, "msg": "AI 陪练场不开放竞猜"})
         if post.get("user") == cu or _debate_challenger(post) == cu:
             return jsonify({"ok": False, "msg": "参与者不能押注本场"})
-        bets = post.setdefault("bets", {})
-        if cu in bets:
+        args = post.get("args") or []
+        if any((a.get("side") or "challenger") == "challenger" for a in args):
+            return jsonify({"ok": False, "msg": "已有人应战，盘口已锁定"})
+        mk = _debate_market(post, create=True)
+        if mk.get("settled") or mk.get("close_at"):
+            return jsonify({"ok": False, "msg": "盘口已封，停止下注"})
+        if any((b.get("user") or "") == cu for b in (mk.get("bets") or [])):
             return jsonify({"ok": False, "msg": "你已经押过本场了，不能重复下注"})
+        if ip and any((b.get("ip") or "") == ip for b in (mk.get("bets") or [])):
+            return jsonify({"ok": False, "msg": "同一 IP 本场只能下注一次"})
         pts = int(rec.get("pts") or 0)
         if pts < amount:
             return jsonify({"ok": False, "msg": "积分不足，还差 %d 分" % (amount - pts), "pts": pts})
+        cap = min(DEBATE_BET_MAX, int(pts * 0.5))
+        day_key = _time.strftime("%Y-%m-%d")
+        day = int(rec.get("pts_day") or 0) if str(rec.get("pts_day_date") or "") == day_key else 0
+        if day > 0:
+            cap = min(cap, int(day * 0.5))
+        if cap < DEBATE_BET_MIN:
+            return jsonify({"ok": False, "msg": "当日因果不足，暂时无法下注"})
+        if amount > cap:
+            return jsonify({"ok": False, "msg": "单场最多押 %d 分（当日所得/余额的 50%%）" % cap})
         rec["pts"] = pts - amount
-        bets[cu] = {"pick": pick, "amount": amount, "at": _now()}
+        mk.setdefault("bets", []).append({"user": cu, "side": pick, "amount": amount,
+                                          "at": _now(), "ip": ip})
+        ph, pc = _debate_market_pools(mk)
         _save(USER_FILE, users)
         _save(DEBATE_FILE, d)
         _audit(cu, "debate_bet", pid, pick + " " + str(amount))
-        ph, pc = _debate_bet_pool(post)
+        mv = _debate_market_view(post, cu)
     return jsonify({"ok": True, "msg": "已押 %d 分给%s" % (amount, "发布者" if pick == "host" else "挑战者"),
                     "pts": rec["pts"], "pool_host": ph, "pool_ch": pc,
-                    "my_bet": {"pick": pick, "amount": amount}})
+                    "market": mv})
 
 
 @app.route("/debate_resolve", methods=["POST"])
@@ -3957,6 +4077,9 @@ def _debate_ai_spar_worker(pid):
                 "side": "challenger", "result": "", "host_delta": None, "ch_delta": None,
                 "resolved_at": "", "ai_player": True, "ai_state": "done", "ai_model": model
             })
+            mk = _debate_market(post)
+            if mk and not mk.get("close_at"):
+                mk["close_at"] = _now()
             if len(post["args"]) >= DEBATE_MAX_ARGS:
                 post["status"] = "waiting"
             _save(DEBATE_FILE, d)
