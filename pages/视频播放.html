@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#FFFFFF">
 <title>视频库 · WTZ</title>
+<meta name="description" content="WTZ 视频库：云端播放、点赞、评论与分享。">
+<meta property="og:type" content="video.other">
+<meta property="og:site_name" content="WTZ">
+<meta property="og:title" id="ogTitle" content="视频库 · WTZ">
+<meta property="og:description" id="ogDesc" content="WTZ 视频库：云端播放、点赞、评论与分享。">
+<meta property="og:image" content="https://wtz-YEE.github.io/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" id="twTitle" content="视频库 · WTZ">
+<meta name="twitter:description" id="twDesc" content="WTZ 视频库：云端播放、点赞、评论与分享。">
 <link rel="stylesheet" href="../intro.css">
 <style>
 :root{--bg:#040405;--panel:#0b0b0d;--line2:rgba(255,255,255,.14);--accent:#fff;--ink:#e6edef;--ink3:#6a767d;--gold:#ffd60a;--red:#ff5c5c}
@@ -177,6 +186,47 @@ h1 b{color:var(--teal)}
   .rel{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rcard .rph{height:84px}
 }
+
+/* 分享面板 */
+body.share-open{overflow:hidden}
+.sh-mask{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(4,30,33,.46);backdrop-filter:blur(3px)}
+.sh-mask.show{display:flex}
+.sh-box{width:min(92vw,520px);max-height:min(88vh,760px);overflow:auto;background:#fff;border:1px solid var(--teal);box-shadow:0 24px 80px rgba(0,90,100,.28)}
+.sh-top{display:flex;align-items:center;gap:14px;padding:15px 18px;border-bottom:1px solid var(--line2)}
+.sh-top h3{margin:0;font-size:14px;letter-spacing:.1em;color:#0B3D42;font-weight:600}
+.sh-top small{font-family:Consolas,monospace;font-size:9px;letter-spacing:.18em;color:var(--teal)}
+.sh-x{margin-left:auto;width:30px;height:30px;border:1px solid var(--line2);background:#fff;color:#5E858A;font-size:19px;line-height:1;cursor:pointer}
+.sh-x:hover{color:var(--teal);border-color:var(--teal)}
+.sh-preview{display:flex;gap:13px;align-items:center;padding:16px 18px 10px}
+.sh-cover{width:112px;aspect-ratio:16/9;flex:0 0 112px;border:1px solid var(--line2);background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--teal);font-family:Consolas,monospace;font-size:26px}
+.sh-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.sh-copy{min-width:0}
+.sh-copy b{display:block;font-size:14px;line-height:1.45;color:#0B3D42;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-copy span{display:block;margin-top:5px;font-family:Consolas,monospace;font-size:10px;line-height:1.5;color:#7C9A9E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-url{display:flex;gap:8px;padding:6px 18px 0}
+.sh-url input{flex:1;min-width:0;border:1px solid var(--line2);background:#FAFEFE;color:#476F74;padding:9px 10px;font:11px Consolas,monospace;outline:none}
+.sh-url input:focus{border-color:var(--teal)}
+.sh-at{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 18px 0;font-size:11.5px;color:#5E858A;user-select:none}
+.sh-at input{accent-color:var(--teal)}
+.sh-at em{font-style:normal;color:var(--teal);font-family:Consolas,monospace;font-size:10px}
+.sh-actions{display:flex;flex-wrap:wrap;gap:8px;padding:14px 18px 16px}
+.sh-opt{flex:1 1 130px;min-height:54px;border:1px solid var(--line2);background:#fff;color:#476F74;padding:9px 8px;cursor:pointer;font:inherit;font-size:11.5px;line-height:1.35;transition:.16s}
+.sh-opt:hover{border-color:var(--teal);color:var(--teal);background:#F2FBFB}
+.sh-opt b{display:block;font-family:Consolas,monospace;font-size:10px;letter-spacing:.08em;margin-bottom:4px;color:var(--teal)}
+.sh-opt.hide{display:none}
+.sh-qr{display:none;margin:0 18px 16px;padding:14px;border:1px solid var(--line2);background:#FAFEFE;text-align:center}
+.sh-qr.on{display:block}
+.sh-qr .qrbox{width:154px;height:154px;margin:0 auto;background:#fff;border:1px solid var(--line2);padding:8px}
+.sh-qr .qrbox svg{width:100%;height:100%;display:block}
+.sh-qr p{margin:9px 0 0;font-size:10.5px;color:#7C9A9E;line-height:1.6}
+.sh-qr p b{color:var(--teal);font-family:Consolas,monospace;font-weight:400}
+.sh-note{padding:0 18px 16px;color:#8AA6A9;font-size:10px;line-height:1.6;border-top:1px solid rgba(0,152,168,.1);padding-top:10px}
+@media(max-width:600px){
+  .sh-mask{align-items:flex-end;padding:0}
+  .sh-box{width:100%;max-height:92vh;border-left:none;border-right:none;border-bottom:none;padding-bottom:env(safe-area-inset-bottom)}
+  .sh-actions{padding-bottom:18px}
+  .sh-cover{width:96px;flex-basis:96px}
+}
 </style>
 <link rel="stylesheet" href="../shared-ui.css">
 </head>
@@ -214,7 +264,7 @@ h1 b{color:var(--teal)}
       <div class="acts" id="acts"></div>
       <label class="auto"><input type="checkbox" id="autoNext"> 自动连播</label>
       <button class="abtn" id="nextBtn" type="button">下一支 →</button>
-      <button class="abtn" id="shareBtn" type="button">复制链接</button>
+      <button class="abtn" id="shareBtn" type="button">分享 <span class="num">0</span></button>
       <button id="del" class="delbtn">✕ 删除视频</button>
     </div>
     <a class="back" href="视频播放.html">◄ 返回全部视频</a>
@@ -232,7 +282,32 @@ h1 b{color:var(--teal)}
     </div>
   </div>
 </main>
+<div class="sh-mask" id="shMask" aria-hidden="true">
+  <div class="sh-box" role="dialog" aria-modal="true" aria-labelledby="shHead">
+    <div class="sh-top">
+      <h3 id="shHead">分享这支视频</h3><small>SHARE</small>
+      <button class="sh-x" id="shClose" type="button" aria-label="关闭分享">×</button>
+    </div>
+    <div class="sh-preview">
+      <div class="sh-cover" id="shCover"></div>
+      <div class="sh-copy"><b id="shTitle">—</b><span id="shMeta">—</span></div>
+    </div>
+    <div class="sh-url"><input id="shURL" readonly aria-label="分享链接" value=""></div>
+    <label class="sh-at"><input type="checkbox" id="shAt"> 从当前时间开始 <em id="shAtHint">从头播放</em></label>
+    <div class="sh-actions">
+      <button class="sh-opt" id="shCopy" type="button"><b>COPY</b>复制链接</button>
+      <button class="sh-opt" id="shNative" type="button"><b>SYSTEM</b>系统分享</button>
+      <button class="sh-opt" id="shQr" type="button"><b>QR</b>二维码</button>
+    </div>
+    <div class="sh-qr" id="shQrPanel">
+      <div class="qrbox" id="shQrBox"></div>
+      <p id="shQrTip">扫码打开 · 会保留当前播放位置</p>
+    </div>
+    <div class="sh-note">链接只包含视频编号与时间点，不携带账号信息。分享计数仅做总量统计。</div>
+  </div>
+</div>
 <script src="shared.js?v=20261115"></script>
+<script src="https://fastly.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>try{if(!window.apiList||!window.apiList().length)localStorage.setItem('gb_api_url','https://59a035d9.r20.cpolar.top')}catch(e){}</script>
 <script>
 (function(){
@@ -242,7 +317,97 @@ h1 b{color:var(--teal)}
   var vz=document.getElementById('vZones'),vs=document.getElementById('vSort'),vq=document.getElementById('vSearch');
   var md=document.getElementById('md'),rel=document.getElementById('related'),nx=document.getElementById('nextBtn');
   var sh=document.getElementById('shareBtn'),an=document.getElementById('autoNext');
-  var ALL=[],CZ='全部',SORT='rec',KW='',CUR_REL=[],VIEWED=false,PK='wtz_vprog_';
+  var shMask=document.getElementById('shMask'),shURL=document.getElementById('shURL'),shTitle=document.getElementById('shTitle');
+  var shMeta=document.getElementById('shMeta'),shCover=document.getElementById('shCover'),shAt=document.getElementById('shAt');
+  var shAtHint=document.getElementById('shAtHint'),shCopy=document.getElementById('shCopy'),shNative=document.getElementById('shNative');
+  var shQrBtn=document.getElementById('shQr'),shQrPanel=document.getElementById('shQrPanel'),shQrBox=document.getElementById('shQrBox');
+  var shQrTip=document.getElementById('shQrTip'),shCloseBtn=document.getElementById('shClose');
+  var ALL=[],CZ='全部',SORT='rec',KW='',CUR_REL=[],VIEWED=false,PK='wtz_vprog_',SHV=null,SHURL='',QRSHOWN=false;
+  function fmtT(s){s=Math.max(0,Math.floor(Number(s)||0));var m=Math.floor(s/60),x=s%60;return m+':'+(x<10?'0':'')+x}
+  function shareCount(v){return Number(v&&v.shares||0)}
+  function renderShareBtn(v){try{sh.innerHTML='分享 <span class="num">'+shareCount(v)+'</span>'}catch(e){}}
+  function buildShareURL(v){
+    var t=shAt.checked?Math.max(0,Math.floor(pv.currentTime||0)):0;
+    var u;
+    try{u=new URL(location.href);u.hash='';u.search='';}catch(e){u=null}
+    var base=(u&&u.protocol!=='file:')?u.origin+u.pathname:location.href.split('?')[0].split('#')[0];
+    var qs='?id='+encodeURIComponent(String(v.id||''));
+    if(t>0)qs+='&t='+t;
+    return base+qs;
+  }
+  function updateShareURL(){
+    if(!SHV)return;
+    SHURL=buildShareURL(SHV);shURL.value=SHURL;
+    var t=shAt.checked?Math.max(0,Math.floor(pv.currentTime||0)):0;
+    shAtHint.textContent=t>0?('从 '+fmtT(t)+' 开始'):'从头播放';
+  }
+  function closeShare(){
+    shMask.classList.remove('show');shMask.setAttribute('aria-hidden','true');
+    document.body.classList.remove('share-open');SHV=null;QRSHOWN=false;
+  }
+  function openShare(v){
+    SHV=v;QRSHOWN=false;shQrPanel.classList.remove('on');shQrBox.innerHTML='';
+    shTitle.textContent=v.t||'无标题';
+    shMeta.textContent='@'+(v.user||'匿名')+' · '+(v.zn||'未分区')+' · ▶'+(v.views||0);
+    shCover.innerHTML='';
+    if(v.cov){var im=document.createElement('img');im.alt='';im.src=v.cov;shCover.appendChild(im)}
+    else shCover.textContent=(v.zn||'▶').charAt(0);
+    shAt.checked=Number(pv.currentTime||0)>3;
+    updateShareURL();
+    shMask.classList.add('show');shMask.setAttribute('aria-hidden','false');
+    document.body.classList.add('share-open');
+    try{shAt.focus()}catch(e){}
+  }
+  function countShare(v,kind){
+    if(!cloud())return;
+    call('/video_share',{id:v.id,kind:kind}).then(function(j){
+      if(j&&j.ok){v.shares=j.shares||0;renderShareBtn(v)}
+    }).catch(function(){});
+  }
+  function doCopy(){
+    if(!SHV)return;updateShareURL();
+    var u=SHURL;
+    function done(){try{window.toast?window.toast('链接已复制'):alert('链接已复制')}catch(e){}countShare(SHV,'copy')}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(u).then(done).catch(function(){
+        try{shURL.select();document.execCommand('copy');done()}catch(e){var r=prompt('复制链接',u);if(r!==null)countShare(SHV,'copy')}
+      });
+    }else{
+      try{shURL.select();document.execCommand('copy');done()}catch(e){var r=prompt('复制链接',u);if(r!==null)countShare(SHV,'copy')}
+    }
+  }
+  function doNative(){
+    if(!SHV)return;updateShareURL();
+    if(!navigator.share){doCopy();return}
+    var data={title:(SHV.t||'视频')+' · WTZ 视频库',text:'@'+(SHV.user||'匿名')+' 的视频',url:SHURL};
+    navigator.share(data).then(function(){countShare(SHV,'native')}).catch(function(){});
+  }
+  function doQR(){
+    if(!SHV)return;updateShareURL();shQrPanel.classList.add('on');
+    if(typeof qrcode==='undefined'){
+      shQrBox.innerHTML='';shQrTip.textContent='二维码组件未加载，请直接复制上方链接';return;
+    }
+    try{
+      var qr=qrcode(0,'M');qr.addData(SHURL);qr.make();
+      shQrBox.innerHTML=qr.createSvgTag(5,4);
+      shQrTip.innerHTML='扫码打开 · 会保留当前播放位置';
+      if(!QRSHOWN){QRSHOWN=true;countShare(SHV,'qr')}
+    }catch(e){shQrBox.innerHTML='';shQrTip.textContent='二维码生成失败，请直接复制上方链接'}
+  }
+  function bindShare(){
+    if(sh._bound)return;sh._bound=1;
+    sh.onclick=function(){if(SHV)closeShare();else if(ALL.length){var id=q('id');for(var i=0;i<ALL.length;i++){if(String(ALL[i].id)===id){openShare(ALL[i]);break}}}
+    };
+    shCloseBtn.onclick=closeShare;
+    shMask.onclick=function(e){if(e.target===shMask)closeShare()};
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&shMask.classList.contains('show'))closeShare()});
+    shAt.onchange=function(){QRSHOWN=false;shQrPanel.classList.remove('on');updateShareURL()};
+    shCopy.onclick=doCopy;
+    shNative.onclick=doNative;
+    shQrBtn.onclick=doQR;
+    if(!navigator.share)shNative.classList.add('hide');
+    try{shURL.onclick=function(){shURL.select()}}catch(e){}
+  }
   function vsrc(u){try{return (u&&u[0]==='/'?apiBase()+u:u)}catch(e){return u}}
   function esc(s){try{return window.esc?window.esc(s):String(s==null?'':s)}catch(e){return String(s==null?'':s)}}
   function q(name){var m=new RegExp('[?&]'+name+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1]):''}
@@ -262,7 +427,7 @@ h1 b{color:var(--teal)}
     vb.innerHTML='▶ 播放 <span class="num">'+(v.views||0)+'</span>';
     var cb=document.createElement('span');cb.className='abtn';cb.style.cursor='default';
     cb.innerHTML='评论 <span class="num">'+(v.cmts||[]).length+'</span>';
-    a.appendChild(lb);a.appendChild(vb);a.appendChild(cb);
+    a.appendChild(lb);a.appendChild(vb);a.appendChild(cb);renderShareBtn(v);
   }
   function loadCmt(v){
     var ul=document.getElementById('cmtList');
@@ -374,6 +539,7 @@ h1 b{color:var(--teal)}
     if(CUR_REL.length)location.href='视频播放.html?id='+encodeURIComponent(CUR_REL[0].id);
   }
   function showDetail(v){
+    var startAt=Math.max(0,Math.floor(Number(q('t'))||0));
     lv.classList.add('hide');
     pb.classList.add('show');
     g.innerHTML='';
@@ -390,6 +556,14 @@ h1 b{color:var(--teal)}
     r.innerHTML=h;mrow.innerHTML='';mrow.appendChild(r);
     md.textContent=v.d||'';
     document.title=(v.t||'视频')+' · 视频库 · WTZ';
+    try{
+      var ot=document.getElementById('ogTitle'),od=document.getElementById('ogDesc');
+      var tt=document.getElementById('twTitle'),td=document.getElementById('twDesc');
+      if(ot)ot.setAttribute('content',(v.t||'视频')+' · WTZ 视频库');
+      if(tt)tt.setAttribute('content',(v.t||'视频')+' · WTZ 视频库');
+      if(od)od.setAttribute('content',(v.d||('@'+(v.user||'匿名')+' 的视频')).slice(0,180));
+      if(td)td.setAttribute('content',(v.d||('@'+(v.user||'匿名')+' 的视频')).slice(0,180));
+    }catch(e){}
     renderActs(v);renderRelated(v);
     delb.className='delbtn'+(v.mine?' show':'');
     delb.onclick=function(){
@@ -407,8 +581,16 @@ h1 b{color:var(--teal)}
       call('/video_view',{id:v.id}).then(function(j){if(j.ok){v.views=j.views;renderActs(v)}})['catch'](function(){});
     };
     pv.onloadedmetadata=function(){
-      try{var p=Number(localStorage.getItem(PK+v.id)||0);if(p>5&&p<(pv.duration-5))pv.currentTime=p}catch(e){}
+      try{
+        var saved=Number(localStorage.getItem(PK+v.id)||0);
+        var seek=startAt>0?startAt:saved;
+        if(seek>2&&seek<(pv.duration-2)){
+          pv.currentTime=seek;
+          if(startAt>0){try{window.toast?window.toast('已定位到 '+fmtT(startAt)):0}catch(e){}}
+        }
+      }catch(e){}
     };
+    if(pv.readyState>=1){try{pv.onloadedmetadata()}catch(e){}}
     var last=0;
     pv.ontimeupdate=function(){
       if(Date.now()-last<4000)return;last=Date.now();
@@ -419,12 +601,6 @@ h1 b{color:var(--teal)}
     an.checked=localStorage.getItem('wtz_autonext')==='1';
     an.onchange=function(){try{localStorage.setItem('wtz_autonext',an.checked?'1':'0')}catch(e){}};
     nx.onclick=nextVideo;
-    sh.onclick=function(){
-      var u=location.href.split('#')[0];
-      function ok(){try{window.toast?window.toast('链接已复制'):alert('链接已复制')}catch(e){}}
-      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(ok)['catch'](function(){prompt('复制链接',u)})}
-      else prompt('复制链接',u);
-    };
     loadCmt(v);
     var cin=document.getElementById('cmtIn'),cs=document.getElementById('cmtSend');
     cin.onkeydown=function(e){if(e.key==='Enter')cs.click()};
@@ -453,6 +629,7 @@ h1 b{color:var(--teal)}
     document.title='视频库 · WTZ';
     renderList();
   }
+  bindShare();
   if(!cloud()){sub.textContent='// 无云端连接 · 仅显示本地草稿（无视频）';g.innerHTML='<div class="empty">// 云端未连接</div>';return}
   call('/video_list').then(function(j){if(j.ok)run(j.list||[]);else{sub.textContent='// 拉取失败：'+j.msg;g.innerHTML='';pb.classList.remove('show')}}).catch(function(e){sub.textContent='// 云端中断 · 稍后重试';g.innerHTML='<div class="empty">// 网络错误</div>';pb.classList.remove('show')});
 })();

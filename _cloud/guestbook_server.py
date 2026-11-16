@@ -1513,7 +1513,7 @@ def api_video_add():
     cov = covp[:600000] if covp.startswith(("data:image/jpeg;base64,", "data:image/png;base64,")) else ""
     v.append({"id": nid, "user": cu, "t": t, "d": str(p.get("d") or "")[:1000], "zn": zn,
               "tg": tags, "time": _now(), "src": src, "fn": str(p.get("fn") or "")[:120],
-              "sz": int(p.get("sz") or 0), "cov": cov})
+              "sz": int(p.get("sz") or 0), "cov": cov, "shares": 0})
     _save(VIDEO_FILE, v)
     _add_exp(_load(USER_FILE, {}), cu, 10)
     return jsonify({"ok": True, "id": nid})
@@ -1542,7 +1542,8 @@ def api_video_list():
     out = []
     for x in pub:
         out.append(dict(x, mine=(bool(cu) and (x.get("user") == cu or adm)),
-                        liked=(bool(cu) and cu in (x.get("likes") or []))))
+                        liked=(bool(cu) and cu in (x.get("likes") or [])),
+                        shares=int(x.get("shares") or 0)))
     return jsonify({"ok": True, "list": out})
 
 @app.route("/video_del", methods=["POST"])
@@ -1600,6 +1601,25 @@ def api_video_view():
             x["views"] = int(x.get("views") or 0) + 1
             _save(VIDEO_FILE, v)
             return jsonify({"ok": True, "views": x["views"]})
+    return jsonify({"ok": False, "msg": "投稿不存在"})
+
+@app.route("/video_share", methods=["POST"])
+def api_video_share():
+    p = request.get_json() or {}
+    kind = str(p.get("kind") or "copy").strip().lower()
+    if kind not in ("copy", "native", "qr", "share"):
+        kind = "copy"
+    v = _load(VIDEO_FILE, [])
+    for x in v:
+        if str(x.get("id")) == str(p.get("id")):
+            x["shares"] = int(x.get("shares") or 0) + 1
+            kinds = x.get("share_kinds")
+            if not isinstance(kinds, dict):
+                kinds = {}
+            kinds[kind] = int(kinds.get(kind) or 0) + 1
+            x["share_kinds"] = kinds
+            _save(VIDEO_FILE, v)
+            return jsonify({"ok": True, "shares": x["shares"], "kind": kind})
     return jsonify({"ok": False, "msg": "投稿不存在"})
 
 @app.route("/video_cmt", methods=["POST"])
