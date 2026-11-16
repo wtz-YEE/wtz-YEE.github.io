@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>论战 · WTZ 个人网站</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0C0E'/%3E%3Cpath d='M32 10 L50 22 V42 L32 54 L14 42 V22 Z' fill='none' stroke='%23FFFFFF' stroke-width='3.5'/%3E%3Cpath d='M32 22 L40 27 V37 L32 42 L24 37 V27 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#080A0B">
+<link rel="stylesheet" href="../index.css?v=32" onerror="this.onerror=null;this.href='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/index.css'">
+<link rel="stylesheet" href="../community.css?v=32" onerror="this.onerror=null;this.href='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/community.css'">
+<link rel="stylesheet" href="../debate.css?v=33" onerror="this.onerror=null;this.href='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/debate.css'">
+<style>
+.dp-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;border:1px solid var(--line2);background:var(--panel);padding:12px 14px;margin-top:16px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink2)}
+.dp-bar .dp-k{color:var(--ink3);letter-spacing:.18em}
+.dp-bar .dp-ok{color:var(--ok)}
+.dp-bar .dp-bad{color:var(--bad)}
+.dp-bar input{background:var(--bg);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:12px;padding:7px 9px;min-width:140px}
+.dp-bar input:focus{outline:none;border-color:var(--accent)}
+.dp-bar button{background:none;border:1px solid var(--line2);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:7px 14px;cursor:pointer}
+.dp-bar button:hover{border-color:var(--accent);color:var(--accent)}
+.dp-bar button.primary{border-color:var(--accent);color:var(--accent)}
+.dp-bar .dp-msg{font-size:11px}
+.dp-bar .dp-msg.ok{color:var(--ok)}
+.dp-bar .dp-msg.bad{color:var(--bad)}
+.dp-bar .dp-sp{flex:1;min-width:8px}
+.dp-note{margin-top:8px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink3)}
+.dp-note a{color:var(--ink2);border-bottom:1px solid var(--line2)}
+.dp-note a:hover{color:var(--accent)}
+@media (max-width:640px){
+  .dp-bar input{min-width:0;width:calc(50% - 8px)}
+  .dp-bar .dp-sp{display:none}
+}
+</style>
+</head>
+<body class="cm-body">
+
+<header class="cm-top">
+  <span class="dot"></span>
+  <span class="tl">WTZ // 论战</span>
+  <span class="clk" id="dpClock">--:--:--</span>
+  <nav>
+    <a href="../index.html">首页</a>
+    <a href="../社区.html">社区</a>
+    <a class="on" href="debate.html">论战</a>
+    <a href="../pages/守夜人论坛.html">论坛</a>
+  </nav>
+</header>
+
+<main class="cm-main">
+
+  <section class="cm-hero">
+    <div class="cm-hero-no">03.5</div>
+    <div class="cm-hero-tx">
+      <div class="en">SECTION 03.5 / DEBATE ARENA</div>
+      <h1>论战</h1>
+      <p>选一个角色，向一个目标宣战。后来者只能从这两个身份中选择；发布者也能无限反击。管理员逐条裁定胜负，全部裁定后进入历史。</p>
+    </div>
+    <div class="cm-hero-st">
+      <span>DEBATE</span>
+      <b id="dpState">CONNECT…</b>
+    </div>
+  </section>
+
+  <div class="dp-bar">
+    <span class="dp-k">CLOUD</span>
+    <span id="dpApi" class="dp-bad">连接中…</span>
+    <span class="dp-sp"></span>
+    <span class="dp-k">ACCOUNT</span>
+    <span id="dpWho">未登录</span>
+    <input id="dpUser" placeholder="账号" maxlength="16" autocomplete="username">
+    <input id="dpPwd" type="password" placeholder="密码" maxlength="32" autocomplete="current-password">
+    <button id="dpLogin" class="primary" type="button">登录</button>
+    <button id="dpOut" type="button" style="display:none">退出</button>
+    <span id="dpMsg" class="dp-msg"></span>
+  </div>
+  <div class="dp-note">没有账号？<a href="../社区.html">去社区注册</a> · 云端不可达时论战只保存在本机浏览器</div>
+
+  <section class="db" id="debate" aria-labelledby="dbTitle">
+    <div class="db-head">
+      <div class="db-head-l">
+        <div class="db-kick"><i></i>SECTION 03.5 / DEBATE ARENA</div>
+        <h2 id="dbTitle">论战<small>选角色 · 立目标 · 开战</small></h2>
+        <p>挑一个角色，向一个目标宣战。后来者只能从这两个身份中选择；发布者也可反击，全部裁定后帖子进入历史。</p>
+      </div>
+      <div class="db-me" id="dbMe">
+        <span class="db-me-k">MY RECORD</span>
+        <b id="dbMeRank">未登录</b>
+        <div class="db-me-bar"><i id="dbMeBar"></i></div>
+        <span id="dbMeExp">登录后查看论战经验</span>
+      </div>
+    </div>
+
+    <div class="db-grid">
+      <aside class="db-side">
+        <div class="db-panel">
+          <div class="db-panel-h"><b>段位 / LADDER</b><span>11 级</span></div>
+          <div class="db-ladder" id="dbLadder"></div>
+        </div>
+        <div class="db-panel db-rules">
+          <div class="db-panel-h"><b>规则 / RULES</b><span>ADMIN DECIDES</span></div>
+          <ol>
+            <li>发布者选角色与挑战目标，立帖。</li>
+            <li>其他用户只能从发布者角色或挑战目标中选择身份参与；双方发言次数不限，发布者也可无限反击。</li>
+            <li>管理员为每条发言裁定胜方；全部裁定后帖子移入底部历史。</li>
+            <li>胜方获得经验，败方扣除经验。</li>
+            <li>对手段位越高，赢得的经验越多，输掉时损失也越重。</li>
+            <li class="db-rule-note">经验：胜方 14 + 对方段位×6；败方 6 + 对方段位×3；越级挑战额外加成。</li>
+          </ol>
+        </div>
+      </aside>
+
+      <div class="db-main">
+        <form class="db-form" id="dbForm">
+          <div class="db-form-h"><b>发起论战</b><span>OPEN A DEBATE</span></div>
+          <div class="db-fields">
+            <label>角色<input id="dbChar" maxlength="24" placeholder="输入角色名称"></label>
+            <label>挑战目标 / 对手角色<input id="dbTarget" maxlength="30" placeholder="输入挑战对象，同时作为可选身份"></label>
+          </div>
+          <textarea id="dbBody" maxlength="300" placeholder="一句话宣言，可留空"></textarea>
+          <div class="db-form-a">
+            <button class="db-btn" type="submit" id="dbPublish">发布论战</button>
+            <span class="db-say" id="dbSay"></span>
+            <span class="db-login-hint" id="dbLoginHint">登录后才能发起</span>
+          </div>
+        </form>
+
+        <div class="db-list-h"><b>当前论战</b><span id="dbCount">读取中…</span></div>
+        <div class="db-list" id="dbList"><div class="db-empty">正在读取论战档案…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="db-verdict" id="dbVerdict" role="dialog" aria-modal="true" aria-labelledby="dbVerdictText">
+    <div class="db-verdict-mask" data-verdict-close="1"></div>
+    <div class="db-verdict-box">
+      <div class="db-verdict-k">DEBATE VERDICT / AI</div>
+      <p id="dbVerdictText"></p>
+      <div class="db-verdict-a"><button type="button" data-verdict-close="1">知道了</button></div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="cm-foot">
+  <span>03.5 / 论战 · WTZ</span>
+  <a href="../index.html">回首页</a>
+  <a href="../社区.html">社区</a>
+  <a href="守夜人论坛.html">守夜人论坛</a>
+  <a href="changelog.html">更新日志</a>
+</footer>
+
+<script src="debate-page.js?v=33"></script>
+</body>
+</html>

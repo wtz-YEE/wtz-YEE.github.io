@@ -544,6 +544,7 @@ function bind(){
     load(true);
   },18000);
 }
+window.__dbReload=load;
 function boot(){
   if(!$('debate')||!window.WZCM)return;
   renderLadder(null);
