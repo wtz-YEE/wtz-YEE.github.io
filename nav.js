@@ -24,7 +24,8 @@
   function css(){
     if(document.querySelector('link[data-unav-css]')) return;
     var l=document.createElement('link');
-    l.rel='stylesheet';l.href=base+'nav.css?v=31';l.setAttribute('data-unav-css','1');
+    l.rel='stylesheet';l.href=base+'nav.css?v=32';l.setAttribute('data-unav-css','1');
+    l.onerror=function(){this.onerror=null;this.href='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/nav.css'};
     document.head.appendChild(l);
   }
   function findOld(){
