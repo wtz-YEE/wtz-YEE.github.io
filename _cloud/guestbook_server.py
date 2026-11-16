@@ -668,12 +668,113 @@ def api_guest_add():
         pass
     return jsonify({"ok": True, "id": nid})
 
+def _safe_media(v, prefix, exts):
+    v = str(v or "").strip()[:300]
+    if not v.startswith(prefix):
+        return ""
+    if not v.lower().endswith(tuple(exts)):
+        return ""
+    return v
+
+
+def _build_poll(raw):
+    if not isinstance(raw, dict):
+        return None, "投票参数错误"
+    ptype = str(raw.get("type") or "single").strip().lower()
+    if ptype not in ("single", "multi", "scale", "yesno"):
+        return None, "投票类型不支持"
+    q = str(raw.get("q") or "").strip()[:120]
+    if not q:
+        return None, "投票问题不能为空"
+    if ptype == "yesno":
+        opts = [{"id": "yes", "t": "赞成"}, {"id": "no", "t": "反对"}]
+    elif ptype == "scale":
+        opts = []
+    else:
+        src = raw.get("opts") or []
+        opts = []
+        for i, o in enumerate(src[:8]):
+            t = str((o.get("t") if isinstance(o, dict) else o) or "").strip()[:40]
+            oid = str((o.get("id") if isinstance(o, dict) else "") or ("o" + str(i + 1))).strip()[:16]
+            if t:
+                opts.append({"id": oid, "t": t})
+        if len(opts) < 2:
+            return None, "至少需要 2 个选项"
+    maxn = 1
+    if ptype == "multi":
+        try:
+            maxn = int(raw.get("max") or len(opts))
+        except Exception:
+            maxn = len(opts)
+        maxn = max(1, min(maxn, len(opts)))
+    try:
+        days = int(raw.get("days") or 0)
+    except Exception:
+        days = 0
+    days = max(0, min(days, 30))
+    until = int(_time.time()) + days * 86400 if days else 0
+    return {"type": ptype, "q": q, "opts": opts, "max": maxn,
+            "until": until, "closed": False, "votes": {}}, None
+
+
+def _poll_view(poll, cu):
+    if not isinstance(poll, dict):
+        return None
+    ptype = str(poll.get("type") or "single")
+    raw_opts = poll.get("opts") or []
+    opts = []
+    for i, o in enumerate(raw_opts):
+        if isinstance(o, dict):
+            opts.append({"id": str(o.get("id") or ("o" + str(i + 1)))[:16],
+                         "t": str(o.get("t") or "")[:40]})
+        else:
+            opts.append({"id": "o" + str(i + 1), "t": str(o)[:40]})
+    votes = poll.get("votes") if isinstance(poll.get("votes"), dict) else {}
+    until = int(poll.get("until") or 0)
+    closed = bool(poll.get("closed")) or bool(until and int(_time.time()) >= until)
+    my = votes.get(cu) if cu else None
+    if ptype == "scale":
+        counts = [0, 0, 0, 0, 0]
+        vals = []
+        for v in votes.values():
+            try:
+                iv = int(v)
+            except Exception:
+                continue
+            if 1 <= iv <= 5:
+                counts[iv - 1] += 1
+                vals.append(iv)
+        total = len(vals)
+        return {"type": ptype, "q": str(poll.get("q") or "")[:120], "opts": [],
+                "max": 1, "until": until, "closed": closed, "my": my,
+                "total": total, "avg": round(sum(vals) / total, 2) if total else 0,
+                "results": [{"id": str(i + 1), "t": str(i + 1), "n": counts[i]} for i in range(5)]}
+    counts = {o["id"]: 0 for o in opts}
+    for v in votes.values():
+        if ptype == "multi" and isinstance(v, list):
+            for x in v:
+                key = str(x)
+                if key in counts:
+                    counts[key] += 1
+        else:
+            key = str(v)
+            if key in counts:
+                counts[key] += 1
+    return {"type": ptype, "q": str(poll.get("q") or "")[:120], "opts": opts,
+            "max": int(poll.get("max") or 1), "until": until, "closed": closed,
+            "my": my, "total": len(votes),
+            "results": [{"id": o["id"], "t": o["t"], "n": counts[o["id"]]} for o in opts]}
+
+
 @app.route("/post_get", methods=["GET", "POST"])
 def api_post_get():
+    p = request.get_json(silent=True) or {}
+    cu = _cur_user(p.get("token") or "") or _cur_user(request.args.get("token") or "")
     ps = _load(POST_FILE, [])
     now = int(_time.time())
     res = []
     for x in ps:
+        x = dict(x)
         if x.get("capsule") and now < int(x.get("unveil") or 0):
             res.append({"id": x.get("id"), "capsule": x.get("capsule"),
                         "unveil": x.get("unveil"), "time": x.get("time"),
@@ -681,6 +782,7 @@ def api_post_get():
         else:
             x["sealed"] = False
             x["shown"] = x.get("shown") or x.get("name") or x.get("user")
+            x["poll"] = _poll_view(x.get("poll"), cu)
             res.append(x)
     res = sorted(res, key=lambda a: (-len(a.get("likes") or []), -int(a.get("id", 0) or 0)))
     return jsonify({"ok": True, "list": res})
@@ -693,11 +795,18 @@ def api_post_add():
         return jsonify({"ok": False, "msg": "请先登录后再发帖"})
     if (_load(USER_FILE, {}).get(cu) or {}).get("banned"):
         return jsonify({"ok": False, "msg": "你已被拉黑，无法发帖"})
-    txt = str(p.get("text") or "").strip()[:500]
-    if not txt:
-        return jsonify({"ok": False, "msg": "内容不能为空"})
+    txt = str(p.get("text") or "").strip()[:2000]
     tags = [str(x).strip()[:8] for x in (p.get("tags") or []) if str(x).strip()][:3]
-    im = str(p.get("image") or "").strip()[:300]
+    im = _safe_media(p.get("image"), "/uploads/", (".png", ".jpg", ".jpeg", ".webp", ".gif"))
+    au = _safe_media(p.get("audio"), "/uploads/", (".webm", ".mp3", ".m4a", ".ogg", ".wav", ".aac"))
+    vid = _safe_media(p.get("video"), "/videos/", (".webm", ".mp4", ".mov"))
+    poll = None
+    if p.get("poll"):
+        poll, perr = _build_poll(p.get("poll"))
+        if perr:
+            return jsonify({"ok": False, "msg": perr})
+    if not (txt or im or au or vid or poll):
+        return jsonify({"ok": False, "msg": "内容不能为空"})
     ps = _load(POST_FILE, [])
     nid = 1
     for x in ps:
@@ -709,7 +818,8 @@ def api_post_add():
         unveil = int(_time.time()) + cap * 86400
     shown = ("匿名·%04d" % _random.randint(1000, 9999)) if anon else cu
     ps.append({"id": nid, "user": cu, "name": cu, "shown": shown, "text": txt, "tags": tags,
-               "image": im, "time": _now(), "comments": [], "likes": [], "dislikes": [],
+               "image": im, "audio": au, "video": vid, "poll": poll,
+               "time": _now(), "comments": [], "likes": [], "dislikes": [],
                "anon": anon, "capsule": cap, "unveil": unveil})
     _save(POST_FILE, ps)
     _add_exp(_load(USER_FILE, {}), cu, 8)
@@ -734,6 +844,59 @@ def api_post_del():
     _save(POST_FILE, ps)
     _audit(cu, "del_post", str(tar[0].get("user") or "") + " 的帖 #" + str(tar[0].get("id") or ""), str(tar[0].get("title") or tar[0].get("text") or "")[:40])
     return jsonify({"ok": True, "msg": "已删除"})
+
+@app.route("/post_poll_vote", methods=["POST"])
+def api_post_poll_vote():
+    p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录后再投票"})
+    value = p.get("value")
+    ps = _load(POST_FILE, [])
+    for x in ps:
+        if str(x.get("id")) != str(p.get("pid")):
+            continue
+        poll = x.get("poll")
+        if not isinstance(poll, dict):
+            return jsonify({"ok": False, "msg": "该帖没有投票"})
+        ptype = str(poll.get("type") or "single")
+        until = int(poll.get("until") or 0)
+        if poll.get("closed") or (until and int(_time.time()) >= until):
+            return jsonify({"ok": False, "msg": "投票已截止"})
+        opts = poll.get("opts") or []
+        ids = [str(o.get("id")) for o in opts if isinstance(o, dict)]
+        if ptype in ("single", "yesno"):
+            if str(value) not in ids:
+                return jsonify({"ok": False, "msg": "选项不存在"})
+            poll.setdefault("votes", {})[cu] = str(value)
+        elif ptype == "multi":
+            if not isinstance(value, list):
+                return jsonify({"ok": False, "msg": "多选参数错误"})
+            vals = []
+            for v in value:
+                v = str(v)
+                if v in ids and v not in vals:
+                    vals.append(v)
+            if not vals:
+                return jsonify({"ok": False, "msg": "至少选择一个选项"})
+            if len(vals) > int(poll.get("max") or len(ids)):
+                return jsonify({"ok": False, "msg": "超过多选上限"})
+            poll.setdefault("votes", {})[cu] = vals
+        elif ptype == "scale":
+            try:
+                iv = int(value)
+            except Exception:
+                return jsonify({"ok": False, "msg": "评分参数错误"})
+            if iv < 1 or iv > 5:
+                return jsonify({"ok": False, "msg": "评分需在 1-5 之间"})
+            poll.setdefault("votes", {})[cu] = iv
+        else:
+            return jsonify({"ok": False, "msg": "投票类型不支持"})
+        x["poll"] = poll
+        _save(POST_FILE, ps)
+        return jsonify({"ok": True, "poll": _poll_view(poll, cu)})
+    return jsonify({"ok": False, "msg": "帖子不存在"})
+
 
 @app.route("/comment_add", methods=["POST"])
 def api_comment_add():
@@ -1168,6 +1331,30 @@ def api_upload():
         f.write(raw)
     return jsonify({"ok": True, "url": "/uploads/" + fn})
 
+@app.route("/audio_up", methods=["POST"])
+def api_audio_up():
+    cu = _cur_user((request.form or {}).get("token") or "")
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录后再上传音频"})
+    if (_load(USER_FILE, {}).get(cu) or {}).get("banned"):
+        return jsonify({"ok": False, "msg": "你已被拉黑，无法上传音频"})
+    f = request.files.get("file")
+    if not f:
+        return jsonify({"ok": False, "msg": "未收到音频文件"})
+    raw = f.read()
+    if not raw:
+        return jsonify({"ok": False, "msg": "音频文件为空"})
+    if len(raw) > 30 * 1024 * 1024:
+        return jsonify({"ok": False, "msg": "音频超过 30MB 限制"})
+    ext = os.path.splitext(f.filename or "")[1].lower()
+    if ext not in (".webm", ".mp3", ".m4a", ".ogg", ".wav", ".aac"):
+        return jsonify({"ok": False, "msg": "仅支持 webm/mp3/m4a/ogg/wav/aac"})
+    fn = _uuid.uuid4().hex[:12] + ext
+    with open(os.path.join(UP_DIR, fn), "wb") as g:
+        g.write(raw)
+    return jsonify({"ok": True, "url": "/uploads/" + fn})
+
+
 @app.route("/uploads/<fn>", methods=["GET"])
 def api_uploads(fn):
     return send_from_directory(UP_DIR, fn)
@@ -1292,7 +1479,10 @@ def api_video_up():
         return jsonify({"ok": False, "msg": "压缩后仍超过 60MB，请降低码率"})
     if not (f.filename or "").lower().endswith((".webm", ".mp4", ".mov")):
         return jsonify({"ok": False, "msg": "仅支持 webm/mp4/mov"})
-    fn = _uuid.uuid4().hex[:12] + ".webm"
+    ext = os.path.splitext(f.filename or "")[1].lower()
+    if ext not in (".webm", ".mp4", ".mov"):
+        return jsonify({"ok": False, "msg": "仅支持 webm/mp4/mov"})
+    fn = _uuid.uuid4().hex[:12] + ext
     with open(os.path.join(VID_DIR, fn), "wb") as g:
         g.write(raw)
     return jsonify({"ok": True, "src": "/videos/" + fn})
@@ -3266,7 +3456,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/guest_report", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch", "/debate_add", "/debate_arg", "/debate_resolve")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/post_poll_vote", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/guest_report", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/audio_up", "/video_up", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch", "/debate_add", "/debate_arg", "/debate_resolve")
 
 @app.before_request
 def _rate():

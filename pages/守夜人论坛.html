@@ -51,6 +51,8 @@ header h1 b{color:var(--acc);font-weight:700}
 .post .ph .del{margin-left:auto;border:none;background:none;color:var(--acc);cursor:pointer;font-size:11px;font-family:inherit}
 .post .bd{padding:12px 14px;font-size:14px;white-space:pre-wrap;word-break:break-word}
 .post .bd img{display:block;max-width:100%;border-radius:8px;margin-top:10px;cursor:zoom-in;border:1px solid var(--line)}
+.post .bd audio{display:block;width:100%;margin-top:10px;height:34px}
+.post .bd video{display:block;width:100%;max-height:420px;border-radius:8px;margin-top:10px;background:#000;border:1px solid var(--line)}
 .post .cm{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--ink3);cursor:pointer;letter-spacing:.1em}
 .votes{display:flex;align-items:center;gap:14px;margin-top:8px;font-family:var(--mono);font-size:11.5px}
 .vbtn{display:inline-flex;align-items:center;gap:4px;color:var(--ink3);cursor:pointer;user-select:none;transition:.18s;letter-spacing:.04em}
@@ -113,6 +115,54 @@ header h1 b{color:var(--acc);font-weight:700}
 .at:hover{text-decoration:underline}
 #pv{display:none;padding:12px 14px;min-height:72px;font-size:14px;white-space:pre-wrap;word-break:break-word;border-top:1px dashed var(--line);background:rgba(255,255,255,.02)}
 #pv.on{display:block}
+
+/* ==== 附件 / 投票 ==== */
+.mdbar{display:flex;gap:5px;flex-wrap:wrap;padding:0 14px 8px}
+.mdbar button{background:transparent;border:1px solid var(--line);color:var(--ink2);font-family:inherit;font-size:10px;letter-spacing:.06em;padding:2px 7px;border-radius:3px;cursor:pointer}
+.mdbar button:hover{color:var(--acc);border-color:var(--acc)}
+.media-row{display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 9px}
+.media-row .imgbtn{font-size:10.5px;padding:5px 9px}
+.att.media-att{display:none;align-items:center;gap:7px;max-width:100%;font-size:10.5px;color:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:4px 7px;background:rgba(255,255,255,.03)}
+.att.media-att audio{height:28px;max-width:210px}
+.att.media-att video{height:42px;max-width:150px;border-radius:3px;background:#000}
+.att.media-att .rm{background:none;border:0;color:var(--acc);cursor:pointer;font-family:inherit;font-size:10px;padding:0 2px}
+.rec-live{color:#ff6b81;border-color:rgba(255,107,129,.55)}
+.rec-live i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#ff6b81;margin-right:4px;animation:rp 1s infinite}
+@keyframes rp{50%{opacity:.25}}
+.pollbox{margin:0 14px 12px;border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:8px;padding:10px 11px}
+.pollbox-h{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.14em;color:var(--ink3);margin-bottom:8px}
+.pollbox-h button{background:none;border:0;color:var(--ink3);font-size:16px;cursor:pointer;font-family:inherit;padding:0 2px}
+.pollbox input[type=text],.pollbox input[type=number],.pollbox select{background:var(--bg2);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:11.5px;padding:5px 7px;border-radius:3px;outline:none}
+.pollbox input[type=text]:focus{border-color:var(--acc)}
+.pollbox .poll-q{width:100%;margin-bottom:7px}
+.pollopt-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.pollopt-row input{flex:1;min-width:0}
+.pollopt-row .rm{background:none;border:0;color:var(--acc);font-size:13px;cursor:pointer;padding:0 3px}
+.pollbox-foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:10px;color:var(--ink3);margin-top:7px}
+.pollbox-foot label{display:flex;align-items:center;gap:4px}
+.poll-add{background:none;border:1px dashed var(--line);color:var(--ink2);font-family:inherit;font-size:10px;padding:3px 8px;border-radius:3px;cursor:pointer;margin-top:2px}
+.poll-add:hover{color:var(--acc);border-color:var(--acc)}
+.pollcard{border-top:1px solid var(--line);padding:11px 14px;background:rgba(255,255,255,.018)}
+.pollcard-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.pollcard-h b{font-size:12px;color:var(--ink);font-weight:500}
+.pollcard-h span{font-size:9.5px;letter-spacing:.1em;color:var(--ink3)}
+.poll-opt{position:relative;display:block;width:100%;text-align:left;border:1px solid var(--line);background:transparent;color:var(--ink2);font-family:inherit;font-size:11.5px;padding:7px 9px;border-radius:4px;margin-bottom:6px;cursor:pointer;overflow:hidden}
+.poll-opt:hover{border-color:var(--acc);color:var(--ink)}
+.poll-opt.on{border-color:var(--acc);color:var(--ink)}
+.poll-opt .fill{position:absolute;left:0;top:0;bottom:0;background:rgba(255,92,122,.12);z-index:0;transition:width .25s}
+.poll-opt .txt,.poll-opt .num{position:relative;z-index:1;display:flex;justify-content:space-between;gap:8px}
+.poll-opt .num{color:var(--ink3);font-size:10px}
+.poll-opt.dis{opacity:.62;cursor:not-allowed}
+.poll-multi,.poll-scale{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px}
+.poll-multi label{border:1px solid var(--line);padding:5px 8px;border-radius:4px;font-size:11px;color:var(--ink2);display:flex;gap:5px;align-items:center;cursor:pointer}
+.poll-multi label:has(input:checked){border-color:var(--acc);color:var(--ink)}
+.poll-scale button{flex:1;min-width:34px;border:1px solid var(--line);background:transparent;color:var(--ink2);font-family:inherit;font-size:12px;padding:5px;cursor:pointer;border-radius:4px}
+.poll-scale button:hover,.poll-scale button.on{border-color:var(--acc);color:var(--acc)}
+.poll-sub{background:var(--acc);color:#0a0a0a;border:0;font-family:inherit;font-size:10.5px;padding:5px 12px;border-radius:3px;cursor:pointer;font-weight:600}
+.poll-sub:disabled{opacity:.5;cursor:not-allowed}
+.poll-meta{font-size:9.5px;color:var(--ink3);letter-spacing:.08em;margin-top:6px}
+.poll-res{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:var(--ink3);padding:3px 2px;border-bottom:1px dashed rgba(255,255,255,.05)}
+@media(max-width:560px){.media-row{padding:0 10px 8px}.pollbox{margin:0 10px 10px}.pollcard{padding:10px 10px}.poll-opt{font-size:11px}}
 </style>
 
 <script>
@@ -152,7 +202,15 @@ function ferr(msg){
 
   <div class="poster">
     <div class="ph">发帖 <button class="btn ghost" id="mdBtn" style="font-size:10px;float:right;padding:2px 8px">Markdown 指南</button></div>
-    <textarea id="pt" placeholder="写下你的话题…（支持 Markdown：**粗体** `代码` ```代码块``` > 引用 @用户名）（可选图片）" maxlength="500"></textarea>
+    <textarea id="pt" placeholder="写下你的话题…（支持 Markdown：**粗体** `代码` ```代码块``` > 引用 @用户名）（可附图片 / 录音 / 视频 / 投票）" maxlength="2000"></textarea>
+    <div class="mdbar" id="mdBar" aria-label="Markdown 快捷插入">
+      <button type="button" data-md="bold" title="粗体">B</button>
+      <button type="button" data-md="italic" title="斜体">I</button>
+      <button type="button" data-md="code" title="行内代码">&lt;/&gt;</button>
+      <button type="button" data-md="quote" title="引用">&gt;</button>
+      <button type="button" data-md="link" title="链接">链接</button>
+      <button type="button" data-md="at" title="提到用户">@</button>
+    </div>
     <div id="pv"></div>
     <div class="tags" id="tags">
       <span class="tag" data-t="求助">求助</span>
@@ -167,12 +225,47 @@ function ferr(msg){
         </select>
       </label>
     </div>
+    <div class="pollbox" id="pollBox" style="display:none">
+      <div class="pollbox-h"><span>投票 / POLL</span><button type="button" id="pollClose" title="关闭">×</button></div>
+      <input type="text" class="poll-q" id="pollQ" maxlength="120" placeholder="投票问题，例如：今晚打哪个副本？">
+      <div class="pollopt-row" style="margin-bottom:7px">
+        <select id="pollType" style="flex:1">
+          <option value="single">单选 · 只能选一个</option>
+          <option value="multi">多选 · 可选多个</option>
+          <option value="scale">评分 · 1 到 5 分</option>
+          <option value="yesno">赞成 / 反对</option>
+        </select>
+      </div>
+      <div id="pollOpts"></div>
+      <button type="button" class="poll-add" id="pollAdd">＋ 增加选项</button>
+      <div class="pollbox-foot">
+        <label id="pollMaxWrap">多选上限 <input type="number" id="pollMax" min="1" max="8" value="3" style="width:46px"></label>
+        <label>截止
+          <select id="pollDays">
+            <option value="0">不设截止</option>
+            <option value="1">1 天</option>
+            <option value="3">3 天</option>
+            <option value="7">7 天</option>
+          </select>
+        </label>
+      </div>
+      <div class="poll-meta">单选、多选支持 2–8 个选项；评分与赞成/反对自动生成选项。</div>
+    </div>
     <div class="prow">
       <button class="imgbtn" id="pb">＋ 附图片</button>
+      <button class="imgbtn" id="pa">● 录音</button>
+      <button class="imgbtn" id="paf">＋ 音频文件</button>
+      <button class="imgbtn" id="pvdo">＋ 视频</button>
+      <button class="imgbtn" id="pollBtn">＋ 投票</button>
       <span class="att" id="att"><img id="attImg"><span>已附带 1 张图</span><button id="attRm">移除</button></span>
+      <span class="att media-att" id="attAudio"><span id="attAudioName">音频</span><audio id="attAudioPlay" controls preload="metadata"></audio><button class="rm" id="attAudioRm">移除</button></span>
+      <span class="att media-att" id="attVideo"><span id="attVideoName">视频</span><video id="attVideoPlay" preload="metadata"></video><button class="rm" id="attVideoRm">移除</button></span>
+      <span class="att media-att rec-live" id="recLive" style="display:none"><i></i><span id="recTime">00:00</span><button class="rm" id="recStop">停止</button></span>
       <button class="btn ghost" id="pvBtn">预览</button>
       <button class="btn go" id="send">发布</button>
       <input type="file" id="pf" accept="image/*" style="display:none">
+      <input type="file" id="af" accept="audio/*" style="display:none">
+      <input type="file" id="vf" accept="video/*" style="display:none">
     </div>
   </div>
 
@@ -198,7 +291,7 @@ function ferr(msg){
 (function(){
 'use strict';
 var $=function(i){return document.getElementById(i)};
-var S={api:'',user:null,img:'',tags:[]};
+var S={api:'',user:null,img:'',audio:'',video:'',poll:null,tags:[]};
 var K_API='gb_api_url',K_SESS='gb_session';
 function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
 function say(m,ok){$('say').textContent=m||'';$('say').style.color=ok?'#5ce08a':'';if(m)setTimeout(function(){var e=$('say');if(e.textContent===m)e.textContent=''},3000)}
@@ -416,17 +509,178 @@ function md(s){
   if(inCode) r+='</pre>';
   return r;
 }
+/* ---------- 附件 / 录音 / 视频 / 投票 ---------- */
+function mediaURL(u){ return u ? (String(u).indexOf('http')===0?u:(S.api+u)) : ''; }
+function upMedia(path,f,name,cb){
+  if(!S.api) return say('未连接云端，无法上传',false);
+  if(!S.user) return say('请先登录',false);
+  var fd=new FormData();
+  fd.append('file',f,name||f.name||'upload');
+  fd.append('token',S.user.token);
+  say('正在上传…',false);
+  fetch(S.api+path,{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(j){
+    if(!j.ok) throw new Error(j.msg||'上传失败');
+    cb(j);
+  }).catch(function(e){ say('上传失败：'+ferr(e.message),false); });
+}
+function clearAudio(){
+  S.audio=''; $('attAudio').style.display='none';
+  if($('attAudioPlay')){$('attAudioPlay').removeAttribute('src');$('attAudioPlay').load()}
+  if($('af'))$('af').value='';
+}
+function clearVideo(){
+  S.video=''; $('attVideo').style.display='none';
+  if($('attVideoPlay')){$('attVideoPlay').removeAttribute('src');$('attVideoPlay').load()}
+  if($('vf'))$('vf').value='';
+}
+function setAudio(j){
+  S.audio=j.url;
+  $('attAudioName').textContent='音频 · '+(j.name||'已上传');
+  $('attAudioPlay').src=mediaURL(j.url);
+  $('attAudio').style.display='inline-flex';
+  say('音频已附带',true);
+}
+function setVideo(j){
+  S.video=j.src;
+  $('attVideoName').textContent='视频 · '+(j.name||'已上传');
+  $('attVideoPlay').src=mediaURL(j.src);
+  $('attVideo').style.display='inline-flex';
+  say('视频已附带',true);
+}
+function upAudioFile(f){
+  if(!f) return;
+  if(f.size>30*1024*1024) return say('音频超过 30MB',false);
+  upMedia('/audio_up',f,f.name||'audio.webm',setAudio);
+}
+function upVideoFile(f){
+  if(!f) return;
+  if(f.size>60*1024*1024) return say('视频超过 60MB，建议先压缩',false);
+  upMedia('/video_up',f,f.name||'video.webm',setVideo);
+}
+/* 浏览器录音 */
+var _rec=null,_recChunks=[],_recStream=null,_recTimer=null,_recStart=0,_recMime='';
+function _recTick(){
+  if(!_recStart) return;
+  var s=Math.floor((Date.now()-_recStart)/1000);
+  var t=('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2);
+  if($('recTime'))$('recTime').textContent=t;
+  if(s>=60) stopRec();
+}
+function stopRec(){
+  try{ if(_rec&&_rec.state!=='inactive')_rec.stop(); }catch(e){}
+}
+function toggleRec(){
+  if(_rec&&_rec.state==='recording'){ stopRec(); return; }
+  if(!S.user) return say('请先登录',false);
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder)
+    return say('当前浏览器不支持录音',false);
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){
+    _recStream=st; _recChunks=[];
+    _recMime='audio/webm';
+    if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) _recMime='audio/webm;codecs=opus';
+    else if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported('audio/mp4')) _recMime='audio/mp4';
+    _rec=new MediaRecorder(st,_recMime?{mimeType:_recMime}:{});
+    _rec.ondataavailable=function(e){ if(e.data&&e.data.size)_recChunks.push(e.data); };
+    _rec.onstop=function(){
+      if(_recStream){_recStream.getTracks().forEach(function(t){try{t.stop()}catch(e){}});_recStream=null;}
+      if(_recTimer){clearInterval(_recTimer);_recTimer=null;}
+      if($('recLive'))$('recLive').style.display='none';
+      if($('pa')){$('pa').classList.remove('rec-live');$('pa').textContent='● 录音'}
+      var blob=new Blob(_recChunks,{type:_recMime.split(';')[0]||'audio/webm'});
+      _rec=null; _recStart=0;
+      if(blob.size) upAudioFile(new File([blob],(_recMime.indexOf('mp4')>=0?'录音.m4a':'录音.webm'),{type:blob.type}));
+    };
+    _rec.start(); _recStart=Date.now(); _recTimer=setInterval(_recTick,1000);
+    if($('recTime'))$('recTime').textContent='00:00';
+    if($('recLive'))$('recLive').style.display='inline-flex';
+    if($('pa')){$('pa').classList.add('rec-live');$('pa').textContent='● 录音中'}
+    say('正在录音，最长 60 秒',true);
+  }).catch(function(e){ say('无法打开麦克风：'+ferr(e.message||e.name),false); });
+}
+/* 投票构建 */
+function pollOptRow(v){
+  return '<div class="pollopt-row"><input type="text" class="poll-opt-in" maxlength="40" placeholder="选项文字" value="'+esc(v||'')+'"><button type="button" class="rm" title="删除">×</button></div>';
+}
+function addPollOpt(v){
+  var box=$('pollOpts'); if(!box) return;
+  if(box.querySelectorAll('.pollopt-row').length>=8) return say('最多 8 个选项',false);
+  box.insertAdjacentHTML('beforeend',pollOptRow(v));
+}
+function resetPollOpts(){
+  $('pollOpts').innerHTML='';
+  addPollOpt(''); addPollOpt('');
+}
+function syncPollType(){
+  var t=$('pollType')?$('pollType').value:'single';
+  var show=(t==='single'||t==='multi');
+  if($('pollOpts'))$('pollOpts').style.display=show?'':'none';
+  if($('pollAdd'))$('pollAdd').style.display=show?'inline-block':'none';
+  if($('pollMaxWrap'))$('pollMaxWrap').style.display=t==='multi'?'flex':'none';
+}
+function openPoll(){
+  $('pollBox').style.display='block';
+  if(!$('pollOpts').querySelector('.pollopt-row')) resetPollOpts();
+  syncPollType();
+  if(!$('pollQ').value) $('pollQ').focus();
+}
+function closePoll(){
+  $('pollBox').style.display='none';
+  $('pollQ').value=''; $('pollType').value='single'; $('pollMax').value='3'; $('pollDays').value='0';
+  resetPollOpts(); syncPollType(); S.poll=null;
+}
+function collectPoll(){
+  if(!$('pollBox')||$('pollBox').style.display==='none') return null;
+  var type=$('pollType').value, q=$('pollQ').value.trim();
+  if(!q) return null;
+  var poll={type:type,q:q,days:parseInt($('pollDays').value||'0')||0};
+  if(type==='single'||type==='multi'){
+    var opts=[],seen={};
+    $('pollOpts').querySelectorAll('.poll-opt-in').forEach(function(inp){
+      var v=inp.value.trim();
+      if(v&&!seen[v]){seen[v]=1;opts.push({id:'o'+(opts.length+1),t:v});}
+    });
+    if(opts.length<2) return null;
+    poll.opts=opts;
+    if(type==='multi') poll.max=Math.max(1,Math.min(parseInt($('pollMax').value||'3')||3,opts.length));
+  }
+  return poll;
+}
+/* Markdown 快捷插入 */
+function insertMd(kind){
+  var ta=$('pt'); if(!ta) return;
+  var a=ta.selectionStart||0,b=ta.selectionEnd||0,sel=ta.value.slice(a,b),pre='',post='',txt=sel;
+  if(kind==='bold'){pre='**';post='**';if(!txt)txt='粗体文字'}
+  else if(kind==='italic'){pre='*';post='*';if(!txt)txt='斜体文字'}
+  else if(kind==='code'){pre='`';post='`';if(!txt)txt='代码'}
+  else if(kind==='quote'){pre='> ';post='';if(!txt)txt='引用文字'}
+  else if(kind==='link'){pre='[';post='](https://)';if(!txt)txt='链接文字'}
+  else if(kind==='at'){pre='@';post='';if(!txt)txt='用户名'}
+  ta.value=ta.value.slice(0,a)+pre+txt+post+ta.value.slice(b);
+  var pos=b+pre.length+txt.length+post.length;
+  ta.focus();ta.setSelectionRange(pos,pos);
+  if($('pv')&&$('pv').classList.contains('on'))$('pv').innerHTML=md(ta.value);
+}
 /* 发帖 */
 function send(){
   if(!S.user) return say('请先登录',false);
   var t=$('pt').value.trim();
-  if(!t) return say('先写点内容',false);
+  if($('pollBox')&&$('pollBox').style.display!=='none'&&!$('pollQ').value.trim())
+    return say('投票问题不能为空',false);
+  var poll=collectPoll();
+  if(poll&&!poll.q) return say('投票问题不能为空',false);
+  if(poll&&(poll.type==='single'||poll.type==='multi')&&(!poll.opts||poll.opts.length<2))
+    return say('投票至少需要 2 个选项',false);
+  if(!t&&!S.img&&!S.audio&&!S.video&&!poll) return say('至少写点内容，或附带图片/音频/视频/投票',false);
   var anon=document.getElementById('anonChk')?document.getElementById('anonChk').checked:false;
   var capSel=document.getElementById('capSel');var cap=capSel?parseInt(capSel.value||'0')||0:0;
-  call('/post_add',{text:t,tags:S.tags,image:S.img,anon:anon,capsule:cap}).then(function(j){
+  call('/post_add',{text:t,tags:S.tags,image:S.img,audio:S.audio,video:S.video,poll:poll,anon:anon,capsule:cap}).then(function(j){
     if(!j.ok) return say(j.msg||'发布失败',false);
-    $('pt').value='';S.img='';S.tags=[];
+    $('pt').value='';S.img='';S.audio='';S.video='';S.tags=[];S.poll=null;
     $('att').style.display='none';$('pf').value='';
+    if($('attAudio'))$('attAudio').style.display='none';
+    if($('attVideo'))$('attVideo').style.display='none';
+    if($('af'))$('af').value=''; if($('vf'))$('vf').value='';
+    if($('pollBox')) closePoll();
     if(document.getElementById('anonChk'))document.getElementById('anonChk').checked=false;
     if(document.getElementById('capSel'))document.getElementById('capSel').value='0';
     var all=$('tags').querySelectorAll('.tag');all.forEach(function(x){x.classList.remove('on')});
@@ -447,6 +701,40 @@ function sortPosts(ps){
   else a.sort(function(x,y){return (y.id||0)-(x.id||0)});
   return a;
 }
+function pollHTML(p,pid){
+  if(!p) return '';
+  var total=parseInt(p.total||0)||0, closed=!!p.closed, my=p.my;
+  var tag=p.type==='multi'?'多选':p.type==='scale'?'评分':p.type==='yesno'?'赞成 / 反对':'单选';
+  var h='<div class="pollcard" data-poll="'+esc(pid)+'"><div class="pollcard-h"><b>'+esc(p.q||'投票')+'</b><span>'+tag+(closed?' · 已截止':'')+'</span></div>';
+  function pct(n){return total?Math.round(n/total*100):0}
+  function row(t,n,on,attrs){
+    var pc=pct(n);
+    return '<button type="button" class="poll-opt'+(on?' on':'')+(closed?' dis':'')+'" '+(closed?'disabled ':'')+attrs+'><span class="fill" style="width:'+pc+'%"></span><span class="txt"><span>'+esc(t)+'</span><span class="num">'+n+' · '+pc+'%</span></span></button>';
+  }
+  if(p.type==='scale'){
+    var mine=parseInt(my||0)||0;
+    h+='<div class="poll-scale">';
+    for(var i=1;i<=5;i++) h+='<button type="button" class="'+(mine===i?'on':'')+'" data-pscale="'+i+'"'+(closed?' disabled':'')+'>'+i+'</button>';
+    h+='</div><div class="poll-meta">'+(total?('平均 '+(p.avg||0)+' 分 · '+total+' 人评分'):'还没有人评分')+'</div>';
+    (p.results||[]).forEach(function(o){h+='<div class="poll-res"><span>'+esc(o.t)+' 分</span><span>'+o.n+' 人</span></div>'});
+  }else if(p.type==='multi'){
+    h+='<div class="poll-multi">';
+    (p.results||[]).forEach(function(o){
+      var on=Array.isArray(my)&&my.map(String).indexOf(String(o.id))>=0;
+      h+='<label><input type="checkbox" data-pmo="'+esc(o.id)+'"'+(on?' checked':'')+(closed?' disabled':'')+'>'+esc(o.t)+'</label>';
+    });
+    h+='</div>';
+    if(!closed) h+='<button type="button" class="poll-sub" data-psub="1">提交选择</button>';
+    (p.results||[]).forEach(function(o){h+=row(o.t,parseInt(o.n||0)||0,false,'data-dis="1" disabled')});
+    h+='<div class="poll-meta">'+(total?total+' 人参与 · 最多选 '+esc(p.max||1)+' 项':'还没有人投票')+'</div>';
+  }else{
+    (p.results||[]).forEach(function(o){
+      h+=row(o.t,parseInt(o.n||0)||0,String(my)===String(o.id),'data-pp="'+esc(o.id)+'"');
+    });
+    h+='<div class="poll-meta">'+(total?total+' 人投票':'还没有人投票')+'</div>';
+  }
+  return h+'</div>';
+}
 /* 列表 */
 function render(ps){
   POST_ALL=ps;
@@ -460,7 +748,12 @@ function render(ps){
     var cm=p.comments||[];
     var nm=p.shown||p.name||p.user;
     var badge=(p.anon?'<span style="color:#9a6fae;font-size:10px;margin-left:4px">⚿ 匿名</span>':'')+(p.capsule?'<span style="color:#c8a84a;font-size:10px;margin-left:4px">⏳ 胶囊</span>':'');
-    var body=p.sealed?('<div class="bd" style="color:#8a6f4a;font-style:italic">⏳ 这是一枚时间胶囊 · '+Math.max(1,Math.ceil((p.unveil-Date.now()/1000)/86400))+' 天后破土公开</div>'):('<div class="bd">'+md(p.text)+(p.image&&S.api?'<img src="'+esc(S.api+p.image)+'">':'')+'</div>');
+    var extra='';
+    if(p.image&&S.api) extra+='<img src="'+esc(mediaURL(p.image))+'">';
+    if(p.audio&&S.api) extra+='<audio class="mda" controls preload="metadata" src="'+esc(mediaURL(p.audio))+'"></audio>';
+    if(p.video&&S.api) extra+='<video class="mdv" controls preload="metadata" src="'+esc(mediaURL(p.video))+'"></video>';
+    if(p.poll) extra+=pollHTML(p.poll,p.id);
+    var body=p.sealed?('<div class="bd" style="color:#8a6f4a;font-style:italic">⏳ 这是一枚时间胶囊 · '+Math.max(1,Math.ceil((p.unveil-Date.now()/1000)/86400))+' 天后破土公开</div>'):('<div class="bd">'+md(p.text)+extra+'</div>');
     return '<div class="post">'+
       '<div class="ph"><span class="nm">'+esc(nm)+'</span>'+badge+'<span>'+esc(p.time)+'</span>'+
       '<span class="tagsm">'+tk+'</span>'+del+'</div>'+
@@ -512,6 +805,39 @@ setInterval(function(){
 function bindList(){
   $('list').addEventListener('click',function(e){
     var t=e.target;
+    var pp=t.closest('[data-pp]');
+    if(pp){
+      if(!S.user) return say('先登录再投票',false);
+      var pcard=pp.closest('[data-poll]');
+      call('/post_poll_vote',{pid:pcard?pcard.getAttribute('data-poll'):'',value:pp.getAttribute('data-pp')}).then(function(j){
+        if(!j.ok) return say(j.msg||'投票失败',false);
+        say('已投票',true); loadPosts();
+      }).catch(function(er){ say('投票失败：'+ferr(er.message),false); });
+      return;
+    }
+    var ps=t.closest('[data-pscale]');
+    if(ps){
+      if(!S.user) return say('先登录再评分',false);
+      var pcard2=ps.closest('[data-poll]');
+      call('/post_poll_vote',{pid:pcard2?pcard2.getAttribute('data-poll'):'',value:ps.getAttribute('data-pscale')}).then(function(j){
+        if(!j.ok) return say(j.msg||'评分失败',false);
+        say('评分已记录',true); loadPosts();
+      }).catch(function(er){ say('评分失败：'+ferr(er.message),false); });
+      return;
+    }
+    var psub=t.closest('[data-psub]');
+    if(psub){
+      if(!S.user) return say('先登录再投票',false);
+      var pcard3=psub.closest('[data-poll]');
+      var vals=[];
+      pcard3.querySelectorAll('[data-pmo]:checked').forEach(function(x){vals.push(x.getAttribute('data-pmo'))});
+      if(!vals.length) return say('至少选择一个选项',false);
+      call('/post_poll_vote',{pid:pcard3.getAttribute('data-poll'),value:vals}).then(function(j){
+        if(!j.ok) return say(j.msg||'投票失败',false);
+        say('已投票',true); loadPosts();
+      }).catch(function(er){ say('投票失败：'+ferr(er.message),false); });
+      return;
+    }
     var pv=t.closest('[data-pv]');
     if(pv){
       if(!S.user) return say('先登录再投票',false);
@@ -596,6 +922,26 @@ $('pb').addEventListener('click',pickImg);
 })();
 $('pf').addEventListener('change',upImg);
 $('attRm').addEventListener('click',function(){S.img='';$('att').style.display='none';$('pf').value=''});
+if($('pa')) $('pa').addEventListener('click',toggleRec);
+if($('paf')) $('paf').addEventListener('click',function(){ if(!S.user) return say('请先登录',false); $('af').click() });
+if($('af')) $('af').addEventListener('change',function(){ if(this.files[0]) upAudioFile(this.files[0]) });
+if($('pvdo')) $('pvdo').addEventListener('click',function(){ if(!S.user) return say('请先登录',false); $('vf').click() });
+if($('vf')) $('vf').addEventListener('change',function(){ if(this.files[0]) upVideoFile(this.files[0]) });
+if($('attAudioRm')) $('attAudioRm').addEventListener('click',clearAudio);
+if($('attVideoRm')) $('attVideoRm').addEventListener('click',clearVideo);
+if($('recStop')) $('recStop').addEventListener('click',stopRec);
+if($('pollBtn')) $('pollBtn').addEventListener('click',function(){ if(!S.user) return say('请先登录',false); openPoll() });
+if($('pollClose')) $('pollClose').addEventListener('click',closePoll);
+if($('pollType')) $('pollType').addEventListener('change',syncPollType);
+if($('pollAdd')) $('pollAdd').addEventListener('click',function(){ addPollOpt('') });
+if($('pollOpts')) $('pollOpts').addEventListener('click',function(e){
+  var rm=e.target.closest('.rm'); if(!rm) return;
+  if($('pollOpts').querySelectorAll('.pollopt-row').length<=2) return say('至少保留 2 个选项',false);
+  rm.closest('.pollopt-row').remove();
+});
+if($('mdBar')) $('mdBar').addEventListener('click',function(e){
+  var b=e.target.closest('[data-md]'); if(b) insertMd(b.getAttribute('data-md'));
+});
   $('send').addEventListener('click',send);
   /* Markdown 指南 */
   var MDG=[
