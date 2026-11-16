@@ -64,6 +64,9 @@
       <button data-v="audit"><i>03</i><span>审计</span><b>AUDIT LOG</b></button>
       <button data-v="risk"><i>04</i><span>风控</span><b>RISK ENGINE</b></button>
       <button data-v="punish"><i>05</i><span>惩罚</span><b>ENFORCEMENT</b></button>
+      <button data-v="content"><i>06</i><span>内容</span><b>MODERATION</b></button>
+      <button data-v="notice"><i>07</i><span>公告</span><b>BROADCAST</b></button>
+      <button data-v="changelog"><i>08</i><span>日志</span><b>CHANGELOG</b></button>
     </nav>
     <div class="rail-foot">
       <a href="社区.html">← COMMUNITY</a>
@@ -195,6 +198,64 @@
             <div id="punishList" class="rows"></div>
           </article>
         </div>
+      </section>
+
+      <section class="view" id="v-content">
+        <div class="page-h">
+          <div>
+            <div class="kicker">06 / MODERATION</div>
+            <h2>内容</h2>
+          </div>
+          <div class="h-tools">
+            <input id="contentSearch" placeholder="搜索内容 / 作者" autocomplete="off">
+            <button data-act="content-refresh">刷新</button>
+          </div>
+        </div>
+        <div class="subnav" id="contentTabs">
+          <button data-ctab="guests" class="on">留言 <b id="cntGuests">0</b></button>
+          <button data-ctab="posts">论坛 <b id="cntPosts">0</b></button>
+          <button data-ctab="debate">论战 <b id="cntDebate">0</b></button>
+          <button data-ctab="videos">视频 <b id="cntVideos">0</b></button>
+        </div>
+        <div class="table-meta"><span id="contentCount">-- ITEMS</span><span>DELETE · RESOLVE · AUDITED</span></div>
+        <div id="contentList" class="content-list"></div>
+      </section>
+
+      <section class="view" id="v-notice">
+        <div class="page-h">
+          <div>
+            <div class="kicker">07 / BROADCAST</div>
+            <h2>公告</h2>
+          </div>
+          <div class="h-tools">
+            <button data-act="notice-refresh">刷新</button>
+          </div>
+        </div>
+        <form class="notice-form" id="noticeForm">
+          <input id="noticeText" maxlength="120" placeholder="公告内容，最多 120 字" autocomplete="off">
+          <button type="submit">发布公告</button>
+        </form>
+        <div class="table-meta"><span id="noticeCount">-- NOTICES</span><span>SHOWN ON COMMUNITY</span></div>
+        <div id="noticeList" class="rows"></div>
+      </section>
+
+      <section class="view" id="v-changelog">
+        <div class="page-h">
+          <div>
+            <div class="kicker">08 / CHANGELOG</div>
+            <h2>日志</h2>
+          </div>
+          <div class="h-tools">
+            <button data-act="cl-refresh">刷新</button>
+          </div>
+        </div>
+        <form class="cl-form" id="clForm">
+          <input id="clTitle" maxlength="60" placeholder="版本标题，如 2026.11 站点更新" autocomplete="off">
+          <textarea id="clItems" rows="4" placeholder="更新条目，一行一条（最多 20 条）"></textarea>
+          <button type="submit">发布日志</button>
+        </form>
+        <div class="table-meta"><span id="clCount">-- ENTRIES</span><span>CHANGELOG PAGE DATA</span></div>
+        <div id="clList" class="rows"></div>
       </section>
 
     </div>

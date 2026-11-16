@@ -312,3 +312,61 @@ input,select{outline:none}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+
+/* ===== 06-08 内容 / 公告 / 日志 ===== */
+.subnav{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 0}
+.subnav button{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--ink3);
+  border:1px solid var(--line);padding:7px 13px;background:none;transition:.15s;
+}
+.subnav button b{font-weight:400;color:var(--ink3);margin-left:4px}
+.subnav button:hover{border-color:var(--line2);color:var(--ink2)}
+.subnav button.on{border-color:var(--acc);color:var(--acc)}
+.subnav button.on b{color:var(--acc)}
+.content-list{border-top:1px solid var(--line);margin-top:2px}
+.c-row{display:grid;grid-template-columns:minmax(0,1fr) 150px auto;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line);align-items:start}
+.c-row:hover{background:#101010}
+.c-main{min-width:0}
+.c-text{font-size:12.5px;line-height:1.7;color:var(--ink);overflow-wrap:anywhere;white-space:pre-wrap}
+.c-sub{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--ink3);margin-top:5px;overflow:hidden;text-overflow:ellipsis}
+.c-meta{font-family:var(--mono);font-size:9px;line-height:1.9;color:var(--ink3);text-align:right;overflow:hidden;text-overflow:ellipsis}
+.c-acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.c-acts button{
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;border:1px solid var(--line2);
+  padding:3px 7px;color:var(--ink2);transition:.15s;background:none;
+}
+.c-acts button:hover{border-color:var(--acc);color:var(--acc)}
+.c-acts button.bad{color:var(--red);border-color:#5C2525}
+.c-acts button.bad:hover{background:var(--red);color:#000}
+.c-acts button.host{color:var(--acc);border-color:#4B4720}
+.c-comments{grid-column:1/-1;margin-top:9px;border-left:1px solid var(--line2);padding-left:12px;display:none}
+.c-comments.on{display:block}
+.c-cmt{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line);font-size:11px}
+.c-cmt:last-child{border-bottom:0}
+.c-cmt span:first-child{font-family:var(--mono);font-size:9px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-cmt p{color:var(--ink2);overflow-wrap:anywhere;margin:0}
+.c-cmt button{font-family:var(--mono);font-size:8px;border:1px solid #5C2525;color:var(--red);padding:2px 6px;background:none}
+.c-cmt button:hover{background:var(--red);color:#000}
+.notice-form,.cl-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;align-items:flex-start}
+.notice-form input{flex:1;min-width:220px;height:38px;background:var(--bg2);border:1px solid var(--line2);padding:0 12px;font-family:var(--mono);font-size:11px;color:var(--ink)}
+.cl-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;max-width:900px}
+.cl-form input{grid-column:1/-1;height:38px;background:var(--bg2);border:1px solid var(--line2);padding:0 12px;font-family:var(--mono);font-size:11px;color:var(--ink)}
+.cl-form textarea{background:var(--bg2);border:1px solid var(--line2);padding:10px 12px;font-family:var(--mono);font-size:11px;line-height:1.8;color:var(--ink);resize:vertical;min-height:86px}
+.cl-form input:focus,.cl-form textarea:focus,.notice-form input:focus{border-color:var(--acc);outline:none}
+.notice-form button,.cl-form button{
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;border:1px solid var(--line2);
+  padding:10px 16px;color:var(--ink2);background:none;transition:.15s;
+}
+.notice-form button:hover,.cl-form button:hover{border-color:var(--acc);color:var(--acc)}
+.notice-form button[type=submit],.cl-form button[type=submit]{border-color:var(--acc);color:var(--acc)}
+.rows .row-i{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);font-size:12px}
+.rows .row-i b{font-weight:400;color:var(--ink);overflow-wrap:anywhere}
+.rows .row-i span{display:block;font-family:var(--mono);font-size:9px;color:var(--ink3);margin-top:3px}
+.rows .row-i button{font-family:var(--mono);font-size:8.5px;border:1px solid var(--line2);padding:3px 7px;color:var(--ink2);background:none}
+.rows .row-i button:hover{border-color:var(--red);color:var(--red)}
+@media(max-width:820px){
+  .c-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .c-meta{grid-column:1/-1;text-align:left}
+  .c-acts{grid-column:2;grid-row:1}
+  .cl-form{grid-template-columns:1fr}
+}

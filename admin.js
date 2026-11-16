@@ -3,7 +3,8 @@
 'use strict';
 
 var K_API='gb_api_url',K_SESS='gb_session';
-var S={api:'',apis:[],user:null,view:'',users:[],root:false,stats:null,toastT:null,clockT:null};
+var S={api:'',apis:[],user:null,view:'',users:[],root:false,stats:null,toastT:null,clockT:null,
+       ctab:'guests',cdata:{},openPost:null};
 
 function $(id){return document.getElementById(id)}
 function esc(s){
@@ -167,6 +168,9 @@ function setView(v){
   if(v==='audit') loadAudit();
   if(v==='risk') loadRisk();
   if(v==='punish') loadPunish();
+  if(v==='content') loadContentAll();
+  if(v==='notice') loadNotices();
+  if(v==='changelog') loadChangelog();
 }
 
 /* ---------- 概览 ---------- */
@@ -426,6 +430,227 @@ function banClear(ip){
   }).catch(function(e){toast('请求失败：'+ferr(e.message),true)});
 }
 
+/* ---------- 内容审核 ---------- */
+var CTAB_NAME={guests:'留言',posts:'论坛',debate:'论战',videos:'视频'};
+var CTAB_PATH={guests:'/guests_new',posts:'/post_get',debate:'/debate_list',videos:'/video_list'};
+function cut(s,n){
+  s=String(s==null?'':s);
+  return s.length>n?s.slice(0,n)+'…':s;
+}
+function loadContent(tab){
+  var box=$('contentList'); if(!box) return;
+  if(tab) S.ctab=tab;
+  tab=S.ctab||'guests';
+  var navs=document.querySelectorAll('#contentTabs button');
+  for(var i=0;i<navs.length;i++) navs[i].classList.toggle('on',navs[i].getAttribute('data-ctab')===tab);
+  box.innerHTML='<div class="empty">LOADING '+CTAB_NAME[tab]+'…</div>';
+  var p={};
+  if(tab==='guests') p={since:0};
+  if(tab==='debate') p={limit:100};
+  call(CTAB_PATH[tab],p).then(function(j){
+    if(!j||!j.ok){box.innerHTML='<div class="empty">'+esc(j&&j.msg||'加载失败')+'</div>';return}
+    S.cdata[tab]=j;
+    renderContent(tab);
+    updateContentCounts();
+  }).catch(function(e){box.innerHTML='<div class="empty">加载失败 · '+esc(ferr(e.message))+'</div>'});
+}
+function loadContentAll(){
+  var box=$('contentList'); if(!box) return;
+  box.innerHTML='<div class="empty">LOADING MODERATION DATA…</div>';
+  var navs=document.querySelectorAll('#contentTabs button');
+  for(var i=0;i<navs.length;i++) navs[i].classList.toggle('on',navs[i].getAttribute('data-ctab')===S.ctab);
+  var tabs=['guests','posts','debate','videos'];
+  Promise.all(tabs.map(function(t){
+    var p=t==='guests'?{since:0}:(t==='debate'?{limit:100}:{});
+    return call(CTAB_PATH[t],p).then(function(j){ if(j&&j.ok) S.cdata[t]=j; }).catch(function(){});
+  })).then(function(){
+    updateContentCounts();
+    renderContent(S.ctab);
+  });
+}
+function contentItems(tab){  var j=S.cdata[tab]||{};
+  if(tab==='debate') return j.posts||[];
+  return j.list||[];
+}
+function updateContentCounts(){
+  ['guests','posts','debate','videos'].forEach(function(k){
+    var el=$('cnt'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(el) el.textContent=contentItems(k).length;
+  });
+}
+function renderContent(tab){
+  var box=$('contentList'); if(!box) return;
+  tab=tab||S.ctab;
+  var q=(($('contentSearch')&&$('contentSearch').value)||'').trim().toLowerCase();
+  var all=contentItems(tab);
+  var list=all.filter(function(x){
+    if(!q) return true;
+    return (String(x.text||'')+' '+String(x.body||'')+' '+String(x.title||'')+' '+
+            String(x.user||'')+' '+String(x.name||'')+' '+String(x.shown||'')+' '+
+            String(x.char||'')+' '+String(x.target||'')).toLowerCase().indexOf(q)>=0;
+  });
+  var cnt=$('contentCount');
+  if(cnt) cnt.textContent=list.length+' / '+all.length+' '+CTAB_NAME[tab].toUpperCase();
+  if(!list.length){box.innerHTML='<div class="empty">没有匹配的内容</div>';return}
+  if(tab==='guests') box.innerHTML=list.map(rowGuest).join('');
+  else if(tab==='posts') box.innerHTML=list.map(rowPost).join('');
+  else if(tab==='debate') box.innerHTML=list.map(rowDebate).join('');
+  else box.innerHTML=list.map(rowVideo).join('');
+}
+function rowGuest(x){
+  return '<div class="c-row">'+
+    '<div class="c-main"><div class="c-text">'+esc(x.text||'')+'</div>'+
+    '<div class="c-sub">#'+esc(x.id||'')+' · '+esc(x.name||x.user||'')+' · '+esc(x.time||'')+'</div></div>'+
+    '<div class="c-meta">留言</div>'+
+    '<div class="c-acts"><button class="bad" data-cdel="guest|'+esc(x.id)+'">删除</button></div>'+
+  '</div>';
+}
+function rowPost(x){
+  var cs=x.comments||[], open=S.openPost===String(x.id);
+  var body=cut(x.text||'',220);
+  var cm=cs.map(function(c,i){
+    return '<div class="c-cmt"><span>'+esc(c.shown||c.user||c.name||'')+' · '+esc(c.time||'')+'</span>'+
+      '<p>'+esc(cut(c.text||'',160))+'</p>'+
+      '<button class="bad" data-cmt="'+esc(x.id)+'|'+i+'">删</button></div>';
+  }).join('');
+  return '<div class="c-row">'+
+    '<div class="c-main"><div class="c-text">'+esc(body||'（无正文）')+'</div>'+
+    '<div class="c-sub">#'+esc(x.id||'')+' · '+esc(x.shown||x.user||'')+' · '+esc(x.time||'')+
+      ((x.tags||[]).length?' · '+esc((x.tags||[]).join(' / ')):'')+' · '+(x.likes||[]).length+'♥</div>'+
+      (open?'<div class="c-comments on">'+(cm||'<div class="empty">暂无评论</div>')+'</div>':'')+
+    '</div>'+
+    '<div class="c-meta">论坛<br>评论 '+cs.length+' · 赞 '+(x.likes||[]).length+'</div>'+
+    '<div class="c-acts">'+
+      '<button data-ctoggle="'+esc(x.id)+'">'+(open?'收起评论':'评论 '+cs.length)+'</button>'+
+      '<button class="bad" data-cdel="post|'+esc(x.id)+'">删除帖子</button>'+
+    '</div>'+
+  '</div>';
+}
+function rowDebate(x){
+  var args=x.args||[], open=S.openPost===('d'+x.id);
+  var body=cut(x.body||'',200);
+  var ar=args.map(function(a){
+    var tail=a.result?('<span class="c-sub">已裁定 · '+(a.result==='host'?'发布者胜':'挑战者胜')+
+        (a.resolved_at?' · '+esc(a.resolved_at):'')+'</span>'):
+      ('<div class="c-acts" style="justify-content:flex-start;margin-top:4px">'+
+       '<button class="host" data-cres="'+esc(x.id)+'|'+esc(a.id)+'|host">发布者胜</button>'+
+       '<button class="host" data-cres="'+esc(x.id)+'|'+esc(a.id)+'|challenger">挑战者胜</button></div>');
+    return '<div class="c-cmt"><span>'+esc(a.char||'')+' · '+esc(a.user||'')+'</span>'+
+      '<p>'+esc(cut(a.text||'',150))+'<br>'+tail+'</p><span></span></div>';
+  }).join('');
+  return '<div class="c-row">'+
+    '<div class="c-main"><div class="c-text"><b>'+esc(x.char||'')+'</b> vs <b>'+esc(x.target||'')+'</b>'+
+      (body?' — '+esc(body):'')+'</div>'+
+    '<div class="c-sub">'+esc(x.user||'')+' · '+esc(x.time||'')+' · '+esc(x.status||'')+' · 发言 '+args.length+'</div>'+
+      (open?'<div class="c-comments on">'+(ar||'<div class="empty">暂无发言</div>')+'</div>':'')+
+    '</div>'+
+    '<div class="c-meta">论战<br>'+esc(x.status||'')+'</div>'+
+    '<div class="c-acts">'+
+      '<button data-ctoggle="d'+esc(x.id)+'">'+(open?'收起发言':'发言 '+args.length)+'</button>'+
+      '<button class="bad" data-cdel="debate|'+esc(x.id)+'">删除论战</button>'+
+    '</div>'+
+  '</div>';
+}
+function rowVideo(x){
+  return '<div class="c-row">'+
+    '<div class="c-main"><div class="c-text">'+esc(cut(x.title||'(无标题)',120))+'</div>'+
+    '<div class="c-sub">#'+esc(x.id||'')+' · '+esc(x.user||'')+' · '+esc(x.time||'')+' · '+esc(x.src||'')+'</div></div>'+
+    '<div class="c-meta">视频</div>'+
+    '<div class="c-acts"><button class="bad" data-cdel="video|'+esc(x.id)+'">删除视频</button></div>'+
+  '</div>';
+}
+function contentDel(kind,id){
+  var path={guest:'/guest_del',post:'/post_del',debate:'/debate_del',video:'/video_del'}[kind];
+  if(!path) return;
+  if(!window.confirm('确认删除这条'+({guest:'留言',post:'帖子',debate:'论战',video:'视频'}[kind])+'？')) return;
+  var p=(kind==='debate')?{pid:id}:{id:id};
+  call(path,p).then(function(j){
+    toast(j&&j.msg||(j&&j.ok?'已删除':'操作失败'),!(j&&j.ok));
+    if(j&&j.ok){ if(kind==='post') S.openPost=null; loadContent(kind==='video'?'videos':(kind==='debate'?'debate':(kind==='post'?'posts':'guests'))); }
+  }).catch(function(e){toast('删除失败：'+ferr(e.message),true)});
+}
+function commentDel(pid,idx){
+  if(!window.confirm('删除该评论？')) return;
+  call('/admin_del_comment',{pid:pid,idx:idx}).then(function(j){
+    toast(j&&j.msg||(j&&j.ok?'已删除':'操作失败'),!(j&&j.ok));
+    if(j&&j.ok) loadContent('posts');
+  }).catch(function(e){toast('删除失败：'+ferr(e.message),true)});
+}
+function debateResolve(pid,aid,winner){
+  call('/debate_resolve',{pid:pid,aid:aid,winner:winner}).then(function(j){
+    toast(j&&j.msg||(j&&j.ok?'已裁定':'裁定失败'),!(j&&j.ok));
+    if(j&&j.ok) loadContent('debate');
+  }).catch(function(e){toast('裁定失败：'+ferr(e.message),true)});
+}
+function togglePost(key){
+  S.openPost=(S.openPost===key)?null:key;
+  renderContent(S.ctab);
+}
+
+/* ---------- 公告 ---------- */
+function loadNotices(){
+  var box=$('noticeList'); if(!box) return;
+  box.innerHTML='<div class="empty">LOADING NOTICES…</div>';
+  call('/notice_get',{}).then(function(j){
+    if(!j||!j.ok){box.innerHTML='<div class="empty">加载失败</div>';return}
+    var arr=(j.list||[]).slice(0,40);
+    if($('noticeCount')) $('noticeCount').textContent=arr.length+' NOTICES';
+    box.innerHTML=arr.length?arr.map(function(x){
+      return '<div class="row-i"><div><b>'+esc(x.text||'')+'</b><span>#'+esc(x.id||'')+' · '+esc(x.author||'')+' · '+esc(x.time||'')+'</span></div>'+
+        '<button data-ndel="'+esc(x.id)+'">删除</button></div>';
+    }).join(''):'<div class="empty">暂无公告</div>';
+  }).catch(function(e){box.innerHTML='<div class="empty">加载失败 · '+esc(ferr(e.message))+'</div>'});
+}
+function addNotice(e){
+  if(e) e.preventDefault();
+  var input=$('noticeText'), t=input?input.value.trim():'';
+  if(!t){toast('公告内容不能为空',true);return}
+  call('/notice_add',{text:t}).then(function(j){
+    toast(j&&j.msg||(j&&j.ok?'已发布':'发布失败'),!(j&&j.ok));
+    if(j&&j.ok){input.value='';loadNotices()}
+  }).catch(function(err){toast('发布失败：'+ferr(err.message),true)});
+}
+function delNotice(id){
+  if(!window.confirm('删除这条公告？')) return;
+  call('/notice_del',{id:id}).then(function(j){
+    toast(j&&j.msg||(j&&j.ok?'已删除':'操作失败'),!(j&&j.ok));
+    if(j&&j.ok) loadNotices();
+  }).catch(function(e){toast('删除失败：'+ferr(e.message),true)});
+}
+/* ---------- 更新日志 ---------- */
+function loadChangelog(){
+  var box=$('clList'); if(!box) return;
+  box.innerHTML='<div class="empty">LOADING CHANGELOG…</div>';
+  call('/changelog_get',{}).then(function(j){
+    if(!j||!j.ok){box.innerHTML='<div class="empty">加载失败</div>';return}
+    var arr=(j.list||[]).slice(0,30);
+    if($('clCount')) $('clCount').textContent=arr.length+' ENTRIES';
+    box.innerHTML=arr.length?arr.map(function(x){
+      var items=(x.items||[]).slice(0,20).map(function(it){return '<li>'+esc(it)+'</li>'}).join('');
+      return '<div class="row-i"><div><b>'+esc(x.title||'(无标题)')+'</b><span>#'+esc(x.id||'')+' · '+esc(x.user||'')+' · '+esc(x.time||'')+'</span>'+
+        (items?'<ul style="margin:6px 0 0 14px;font-size:11px;line-height:1.9;color:var(--ink2)">'+items+'</ul>':'')+
+        '</div><button data-cldel="'+esc(x.id)+'">删除</button></div>';
+    }).join(''):'<div class="empty">暂无更新日志</div>';
+  }).catch(function(e){box.innerHTML='<div class="empty">加载失败 · '+esc(ferr(e.message))+'</div>'});
+}
+function addChangelog(e){
+  if(e) e.preventDefault();
+  var t=$('clTitle'), it=$('clItems');
+  var title=t?t.value.trim():'', items=it?it.value.split('\n').map(function(s){return s.trim()}).filter(Boolean):[];
+  if(!title&&!items.length){toast('标题或条目至少填一项',true);return}
+  call('/changelog_add',{title:title,items:items}).then(function(j){
+    toast(j&&j.msg||(j&&j.ok?'已发布':'发布失败'),!(j&&j.ok));
+    if(j&&j.ok){if(t)t.value='';if(it)it.value='';loadChangelog()}
+  }).catch(function(err){toast('发布失败：'+ferr(err.message),true)});
+}
+function delChangelog(id){
+  if(!window.confirm('删除这条更新日志？')) return;
+  call('/changelog_del',{id:id}).then(function(j){
+    toast(j&&j.msg||(j&&j.ok?'已删除':'操作失败'),!(j&&j.ok));
+    if(j&&j.ok) loadChangelog();
+  }).catch(function(e){toast('删除失败：'+ferr(e.message),true)});
+}
+
 /* ---------- 备份 ---------- */
 function backup(){
   toast('正在打包全站数据…');
@@ -460,6 +685,9 @@ function bind(){
       if(a==='audit-csv') exportAudit('csv');
       if(a==='risk-add') addRisk();
       if(a==='risk-scan') scanRisk();
+      if(a==='content-refresh') loadContent(S.ctab);
+      if(a==='notice-refresh') loadNotices();
+      if(a==='cl-refresh') loadChangelog();
       return;
     }
     var ua=e.target.closest('[data-uact]');
@@ -472,10 +700,27 @@ function bind(){
     if(pd){var parts=pd.getAttribute('data-pundel').split('|');punishDel(parts[0],parts[1]);return}
     var pb=e.target.closest('[data-punish]');
     if(pb){punishAdd(pb.getAttribute('data-punish'));return}
+    var ct=e.target.closest('[data-ctab]');
+    if(ct){loadContent(ct.getAttribute('data-ctab'));return}
+    var tg=e.target.closest('[data-ctoggle]');
+    if(tg){togglePost(tg.getAttribute('data-ctoggle'));return}
+    var cd=e.target.closest('[data-cdel]');
+    if(cd){var sp=cd.getAttribute('data-cdel').split('|');contentDel(sp[0],sp[1]);return}
+    var cm=e.target.closest('[data-cmt]');
+    if(cm){var cp=cm.getAttribute('data-cmt').split('|');commentDel(cp[0],cp[1]);return}
+    var cr=e.target.closest('[data-cres]');
+    if(cr){var crs=cr.getAttribute('data-cres').split('|');debateResolve(crs[0],crs[1],crs[2]);return}
+    var nd=e.target.closest('[data-ndel]');
+    if(nd){delNotice(nd.getAttribute('data-ndel'));return}
+    var cld=e.target.closest('[data-cldel]');
+    if(cld){delChangelog(cld.getAttribute('data-cldel'));return}
   });
   if($('userSearch')) $('userSearch').addEventListener('input',renderUsers);
   if($('auditDate')) $('auditDate').addEventListener('change',loadAudit);
   if($('riskInput')) $('riskInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addRisk()}});
+  if($('contentSearch')) $('contentSearch').addEventListener('input',function(){renderContent(S.ctab)});
+  if($('noticeForm')) $('noticeForm').addEventListener('submit',addNotice);
+  if($('clForm')) $('clForm').addEventListener('submit',addChangelog);
 }
 
 /* ---------- 启动 ---------- */
