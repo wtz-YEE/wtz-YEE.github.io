@@ -9,7 +9,7 @@ var RANKS=[
   {n:'论战大猪',e:3800},{n:'论战野猪',e:4700}
 ];
 var LKEY='wz_debate_v1';
-var state={posts:[],profile:null,local:false,loading:false};
+var state={posts:[],profile:null,local:false,loading:false,card:''};
 
 function $(id){return document.getElementById(id)}
 function esc(s){
@@ -87,11 +87,11 @@ function localApi(path,p){
   }
   if(path==='/debate_add'){
     if(!u) return {ok:false,msg:'请先登录'};
-    var c=String(p.char||'').trim().slice(0,24),t=String(p.target||'').trim().slice(0,30),b=String(p.body||'').trim().slice(0,300);
+    var c=String(p.char||'').trim().slice(0,24),t=String(p.target||'').trim().slice(0,30),b=String(p.body||'').trim().slice(0,300),card=String(p.card||'').trim().slice(0,600);
     if(!c||!t) return {ok:false,msg:'角色和挑战目标不能为空'};
     var id=rid('dl');
     d.users[u.username]=d.users[u.username]||{exp:0,wins:0,losses:0};
-    d.posts.push({id:id,user:u.username,char:c,target:t,body:b,time:now(),status:'open',args:[]});
+    d.posts.push({id:id,user:u.username,char:c,target:t,body:b,card:card,time:now(),status:'open',args:[]});
     lsave(d);
     return {ok:true,msg:'论战已发布 · 本机暂存',id:id,_local:true};
   }
@@ -457,7 +457,7 @@ function syncLocalPosts(){
   });
   if(!pending.length)return;
   var p=pending[0];
-  callApi('/debate_add',{char:p.char,target:p.target,body:p.body}).then(function(j){
+  callApi('/debate_add',{char:p.char,target:p.target,body:p.body,card:p.card||''}).then(function(j){
     if(!j||!j.ok||j._local)return;
     var d2=ldb();
     d2.posts=d2.posts.filter(function(x){return x.id!==p.id});
@@ -511,10 +511,10 @@ function publish(e){
   var c=$('dbChar').value.trim(),t=$('dbTarget').value.trim(),b=$('dbBody').value.trim();
   if(!c||!t){say('角色和挑战目标都要填',false);return}
   var btn=$('dbPublish');btn.disabled=true;btn.textContent='发布中…';
-  callApi('/debate_add',{char:c,target:t,body:b}).then(function(j){
+  callApi('/debate_add',{char:c,target:t,body:b,card:state.card||''}).then(function(j){
     btn.disabled=false;btn.textContent='发布论战';
     if(!j.ok){say(j.msg||'发布失败',false);return}
-    $('dbChar').value='';$('dbTarget').value='';$('dbBody').value='';
+    $('dbChar').value='';$('dbTarget').value='';$('dbBody').value='';state.card='';
     say(j.msg||'论战已发布',true);load();
   }).catch(function(err){
     btn.disabled=false;btn.textContent='发布论战';
@@ -680,10 +680,22 @@ function bind(){
   },18000);
 }
 window.__dbReload=load;
+function prefillFromQuery(){
+  try{
+    var q=new URLSearchParams(location.search),c=q.get('char')||'',t=q.get('target')||'',b=q.get('body')||'',card=q.get('card')||'';
+    if(c&&$('dbChar'))$('dbChar').value=c.slice(0,24);
+    if(t&&$('dbTarget'))$('dbTarget').value=t.slice(0,30);
+    if(b&&$('dbBody'))$('dbBody').value=b.slice(0,300);
+    state.card=card.slice(0,600);
+    if(c&&$('debate'))setTimeout(function(){$('debate').scrollIntoView({behavior:'smooth',block:'start'})},100);
+    if(c)say('已从咒术轮盘预填角色卡，可直接发布论战',true);
+  }catch(e){}
+}
 function boot(){
   if(!$('debate')||!window.WZCM)return;
   renderLadder(null);
   bind();
+  prefillFromQuery();
   renderMe(null,me());
   if(location.hash==='#debate')setTimeout(function(){var d=$('debate');if(d)d.scrollIntoView({behavior:'smooth',block:'start'})},80);
   load();
