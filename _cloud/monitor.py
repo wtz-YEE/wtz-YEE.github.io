@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import json, os, re, socket, subprocess, sys, threading, time, glob, urllib.request, urllib.error
+import json, os, re, socket, subprocess, sys, threading, time, glob, ctypes, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -266,6 +266,16 @@ def _loop():
 
 threading.Thread(target=_loop, daemon=True).start()
 
+def _boot_guard():
+    time.sleep(3)
+    try:
+        r = guard_start()
+        OPS.append([time.strftime('%H:%M:%S'), '启动自检：云端守护 ' + r])
+    except Exception:
+        pass
+
+threading.Thread(target=_boot_guard, daemon=True).start()
+
 def start_svc(script):
     pyw = find_pythonw()
     if not pyw:
@@ -288,8 +298,31 @@ def guard_stop():
     sh('powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object {$_.CommandLine -like \'*云端守护.cmd*\' -or $_.CommandLine -like \'*guard_core.ps1*\'} | ForEach-Object {Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue}"')
     return 'OK'
 
+def pid_alive(pid):
+    try:
+        h = ctypes.windll.kernel32.OpenProcess(0x1000, False, int(pid))
+        if h:
+            ctypes.windll.kernel32.CloseHandle(h)
+            return True
+    except Exception:
+        pass
+    return False
+
 def guard_start():
-    subprocess.Popen(['cmd', '/c', os.path.join(BASE, '云端守护.cmd'), '/watchdog'], creationflags=CNW)
+    try:
+        lp = int(open(os.path.join(BASE, 'guard.lock', 'pid')).read().strip())
+        if pid_alive(lp):
+            return 'ALREADY_RUNNING'
+    except Exception:
+        pass
+    lk = os.path.join(BASE, 'guard.lock')
+    if os.path.isdir(lk):
+        try:
+            sh('rmdir /s /q "%s"' % lk)
+        except Exception:
+            pass
+    path = os.path.join(BASE, '云端守护.cmd')
+    subprocess.Popen('start "WTZ 云端守护" /min cmd /c ""%s" /watchdog"' % path, shell=True)
     return 'OK'
 
 def tunnel_restart():

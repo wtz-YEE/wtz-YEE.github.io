@@ -18,18 +18,44 @@ if not "%ARG%"=="/watchdog" (
     exit /b
   )
 )
+set "LK=%CLOUD%guard.lock"
+set "LB=0"
+for /f "delims=" %%h in ('type "%CLOUD%guard.heartbeat" 2^>nul') do set "LB=%%h"
+set "NOWT=0"
+for /f %%t in ('powershell -NoProfile -Command "[DateTimeOffset]::Now.ToUnixTimeSeconds()"') do set "NOWT=%%t"
+set /a AGE=NOWT-LB
+mkdir "%LK%" 2>nul
+if errorlevel 1 (
+  set "LP="
+  for /f "tokens=1" %%p in ('type "%LK%\pid" 2^>nul') do set "LP=%%p"
+  if not defined LP (
+    ping -n 3 127.0.0.1 >nul
+    for /f "tokens=1" %%p in ('type "%LK%\pid" 2^>nul') do set "LP=%%p"
+  )
+  if defined LP (
+    powershell -NoProfile -Command "if (Get-Process -Id !LP! -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }"
+    if not errorlevel 1 (
+      echo [防护] 已有守护在运行，本实例自动退出
+      timeout /t 4 /nobreak >nul
+      exit /b 2
+    )
+  )
+  rmdir /s /q "%LK%" 2>nul
+  mkdir "%LK%" 2>nul
+  if errorlevel 1 (
+    echo [防护] 已有守护在运行，本实例自动退出
+    exit /b 2
+  )
+)
+set "MYPID="
+for /f %%p in ('powershell -NoProfile -Command "$pp=(Get-CimInstance Win32_Process | Where-Object {$_.ProcessId -eq $PID}).ParentProcessId;$gp=(Get-CimInstance Win32_Process | Where-Object {$_.ProcessId -eq $pp}).ParentProcessId;$gp"') do set "MYPID=%%p"
+if defined MYPID echo !MYPID!>"%LK%\pid"
+echo !NOWT!> "%CLOUD%guard.heartbeat"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%CLOUD%guard_core.ps1"
 if errorlevel 1 exit /b 1
 set HB2=
 for /f "delims=" %%h in ('type "%CLOUD%guard.heartbeat" 2^>nul') do set HB2=%%h
 for /f %%t in ('powershell -NoProfile -Command "[DateTimeOffset]::Now.ToUnixTimeSeconds()"') do set HB=%%t
-if defined HB2 (
-  set /a D2=!HB!-!HB2!
-  if !D2! lss 150 (
-    echo [防护] 已有守护在运行，退出
-    exit /b 2
-  )
-)
 echo %HB%> "%CLOUD%guard.heartbeat"
 echo [%date% %time%] 守护已启动
 set FAIL=0

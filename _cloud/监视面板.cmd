@@ -24,6 +24,7 @@ if not defined PYW goto NOPY
 
 start "" "%PYW%" "%CLOUD%monitor.py"
 echo 正在启动监视面板，初始化约需 10 秒...
+echo 面板会自动接管云端守护：未运行则拉起单实例，已运行则直接复用。
 set /a N=0
 
 :WAIT
