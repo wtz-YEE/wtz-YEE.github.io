@@ -364,7 +364,7 @@ repeating-linear-gradient(90deg,transparent 0 22px,#f3f3f3 22px 23px) border-box
 </div></footer>
 <dialog class="dialog" id="libDialog"><div class="dlghead"><h3>全部维度 / DIMENSION LIBRARY</h3><button id="closeLib">关闭</button></div><div class="dlgbody"><div style="display:flex;gap:8px;margin-bottom:12px"><input id="libSearch" placeholder="搜索维度或选项" style="flex:1;border:1px solid #111;padding:8px 10px;font-size:12px;outline:none"><span id="libCount" style="font:10px/1.4 Consolas,monospace;color:#666;align-self:center"></span></div><div class="libgrid" id="libGrid"></div></div></dialog>
 <dialog class="dialog" id="logDialog"><div class="dlghead"><h3>抽取记录 / PULL LOG</h3><button id="closeLog">关闭</button></div><div class="dlgbody"><div id="fullLog"></div></div></dialog>
-<dialog class="dialog" id="helpDialog"><div class="dlghead"><h3>玩法 / HOW TO</h3><button id="closeHelp">关闭</button></div><div class="dlgbody" style="font-size:12px;line-height:1.9;color:#444"><p>① 每个维度点击「点击旋转」，轮盘会抽出一个结果。</p><p>② 身份、时间、阵营会改变后续分支；咒灵身份会多出诞生、智力、成长上限等维度。</p><p>③ 抽完命运线后进入「新宿决战」，三方抽招、领域判定、伤势与死亡。</p><p>④ 最后生成十维雷达面板，可导出 JSON 战报、PNG 战报卡、复制文字 / 角色卡 / 命运码。</p><p>④-1 十维（总量/操纵/体术/体质/效率/天赋）加权直接决定新宿决战的初始胜率；抽招还会按属性追加胜率。</p><p>④-2 抽到 S / SS / SSS 级结果会累积「因果债」（+4 / +7 / +12）。每点扣 0.8 点决战初始胜率（最多 -32）；满 15 点进入「反噬」，战败即死。左栏、战斗侧栏、最终面板都有实时债表，能看到每一笔的来源。</p><p>④-3 命运码带校验位，可贴到论战或论坛复现同一角色；「载入命运码」能在另一台浏览器还原。</p><p>④-4 「以此角色开战」会把角色卡预填到论战页，并把卡送进 AI 研判 prompt。</p><p>④-5 死亡结局可「开启子代」，继承部分属性与 60% 因果债。</p><p>④-6 跑完一局、导出战报、AI 生成术式各给一次探索位格；位格只加不扣，记录在本机。</p><p>⑤ 术式、咒骸、咒具、领域效果等数量维度，会在轮盘右上显示剩余抽取次数。</p><p>⑥ 顶部「保存」会把当前结果存入本地存档，点「存档」可载入或删除。</p><p>⑦ 术式先判来源：75% 自定义，25% 从原著术式池抽取；抽完后面板会用 AI 生成术式详情，云端不可用时自动走本地说明。</p><p>⑧ 高级技巧抽到「咒骸制作／咒具制作」才会出现对应池子；好感对象按参与过的事件切换；死灭开启、十影归属与新宿打法会跟随前面结果变化。</p><p style="margin-top:10px;color:#888">「自动抽完」会按当前分支跑完全部维度，直接看最终面板。</p></div></dialog>
+<dialog class="dialog" id="helpDialog"><div class="dlghead"><h3>玩法 / HOW TO</h3><button id="closeHelp">关闭</button></div><div class="dlgbody" style="font-size:12px;line-height:1.9;color:#444"><p>① 每个维度点击「点击旋转」，轮盘会抽出一个结果。</p><p>② 开局先抽体质、颜值、发色、瞳色等身体与外貌维度；身份、时间、阵营会改变后续分支（咒灵身份会多出诞生、智力、成长上限等维度）。只有「新宿决战·打法」会发 3 张牌让你任选 1，其余维度都是轮盘直接抽。</p><p>③ 抽完命运线后进入「新宿决战」，三方抽招、领域判定、伤势与死亡。</p><p>④ 最后生成十维雷达面板，可导出 JSON 战报、PNG 战报卡、复制文字 / 角色卡 / 命运码。</p><p>④-1 十维（总量/操纵/体术/体质/效率/天赋）加权直接决定新宿决战的初始胜率；抽招还会按属性追加胜率。</p><p>④-2 抽到 S / SS / SSS 级结果会累积「因果债」（+4 / +7 / +12）。每点扣 0.8 点决战初始胜率（最多 -32）；满 15 点进入「反噬」，战败即死。左栏、战斗侧栏、最终面板都有实时债表，能看到每一笔的来源。</p><p>④-3 命运码带校验位，可贴到论战或论坛复现同一角色；「载入命运码」能在另一台浏览器还原。</p><p>④-4 「以此角色开战」会把角色卡预填到论战页，并把卡送进 AI 研判 prompt。</p><p>④-5 死亡结局可「开启子代」，继承部分属性与 60% 因果债。</p><p>④-6 跑完一局、导出战报、AI 生成术式各给一次探索位格；位格只加不扣，记录在本机。</p><p>⑤ 术式、咒骸、咒具、领域效果等数量维度，会在轮盘右上显示剩余抽取次数。</p><p>⑥ 顶部「保存」会把当前结果存入本地存档，点「存档」可载入或删除。</p><p>⑦ 术式先判来源：75% 自定义，25% 从原著术式池抽取；抽完后面板会用 AI 生成术式详情，云端不可用时自动走本地说明。</p><p>⑧ 高级技巧抽到「咒骸制作／咒具制作」才会出现对应池子；好感对象按参与过的事件切换；死灭开启、十影归属与新宿打法会跟随前面结果变化。</p><p style="margin-top:10px;color:#888">「自动抽完」会按当前分支跑完全部维度，直接看最终面板。</p></div></dialog>
 <dialog class="dialog" id="saveDialog"><div class="dlghead"><h3>抽取存档 / SAVES</h3><button id="closeSaves">关闭</button></div><div class="dlgbody"><div id="saveList" class="savegrid"></div></div></dialog>
 <script>
 var D={
@@ -825,7 +825,7 @@ function collect(o){var a=[];for(var k in o)a=a.concat(o[k]);return a}
 function groupFace(s){s=String(s||'');if(/^EX/.test(s))return 'EX';if(/^SSS/.test(s))return 'SSS';if(/^SS/.test(s))return 'SS';if(/^S/.test(s))return 'S';if(/^[AB]/.test(s))return 'AB';return 'CDEF'}
 function groupMoral(s){s=String(s||'');if(/^EX/.test(s))return 'EX';if(/^SSS/.test(s))return 'SSS';if(/^SS/.test(s))return 'SS';if(/^S/.test(s))return 'S';if(/^A/.test(s))return 'A';if(/^B/.test(s))return 'B';if(/^C/.test(s))return 'C';if(/^D/.test(s))return 'D';return 'E'}
 function st(key,label,ch,opts,extra){var o={key:key,label:label,ch:ch,opts:opts};if(extra){for(var k in extra)o[k]=extra[k]}return o}
-var CHOICE_KEYS={identity:1,time:1,faction:1,shinjuku_tactic:1};
+var CHOICE_KEYS={shinjuku_tactic:1};
 function isChoiceStep(step){return !!(step&&CHOICE_KEYS[step.key])}
 function choiceOptions(opts){
   var a=(opts||[]).slice();
@@ -1127,6 +1127,15 @@ st("where68","68年后·在哪里","结局 / 68年后",D.where68,{when:post68Ope
 st("fight68","68年后是否参与战斗","结局 / 68年后",D.fight68,{when:post68Open}),
 st("rep68","68年后声望","结局 / 68年后",D.rep68,{when:post68Open})
 ];
+// 开局先抽身体与外貌，身份 / 时间线等放到后面；三选一抽牌只保留决战打法。
+(function(){
+  var first=["body","face","face_branch","hair","eye","gender","age"];
+  FLOW.sort(function(a,b){
+    var ia=first.indexOf(a.key),ib=first.indexOf(b.key);
+    ia=ia<0?99:ia;ib=ib<0?99:ib;
+    return ia-ib;
+  });
+})();
 var POST_FLOW=[
 st("after_curse","咒灵主角胜·战后","结局 / 战后",D.afterCurse,{when:function(){return S.vals.identity==="咒灵"||S.vals.final_faction==="第三方"}}),
 st("battle_after","决战后的处置","分支 / 战后",function(){var a=BCH.battleAfter.slice();if(S.flags['宿傩标记'])a.unshift('接管宿傩的残党');if(S.flags['高专记录'])a.unshift('被高专推上台前');return a},{when:function(){return S.battle&&!S.battle.skipped},branchKey:'battleAfter'}),
