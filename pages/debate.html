@@ -53,7 +53,7 @@
     <div class="cm-hero-tx">
       <div class="en">SECTION 03.5 / DEBATE ARENA</div>
       <h1>论战</h1>
-      <p>选一个角色，向一个目标宣战。后来者只能从这两个身份中选择；挑战者先发言、发布者反击，打满 3 回合后由管理员裁定。</p>
+      <p>选一个角色，向一个目标宣战。后来者只能从这两个身份中选择；挑战者先发言、发布者反击，不设回合上限，由 AI 判定唯一胜者。</p>
     </div>
     <div class="cm-hero-st">
       <span>DEBATE</span>
@@ -80,7 +80,7 @@
       <div class="db-head-l">
         <div class="db-kick"><i></i>SECTION 03.5 / DEBATE ARENA</div>
         <h2 id="dbTitle">论战<small>选角色 · 立目标 · 开战</small></h2>
-        <p>挑一个角色，向一个目标宣战。后来者只能从这两个身份中选择；挑战者先手、发布者反击，3 回合后进入待裁定。</p>
+        <p>挑一个角色，向一个目标宣战。后来者只能从这两个身份中选择；挑战者先手、发布者反击，AI 判定唯一胜者后收场。</p>
       </div>
       <div class="db-me" id="dbMe">
         <span class="db-me-k">MY RECORD</span>
@@ -97,14 +97,15 @@
           <div class="db-ladder" id="dbLadder"></div>
         </div>
         <div class="db-panel db-rules">
-          <div class="db-panel-h"><b>规则 / RULES</b><span>ADMIN DECIDES</span></div>
+          <div class="db-panel-h"><b>规则 / RULES</b><span>AI DECIDES</span></div>
           <ol>
             <li>发布者选角色与挑战目标，立帖。</li>
-            <li>一场只允许一位挑战者；挑战者先发言、发布者反击，交替 3 回合，共 6 条发言。</li>
-            <li>打满 3 回合自动进入「待裁定」，由管理员逐条裁定；全部裁定后统一结算并移入历史。</li>
+            <li>一场只允许一位挑战者；挑战者先发言、发布者反击，交替进行，不设回合上限。</li>
+            <li>AI 在每次发言后研判整场走势，必须给出唯一胜者；判出胜负立即收场并结算。</li>
+            <li>不再有平局：AI 必须分出胜负，双方胜率打平时强制判守擂方胜。</li>
             <li>没人应战可以召唤 AI 陪练，AI 以挑战目标身份接战；陪练场不计经验、不开放竞猜。</li>
             <li>下注窗口：发帖后到首位挑战者发言前；一旦有人应战立即锁定盘口。</li>
-            <li>彩池赔率：赢家按押注占比分输家池，抽水 8% 直接销毁；平局/无效全额退款。</li>
+            <li>彩池赔率：赢家按押注占比分输家池，抽水 8% 直接销毁；无效全额退款。</li>
             <li>参与者不能下注；一人一边、同一 IP 一场一次；单注 1~50 分且不超过当日所得/余额的 50%。</li>
             <li>胜方获得经验，败方扣除经验；对手段位越高，赢得越多、输掉损失也越重。</li>
             <li class="db-rule-note">经验：胜方 14 + 对方段位×6；败方 6 + 对方段位×3；越级挑战额外加成。</li>
@@ -152,6 +153,6 @@
   <a href="changelog.html">更新日志</a>
 </footer>
 
-<script src="debate-page.js?v=34"></script>
+<script src="debate-page.js?v=35"></script>
 </body>
 </html>

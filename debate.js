@@ -293,7 +293,7 @@ function betHTML(p,u,ended){
       '<button type="button" data-bet="host" data-pid="'+esc(p.id)+'">押发布者</button>'+
       '<button type="button" data-bet="challenger" data-pid="'+esc(p.id)+'">押挑战者</button></div>';
   }
-  var tip='<div class="db-bet-tip">彩池赔率：赢家按押注占比分输家池；单注 1~50 分且不超过当日所得/余额的 50%；一人一边、不可重复；平局/无效全退不抽水。</div>';
+  var tip='<div class="db-bet-tip">彩池赔率：赢家按押注占比分输家池；单注 1~50 分且不超过当日所得/余额的 50%；一人一边、不可重复；无效全额退款。</div>';
   return '<div class="db-bet">'+head+odds+mine+body+tip+'</div>';
 }
 function postHTML(p,u){

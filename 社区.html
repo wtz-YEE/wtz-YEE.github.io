@@ -8,7 +8,6 @@
 <meta name="theme-color" content="#080A0B">
 <link rel="stylesheet" href="index.css?v=32" onerror="this.onerror=null;this.href='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/index.css'">
 <link rel="stylesheet" href="community.css?v=32" onerror="this.onerror=null;this.href='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/community.css'">
-<link rel="stylesheet" href="debate.css?v=32" onerror="this.onerror=null;this.href='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/debate.css'">
 <link rel="stylesheet" href="intro.css?v=32" onerror="this.onerror=null;this.href='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/intro.css'">
 </head>
 <body class="cm-body" data-intro="community">
@@ -22,6 +21,7 @@
     <a href="项目.html">项目</a>
     <a href="游戏.html">游戏</a>
     <a class="on" href="社区.html">社区</a>
+    <a href="pages/debate.html">论战</a>
     <a href="杂项.html">杂项</a>
   </nav>
   <button class="cm-ic" id="pmBadge" title="私聊未读" style="display:none">✉</button>
@@ -62,9 +62,8 @@
       <a href="#cmCompose"><span>02</span>发帖</a>
       <a href="#gb_notes"><span>03</span>公告</a>
       <a href="#gb_pm_panel"><span>04</span>私聊</a>
-      <a href="#debate"><span>05</span>论战</a>
+      <a href="pages/debate.html"><span>05</span>论战</a>
       <div class="cm-rail-h">OUTSIDE</div>
-      <a href="pages/debate.html"><span>↗</span>论战独立页</a>
       <a href="pages/守夜人论坛.html"><span>↗</span>守夜人论坛</a>
       <a href="pages/guestwall.html"><span>↗</span>访客墙</a>
       <div class="cm-rail-tip">发言与私聊需要账号<br>云端未连接时只存本机</div>
@@ -164,6 +163,12 @@
 
     <!-- 侧列 -->
     <aside class="cm-side">
+      <a class="cm-card cm-card-debate" href="pages/debate.html">
+        <div class="cm-card-h"><span>DEBATE</span><b>论战</b></div>
+        <p>独立成页：选角色、立目标，双方交锋后由 AI 裁定唯一胜者。</p>
+        <span class="cm-go">进入论战 →</span>
+      </a>
+
       <a class="cm-card cm-card-forum" href="pages/守夜人论坛.html">
         <div class="cm-card-h"><span>FORUM</span><b>守夜人论坛</b></div>
         <p>发帖、评论、标签、Markdown、@提醒，另一处人多的地方。</p>
@@ -198,73 +203,6 @@
       </div>
     </aside>
 
-  </div>
-
-  <section class="db" id="debate" aria-labelledby="dbTitle">
-    <div class="db-head">
-      <div class="db-head-l">
-        <div class="db-kick"><i></i>SECTION 03.5 / DEBATE ARENA</div>
-        <h2 id="dbTitle">论战<small>选角色 · 立目标 · 开战</small></h2>
-        <p>挑一个角色，向一个目标宣战。后来者只能从这两个身份中选择；发布者也可反击，全部裁定后帖子进入历史。</p>
-      </div>
-      <div class="db-me" id="dbMe">
-        <span class="db-me-k">MY RECORD</span>
-        <b id="dbMeRank">未登录</b>
-        <div class="db-me-bar"><i id="dbMeBar"></i></div>
-        <span id="dbMeExp">登录后查看论战经验</span>
-      </div>
-    </div>
-
-    <div class="db-grid">
-      <aside class="db-side">
-        <div class="db-panel">
-          <div class="db-panel-h"><b>段位 / LADDER</b><span>11 级</span></div>
-          <div class="db-ladder" id="dbLadder"></div>
-        </div>
-        <div class="db-panel db-rules">
-          <div class="db-panel-h"><b>规则 / RULES</b><span>ADMIN DECIDES</span></div>
-          <ol>
-            <li>发布者选角色与挑战目标，立帖。</li>
-            <li>一场只允许一位挑战者；挑战者先发言、发布者反击，交替 3 回合，共 6 条发言。</li>
-            <li>打满 3 回合自动进入「待裁定」，由管理员逐条裁定；全部裁定后统一结算并移入历史。</li>
-            <li>没人应战可以召唤 AI 陪练，AI 以挑战目标身份接战；陪练场不计经验、不开放竞猜。</li>
-            <li>下注窗口：发帖后到首位挑战者发言前；一旦有人应战立即锁定盘口。</li>
-            <li>彩池赔率：赢家按押注占比分输家池，抽水 8% 直接销毁；平局/无效全额退款。</li>
-            <li>参与者不能下注；一人一边、同一 IP 一场一次；单注 1~50 分且不超过当日所得/余额的 50%。</li>
-            <li>胜方获得经验，败方扣除经验；对手段位越高，赢得越多、输掉损失也越重。</li>
-            <li class="db-rule-note">经验：胜方 14 + 对方段位×6；败方 6 + 对方段位×3；越级挑战额外加成。</li>
-          </ol>
-        </div>
-      </aside>
-
-      <div class="db-main">
-        <form class="db-form" id="dbForm">
-          <div class="db-form-h"><b>发起论战</b><span>OPEN A DEBATE</span></div>
-          <div class="db-fields">
-            <label>角色<input id="dbChar" maxlength="24" placeholder="输入角色名称"></label>
-            <label>挑战目标 / 对手角色<input id="dbTarget" maxlength="30" placeholder="输入挑战对象，同时作为可选身份"></label>
-          </div>
-          <textarea id="dbBody" maxlength="300" placeholder="一句话宣言，可留空"></textarea>
-          <div class="db-form-a">
-            <button class="db-btn" type="submit" id="dbPublish">发布论战</button>
-            <span class="db-say" id="dbSay"></span>
-            <span class="db-login-hint" id="dbLoginHint">登录后才能发起</span>
-          </div>
-        </form>
-
-        <div class="db-list-h"><b>当前论战</b><span id="dbCount">读取中…</span></div>
-        <div class="db-list" id="dbList"><div class="db-empty">正在读取论战档案…</div></div>
-      </div>
-    </div>
-  </section>
-
-  <div class="db-verdict" id="dbVerdict" role="dialog" aria-modal="true" aria-labelledby="dbVerdictText">
-    <div class="db-verdict-mask" data-verdict-close="1"></div>
-    <div class="db-verdict-box">
-      <div class="db-verdict-k">DEBATE VERDICT / AI</div>
-      <p id="dbVerdictText"></p>
-      <div class="db-verdict-a"><button type="button" data-verdict-close="1">知道了</button></div>
-    </div>
   </div>
 
 </main>
@@ -412,7 +350,6 @@
 </div>
 
 <script src="community.js?v=32" onerror="this.onerror=null;this.src='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/community.js'"></script>
-<script src="debate.js?v=34" onerror="this.onerror=null;this.src='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/debate.js'"></script>
 <script src="nav.js?v=32" onerror="this.onerror=null;this.src='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/nav.js'"></script>
 <script src="intro.js?v=32" onerror="this.onerror=null;this.src='https://fastly.jsdelivr.net/gh/wtz-YEE/wtz-YEE.github.io@main/intro.js'"></script>
 
