@@ -1263,7 +1263,7 @@ function shopItemHtml(x,owned,eq){
   var a='';
   if(!S.user)a='<span class="shop-sub">登录后可购买</span>';
   else if(owned&&eq)a='<span class="shop-eq">已装备</span><button class="shop-btn" data-unequip="'+x.id+'">卸下</button>';
-  else if(owned&&x.type==='mat')a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'差 '+miss+' 分':'兑换')+'</button>';else if(owned&&x.type==='weapon')a='<span class="shop-own">已拥有</span><button class="shop-btn prim" onclick="location.href=&#39;pages/锻造.html&#39;">锻造</button>';else if(owned)a='<span class="shop-own">已拥有</span><button class="shop-btn prim" data-equip="'+x.id+'">装备</button>';
+  else if(owned&&x.type==='mat')a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'差 '+miss+' 分':'兑换')+'</button>';else if(owned&&x.type==='weapon')a='<span class="shop-own">已拥有</span>';else if(owned)a='<span class="shop-own">已拥有</span><button class="shop-btn prim" data-equip="'+x.id+'">装备</button>';
   else a='<button class="shop-btn prim" data-buy="'+x.id+'"'+(short?' disabled':'')+'>'+(short?'差 '+miss+' 分':'兑换')+'</button>';
   return '<div class="shop-item'+(eq?' on':'')+'"><div class="si-h"><span class="si-n">'+esc(x.name)+'</span>'+
     (off<1?'<span class="shop-sale">今日特供 · 7折</span>':'')+(owned?'<span class="shop-own">已有</span>':'')+
