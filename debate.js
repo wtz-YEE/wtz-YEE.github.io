@@ -238,7 +238,7 @@ function pkHTML(a,hostChar,chChar){
 function argHTML(a,hostChar,chChar){
   var speaker=(a.side||'challenger');
   var cls='db-arg'+((a.result==='host'||a.result==='challenger')?(a.result===speaker?' win':' lose'):(a.result?' draw':''));
-  var res=a.result==='host'?'发布者胜':(a.result==='challenger'?'挑战者胜':(a.result==='draw'?'平局':(a.result==='void'?'无效':'')));
+  var res=a.result==='host'?'发布者胜':(a.result==='challenger'?'挑战者胜':(a.result==='draw'?'流局':(a.result==='void'?'无效':'')));
   var deltaTxt='';
   if(a.result&&(a.host_delta!=null||a.ch_delta!=null)){
     deltaTxt='发布者 '+(a.host_delta>0?'+':'')+(a.host_delta==null?'':a.host_delta)+' / 挑战者 '+(a.ch_delta>0?'+':'')+(a.ch_delta==null?'':a.ch_delta);
@@ -293,7 +293,7 @@ function betHTML(p,u,ended){
       '<button type="button" data-bet="host" data-pid="'+esc(p.id)+'">押发布者</button>'+
       '<button type="button" data-bet="challenger" data-pid="'+esc(p.id)+'">押挑战者</button></div>';
   }
-  var tip='<div class="db-bet-tip">彩池赔率：赢家按押注占比分输家池；单注 1~50 分且不超过当日所得/余额的 50%；一人一边、不可重复；无效全额退款。</div>';
+  var tip='<div class="db-bet-tip">彩池赔率：赢家按押注占比分输家池；单注 1~50 点当日因果，且不超过当日因果的 50%；一人一边、不可重复；流局全额退款。</div>';
   return '<div class="db-bet">'+head+odds+mine+body+tip+'</div>';
 }
 function postHTML(p,u){
@@ -310,7 +310,7 @@ function postHTML(p,u){
   if(typeof p.score_host==='number')sh=p.score_host;
   if(typeof p.score_ch==='number')sc=p.score_ch;
   var winner=p.winner||'';
-  var winTxt=winner==='host'?'发布者胜':(winner==='challenger'?'挑战者胜':(winner==='draw'?'平局':(winner==='void'?'无效':'')));
+  var winTxt=winner==='host'?'发布者胜':(winner==='challenger'?'挑战者胜':(winner==='draw'?'流局':(winner==='void'?'无效':'')));
   var scoreTxt='AI '+sh+' : '+sc;
   var argsLen=(p.args||[]).length;
   var aiSpar=!!p.ai_spar;
@@ -360,6 +360,7 @@ function postHTML(p,u){
   return '<article class="db-post" data-post="'+esc(p.id)+'">'+
     '<div class="db-post-h"><span class="db-ava">◆</span><div class="db-who"><b>'+esc(p.host?p.host.name:p.user)+'</b><em>'+esc(p.host?p.host.rank:'')+' · EXP '+esc(p.host?p.host.exp:0)+' · 胜 '+esc(p.host?p.host.wins:0)+' / 负 '+esc(p.host?p.host.losses:0)+'</em></div>'+
     '<span class="db-status '+(ended?'':'open')+'">'+(ended?'CLOSED':'OPEN')+'</span>'+
+    (admin&&ended?'<button type="button" class="db-del" data-rejudge="'+esc(p.id)+'">重判</button>':'')+
     (canDel?'<button type="button" class="db-del" data-del="'+esc(p.id)+'">删除</button>':'')+'</div>'+
     '<div class="db-match"><b>「'+esc(p.char)+'」</b><i>CHALLENGE</i><span>挑战「'+esc(p.target)+'」</span>'+(aiSpar?'<em class="db-spar-tag">AI 陪练</em>':'')+'</div>'+
     (p.body?'<p class="db-body">'+esc(p.body)+'</p>':'')+
@@ -558,13 +559,26 @@ function removePost(pid,btn){
     say('删除失败：'+errText(err),false);
   });
 }
+function rejudgePost(pid,btn){
+  if(state.local){say('本机模式不支持重判',false);return}
+  if(!confirm('重跑一次 AI 裁判并覆盖原判？已结算的经验与竞猜会先回滚再重新结算。'))return;
+  btn.disabled=true;btn.textContent='重判中…';
+  callApi('/debate_rejudge',{pid:pid}).then(function(j){
+    btn.disabled=false;btn.textContent='重判';
+    if(!j.ok){say(j.msg||'重判失败',false);return}
+    say(j.msg||'已重判',true);load();
+  }).catch(function(err){
+    btn.disabled=false;btn.textContent='重判';
+    say('重判失败：'+errText(err),false);
+  });
+}
 function placeBet(pid,pick,btn){
   var u=me();
   if(!u){say('请先登录再下注',false);return}
   if(state.local){say('本机模式不支持竞猜',false);return}
   var wrap=btn.closest('.db-bet'),input=wrap?wrap.querySelector('[data-bet-amount]'):null;
   var amount=parseInt(input?input.value:'',10);
-  if(!amount||amount<1||amount>50){say('单注积分需在 1~50 之间',false);return}
+  if(!amount||amount<1||amount>50){say('单注因果需在 1~50 之间',false);return}
   var btns=wrap?wrap.querySelectorAll('button'):[btn];
   for(var i=0;i<btns.length;i++)btns[i].disabled=true;
   callApi('/debate_bet',{pid:pid,pick:pick,amount:amount}).then(function(j){
@@ -600,6 +614,8 @@ function bind(){
     list.addEventListener('click',function(e){
       var del=e.target.closest('[data-del]');
       if(del){removePost(del.getAttribute('data-del'),del);return}
+      var rj=e.target.closest('[data-rejudge]');
+      if(rj){rejudgePost(rj.getAttribute('data-rejudge'),rj);return}
       var rb=e.target.closest('[data-reply]');
       if(rb){reply(rb.getAttribute('data-reply'),rb);return}
       var bet=e.target.closest('[data-bet]');
