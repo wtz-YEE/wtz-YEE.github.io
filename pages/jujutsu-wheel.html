@@ -624,7 +624,7 @@ act:{
 "随五条救人":["优先疏散平民","正面迎战真人","追击羂索","保护伏黑惠"],
 "与羂索假合作":["帮羂索布结界","反咬羂索","偷走狱门疆","双面传信"],
 "守外围结界":["死守结界","放咒灵入内","截杀咒灵","向高专求援"],
-"直奔五条":["提前破封","和羂索正面开战","替五条挡宿傩","放弃救援撤离"],
+"直奔五条":["尝试提前破封（失败）","和羂索正面开战","替五条挡宿傩","放弃救援撤离"],
 "趁乱夺物":["抢狱门疆","抢宿傩手指","和高专交易","被宿傩截胡"],
 "撤离涩谷":["带走幸存者","独自离开","向高层汇报","隐姓埋名"]
 },
@@ -664,6 +664,109 @@ act:{
 result:["被奉为神明","无人知晓","新一代崛起","咒术彻底消失"]
 }
 };
+
+EV.star.roleBy={sorc:EV.star.role,curse:["受盘星教雇佣袭击","被甚尔当道具","被五条当场祓除","趁星浆体之乱吞噬咒力"]};
+EV.zero.roleBy={sorc:EV.zero.role,curse:["加入百鬼夜行","反噬夏油","趁乱吞噬平民"]};
+EV.school.roleBy={sorc:EV.school.role,curse:["占据少年院","阻止高专回收九相图","被虎杖祓除"]};
+EV.shibuya.roleBy={sorc:EV.shibuya.role,curse:["参与涩谷封锁","被真人改造利用","与漏瑚花御陀艮协同","被宿傩顺手斩"]};
+EV.shinjuku.roleBy={sorc:EV.shinjuku.role,curse:["被宿傩征召当炮灰","趁乱吞食","逃离新宿"]};
+
+EV.star.act["受盘星教雇佣袭击"]=["伏击护送队伍","把星浆体位置卖给甚尔","和甚尔分赃","被五条当场打散"];
+EV.star.act["被甚尔当道具"]=["替甚尔吸引五条注意","被甚尔用来试探无下限","趁乱逃走","反咬甚尔"];
+EV.star.act["被五条当场祓除"]=["试图拖五条下水","临死前诅咒五条","被祓除前自爆","侥幸留一口气"];
+EV.star.act["趁星浆体之乱吞噬咒力"]=["吞掉星浆体残存咒力","趁乱吃掉盘星教成员","被夏油收服","逃回黑暗中"];
+EV.zero.act["加入百鬼夜行"]=["随夏油进攻高专","在新宿站释放咒灵","背刺高专术师","被乙骨祓除"];
+EV.zero.act["反噬夏油"]=["咬断夏油的咒灵操术","夺走百鬼夜行指挥权","被夏油重新调伏","趁乱吞掉同伴"];
+EV.zero.act["趁乱吞噬平民"]=["在新宿站大开杀戒","被乙骨拦下","吞掉大量恐惧","伪装成平民撤离"];
+EV.school.act["占据少年院"]=["把少年院变成咒灵巢穴","吞掉少年院幸存者","阻挡高专调查","被虎杖发现"];
+EV.school.act["阻止高专回收九相图"]=["抢走九相图残骸","破坏封印","和伏黑惠交手","被高专回收"];
+EV.school.act["被虎杖祓除"]=["正面袭击虎杖","拖虎杖一起下水","临死前放出九相图","被宿傩顺手斩杀"];
+EV.shibuya.act["参与涩谷封锁"]=["在帐内猎杀术师","守住封锁边界","和咒灵一起围攻五条","被五条突破"];
+EV.shibuya.act["被真人改造利用"]=["被真人改造成监视器","替真人试探五条","被改造后失控","反噬真人"];
+EV.shibuya.act["与漏瑚花御陀艮协同"]=["和漏瑚一起放火","替花御挡刀","随陀艮封锁地铁","被宿傩斩开"];
+EV.shibuya.act["被宿傩顺手斩"]=["挡在宿傩面前","试图吞宿傩咒力","被斩后残存","临死前逃进帐内"];
+EV.shinjuku.act["被宿傩征召当炮灰"]=["冲在最前面消耗五条","替宿傩挡无下限","被五条祓除","临阵逃跑"];
+EV.shinjuku.act["趁乱吞食"]=["吞食新宿平民","吞食高专伤员","被五条发现","躲进废墟"];
+EV.shinjuku.act["逃离新宿"]=["从地下通道逃走","伪装成普通人","带走一批咒灵","被宿傩处决"];
+
+EV.star.resultBy={
+"伏击护送队伍":["天内理子死亡，五条暴走","夏油开始动摇","甚尔被击退"],
+"把星浆体位置卖给甚尔":["天内理子死亡，五条暴走","夏油开始动摇","甚尔被击退"],
+"和甚尔分赃":["天内理子死亡，五条暴走","夏油开始动摇","甚尔被击退"],
+"被五条当场打散":["天内理子生还","夏油开始动摇","甚尔被击退"],
+"替甚尔吸引五条注意":["天内理子死亡，五条暴走","甚尔被击退","夏油开始动摇"],
+"被甚尔用来试探无下限":["天内理子死亡，五条暴走","甚尔被击退","夏油开始动摇"],
+"趁乱逃走":["天内理子死亡，五条暴走","夏油开始动摇","甚尔被击退"],
+"反咬甚尔":["甚尔被击退","天内理子死亡，五条暴走","夏油开始动摇"],
+"试图拖五条下水":["天内理子生还","夏油开始动摇","甚尔被击退"],
+"临死前诅咒五条":["天内理子生还","夏油开始动摇","天内理子死亡，五条暴走"],
+"被祓除前自爆":["天内理子生还","夏油开始动摇","甚尔被击退"],
+"侥幸留一口气":["天内理子生还","甚尔被击退","夏油开始动摇"],
+"吞掉星浆体残存咒力":["夏油开始动摇","天内理子死亡，五条暴走","甚尔被击退"],
+"趁乱吃掉盘星教成员":["天内理子死亡，五条暴走","夏油开始动摇","甚尔被击退"],
+"被夏油收服":["夏油开始动摇","甚尔被击退","天内理子生还"],
+"逃回黑暗中":["夏油开始动摇","天内理子死亡，五条暴走","甚尔被击退"]
+};
+EV.shibuya.resultBy={"尝试提前破封（失败）":["五条被封印","羂索夺走狱门疆","涩谷全灭"]};
+
+function rolePool(ev){return curse()&&ev.roleBy&&ev.roleBy.curse?ev.roleBy.curse:ev.role}
+function uniqList(a){var out=[];(a||[]).forEach(function(x){if(x&&out.indexOf(x)<0)out.push(x)});return out}
+function eventResultDefault(ev,act){
+  var s=String(act||''),b=ev.result||[];
+  if(ev===EV.star){
+    if(/交给盘星教|换报酬|放行|放他|被祓除|被.*杀|袭击|当道具|吞噬|吞掉/.test(s))return [b[1],b[2],b[3]];
+    if(/救|保护|藏|带走|护送|同行|守|追查|并肩|断后|设伏|交手|换命|夺咒具/.test(s))return [b[0],b[2],b[3]];
+    return [b[1],b[2],b[3]];
+  }
+  if(ev===EV.zero){
+    if(/反噬|吞噬|吞食|抢|夺|加入百鬼|交易|告密|背刺/.test(s))return [b[0],b[3],b[1]];
+    if(/帮|救|保护|挡|并肩|疏散|结|护送|解|守|收编/.test(s))return [b[1],b[2],b[0]];
+    return [b[0],b[1],b[3]];
+  }
+  if(ev===EV.school){
+    if(/占据|阻止|被虎杖|吞下|抢|夺|交给|打晕|封印|放出/.test(s))return [b[2],b[3],b[0]];
+    if(/替虎杖|救|掩护|接应|说服|拖/.test(s))return [b[0],b[2],b[3]];
+    return [b[3],b[2],b[0]];
+  }
+  if(ev===EV.shibuya){
+    if(/提前破封|尝试提前破封|直奔|和羂索|替五条/.test(s))return [b[0],b[2],b[3]];
+    if(/随五条|保护|疏散|救援|守外围|死守|挡/.test(s))return [b[1],b[0],b[2]];
+    if(/假合作|反咬|偷|抢|夺物|背刺/.test(s))return [b[2],b[0],b[3]];
+    if(/撤离|离开|隐姓/.test(s))return [b[3],b[0],b[2]];
+    return [b[0],b[2],b[3]];
+  }
+  if(ev===EV.shinjuku){
+    if(/站五条|并肩|挡|保护|疏散|掩护/.test(s))return [b[0],b[2],b[1]];
+    if(/站宿傩|猎杀|抢十影|偷袭|背刺|炮灰|吞食/.test(s))return [b[1],b[2],b[3]];
+    return [b[2],b[3],b[1]];
+  }
+  if(ev===EV.culling){
+    if(/裁判|维持|规则|公布/.test(s))return [b[1],b[0],b[3]];
+    if(/猎杀|偷袭|宿傩|背刺/.test(s))return [b[2],b[0],b[3]];
+    return [b[0],b[1],b[3]];
+  }
+  if(ev===EV.post68){
+    if(/传说|现身|接受|朝圣|神明/.test(s))return [b[0],b[2],b[1]];
+    if(/隐姓|消失/.test(s))return [b[1],b[2],b[0]];
+    if(/培养|收徒|建学校|教/.test(s))return [b[2],b[0],b[1]];
+    if(/调查|研究|真相|追查/.test(s))return [b[2],b[3],b[0]];
+    if(/离开|月球|外星/.test(s))return [b[1],b[3],b[2]];
+  }
+  return b.slice(0,3);
+}
+function actResults(ev,role,act){
+  var a=(ev.resultBy&&ev.resultBy[act])?ev.resultBy[act].slice():eventResultDefault(ev,act);
+  a=uniqList(a);if(a.length<2)a=uniqList(a.concat(ev.result||[]));return a.slice(0,3);
+}
+function initResultBy(ev){
+  ev.resultBy=ev.resultBy||{};
+  for(var role in ev.act){
+    (ev.act[role]||[]).forEach(function(a){
+      if(!ev.resultBy[a])ev.resultBy[a]=eventResultDefault(ev,a);
+    });
+  }
+}
+[EV.star,EV.zero,EV.school,EV.shibuya,EV.culling,EV.shinjuku,EV.post68].forEach(initResultBy);
 function collect(o){var a=[];for(var k in o)a=a.concat(o[k]);return a}
 function groupFace(s){s=String(s||'');if(/^EX/.test(s))return 'EX';if(/^SSS/.test(s))return 'SSS';if(/^SS/.test(s))return 'SS';if(/^S/.test(s))return 'S';if(/^[AB]/.test(s))return 'AB';return 'CDEF'}
 function groupMoral(s){s=String(s||'');if(/^EX/.test(s))return 'EX';if(/^SSS/.test(s))return 'SSS';if(/^SS/.test(s))return 'SS';if(/^S/.test(s))return 'S';if(/^A/.test(s))return 'A';if(/^B/.test(s))return 'B';if(/^C/.test(s))return 'C';if(/^D/.test(s))return 'D';return 'E'}
@@ -687,7 +790,14 @@ var ERA_ORDER={"平安时代":0,"400年前":1,"江户时代":2,"明治维新时�
 function eventOpen(e){var t=S.vals.time||'';var a=ERA_ORDER[t],b=ERA_ORDER[e];if(a==null||b==null)return false;return a<=b}
 function post68Open(){return S.vals.time==='68年后外传'||S.vals.live68==='是'}
 function hasAdv(x){return (S.adv||[]).some(function(v){return String(v).indexOf(x)>=0})}
+function curseBondTargets(){
+  var a=['真人','漏瑚','花御','陀艮','夏油杰'];
+  if(S.vals.shibuya==='是')a=a.concat(['真人','漏瑚','花御','陀艮']);
+  if(S.vals.culling_join==='是')a=a.concat(['真人']);
+  return uniqList(a);
+}
 function bondTargets(){
+  if(curse())return curseBondTargets();
   var a=['钉崎野蔷薇','禅院真希','狗卷棘','胖达','七海建人','东堂葵','伏黑甚尔'];
   if(S.vals.star_role)a=a.concat(['天内理子','五条悟','夏油杰']);
   if(S.vals.hyakki==='是（是要干嘛？）')a=a.concat(['乙骨忧太','祈本里香','夏油杰']);
@@ -697,7 +807,7 @@ function bondTargets(){
   if(!a.length)a=['五条悟','夏油杰','伏黑惠'];
   return a.filter(function(x,i){return a.indexOf(x)===i});
 }
-function bondName(){return S.vals.bond_who||'五条悟'}
+function bondName(){return S.vals.bond_who||(curse()?'真人':'五条悟')}
 function cullingOpenOpts(){
   var sealed=S.flags&&S.flags['五条被封印']||/被封印/.test(S.vals.shibuya_result||'');
   if(sealed)return ['是（五条被封印，羂索立刻开启）','是（趁五条不在，提前开启）','否（先消化狱门疆，暂缓开启）'];
@@ -720,12 +830,12 @@ function shinjukuActs(){
   return a;
 }
 function shinjukuResults(){
-  var a=EV.shinjuku.result.slice(),t=String(S.vals.shinjuku_tactic||'');
+  var a=actResults(EV.shinjuku,S.vals.shinjuku_role,S.vals.shinjuku_act),t=String(S.vals.shinjuku_tactic||'');
   if(/主角代替/.test(t))a.unshift('主角代替五条，击退宿傩','主角代替五条，被宿傩重创');
   if(/车轮/.test(t))a.unshift('车轮战耗尽宿傩','车轮战被宿傩击溃');
   if(/抢十影/.test(t))a.unshift('抢十影成功，宿傩败','抢十影失败，魔虚罗暴走');
   if(/保存实力/.test(t))a.unshift('两败俱伤，主角渔利');
-  return a;
+  return uniqList(a).slice(0,4);
 }
 var FLOW=[
 st("identity","穿越后的初始身份","穿越 / 身份",D.identity),
@@ -781,38 +891,38 @@ st("invite","特殊事件·羂索是否邀请主角加入","时间线 / 阵营",
 st("accept","羂索邀请·是否答应","时间线 / 阵营",D.accept,{when:function(){return S.vals.invite==="是"}}),
 st("hidden","是否参与怀玉时期事件","时间线 / 怀玉",D.hidden,{when:function(){return eventOpen('怀玉')&&S.vals.accept!=="是（转为羂索方）"}}),
 st("activity1","未参与事件·在干嘛","时间线 / 怀玉",D.activity,{when:function(){return S.vals.hidden&&S.vals.hidden!=="是（是要干嘛？）"}}),
-st("star_role","怀玉·星浆体事件：你的立场","事件 / 怀玉",function(){return EV.star.role},{when:function(){return S.vals.hidden==="是（是要干嘛？）"}}),
+st("star_role","怀玉·星浆体事件：你的立场","事件 / 怀玉",function(){return rolePool(EV.star)},{when:function(){return S.vals.hidden==="是（是要干嘛？）"}}),
 st("star_act","怀玉·关键行动","事件 / 怀玉",function(){return EV.star.act[S.vals.star_role]||[]},{when:function(){return S.vals.hidden==="是（是要干嘛？）"&&S.vals.star_role}}),
-st("star_result","怀玉·事件结果","事件 / 怀玉",function(){return EV.star.result},{when:function(){return S.vals.hidden==="是（是要干嘛？）"&&S.vals.star_role}}),
+st("star_result","怀玉·事件结果","事件 / 怀玉",function(){return actResults(EV.star,S.vals.star_role,S.vals.star_act)},{when:function(){return S.vals.hidden==="是（是要干嘛？）"&&S.vals.star_role}}),
 st("hyakki","是否参与百鬼夜行·0卷","时间线 / 0卷",D.hyakki,{when:function(){return eventOpen('0卷时期')}}),
 st("activity2","未参与事件·在干嘛（0卷）","时间线 / 0卷",D.activity,{when:function(){return S.vals.hyakki&&S.vals.hyakki!=="是（是要干嘛？）"}}),
-st("zero_role","0卷·百鬼夜行：你的立场","事件 / 0卷",function(){return EV.zero.role},{when:function(){return S.vals.hyakki==="是（是要干嘛？）"}}),
+st("zero_role","0卷·百鬼夜行：你的立场","事件 / 0卷",function(){return rolePool(EV.zero)},{when:function(){return S.vals.hyakki==="是（是要干嘛？）"}}),
 st("zero_act","0卷·关键行动","事件 / 0卷",function(){return EV.zero.act[S.vals.zero_role]||[]},{when:function(){return S.vals.hyakki==="是（是要干嘛？）"&&S.vals.zero_role}}),
-st("zero_result","0卷·事件结果","事件 / 0卷",function(){return EV.zero.result},{when:function(){return S.vals.hyakki==="是（是要干嘛？）"&&S.vals.zero_role}}),
+st("zero_result","0卷·事件结果","事件 / 0卷",function(){return actResults(EV.zero,S.vals.zero_role,S.vals.zero_act)},{when:function(){return S.vals.hyakki==="是（是要干嘛？）"&&S.vals.zero_role}}),
 st("main_event","是否参与剧情开始·少年院事件","时间线 / 剧情开始",D.mainEvent,{when:function(){return eventOpen('剧情开始时期')}}),
 st("activity3","未参与事件·在干嘛（剧情开始）","时间线 / 剧情开始",D.activity,{when:function(){return S.vals.main_event&&S.vals.main_event!=="是（要干嘛？）"}}),
-st("school_role","少年院·你的立场","事件 / 剧情开始",function(){return EV.school.role},{when:function(){return S.vals.main_event==="是（要干嘛？）"}}),
+st("school_role","少年院·你的立场","事件 / 剧情开始",function(){return rolePool(EV.school)},{when:function(){return S.vals.main_event==="是（要干嘛？）"}}),
 st("school_act","少年院·关键行动","事件 / 剧情开始",function(){return EV.school.act[S.vals.school_role]||[]},{when:function(){return S.vals.main_event==="是（要干嘛？）"&&S.vals.school_role}}),
-st("school_result","少年院·事件结果","事件 / 剧情开始",function(){return EV.school.result},{when:function(){return S.vals.main_event==="是（要干嘛？）"&&S.vals.school_role}}),
+st("school_result","少年院·事件结果","事件 / 剧情开始",function(){return actResults(EV.school,S.vals.school_role,S.vals.school_act)},{when:function(){return S.vals.main_event==="是（要干嘛？）"&&S.vals.school_role}}),
 st("shibuya","是否参与涩谷事变","时间线 / 涩谷",D.shibuya,{when:function(){return eventOpen('涩谷事变时期')}}),
-st("shibuya_role","涩谷事变·你的位置","事件 / 涩谷",function(){return EV.shibuya.role},{when:function(){return S.vals.shibuya==="是"}}),
+st("shibuya_role","涩谷事变·你的位置","事件 / 涩谷",function(){return rolePool(EV.shibuya)},{when:function(){return S.vals.shibuya==="是"}}),
 st("shibuya_act","涩谷事变·关键行动","事件 / 涩谷",function(){return EV.shibuya.act[S.vals.shibuya_role]||[]},{when:function(){return S.vals.shibuya==="是"&&S.vals.shibuya_role}}),
-st("shibuya_result","涩谷事变·结果","事件 / 涩谷",function(){return EV.shibuya.result},{when:function(){return S.vals.shibuya==="是"&&S.vals.shibuya_role}}),
-st("bond_who","角色对主角的好感·对象","关系 / 事件角色",bondTargets,{when:function(){return !curse()}}),
-st("bond",function(){return bondName()+'对主角的好感'},"关系 / 事件角色",D.bond,{when:function(){return !curse()}}),
-st("view",function(){return '主角对'+bondName()+'的看法'},"关系 / 事件角色",D.view,{when:function(){return !curse()}}),
+st("shibuya_result","涩谷事变·结果","事件 / 涩谷",function(){return actResults(EV.shibuya,S.vals.shibuya_role,S.vals.shibuya_act)},{when:function(){return S.vals.shibuya==="是"&&S.vals.shibuya_role}}),
+st("bond_who",function(){return curse()?'咒灵同伴对主角的好感·对象':'角色对主角的好感·对象'},"关系 / 事件角色",bondTargets),
+st("bond",function(){return bondName()+'对主角的好感'},"关系 / 事件角色",D.bond),
+st("view",function(){return '主角对'+bondName()+'的看法'},"关系 / 事件角色",D.view),
 st("culling_open","特殊事件·死灭回游是否开启","时间线 / 死灭回游",function(){return cullingOpenOpts()},{when:function(){return eventOpen('死灭回游时期')}}),
 st("culling_join","是否参与死灭回游","时间线 / 死灭回游",D.cullingJoin,{when:function(){return eventOpen('死灭回游时期')&&/是/.test(S.vals.culling_open||'')}}),
-st("culling_role","死灭回游·你的角色","事件 / 死灭回游",function(){return EV.culling.role},{when:function(){return S.vals.culling_join==="是"}}),
+st("culling_role","死灭回游·你的角色","事件 / 死灭回游",function(){return rolePool(EV.culling)},{when:function(){return S.vals.culling_join==="是"}}),
 st("culling_act","死灭回游·关键行动","事件 / 死灭回游",function(){return EV.culling.act[S.vals.culling_role]||[]},{when:function(){return S.vals.culling_join==="是"&&S.vals.culling_role}}),
 st("culling_place","参与死灭回游地点","事件 / 死灭回游",D.cullingPlace,{when:function(){return S.vals.culling_join==="是"}}),
 st("culling_count","死灭回游·对手数","事件 / 死灭回游",D.cullingCount,{when:function(){return S.vals.culling_join==="是"}}),
 st("culling_foes","死灭回游·对手","事件 / 死灭回游",D.cullingFoes,{when:function(){return S.vals.culling_join==="是"}}),
-st("culling_result","死灭回游·结果","事件 / 死灭回游",function(){return EV.culling.result},{when:function(){return S.vals.culling_join==="是"}}),
+st("culling_result","死灭回游·结果","事件 / 死灭回游",function(){return actResults(EV.culling,S.vals.culling_role,S.vals.culling_act)},{when:function(){return S.vals.culling_join==="是"}}),
 st("puppet_growth","咒骸制作·2次·成长","时间线 / 成长",D.puppetGrowth,{when:function(){return hasAdv('咒骸制作')}}),
 st("domain_count","领域展开·目前累计次数","时间线 / 领域",D.domainCount),
-st("ten_shadows","特殊事件·宿傩能否抢到十影","时间线 / 决战",function(){return tenShadowsOpts()},{when:function(){return eventOpen('新宿决战时期')}}),
-st("shinjuku_role","新宿决战·你的立场","事件 / 新宿决战",function(){return EV.shinjuku.role},{when:function(){return eventOpen('新宿决战时期')},after:function(v){S.vals.final_faction=/五条|平民/.test(v)?'高专方':(/宿傩/.test(v)?'宿傩方':'第三方')}}),
+st("ten_shadows","特殊事件·宿傩能否抢到十影","时间线 / 决战",function(){return tenShadowsOpts()},{when:function(){return eventOpen('死灭回游时期')||/五条被封印/.test(S.vals.shibuya_result||'')}}),
+st("shinjuku_role","新宿决战·你的立场","事件 / 新宿决战",function(){return rolePool(EV.shinjuku)},{when:function(){return eventOpen('新宿决战时期')},after:function(v){S.vals.final_faction=/五条|平民/.test(v)?'高专方':(/宿傩/.test(v)?'宿傩方':'第三方')}}),
 st("shinjuku_tactic","新宿决战·打法","事件 / 新宿决战",D.shinjukuTactics,{when:function(){return eventOpen('新宿决战时期')&&!!S.vals.shinjuku_role}}),
 st("shinjuku_act","新宿决战·关键行动","事件 / 新宿决战",function(){return shinjukuActs()},{when:function(){return eventOpen('新宿决战时期')&&!!S.vals.shinjuku_role},after:function(v){S.vals.insert=/记录|旁观|保存/.test(v)?'否（看爽了）':'是（等很久了，开启三方混战！）'}}),
 st("shinjuku_result","新宿决战·结果","事件 / 新宿决战",function(){return shinjukuResults()},{when:function(){return eventOpen('新宿决战时期')&&!!S.vals.shinjuku_role}}),
@@ -820,9 +930,9 @@ st("initial_win","初始胜率","时间线 / 决战",D.winInitial,{when:function
 st("battle_gate","新宿决战","时间线 / 决战",null,{battle:true,when:function(){return eventOpen('新宿决战时期')}}),
 st("after_curse","咒灵主角胜·战后","结局 / 68年后",D.afterCurse,{when:function(){return S.vals.final_faction==="第三方"||S.vals.identity==="咒灵"}}),
 st("live68","是否活到68年后","结局 / 68年后",D.live68,{when:function(){return S.vals.time!=='68年后外传'}}),
-st("post68_role","68年后·你的选择","事件 / 68年后",function(){return EV.post68.role},{when:post68Open}),
+st("post68_role","68年后·你的选择","事件 / 68年后",function(){return rolePool(EV.post68)},{when:post68Open}),
 st("post68_act","68年后·关键行动","事件 / 68年后",function(){return EV.post68.act[S.vals.post68_role]||[]},{when:function(){return post68Open()&&S.vals.post68_role}}),
-st("post68_result","68年后·结果","事件 / 68年后",function(){return EV.post68.result},{when:function(){return post68Open()&&S.vals.post68_role}}),
+st("post68_result","68年后·结果","事件 / 68年后",function(){return actResults(EV.post68,S.vals.post68_role,S.vals.post68_act)},{when:function(){return post68Open()&&S.vals.post68_role}}),
 st("where68","68年后·在哪里","结局 / 68年后",D.where68,{when:post68Open}),
 st("fight68","68年后是否参与战斗","结局 / 68年后",D.fight68,{when:post68Open}),
 st("rep68","68年后声望","结局 / 68年后",D.rep68,{when:post68Open})
@@ -832,16 +942,16 @@ st("after_curse","咒灵主角胜·战后","结局 / 战后",D.afterCurse,{when:
 st("battle_after","决战后的处置","分支 / 战后",function(){var a=BCH.battleAfter.slice();if(S.flags['宿傩标记'])a.unshift('接管宿傩的残党');if(S.flags['高专记录'])a.unshift('被高专推上台前');return a},{when:function(){return S.battle&&!S.battle.skipped},branchKey:'battleAfter'}),
 st("ending_branch","你给世界留下的东西","分支 / 结局",function(){var a=BCH.ending.slice();if(S.flags['宿傩标记'])a.unshift('成为宿傩的继承者');if(S.flags['高专记录'])a.unshift('被写进高专教科书');if(S.flags['羂索注视'])a.unshift('被羂索写进下一局');return a},{branchKey:'ending'}),
 st("live68","是否活到68年后","结局 / 68年后",D.live68,{when:function(){return S.vals.time!=='68年后外传'}}),
-st("post68_role","68年后·你的选择","事件 / 68年后",function(){return EV.post68.role},{when:post68Open}),
+st("post68_role","68年后·你的选择","事件 / 68年后",function(){return rolePool(EV.post68)},{when:post68Open}),
 st("post68_act","68年后·关键行动","事件 / 68年后",function(){return EV.post68.act[S.vals.post68_role]||[]},{when:function(){return post68Open()&&S.vals.post68_role}}),
-st("post68_result","68年后·结果","事件 / 68年后",function(){return EV.post68.result},{when:function(){return post68Open()&&S.vals.post68_role}}),
+st("post68_result","68年后·结果","事件 / 68年后",function(){return actResults(EV.post68,S.vals.post68_role,S.vals.post68_act)},{when:function(){return post68Open()&&S.vals.post68_role}}),
 st("where68","68年后·在哪里","结局 / 68年后",D.where68,{when:post68Open}),
 st("fight68","68年后是否参与战斗","结局 / 68年后",D.fight68,{when:post68Open}),
 st("rep68","68年后声望","结局 / 68年后",D.rep68,{when:post68Open})
 ];
 var LIB=[
-["穿越后的初始身份",D.identity],["由什么恐惧诞生的·咒灵",D.fear],["诞生时什么状态·咒灵",D.birth],["智力·咒灵",D.intel],["成长上限·咒灵",D.growth],["穿越后的时间点",D.time],["穿越后的地点",D.place],["穿越后的性别",D.gender],["穿越后的年龄",D.age],["性格",D.personality],["穿越后的颜值",D.face],["发色",D.hair],["瞳色",D.eye],["道德水平",D.moral],["爱好",D.hobby],["爱好对应的水平",collect(D.hobbyLevel)],["角色对主角的好感·对象",["天内理子","五条悟","夏油杰","乙骨忧太","祈本里香","虎杖悠仁","伏黑惠","真人","羂索","秤金次","日车宽见","鹿紫云一","钉崎野蔷薇","禅院真希","狗卷棘","胖达","七海建人","东堂葵","伏黑甚尔"]],["角色对主角的好感",D.bond],["主角对好感对象的看法",D.view],["生得术式判定",["有／无","咒灵固定2次"]],["术式来源",["自定义术式（75%）","原著术式（25%）"]],["原著术式池",D.originTech],["术式类型·自定义",D.techType],["术式风格·自定义",D.techStyle],["术式效果·自定义",D.techEffect],["术式咒力要求",D.techCost],["术式全方位威力",D.techPower],["咒力总量",D.energy],["咒力操纵",D.control],["体术水平",D.taijutsu],["基础体质",D.body],["咒力效率",D.eff],["天赋",D.talent],["高级技巧数量",D.advCount],["会哪个高级技巧",D.advList],["领域类型",D.domainType],["领域效果数量",D.domainFxCount],["领域效果",D.domainFx],["咒骸数量",D.corpseCount],["咒骸外形",D.corpseShape],["咒骸实力",D.corpsePower],["咒具数量",D.toolCount],["咒具类型",D.toolType],["咒具分级",D.toolGrade],["咒具效果",D.toolEffect],["是否有特殊天赋",D.special],["特殊天赋的具体内容",D.specialTalent],["等级评定",D.grade],["400年前·是否前往日本",D.go400],["400年前·遇见事件数",D.event400Count],["400年前·事件",D.event400],["遇见六眼·是否发生战斗",D.battleYesNo],["遇见鹿紫云一·是否使用幻兽琥珀",D.kashimoPhantom],["时间成长·到现代",D.timeGrowth],["现代·是否成长为完全体",D.modernFull],["完全体·能力成长",D.fullGrowth],["来到现代·阵营",D.faction],["羂索邀请",D.invite],["羂索邀请·是否答应",D.accept],["怀玉·是否参与",D.hidden],["0卷·是否参与",D.hyakki],["少年院·是否参与",D.mainEvent],["涩谷·是否参与",D.shibuya],["死灭回游·是否开启",D.cullingOpen],["死灭回游·是否参与",D.cullingJoin],["死灭回游·地点",D.cullingPlace],["死灭回游·对手数",D.cullingCount],["死灭回游·对手",D.cullingFoes],["咒骸制作成长",D.puppetGrowth],["领域展开累计次数",D.domainCount],["宿傩能否抢到十影",D.tenShadows],["决战阵营",D.finalFaction],["新宿决战·打法",D.shinjukuTactics],["是否插入五宿对决",D.insert],["初始胜率",D.winInitial],["出招数",D.fightMoveCount],["战斗盘·宿傩",D.sukunaMoves],["战斗盘·五条悟",D.gojoMoves],["战斗盘·主角",D.mcMoves],["领域对抗胜者",D.domainWinner],["领域对抗效果",D.domainResult],["战斗盘·胜负",D.battleWinner],["是否有人死亡",D.death],["伤势·宿傩",D.sukunaInjury],["魔虚罗是否存活",D.mahoragaAlive],["魔虚罗适应无下限",D.mahoragaAdapt],["魔虚罗适应主角术式",D.mahoragaAdapt],["伤势·主角",D.mcInjuryBattle],["主角成长",D.mcGrowthBattle],["主角咒骸是否存活",D.mcCorpseAlive],["伤势·五条",D.gojoInjuryBattle],["五条成长",D.gojoGrowthBattle],["再战高专",D.rematchHigh],["再战高专·少数不降",D.rematchFew],["咒灵主角胜·战后",D.afterCurse],["是否活到68年后",D.live68],["68年后·在哪里",D.where68],["68年后是否参与战斗",D.fight68],["68年后声望",D.rep68],
-["身份带来的因果",collect(BCH.identity)],["咒灵进食方式",BCH.curse],["时代带来的因果",collect(BCH.era)],["地点带来的势力与地形",collect(BCH.place)],["颜值带来的社会反应",collect(BCH.face)],["道德带来的立场",collect(BCH.moral)],["多术式副作用",BCH.tech],["领域代价与破绽",collect(BCH.domain)],["咒具与主人的关系",BCH.tool],["等级带来的责任",BCH.grade],["阵营任务",collect(BCH.faction)],["怀玉·立场",EV.star.role],["怀玉·关键行动",collect(EV.star.act)],["怀玉·结果",EV.star.result],["0卷·立场",EV.zero.role],["0卷·关键行动",collect(EV.zero.act)],["0卷·结果",EV.zero.result],["少年院·立场",EV.school.role],["少年院·关键行动",collect(EV.school.act)],["少年院·结果",EV.school.result],["涩谷·立场",EV.shibuya.role],["涩谷·关键行动",collect(EV.shibuya.act)],["涩谷·结果",EV.shibuya.result],["死灭·角色",EV.culling.role],["死灭·关键行动",collect(EV.culling.act)],["死灭·结果",EV.culling.result],["新宿·立场",EV.shinjuku.role],["新宿·关键行动",collect(EV.shinjuku.act)],["新宿·结果",EV.shinjuku.result],["68年后·选择",EV.post68.role],["68年后·关键行动",collect(EV.post68.act)],["68年后·结果",EV.post68.result],["决战后的处置",BCH.battleAfter],["世界留下的东西",BCH.ending]
+["穿越后的初始身份",D.identity],["由什么恐惧诞生的·咒灵",D.fear],["诞生时什么状态·咒灵",D.birth],["智力·咒灵",D.intel],["成长上限·咒灵",D.growth],["穿越后的时间点",D.time],["穿越后的地点",D.place],["穿越后的性别",D.gender],["穿越后的年龄",D.age],["性格",D.personality],["穿越后的颜值",D.face],["发色",D.hair],["瞳色",D.eye],["道德水平",D.moral],["爱好",D.hobby],["爱好对应的水平",collect(D.hobbyLevel)],["人类侧好感对象",["天内理子","五条悟","夏油杰","乙骨忧太","祈本里香","虎杖悠仁","伏黑惠","真人","羂索","秤金次","日车宽见","鹿紫云一","钉崎野蔷薇","禅院真希","狗卷棘","胖达","七海建人","东堂葵","伏黑甚尔"]],["角色对主角的好感",D.bond],["主角对好感对象的看法",D.view],["生得术式判定",["有／无","咒灵固定2次"]],["术式来源",["自定义术式（75%）","原著术式（25%）"]],["原著术式池",D.originTech],["术式类型·自定义",D.techType],["术式风格·自定义",D.techStyle],["术式效果·自定义",D.techEffect],["术式咒力要求",D.techCost],["术式全方位威力",D.techPower],["咒力总量",D.energy],["咒力操纵",D.control],["体术水平",D.taijutsu],["基础体质",D.body],["咒力效率",D.eff],["天赋",D.talent],["高级技巧数量",D.advCount],["会哪个高级技巧",D.advList],["领域类型",D.domainType],["领域效果数量",D.domainFxCount],["领域效果",D.domainFx],["咒骸数量",D.corpseCount],["咒骸外形",D.corpseShape],["咒骸实力",D.corpsePower],["咒具数量",D.toolCount],["咒具类型",D.toolType],["咒具分级",D.toolGrade],["咒具效果",D.toolEffect],["是否有特殊天赋",D.special],["特殊天赋的具体内容",D.specialTalent],["等级评定",D.grade],["400年前·是否前往日本",D.go400],["400年前·遇见事件数",D.event400Count],["400年前·事件",D.event400],["遇见六眼·是否发生战斗",D.battleYesNo],["遇见鹿紫云一·是否使用幻兽琥珀",D.kashimoPhantom],["时间成长·到现代",D.timeGrowth],["现代·是否成长为完全体",D.modernFull],["完全体·能力成长",D.fullGrowth],["来到现代·阵营",D.faction],["羂索邀请",D.invite],["羂索邀请·是否答应",D.accept],["怀玉·是否参与",D.hidden],["0卷·是否参与",D.hyakki],["少年院·是否参与",D.mainEvent],["涩谷·是否参与",D.shibuya],["死灭回游·是否开启",D.cullingOpen],["死灭回游·是否参与",D.cullingJoin],["死灭回游·地点",D.cullingPlace],["死灭回游·对手数",D.cullingCount],["死灭回游·对手",D.cullingFoes],["咒骸制作成长",D.puppetGrowth],["领域展开累计次数",D.domainCount],["宿傩能否抢到十影",D.tenShadows],["决战阵营",D.finalFaction],["新宿决战·打法",D.shinjukuTactics],["是否插入五宿对决",D.insert],["初始胜率",D.winInitial],["出招数",D.fightMoveCount],["战斗盘·宿傩",D.sukunaMoves],["战斗盘·五条悟",D.gojoMoves],["战斗盘·主角",D.mcMoves],["领域对抗胜者",D.domainWinner],["领域对抗效果",D.domainResult],["战斗盘·胜负",D.battleWinner],["是否有人死亡",D.death],["伤势·宿傩",D.sukunaInjury],["魔虚罗是否存活",D.mahoragaAlive],["魔虚罗适应无下限",D.mahoragaAdapt],["魔虚罗适应主角术式",D.mahoragaAdapt],["伤势·主角",D.mcInjuryBattle],["主角成长",D.mcGrowthBattle],["主角咒骸是否存活",D.mcCorpseAlive],["伤势·五条",D.gojoInjuryBattle],["五条成长",D.gojoGrowthBattle],["再战高专",D.rematchHigh],["再战高专·少数不降",D.rematchFew],["咒灵主角胜·战后",D.afterCurse],["是否活到68年后",D.live68],["68年后·在哪里",D.where68],["68年后是否参与战斗",D.fight68],["68年后声望",D.rep68],
+["身份带来的因果",collect(BCH.identity)],["咒灵进食方式",BCH.curse],["时代带来的因果",collect(BCH.era)],["地点带来的势力与地形",collect(BCH.place)],["颜值带来的社会反应",collect(BCH.face)],["道德带来的立场",collect(BCH.moral)],["多术式副作用",BCH.tech],["领域代价与破绽",collect(BCH.domain)],["咒具与主人的关系",BCH.tool],["等级带来的责任",BCH.grade],["阵营任务",collect(BCH.faction)],["怀玉·立场",EV.star.role.concat(EV.star.roleBy.curse)],["怀玉·关键行动",collect(EV.star.act)],["怀玉·结果",EV.star.result],["0卷·立场",EV.zero.role.concat(EV.zero.roleBy.curse)],["0卷·关键行动",collect(EV.zero.act)],["0卷·结果",EV.zero.result],["少年院·立场",EV.school.role.concat(EV.school.roleBy.curse)],["少年院·关键行动",collect(EV.school.act)],["少年院·结果",EV.school.result],["涩谷·立场",EV.shibuya.role.concat(EV.shibuya.roleBy.curse)],["涩谷·关键行动",collect(EV.shibuya.act)],["涩谷·结果",EV.shibuya.result],["死灭·角色",EV.culling.role],["死灭·关键行动",collect(EV.culling.act)],["死灭·结果",EV.culling.result],["新宿·立场",EV.shinjuku.role.concat(EV.shinjuku.roleBy.curse)],["新宿·关键行动",collect(EV.shinjuku.act)],["新宿·结果",EV.shinjuku.result],["68年后·选择",EV.post68.role],["68年后·关键行动",collect(EV.post68.act)],["68年后·结果",EV.post68.result],["决战后的处置",BCH.battleAfter],["世界留下的东西",BCH.ending],["咒灵同伴好感对象",["真人","漏瑚","花御","陀艮","夏油杰"]]
 ];
 
 var S={vals:{},hist:[],tech:[],adv:[],corpses:[],tools:[],events:[],domainFx:[],snaps:{},battleDone:false,postStarted:false,battle:null,debt:0,debtLog:[],bonus:0,mods:{},flags:{},branches:[],runId:0,generation:1,inherit:null,lineage:[],rankAwarded:{}};
@@ -992,22 +1102,22 @@ function renderRecent(){
 function evApply(key,s,add,flag){
   var ev=key.split('_')[0],kind=key.slice(ev.length+1);
   if(ev==='star'){
-    if(kind==='role'){if(/护送|同行/.test(s)){add('rep',2);add('control',1);flag('星浆体护航')}else if(/替盘星教/.test(s)){add('control',2);add('moral',-2);flag('盘星教线')}else if(/阻拦/.test(s)){add('body',1);add('rep',1);flag('甚尔交手')}else{add('essence',1);flag('怀玉旁观')}}
+    if(kind==='role'){if(/受盘星教|雇佣|袭击|盯梢/.test(s)){add('control',2);add('moral',-2);flag('盘星教线')}else if(/被五条.*祓除|当场祓除/.test(s)){add('rep',-2);flag('被五条祓除')}else if(/当道具|吸引五条/.test(s)){add('body',1);add('rep',-1);flag('甚尔道具')}else if(/吞噬|吞掉/.test(s)){add('total',2);add('moral',-2);flag('咒灵吞噬')}else if(/护送|同行/.test(s)){add('rep',2);add('control',1);flag('星浆体护航')}else if(/阻拦/.test(s)){add('body',1);add('rep',1);flag('甚尔交手')}else{add('essence',1);flag('怀玉旁观')}}
     if(kind==='act'){if(/救|保护|藏|带走/.test(s)){add('rep',2);add('moral',1)}if(/反咬|背刺/.test(s)){add('control',2);add('moral',-1)}if(/咒具|咒物|手指/.test(s)){add('essence',2)}if(/离开|放他|放行/.test(s)){add('rep',-1)}}
     if(kind==='result'){if(/生还/.test(s)){add('rep',3);add('moral',2);flag('理子生还')}else if(/死亡/.test(s)){add('moral',-1);flag('五条暴走')}else if(/动摇/.test(s)){flag('夏油动摇')}else{add('rep',2)}}
   }
   if(ev==='zero'){
-    if(kind==='role'){if(/帮乙骨/.test(s)){add('rep',2);flag('乙骨同行')}else if(/帮祈本/.test(s)){add('control',2);flag('里香线')}else if(/夺取/.test(s)){add('essence',2);add('moral',-1);flag('夺物者')}else if(/保护/.test(s)){add('rep',2);add('moral',1);flag('平民救援')}else{add('control',1);flag('百鬼旁观')}}
+    if(kind==='role'){if(/加入百鬼夜行|百鬼夜行/.test(s)){add('total',2);add('moral',-2);flag('百鬼夜行')}else if(/反噬夏油/.test(s)){add('control',2);add('total',2);flag('反噬夏油')}else if(/吞噬平民|吞掉|吞食/.test(s)){add('total',1);add('moral',-3);flag('平民吞噬')}else if(/帮乙骨/.test(s)){add('rep',2);flag('乙骨同行')}else if(/帮祈本/.test(s)){add('control',2);flag('里香线')}else if(/夺取/.test(s)){add('essence',2);add('moral',-1);flag('夺物者')}else if(/保护/.test(s)){add('rep',2);add('moral',1);flag('平民救援')}else{add('control',1);flag('百鬼旁观')}}
     if(kind==='act'){if(/救|挡|护送|并肩/.test(s)){add('rep',2);add('moral',1)}if(/吞噬|暴走/.test(s)){add('total',2);add('moral',-2)}if(/抢|夺/.test(s)){add('essence',2)}if(/交易|告密|背刺/.test(s)){add('control',1);add('moral',-2)}}
-    if(kind==='result'){if(/夏油败走/.test(s)){add('rep',2)}else if(/乙骨觉醒/.test(s)){add('eff',2);flag('乙骨觉醒')}else if(/里香成佛/.test(s)){add('moral',2);flag('里香成佛')}else{add('essence',3);flag('咒物易主')}}
+    if(kind==='result'){if(/夏油败走/.test(s)){add('rep',2);flag('夏油败走')}else if(/乙骨觉醒/.test(s)){add('eff',2);flag('乙骨觉醒')}else if(/里香成佛/.test(s)){add('moral',2);flag('里香成佛')}else{add('essence',3);flag('咒物易主')}}
   }
   if(ev==='school'){
-    if(kind==='role'){if(/和虎杖/.test(s)){add('rep',2);flag('虎杖同行')}else if(/阻止/.test(s)){add('control',1);add('rep',1);flag('阻止吞指')}else if(/抢先/.test(s)){add('essence',2);add('moral',-1);flag('抢指者')}else if(/接应/.test(s)){add('eff',1);flag('外围接应')}else{add('rep',-1);flag('少年院旁观')}}
+    if(kind==='role'){if(/占据|少年院/.test(s)&&!/和虎杖/.test(s)){add('total',2);add('moral',-2);flag('占据少年院')}else if(/阻止高专|九相图/.test(s)){add('control',1);add('total',2);flag('九相图回收')}else if(/被虎杖祓除/.test(s)){add('rep',-2);flag('虎杖祓除')}else if(/和虎杖/.test(s)){add('rep',2);flag('虎杖同行')}else if(/阻止/.test(s)){add('control',1);add('rep',1);flag('阻止吞指')}else if(/抢先/.test(s)){add('essence',2);add('moral',-1);flag('抢指者')}else if(/接应/.test(s)){add('eff',1);flag('外围接应')}else{add('rep',-1);flag('少年院旁观')}}
     if(kind==='act'){if(/替虎杖|救|掩护/.test(s)){add('rep',2);add('moral',1)}if(/吞下|手指/.test(s)){add('total',3);add('essence',2);flag('宿傩容器')}if(/交给羂索/.test(s)){add('control',2);add('moral',-2);flag('手指交索')}if(/封印|打晕|说服/.test(s)){add('control',1)}}
-    if(kind==='result'){if(/虎杖/.test(s)){add('rep',1);flag('虎杖容器')}else if(/主角/.test(s)){add('total',3);flag('主角容器')}else if(/封印/.test(s)){add('control',2);flag('手指封印')}else{add('rep',-2);flag('任务失败')}}
+    if(kind==='result'){if(/虎杖/.test(s)){add('rep',1);flag('虎杖容器')}else if(/主角/.test(s)){add('total',3);flag('主角容器')}else if(/封印/.test(s)){add('control',2);flag('手指封印');flag('手指被封印')}else{add('rep',-2);flag('任务失败')}}
   }
   if(ev==='shibuya'){
-    if(kind==='role'){if(/随五条救人/.test(s)){add('rep',3);add('moral',2);flag('涩谷救援')}else if(/假合作/.test(s)){add('control',2);add('moral',-2);flag('假合作')}else if(/守外围/.test(s)){add('eff',2);flag('结界防守')}else if(/直奔五条/.test(s)){add('rep',2);add('body',-1);flag('救五条')}else if(/夺物/.test(s)){add('essence',2);add('moral',-1);flag('趁乱夺物')}else{add('rep',-2);flag('撤离涩谷')}}
+    if(kind==='role'){if(/参与涩谷封锁|封锁/.test(s)){add('total',2);add('moral',-2);flag('涩谷封锁')}else if(/真人改造/.test(s)){add('control',2);add('body',-2);flag('真人改造')}else if(/漏瑚|花御|陀艮|协同/.test(s)){add('total',2);add('control',1);flag('咒灵协同')}else if(/被宿傩.*斩|宿傩顺手/.test(s)){add('rep',-2);add('body',-2);flag('宿傩斩击')}else if(/随五条救人/.test(s)){add('rep',3);add('moral',2);flag('涩谷救援')}else if(/假合作/.test(s)){add('control',2);add('moral',-2);flag('假合作')}else if(/守外围/.test(s)){add('eff',2);flag('结界防守')}else if(/直奔五条/.test(s)){add('rep',2);add('body',-1);flag('救五条')}else if(/夺物/.test(s)){add('essence',2);add('moral',-1);flag('趁乱夺物')}else{add('rep',-2);flag('撤离涩谷')}}
     if(kind==='act'){if(/疏散|保护|挡|救援/.test(s)){add('rep',2);add('moral',1)}if(/反咬|背刺/.test(s)){add('control',2);add('moral',-1)}if(/狱门疆|手指/.test(s)){add('essence',2)}if(/死守|结界/.test(s)){add('eff',1)}if(/撤离|离开/.test(s)){add('rep',-1)}}
     if(kind==='result'){if(/获救/.test(s)){add('rep',3);add('moral',1);flag('五条获救')}else if(/被封印/.test(s)){add('rep',-1);flag('五条被封印')}else if(/夺走狱门疆/.test(s)){add('control',2);add('moral',-2);flag('羂索得手')}else{add('rep',-3);add('moral',-2);flag('涩谷全灭')}}
   }
@@ -1017,7 +1127,7 @@ function evApply(key,s,add,flag){
     if(kind==='result'){if(/100/.test(s)){add('rep',3);flag('死灭满分')}else if(/规则/.test(s)){add('control',2);flag('规则改写')}else if(/宿傩/.test(s)){add('moral',-1);flag('宿傩入场')}else{add('rep',-1);flag('死灭中止')}}
   }
   if(ev==='shinjuku'){
-    if(kind==='role'){if(/站五条/.test(s)){add('rep',3);add('moral',1);flag('五条方')}else if(/站宿傩/.test(s)){add('rep',-3);add('moral',-3);flag('宿傩方')}else if(/第三方/.test(s)){add('control',2);flag('第三方渔利')}else if(/平民/.test(s)){add('rep',2);add('moral',2);flag('平民救援')}else{add('control',2);flag('追索')}}
+    if(kind==='role'){if(/炮灰/.test(s)){add('total',1);add('moral',-2);flag('宿傩炮灰')}else if(/吞食/.test(s)){add('moral',-3);add('total',1);flag('新宿吞食')}else if(/逃离/.test(s)){add('rep',-1);add('control',1);flag('逃离新宿')}else if(/站五条/.test(s)){add('rep',3);add('moral',1);flag('五条方')}else if(/站宿傩/.test(s)){add('rep',-3);add('moral',-3);flag('宿傩方')}else if(/第三方/.test(s)){add('control',2);flag('第三方渔利')}else if(/平民/.test(s)){add('rep',2);add('moral',2);flag('平民救援')}else{add('control',2);flag('追索')}}
     if(kind==='act'){if(/并肩|挡|保护|疏散|掩护/.test(s)){add('rep',2);add('moral',1)}if(/偷袭|背刺/.test(s)){add('control',1);add('moral',-1)}if(/十影|魔虚罗/.test(s)){add('essence',2)}if(/记录/.test(s)){add('control',1)}}
     if(kind==='result'){if(/五条胜|车轮战耗尽宿傩|主角代替五条，击退宿傩/.test(s)){add('rep',3);flag('宿傩败退')}else if(/宿傩胜|车轮战被宿傩击溃|主角代替五条，被宿傩重创/.test(s)){add('rep',-2);add('moral',-2);flag('宿傩压制')}else if(/抢十影成功/.test(s)){add('total',3);add('rep',2);flag('抢影成功')}else if(/抢十影失败|魔虚罗暴走/.test(s)){add('body',-2);add('moral',-2);flag('魔虚罗暴走')}else if(/两败|主角渔利/.test(s)){add('control',2);flag('两败俱伤')}else{add('essence',3);flag('主角渔利')}}
   }
