@@ -1364,6 +1364,11 @@ os.makedirs(UP_DIR, exist_ok=True)
 @app.route("/upload", methods=["POST"])
 def api_upload():
     p = request.get_json() or {}
+    cu = _cur_user(p.get("token"))
+    if not cu:
+        return jsonify({"ok": False, "msg": "请先登录后再上传图片"})
+    if (_load(USER_FILE, {}).get(cu) or {}).get("banned"):
+        return jsonify({"ok": False, "msg": "你已被拉黑，无法上传图片"})
     data = str(p.get("data") or "")
     if not data or len(data) > 4 * 1024 * 1024:
         return jsonify({"ok": False, "msg": "图片数据无效或过大"}), 400
@@ -4608,7 +4613,7 @@ NOTIFY_FILE = os.path.join(_BASE, "notifications.json")
 NOTICE_FILE = os.path.join(_BASE, "notices.json")
 STAT_FILE = os.path.join(_BASE, "stats.json")
 ROOT = "wtz"
-_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/post_poll_vote", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_banned_clear", "/admin_scan", "/guest_report", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/audio_up", "/video_up", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch", "/debate_add", "/debate_arg", "/debate_resolve", "/debate_unresolve", "/debate_rejudge", "/debate_bet", "/debate_ai_spar", "/rank_award")
+_WRITE_PATHS = ("/guest_add", "/guest_del", "/guest_like", "/guest_resonate", "/change_pwd", "/notice_add", "/notice_del", "/hit", "/checkin", "/post_add", "/post_del", "/post_poll_vote", "/comment_add", "/pm_send", "/register", "/login", "/logout", "/admin_set_admin", "/admin_del_user", "/admin_ban_user", "/admin_del_session", "/admin_del_comment", "/admin_punish", "/admin_banned_clear", "/admin_scan", "/guest_report", "/risk_words_add", "/risk_words_del", "/changelog_add", "/changelog_del", "/score_add", "/upload", "/audio_up", "/video_up", "/notify_read", "/profile_edit", "/pref_set", "/sec_set", "/recover_q", "/recover", "/puzzle_answer", "/buy", "/equip", "/frag_get", "/tfrag_catch", "/debate_add", "/debate_arg", "/debate_resolve", "/debate_unresolve", "/debate_rejudge", "/debate_bet", "/debate_ai_spar", "/rank_award")
 
 @app.before_request
 def _rate():
