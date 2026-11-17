@@ -114,7 +114,7 @@ function localApi(path,p){
     if(!post) return {ok:false,msg:'论战帖不存在'};
     var args=post.args||[],isHost=post.user===u.username,side='challenger';
     if(post.status==='closed') return {ok:false,msg:'该论战已封盘'};
-    if(args.length>=6||post.status==='waiting') return {ok:false,msg:'本场 3 回合已满，等待裁定'};
+    if(post.status==='closed'||post.winner) return {ok:false,msg:'本场已判定终局'};
     var chN=args.filter(function(a){return (a.side||'challenger')==='challenger'}).length;
     var hostN=args.length-chN;
     if(isHost){
@@ -122,7 +122,6 @@ function localApi(path,p){
       char=post.char;side='host';
     }else{
       if(post.challenger&&post.challenger!==u.username) return {ok:false,msg:'本场已由 '+post.challenger+' 应战，无法再加入'};
-      if(chN>=3) return {ok:false,msg:'本场 3 回合已打满'};
       if(chN>hostN) return {ok:false,msg:'等待发布者反击后再发言'};
       if(!char) return {ok:false,msg:'请选择你的角色'};
       if([post.char,post.target].indexOf(char)<0) return {ok:false,msg:'只能选择帖主指定的角色或对手'};
@@ -133,11 +132,11 @@ function localApi(path,p){
     d.users[u.username]=d.users[u.username]||{exp:0,wins:0,losses:0};
     post.args=args;
     post.args.push({id:aid,user:u.username,char:char,text:text,time:now(),side:side,result:'',host_delta:null,ch_delta:null,resolved_at:'',ai:{}});
-    if(post.args.length>=6) post.status='waiting';
     lsave(d);
     return {ok:true,msg:(side==='host'?'反击':'发言')+'已加入论战 · 本机暂存',id:aid,side:side,_local:true};
   }
   if(path==='/debate_resolve'){
+    return {ok:false,msg:'论战胜负由 AI 自动裁定；本机离线模式不结算',_local:true};
     if(!u||!u.is_admin) return {ok:false,msg:'只有管理员可以定胜负'};
     var post2=null,arg=null;
     for(var j=0;j<d.posts.length;j++) if(d.posts[j].id===p.pid) post2=d.posts[j];
@@ -301,41 +300,28 @@ function postHTML(p,u){
   var isHost=!!(u&&p.user===u.username);
   var admin=!!(u&&u.is_admin);
   var canDel=!!(u&&(isHost||admin));
-  var ended=p.status==='closed'||((p.args||[]).length>0&&(p.args||[]).every(function(a){return !!a.result}));
+  var ended=p.status==='closed'||!!p.winner;
   var pending=0,sh=0,sc=0;
   (p.args||[]).forEach(function(a){
-    if(!a.result)pending++;
+    if(!a.result&&!a.ai)pending++;
     if(a.result==='host')sh++;
     else if(a.result==='challenger')sc++;
   });
   if(typeof p.score_host==='number')sh=p.score_host;
   if(typeof p.score_ch==='number')sc=p.score_ch;
   var winner=p.winner||'';
-  if(ended&&!winner){
-    if(sh>sc)winner='host';else if(sc>sh)winner='challenger';else winner=(sh||sc)?'draw':'void';
-  }
   var winTxt=winner==='host'?'发布者胜':(winner==='challenger'?'挑战者胜':(winner==='draw'?'平局':(winner==='void'?'无效':'')));
-  var scoreTxt='H '+sh+' : '+sc;
+  var scoreTxt='AI '+sh+' : '+sc;
   var argsLen=(p.args||[]).length;
-  var rounds=p.rounds||3,maxArgs=p.max_args||6;
-  var roundNow=Math.min(rounds,Math.floor(argsLen/2)+1);
-  var waiting=p.status==='waiting'||argsLen>=maxArgs;
   var aiSpar=!!p.ai_spar;
+  var verdict=p.ai_verdict||{};
   var args='',hasChallengerArg=false;
   (p.args||[]).forEach(function(a){
     if((a.side||'challenger')==='challenger')hasChallengerArg=true;
     var opp=a.side==='host'?chCharBefore(p,a):(a.char||'');
     args+=argHTML(a,p.char,opp);
-    if(!a.result&&admin){
-      args+='<div class="db-resolve" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">'+
-        '<span>裁定 / ADMIN</span>'+
-        '<button type="button" data-win="host" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">发布者胜</button>'+
-        '<button type="button" data-win="challenger" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">挑战者胜</button>'+
-        '<button type="button" data-win="draw" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">平局</button>'+
-        '<button type="button" data-win="void" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">无效</button></div>';
-    }else if(a.result&&admin){
-      args+='<div class="db-resolve done"><span>已裁定</span>'+
-        '<button type="button" data-unresolve="1" data-pid="'+esc(p.id)+'" data-aid="'+esc(a.id)+'">撤销裁定</button></div>';
+    if(!a.result&&!a.ai){
+      args+='<div class="db-aiwait"><span>MACHINE VERDICT</span><b>'+(a.ai_state==='error'?'AI 暂不可用，自动重试中':'AI 研判中…')+'</b></div>';
     }
   });
   var reply='';
@@ -347,15 +333,13 @@ function postHTML(p,u){
     pick+='<option value="'+esc(x)+'">'+esc(x)+'</option>';
   });
   if(ended){
-    reply='<div class="db-reply-note">本场已裁定，帖子已移入历史。</div>';
-  }else if(waiting){
-    reply='<div class="db-reply-note">本场 '+rounds+' 回合已满，等待管理员裁定。</div>';
+    reply='<div class="db-reply-note">'+(winTxt?('AI 判定：'+winTxt+'。'):'')+'帖子已移入历史。</div>';
   }else if(u&&isHost){
     if(aiSpar&&!hasChallengerArg){
       reply='<div class="db-reply-note">AI 陪练正在组织开场发言…</div>';
     }else if(hasChallengerArg){
       reply='<div class="db-reply db-reply-host"><input type="hidden" data-arg-char="1" value="'+esc(p.char)+'"><input data-arg-input="1" maxlength="300" placeholder="以「'+esc(p.char)+'」反击…"><button type="button" data-reply="'+esc(p.id)+'">反击</button></div>'+
-        '<div class="db-reply-note">回合制：挑战者先发言、你反击，交替进行，共 '+rounds+' 回合；满 '+maxArgs+' 条自动进入待裁定。</div>';
+        '<div class="db-reply-note">不限回合：双方交替发言，AI 判定一方已无翻盘可能时自动收场。</div>';
     }else{
       reply='<div class="db-reply-note">等待挑战者发言后再反击。没人应战可以让 AI 当陪练。</div>'+
         (state.local?'':'<div class="db-spar"><button type="button" data-spar="'+esc(p.id)+'">召唤 AI 陪练</button><span>以「'+esc(p.target)+'」身份接战，不计经验、不开放竞猜</span></div>');
@@ -367,7 +351,7 @@ function postHTML(p,u){
       reply='<div class="db-reply-note">本场已由「'+esc(p.challenger)+'」应战，其他账号无法再加入。</div>';
     }else{
       reply='<div class="db-reply"><select data-arg-char="1">'+pick+'</select><input data-arg-input="1" maxlength="300" placeholder="发表你的言论，和发布者论战…"><button type="button" data-reply="'+esc(p.id)+'">发言</button></div>'+
-        '<div class="db-reply-note">一场论战只允许一位挑战者；挑战者先发言，发布者反击，交替 '+rounds+' 回合，共 '+maxArgs+' 条。</div>';
+        '<div class="db-reply-note">一场论战只允许一位挑战者；挑战者先发言，之后双方交替，不限回合，AI 判定终局后自动结算。</div>';
     }
   }else{
     reply='<div class="db-reply-note">登录后可以发言，和发布者论战。</div>';
@@ -375,13 +359,13 @@ function postHTML(p,u){
   var bet=betHTML(p,u,ended);
   return '<article class="db-post" data-post="'+esc(p.id)+'">'+
     '<div class="db-post-h"><span class="db-ava">◆</span><div class="db-who"><b>'+esc(p.host?p.host.name:p.user)+'</b><em>'+esc(p.host?p.host.rank:'')+' · EXP '+esc(p.host?p.host.exp:0)+' · 胜 '+esc(p.host?p.host.wins:0)+' / 负 '+esc(p.host?p.host.losses:0)+'</em></div>'+
-    '<span class="db-status '+(ended?'':(waiting?'wait':'open'))+'">'+(ended?'CLOSED':(waiting?'WAIT':'OPEN'))+'</span>'+
+    '<span class="db-status '+(ended?'':'open')+'">'+(ended?'CLOSED':'OPEN')+'</span>'+
     (canDel?'<button type="button" class="db-del" data-del="'+esc(p.id)+'">删除</button>':'')+'</div>'+
     '<div class="db-match"><b>「'+esc(p.char)+'」</b><i>CHALLENGE</i><span>挑战「'+esc(p.target)+'」</span>'+(aiSpar?'<em class="db-spar-tag">AI 陪练</em>':'')+'</div>'+
     (p.body?'<p class="db-body">'+esc(p.body)+'</p>':'')+
-    '<div class="db-meta">'+esc(p.time)+' · 比分 '+scoreTxt+' · 回合 '+roundNow+'/'+rounds+' · 发言 '+argsLen+'/'+maxArgs+(pending?' · '+pending+' 条待裁定':'')+
-      (ended?(winTxt?' · '+winTxt+' · 已结算':' · 已封盘'):(waiting?' · 回合已满，待裁定':''))+'</div>'+
-    '<div class="db-args"><div class="db-args-h"><b>ARGUMENTS / '+argsLen+'</b><span>'+(waiting?'3 回合已满 · 等待管理员':(pending?'等待管理员':'已全部裁定'))+'</span></div>'+
+    '<div class="db-meta">'+esc(p.time)+' · '+scoreTxt+' · 发言 '+argsLen+(pending?' · '+pending+' 条待 AI 研判':'')+
+      (ended?(winTxt?' · '+winTxt+' · 已结算':' · 已封盘'):' · AI 持续研判，未到终局')+'</div>'+
+    '<div class="db-args"><div class="db-args-h"><b>ARGUMENTS / '+argsLen+'</b><span>'+(ended?'AI 已判定终局':(pending?'AI 研判中':'AI 已研判，继续论战'))+'</span></div>'+
     (args||'<div class="db-reply-note">还没有人发言。登录后成为第一个挑战者。</div>')+bet+reply+'</div></article>';
 }
 function renderList(){
@@ -391,7 +375,7 @@ function renderList(){
   if(!state.posts.length){box.innerHTML='<div class="db-empty">还没有论战。登录后发起第一场。</div>';if(cnt)cnt.textContent='0 帖';return}
   var active=[],history=[];
   state.posts.forEach(function(p){
-    var ended=p.status==='closed'||((p.args||[]).length>0&&(p.args||[]).every(function(a){return !!a.result}));
+    var ended=p.status==='closed'||!!p.winner;
     if(ended)history.push(p);else active.push(p);
   });
   var html=active.map(function(p){return postHTML(p,u)}).join('');
@@ -402,8 +386,8 @@ function renderList(){
   box.innerHTML=html||'<div class="db-empty">还没有论战。登录后发起第一场。</div>';
   if(cnt){
     var pending=0;
-    state.posts.forEach(function(p){(p.args||[]).forEach(function(a){if(!a.result)pending++})});
-    cnt.textContent=state.posts.length+' 帖 · '+(active.length)+' 进行中 · '+history.length+' 帖历史 · '+pending+' 条待裁定'+(state.local?' · 本机':'');
+    state.posts.forEach(function(p){(p.args||[]).forEach(function(a){if(!a.result&&!a.ai)pending++})});
+    cnt.textContent=state.posts.length+' 帖 · '+(active.length)+' 进行中 · '+history.length+' 帖历史 · '+pending+' 条待 AI 研判'+(state.local?' · 本机':'');
   }
 }
 function checkVerdicts(){
@@ -574,37 +558,6 @@ function removePost(pid,btn){
     say('删除失败：'+errText(err),false);
   });
 }
-var WIN_LABEL={host:'发布者胜',challenger:'挑战者胜',draw:'平局',void:'无效'};
-function resolve(pid,aid,win,btn){
-  var u=me();
-  if(!u||!u.is_admin){say('只有管理员可以定胜负',false);return}
-  if(state.local&&(win==='draw'||win==='void')){say('本机模式暂不支持平局/无效',false);return}
-  btn.disabled=true;btn.textContent='裁定中…';
-  callApi('/debate_resolve',{pid:pid,aid:aid,winner:win}).then(function(j){
-    btn.disabled=false;btn.textContent=WIN_LABEL[win]||'裁定';
-    if(!j.ok){say(j.msg||'裁定失败',false);return}
-    say(j.msg||'胜负已记录',true);load();
-  }).catch(function(err){
-    btn.disabled=false;btn.textContent=WIN_LABEL[win]||'裁定';
-    say('裁定失败：'+errText(err),false);
-  });
-}
-
-function unresolve(pid,aid,btn){
-  var u=me();
-  if(!u||!u.is_admin){say('只有管理员可以撤销裁定',false);return}
-  if(state.local){say('本机模式不支持撤销裁定',false);return}
-  if(!window.confirm('撤销这条裁定？若本场已结算，经验与胜负会一并回滚。'))return;
-  btn.disabled=true;btn.textContent='撤销中…';
-  callApi('/debate_unresolve',{pid:pid,aid:aid}).then(function(j){
-    btn.disabled=false;btn.textContent='撤销裁定';
-    if(!j.ok){say(j.msg||'撤销失败',false);return}
-    say(j.msg||'已撤销',true);load();
-  }).catch(function(err){
-    btn.disabled=false;btn.textContent='撤销裁定';
-    say('撤销失败：'+errText(err),false);
-  });
-}
 function placeBet(pid,pick,btn){
   var u=me();
   if(!u){say('请先登录再下注',false);return}
@@ -649,10 +602,6 @@ function bind(){
       if(del){removePost(del.getAttribute('data-del'),del);return}
       var rb=e.target.closest('[data-reply]');
       if(rb){reply(rb.getAttribute('data-reply'),rb);return}
-      var win=e.target.closest('[data-win]');
-      if(win){resolve(win.getAttribute('data-pid'),win.getAttribute('data-aid'),win.getAttribute('data-win'),win);return}
-      var un=e.target.closest('[data-unresolve]');
-      if(un){unresolve(un.getAttribute('data-pid'),un.getAttribute('data-aid'),un);return}
       var bet=e.target.closest('[data-bet]');
       if(bet){placeBet(bet.getAttribute('data-pid'),bet.getAttribute('data-bet'),bet);return}
       var sp=e.target.closest('[data-spar]');
