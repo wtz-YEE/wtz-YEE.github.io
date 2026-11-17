@@ -1208,13 +1208,13 @@ function rankPost(path,data){
 function rankSync(){
   if(!rankToken())return;
   rankPost('/rank_get',{}).then(function(j){
-    if(j&&j.ok&&j.standing!=null){writeRank({exp:Math.max(0,+j.standing||0)});updateRankBadge()}
+    if(j&&j.ok&&j.standing!=null){writeRank({exp:Math.max(readRank().exp,+j.standing||0)});updateRankBadge()}
   }).catch(function(){});
 }
 function rankAwardCloud(kind){
   if(!S.runId)S.runId=Date.now();
   rankPost('/rank_award',{runId:String(S.runId),kind:String(kind||'run')}).then(function(j){
-    if(j&&j.ok&&j.standing!=null){writeRank({exp:Math.max(0,+j.standing||0)});updateRankBadge()}
+    if(j&&j.ok&&j.standing!=null){writeRank({exp:Math.max(readRank().exp,+j.standing||0)});updateRankBadge()}
   }).catch(function(){});
 }
 function grantRank(kind,n){
