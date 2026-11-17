@@ -46,7 +46,6 @@
 | `pages/opusmc/index.html` | OpusMC | 浏览器 MC 复刻（生存/创造/红石） |
 | `37web/` | Live2D 角色展示 | 可交互立绘（表情/鼠标跟随） |
 | `404.html` | 404 | 黑白终端风自定义 404 |
-| `docs/泰拉肉鸽_游戏设计与实现文档.md` | 文档 | 肉鸽玩法设计与实现说明 |
 
 ## 核心功能
 
@@ -82,7 +81,7 @@
 - 成就系统：干各种事获得（20 基础 + 30 隐藏，UI 不可见）
 - 与作者对战：成就满 30 或 2048 彩蛋解锁，5 形态 boss 战（玩家攻击手段由作者技能演化）
 
-**服务端（_gb / _cloud）**
+**服务端（_cloud）**
 - Flask 单文件服务，端口 8701
 - 数据文件（JSON）：`users.json`（含会话、封禁）、`posts.json`、`guestbook.json`、`pm.json` 等
 - 接口：留言（/guests、/guests_new）、论坛（/post_get、/post_add）、登录注册、私聊、通知、成就、排行、版本 changelog、AI 中转（/noma_ai、/noma_ask）、风控关键词扫描
@@ -105,24 +104,21 @@
 # 1. 纯静态：直接双击 index.html 即可浏览（无云端功能）
 
 # 2. 完整功能（留言/论坛/私聊/诺玛 AI）：
-#    启动本地服务端
-D:\WTZ\prts\tools\启动留言服务.bat
-#    或手动：python D:\WTZ\prts\_gb\guestbook_server.py
+python D:\WTZ\prts\_cloud\guestbook_server.py
 #    页面自动读取 localStorage['gb_api_url'] 指向 http://127.0.0.1:8701
 
 # 3. 云端模式（多主机共享）：
-D:\WTZ\prts\tools\一键启动云端.bat   # 启动 cpolar 隧道 + 留言服务，自动把地址写入 cloud.txt
-#    部署多个主机时，在 ga() 配置多个隧道地址即可
+python D:\WTZ\prts\_cloud\start_services.py   # 启动 cpolar 隧道 + 留言服务，自动把地址写入 cloud.txt
 ```
 
-**管理员账号**：`wtz` / `1290wtzwtz`（可删用户、拉黑、上传风控关键词、查看用户列表）
+**管理员账号**：由部署者在本地 `_cloud/users.json` 中配置；仓库 README 不公开任何密码。
 
 ## 部署
 
-- **GitHub Pages**：`tools\自动上传.bat` 一键 commit + push → https://wtz-YEE.github.io/
+- **GitHub Pages**：提交并 `git push` 到 GitHub → https://wtz-YEE.github.io/
 - **云端服务**：cpolar 内网穿透（需先 `cpolar authtoken <令牌>`），隧道地址写入 `cloud.txt`
-- 服务端两份同步：`_gb\guestbook_server.py`（本地权威，gitignore）+ `_cloud\guestbook_server.py`（提交线上）
-- 改动服务端后：同步两份 → `py_compile` 校验 → 重启 8701 → 用 `_gb\_noma_test.py` 复测
+- 服务端以 `_cloud/guestbook_server.py` 为唯一线上版本
+- 改动服务端后：`py_compile` 校验 → 重启 8701 → 跑核心接口回归
 
 ## 目录结构
 
@@ -137,24 +133,21 @@ prts/
 ├── 404.html                                  # 404
 ├── manifest.json / sw.js / icon-*.png       # PWA
 ├── bgm.mp3 / cassel-badge.png               # 全局资源
-├── cloud.txt / cloud_fixing.txt             # 云端地址 / 维修旗标（前端与守护进程按仓库根读取）
-├── pages/                                   # 12 个子站
+├── cloud.txt                                # 云端地址（前端与守护进程按仓库根读取）
+├── pages/                                   # 子站页面
 │   ├── 守夜人论坛 / 卡塞尔学院官网 / 终端接口 / 机密终端
 │   ├── PRTS泰拉大典终端 / 莱茵生命终端 / 技能树 / 模组开发 / 解码器
+│   ├── 咒术轮盘 / SCP-914 精炼终端
 │   └── prts（档案室）/ guestwall / changelog
 ├── games/                                   # 游戏-01 ~ 08（每 4 个小游戏一组）
 ├── assets/                                  # 干员立绘等图片资源
 ├── mods/                                    # mod.jar
-├── scripts/                                 # 资源恢复 / 审计 / 迁移等一次性脚本
-├── tools/                                   # 启动脚本（.bat）+ 密钥/JSON 工具
-├── docs/                                    # 设计文档
-├── _gb/                                     # 本地服务端（gitignore）
-│   ├── guestbook_server.py                  # 权威服务端
-│   └── push_*.ps1 / patch_*.py / 数据 json
+├── 37web/                                   # Live2D 角色展示
 ├── _cloud/                                  # 云端部署包（可整包拷到任意主机）
-├── _backup/                                 # 版本备份（gitignore）
 └── README.md
 ```
+
+> 开发设计文档、一次性脚本和本地启动工具不放入公开仓库；需要时保留在本地工作区。
 
 ## 技术栈
 
