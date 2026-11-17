@@ -3974,8 +3974,7 @@ def _debate_ai_parse(txt):
     if hw + cw == 0:
         return None
     if hw + cw != 100:
-        hw = round((hw / (hw + cw)) * 100)
-        cw = 100 - hw
+        return None
     winner_field = str(x.get("winner") or "").strip().lower()
     loser_field = str(x.get("loser") or "").strip().lower()
     if winner_field and winner_field not in ("host", "challenger", "draw", "void"):

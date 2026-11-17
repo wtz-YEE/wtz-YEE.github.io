@@ -213,7 +213,7 @@ function renderMe(profile,u){
   rk.textContent=profile.rank||'论战小区';
   var ratio=profile.next_exp?Math.min(100,Math.max(0,Math.round((profile.progress/(profile.span||1))*100))):100;
   if(bar)bar.style.width=ratio+'%';
-  ex.textContent='经验 '+profile.exp+(profile.next_exp?' / '+profile.next_exp:' · 顶阶')+' · 胜 '+profile.wins+' / 负 '+profile.losses;
+  ex.textContent='经验 '+profile.exp+(profile.next_exp?' / '+profile.next_exp:' · 顶阶')+' · 胜 '+profile.wins+' / 负 '+profile.losses+(profile.karma!=null?' · 当日因果 '+profile.karma:'');
 }
 function renderLadder(pi){
   var list=$('dbLadder');if(!list)return;
