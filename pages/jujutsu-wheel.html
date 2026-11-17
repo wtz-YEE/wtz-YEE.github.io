@@ -259,7 +259,7 @@ repeating-linear-gradient(90deg,transparent 0 22px,#f3f3f3 22px 23px) border-box
       <div class="wheelmeta"><span id="wheelChapter">CHAPTER 01 / 穿越</span><b id="wheelType">WHEEL</b></div>
       <div class="leftchip" id="leftChip" hidden><span id="leftLabel">数量抽取</span><b id="leftNum">0</b></div>
       <div class="wheelwrap"><div class="pointer"></div><div class="wheelring"></div><canvas id="wheel"></canvas><div class="wcenter" id="wheelCenter">点击<br>旋转</div></div>
-      <div class="spinrow"><button class="spin" id="spinBtn">点击旋转</button><button class="ghost" id="autoBtn">自动抽完</button></div>
+      <div class="spinrow"><button class="spin" id="spinBtn">点击旋转</button><button class="ghost" id="rewriteBtn" style="display:none">改写（-2 债）</button><button class="ghost" id="autoBtn">自动抽完</button></div>
       <div class="result" id="result"><div class="rt">RESULT</div><div class="rv">等待命运</div><div class="rd">轮盘停下之前，一切都还不算数。</div></div>
     </div>
     <aside class="panel side"><div class="ph"><b>维度详情</b><span>DIM</span></div><div class="body"><div class="chapter" id="sideChapter">CURRENT DIMENSION</div><h4 id="sideTitle">本维度全部选项</h4><div class="optlist" id="optionList"></div><div class="memo" id="sideMemo">维度图鉴里能查看全部维度与选项。</div><div class="btnrow"><button class="smallbtn" id="libBtn">打开全部维度</button><button class="smallbtn" id="skipBtn">跳过此维度</button></div><div class="btnrow"><button class="mini" id="nextBtn" style="display:none">下一维度 →</button></div></div></aside>
@@ -314,16 +314,16 @@ repeating-linear-gradient(90deg,transparent 0 22px,#f3f3f3 22px 23px) border-box
 <dialog class="dialog" id="saveDialog"><div class="dlghead"><h3>抽取存档 / SAVES</h3><button id="closeSaves">关闭</button></div><div class="dlgbody"><div id="saveList" class="savegrid"></div></div></dialog>
 <script>
 var D={
-identity:["普通人","咒骸","咒术师","高层及普通人","咒灵","九相图类","完全体","受肉诞生（咒物）","诅咒师","灵界来客","天与咒缚","式神使","死灭回游玩家","咒物受肉","魂穿原著角色"],
+identity:["普通人","咒骸","咒术师","高层及普通人","咒灵","九相图类","咒灵·完全体","受肉诞生（咒物）","诅咒师","灵界来客","天与咒缚","式神使","死灭回游玩家","魂穿原著角色"],
 fear:["自然灾害类（风暴、雷霆）","人类社会现象（征服、阶级）","欲望诞生（繁殖、进食）","对负面感情（厌恶、恨意）","都市传说（裂口女、八尺大人）","对特定灾害（地震、火灾）","人类诞生（出生、死亡）","动植物相关（蟑螂、蛇）","对未来的恐惧（AI、末日）","时代印记（二战、泡沫经济）"],
 birth:["咒胎","受肉诞生（咒物）","完全体","九相图类"],
 intel:["只会说同一句话","不会说话但存在复仇意愿","有正常逻辑能对话","高智商正常策划阴谋","正常人水平","和咒灵有壁","天才水平"],
-growth:["永无止境越久越强","超越五级","普通特级","特级五级","弱五级"],
+growth:["永无止境越久越强","超越特级","准特级","普通特级","四级"],
 time:["400年前","平安时代","灵界","怀玉","0卷时期","剧情开始时期","涩谷事变时期","死灭回游时期","新宿决战时期","68年后外传","江户时代","明治维新时期","大正时代","现代日常"],
 place:["日本","非洲","欧洲","北美洲","南极洲","澳洲","中国","其他／不在地球","灵界","西姆利亚星·自动刷新在南极洲","南美洲","美国","加拿大","墨西哥","巴西","阿根廷","智利","秘鲁","英国","法国","德国","意大利","西班牙","葡萄牙","荷兰","瑞士","瑞典","挪威","芬兰","波兰","俄罗斯","土耳其","埃及","南非","尼日利亚","印度","巴基斯坦","泰国","越南","菲律宾","印度尼西亚","马来西亚","新加坡","韩国","蒙古","沙特阿拉伯","伊朗","以色列","新西兰","冰岛","格陵兰"],
 gender:["男","女","不男不女","武装直升机"],
 face:["EX（咒术魅魔）","SSS（倾国倾城）","SS（沉鱼落雁）","S（国色天香）","A（花容月貌）","B（眉清目秀）","C（其貌不扬）","D（尖嘴猴腮）","E（面目可憎）","F（秽土转生）"],
-moral:["EX（超凡入圣）","SSS（高风亮节）","SS（圣人般的存在）","S（乐善好施）","A（安分守己）","B（见利忘义）","C（见利忘义·原画面重复）","D（作恶多端）","E（丧心病狂）"],
+moral:["EX（超凡入圣）","SSS（高风亮节）","SS（圣人般的存在）","S（乐善好施）","A（安分守己）","B（见利忘义）","C（见风使舵）","D（作恶多端）","E（丧心病狂）"],
 age:["刚出生的婴儿","6岁小孩子","11岁小学生","14岁初中生","16岁未成年","刚满18岁","24大好青年","30壮年巅峰期","40岁中年人","55年过半百","66老年人","75古稀之年","88耄耋之年"],
 hair:["银色","橙色","深褐色","红色","金色","灰白色","紫色","酒红色","粉色","白色","黑色","棕色","蓝色","绿色","茶棕色","灰色"],
 eye:["紫色","银色","蓝色","橙色","黑色","茶棕色","灰色","绿色","红色","盲人（看不见）"],
@@ -389,24 +389,26 @@ originTechDesc:{
 },
 
 energy:["EX（伪无限）","SS（乙骨）","S（五条）","A（特级）","B（一级）","C（二级）","D（三级）","E（四级）","F（渣中渣）","EX ×3（伪无限×3）"],
-control:["SS（宿傩）","SSS（止鸭六眼）","EX（超六眼）","S（特等）","A（一级）","B（二级）","C（三级）","D（四级）","E（弱四级）","F（基本不会操纵）"],
+control:["SS（宿傩）","SSS（六眼）","EX（超六眼）","S（特等）","A（一级）","B（二级）","C（三级）","D（四级）","E（弱四级）","F（基本不会操纵）"],
 taijutsu:["EX（两只手能打四手宿傩）","SSS（平手宿傩）","SS（五条）","S（特等）","A（一级）","B（二级）","C（三级）","D（四级）","E（普通上班族）","E-（两只手都打不过普通人）"],
 body:["EX（五宿咒力强化后水平）","SSS（天与暴君）","SS（入学虎）","S（普通人极限）","A（顶尖运动员）","B（体育生）","C（正常人）","D（体弱多病）","E（残疾）"],
 eff:["EX（使出六倍效果）","SSS（比翼六眼）","SS（宿傩）","S（特等）","A（一级）","B（二级）","C（三级）","D（四级）","E（漏气水平）","F（漏一半）"],
 talent:["SSS（五条·宿傩）","SS（乙骨）","S（特等）","A（一般一级术师）","B（一般二级术师）","C（一般三级术师）","D（普通人）","E（是否开外挂都不好说）"],
 advCount:["1","2","3","4","5","6","7"],
 advList:["领域展延","咒具制作","术式对象扩张","领域展开","简易领域","普通咒术（咒力弹／黑闪）","黑闪","正拳","束缚契约","极之番","反转术式","术式反转","反转术式外放","咒骸制作","超级结界术（天元）","黑闪（68虎水平）","帐","咒力强化","落花之情","术式公开","领域展延·改","黑闪·连击","结界术·帐","反转术式·治愈","咒力输出","束缚·自我","简易领域·改","咒具使·简易领域"],
-domainType:["未完成","开放式","开放式自带自由切换","封闭式"],
+domainType:["未完成","开放式","封闭式"],
 domainFxCount:["1","2","3"],
-domainFx:["必中","自动攻击（宿傩）","增幅自身类（秤金次）","增幅咒术类（乙骨）","打击灵魂类（虎杖）","强控类（五条）","规则类（日车）","开放封闭自由切换","领域内咒力压制","领域内术式复制","领域内时间延缓","领域内空间封闭","领域内治疗反转","领域内即死判定","领域内束缚强化","领域内术式公开","领域内黑闪增幅","领域内式神强化","领域内术式对象扩张"],
+domainFx:["必中","自动攻击（宿傩）","增幅自身类（秤金次）","增幅咒术类（乙骨）","打击灵魂类（虎杖）","强控类（五条）","规则类（日车）","领域内咒力压制","领域内术式复制","领域内时间延缓","领域内空间封闭","领域内治疗反转","领域内即死判定","领域内束缚强化","领域内术式公开","领域内黑闪增幅","领域内式神强化","领域内术式对象扩张"],
 corpseCount:["1","2","3","4"],
 corpseShape:["人形","动物","其他","一般咒灵","幽体"],
 corpsePower:["特级","一级","二级","三级","四级","不入评级"],
 toolCount:["1","2","3","4","6"],
 toolType:["刀","戒指","其他功能类（狱门疆）","装饰品类","扇子","刀+鞘","苦无","枪","镜子","钩","弩","锁","项链","斧","刀+盾","锤","绳","双截棍","特殊咒具","雨衣","鞭","棍","剑","弓","钺","钗"],
+toolGrade:["特级","一级","二级","三级","四级","不入评级"],
 toolEffect:["反弹效果（天逆鉾）","没有效果，纯武器","封印效果（狱门疆）","飞行（飞天）","功能性","力量增幅（游云）","特效（无法不借）","释放咒术（神式解）","储存伤害后释放（龙骨）","打击灵魂","治疗效果","无限延长（万里锁）"],
 special:["是","否"],
-grade:["特级","特别一级","不入评级","四级","三级","二级","一级"],
+specialTalent:["六眼","天与咒缚·肉体强化","咒力操作天赋","黑闪直觉","领域构建天才","束缚契约专家","术式解析","异常咒力储量","灵魂感知","咒具亲和"],
+grade:["特级","准一级","不入评级","四级","三级","二级","一级"],
 go400:["是","否"],
 event400Count:["1","2","3","4","5","6"],
 event400:["遇见十影","遇见雷神·鹿紫云一","遇见石流云","遇见宿傩","遇见六眼","遇见苍一","学到／领悟天元级结界术"],
@@ -444,7 +446,7 @@ rep68:["EX（神话圣人）","SSS（近乎神圣）","SS（圣人般的存在�
 fightMoveCount:["1","2","3（单项SSS+1）","4（双项SSS+1）","5（三项SSS+1）","6（三项SSS+1）"],
 sukunaMoves:["领域展开·伏魔御厨子！（胜率+30）","召唤·嵌合兽（胜率+17）","召唤·魔虚罗（胜率+25）","黑闪1（再抽2次）","反转·修复（胜率+13）","解（胜率+9）","捌（胜率+15）","灶·开！（胜率+21）","射击（胜率+7）","抓（胜率+49）","杜·开！（胜率+2）","龙·隐（胜率+20）","黑闪（再抽2次）"],
 gojoMoves:["领域展开·无量空处！（胜率+30）","无下限·极之番！（胜率+40·给填概率上升）","虚式·茈（胜率+24）","无下限·瞬移（胜率+13）","术式反转·赫（胜率+20）","术式顺转·苍（胜率+14）","黑闪1（再抽2次）","射击·苍拳（胜率+11）","黑闪！（再抽2次）","黑闪·连击（再抽2次）","反转·修复（胜率+12）","无限制·芯！（胜率+35）"],
-mcMoves:["领域展开·封闭式！（胜率+25）","咒骸·特级（胜率+18）","咒灵·修复（胜率+12）","术式效果·攻击（胜率+14）","术式效果·辅助（胜率+11）","射击·咒具戒指（胜率+10）","领域展开·开放封闭自由切换！（胜率+35）","黑闪1（再抽2次）","黑闪·连击1（再抽1次，本回合胜率+50%）","2次（再抽2次）"],
+mcMoves:["领域展开·封闭式！（胜率+25）","咒骸·特级（胜率+18）","咒灵·修复（胜率+12）","术式效果·攻击（胜率+14）","术式效果·辅助（胜率+11）","射击·咒具戒指（胜率+10）","领域展开·开放式！（胜率+35）","黑闪1（再抽2次）","黑闪·连击1（再抽1次，本回合胜率+50%）","2次（再抽2次）"],
 domainWinner:["五条","宿傩","主角","不分胜负"],
 domainResult:["本回合领域胜率翻倍，对手领域胜率减半"],
 battleWinner:["五条胜","宿傩胜","主角胜"],
@@ -468,14 +470,13 @@ identity:{
 "高层及普通人":["高层庇护","被高层利用","普通人被卷入","继承高层权限"],
 "咒灵":["诞生即被高专标记","诞生即被宿傩注意","诞生即被羂索观察","无人知晓"],
 "九相图类":["九相图血脉觉醒","被当成失败品","逃离九相图","吞噬兄弟"],
-"完全体":["完全体降世","被封印","自行解封","被当成神明"],
+"咒灵·完全体":["完全体降世","被封印","自行解封","被当成神明"],
 "受肉诞生（咒物）":["受肉成功","受肉排斥","吞噬宿主","与宿主共存"],
 "诅咒师":["独立行动","黑市接单","被高专通缉","伪装成高专"],
 "灵界来客":["借尸还魂","以灵魂形态降临","被灵界规则束缚","吞噬灵体"],
-"天与咒缚":["以身体换咒力","以咒力换身体","双重束缚","被高专研究"],
+"天与咒缚":["以咒力换肉体","以咒力换感官","双重束缚","被高专研究"],
 "式神使":["继承家传式神","式神暴走","与式神共生","夺取他人式神"],
 "死灭回游玩家":["被强制参加","主动猎杀","寻找规则漏洞","结盟"],
-"咒物受肉":["受肉成功","吞噬宿主","被咒物反噬","与宿主共存"],
 "魂穿原著角色":["魂穿五条悟","魂穿夏油杰","魂穿虎杖悠仁","魂穿乙骨忧太"]
 },
 curse:["以恐惧为食","以咒力为食","以人类为食","不靠进食"],
@@ -483,7 +484,7 @@ era:{
 "400年前":["与宿傩同期","与天元同期","与五条家先祖同期","独自发育"],
 "平安时代":["成为源氏咒术师","加入藤原氏","隐居山林","刺杀天皇"],
 "灵界":["灵界法则","与死者交易","吞噬灵魂","借尸还魂"],
-"怀玉":["见证五条悟","与星浆体事件擦肩","被羂索招募","保护星浆体"],
+"怀玉":["见证五条悟","与星浆体事件擦肩","被盘星教招募","保护星浆体"],
 "0卷时期":["里香事件旁观","与乙骨交手","夺走咒物","加入高专"],
 "剧情开始时期":["虎杖入学","高专任务","旁观","提前截胡宿傩手指"],
 "涩谷事变时期":["被卷入封锁","与真人接触","营救五条","趁乱夺物"],
@@ -563,7 +564,7 @@ moral:{
 "S":["乐善好施","被民众记住","被利用","保持距离"],
 "A":["安分守己","不主动站队","被忽视","随波逐流"],
 "B":["见利忘义","黑市交易","被高专利用","反咬"],
-"C":["见利忘义","骑墙","被双方利用","自保"],
+"C":["见风使舵","骑墙","被双方利用","自保"],
 "D":["作恶多端","被通缉","被宿傩欣赏","建立恐怖"],
 "E":["丧心病狂","屠杀","被羂索利用","成为灾厄"]
 },
@@ -571,7 +572,6 @@ tech:["术式互相克制","术式互相增幅","术式暴走","只保留一个�
 domain:{
 "未完成":["领域随时崩溃","领域只开一半","领域反噬","强行完成"],
 "开放式":["领域没有边界","领域可被入侵","领域扩张","领域封锁"],
-"开放式自带自由切换":["自由切换失控","双领域叠加","领域消耗翻倍","领域被针对"],
 "封闭式":["领域消耗剧增","领域可被击破","领域内规则反噬","领域内绝对命中"]
 },
 tool:["咒具反噬","咒具认主","咒具被夺","咒具组合"],
@@ -585,12 +585,12 @@ battleAfter:["收编高专","清洗残党","重建秩序","离开日本"],
 ending:["留下传说","被遗忘","被追杀","成为新秩序"]
 };
 var EV={
-yuhito:{
-role:["护送天内理子","与五条、夏油同行","替羂索盯梢","阻拦伏黑甚尔","远远旁观"],
+star:{
+role:["护送天内理子","与五条、夏油同行","替盘星教盯梢","阻拦伏黑甚尔","远远旁观"],
 act:{
 "护送天内理子":["带她离开东京","藏进高专结界","交给盘星教换报酬","正面迎战伏黑甚尔"],
 "与五条、夏油同行":["陪五条去冲绳","守星浆体住所","追查甚尔行踪","和夏油一起断后"],
-"替羂索盯梢":["把情报卖给羂索","假意保护、实则放行","反咬羂索","双面传信"],
+"替盘星教盯梢":["把情报卖给盘星教","假意保护、实则放行","反咬盘星教","双面传信"],
 "阻拦伏黑甚尔":["提前设伏","正面交手","用咒具换命","放他过去"],
 "远远旁观":["记录全过程","救下受伤术师","趁乱夺咒具","立即离开"]
 },
@@ -668,15 +668,28 @@ function collect(o){var a=[];for(var k in o)a=a.concat(o[k]);return a}
 function groupFace(s){s=String(s||'');if(/^EX/.test(s))return 'EX';if(/^SSS/.test(s))return 'SSS';if(/^SS/.test(s))return 'SS';if(/^S/.test(s))return 'S';if(/^[AB]/.test(s))return 'AB';return 'CDEF'}
 function groupMoral(s){s=String(s||'');if(/^EX/.test(s))return 'EX';if(/^SSS/.test(s))return 'SSS';if(/^SS/.test(s))return 'SS';if(/^S/.test(s))return 'S';if(/^A/.test(s))return 'A';if(/^B/.test(s))return 'B';if(/^C/.test(s))return 'C';if(/^D/.test(s))return 'D';return 'E'}
 function st(key,label,ch,opts,extra){var o={key:key,label:label,ch:ch,opts:opts};if(extra){for(var k in extra)o[k]=extra[k]}return o}
-function curse(){return ["咒灵","九相图类","完全体","受肉诞生（咒物）"].indexOf(S.vals.identity)>=0}
+var CHOICE_KEYS={identity:1,time:1,faction:1,shinjuku_tactic:1};
+function isChoiceStep(step){return !!(step&&CHOICE_KEYS[step.key])}
+function choiceOptions(opts){
+  var a=(opts||[]).slice();
+  if(a.length<=3)return a;
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}
+  return a.slice(0,3);
+}
+function curse(){return ["咒灵","九相图类","咒灵·完全体","受肉诞生（咒物）"].indexOf(S.vals.identity)>=0}
 function advPool(){var a=D.advList.slice();if(curse())a=a.filter(function(x){return !/反转术式|术式反转/.test(x)});return a}
+function domainFxPool(){
+  var t=S.vals.domain_type||'',a=D.domainFx.slice();
+  if(t==='未完成')a=a.filter(function(x){return ['必中','领域内即死判定','领域内空间封闭','领域内时间延缓','领域内术式复制'].indexOf(x)<0});
+  return a;
+}
 var ERA_ORDER={"平安时代":0,"400年前":1,"江户时代":2,"明治维新时期":3,"大正时代":4,"怀玉":5,"0卷时期":6,"剧情开始时期":7,"涩谷事变时期":8,"死灭回游时期":9,"新宿决战时期":10,"现代日常":11,"68年后外传":12,"灵界":99};
 function eventOpen(e){var t=S.vals.time||'';var a=ERA_ORDER[t],b=ERA_ORDER[e];if(a==null||b==null)return false;return a<=b}
 function post68Open(){return S.vals.time==='68年后外传'||S.vals.live68==='是'}
 function hasAdv(x){return (S.adv||[]).some(function(v){return String(v).indexOf(x)>=0})}
 function bondTargets(){
-  var a=[];
-  if(S.vals.yuhito_role)a=a.concat(['天内理子','五条悟','夏油杰']);
+  var a=['钉崎野蔷薇','禅院真希','狗卷棘','胖达','七海建人','东堂葵','伏黑甚尔'];
+  if(S.vals.star_role)a=a.concat(['天内理子','五条悟','夏油杰']);
   if(S.vals.hyakki==='是（是要干嘛？）')a=a.concat(['乙骨忧太','祈本里香','夏油杰']);
   if(S.vals.main_event==='是（要干嘛？）')a=a.concat(['虎杖悠仁','伏黑惠','五条悟']);
   if(S.vals.shibuya==='是')a=a.concat(['五条悟','伏黑惠','真人','羂索']);
@@ -753,13 +766,14 @@ st("corpse_count","咒骸数量","能力 / 咒骸",D.corpseCount,{when:function(
 st("tool_count","咒具数量","能力 / 咒具",D.toolCount,{when:function(){return hasAdv('咒具制作')}}),
 st("tool_branch","咒具与主人的关系","分支 / 咒具",BCH.tool,{when:function(){return S.vals.tool_count&&S.vals.tool_count!=='0'},branchKey:'tool'}),
 st("special_talent","是否有特殊天赋","能力 / 判定",D.special),
+st("special_talent_pick","特殊天赋的具体内容","能力 / 判定",D.specialTalent,{when:function(){return S.vals.special_talent==="是"}}),
 st("grade","等级评定","身份 / 结算",D.grade),
 st("grade_branch","等级带来的责任","分支 / 等级",BCH.grade,{branchKey:'grade'}),
 st("go400","400年前·是否前往日本","时间线 / 400年前",D.go400,{when:function(){return S.vals.time==="400年前"}}),
 st("event400_count","400年前·遇见事件数","时间线 / 400年前",D.event400Count,{when:function(){return S.vals.time==="400年前"&&S.vals.go400==="是"}}),
 st("time_growth","时间成长·到现代·极高上限","时间线 / 现代",D.timeGrowth,{when:function(){return S.vals.time==="400年前"}}),
-st("modern_full","现代·是否成长为完全体","时间线 / 现代",D.modernFull,{when:function(){return curse()&&S.vals.birth==="咒胎"&&S.vals.identity!=="完全体"}}),
-st("full_growth","完全体·能力成长","时间线 / 现代",D.fullGrowth,{when:function(){return curse()&&S.vals.birth==="咒胎"&&S.vals.identity!=="完全体"&&S.vals.modern_full==="是"}}),
+st("modern_full","现代·是否成长为完全体","时间线 / 现代",D.modernFull,{when:function(){return curse()&&S.vals.birth==="咒胎"&&S.vals.identity!=="咒灵·完全体"}}),
+st("full_growth","完全体·能力成长","时间线 / 现代",D.fullGrowth,{when:function(){return curse()&&S.vals.birth==="咒胎"&&S.vals.identity!=="咒灵·完全体"&&S.vals.modern_full==="是"}}),
 st("modern_adv","现代·会哪个高级技巧","时间线 / 现代",function(){return advPool()}),
 st("faction","来到现代·阵营","时间线 / 阵营",D.faction),
 st("faction_branch","阵营带来的任务","分支 / 阵营",function(){var a=(BCH.faction[S.vals.faction]||[]).slice();if(S.flags['宿傩标记'])a.unshift('宿傩亲自招募');if(S.flags['高专记录'])a.unshift('高专下达密令');return a},{branchKey:'faction'}),
@@ -767,9 +781,9 @@ st("invite","特殊事件·羂索是否邀请主角加入","时间线 / 阵营",
 st("accept","羂索邀请·是否答应","时间线 / 阵营",D.accept,{when:function(){return S.vals.invite==="是"}}),
 st("hidden","是否参与怀玉时期事件","时间线 / 怀玉",D.hidden,{when:function(){return eventOpen('怀玉')&&S.vals.accept!=="是（转为羂索方）"}}),
 st("activity1","未参与事件·在干嘛","时间线 / 怀玉",D.activity,{when:function(){return S.vals.hidden&&S.vals.hidden!=="是（是要干嘛？）"}}),
-st("yuhito_role","怀玉·星浆体事件：你的立场","事件 / 怀玉",function(){return EV.yuhito.role},{when:function(){return S.vals.hidden==="是（是要干嘛？）"}}),
-st("yuhito_act","怀玉·关键行动","事件 / 怀玉",function(){return EV.yuhito.act[S.vals.yuhito_role]||[]},{when:function(){return S.vals.hidden==="是（是要干嘛？）"&&S.vals.yuhito_role}}),
-st("yuhito_result","怀玉·事件结果","事件 / 怀玉",function(){return EV.yuhito.result},{when:function(){return S.vals.hidden==="是（是要干嘛？）"&&S.vals.yuhito_role}}),
+st("star_role","怀玉·星浆体事件：你的立场","事件 / 怀玉",function(){return EV.star.role},{when:function(){return S.vals.hidden==="是（是要干嘛？）"}}),
+st("star_act","怀玉·关键行动","事件 / 怀玉",function(){return EV.star.act[S.vals.star_role]||[]},{when:function(){return S.vals.hidden==="是（是要干嘛？）"&&S.vals.star_role}}),
+st("star_result","怀玉·事件结果","事件 / 怀玉",function(){return EV.star.result},{when:function(){return S.vals.hidden==="是（是要干嘛？）"&&S.vals.star_role}}),
 st("hyakki","是否参与百鬼夜行·0卷","时间线 / 0卷",D.hyakki,{when:function(){return eventOpen('0卷时期')}}),
 st("activity2","未参与事件·在干嘛（0卷）","时间线 / 0卷",D.activity,{when:function(){return S.vals.hyakki&&S.vals.hyakki!=="是（是要干嘛？）"}}),
 st("zero_role","0卷·百鬼夜行：你的立场","事件 / 0卷",function(){return EV.zero.role},{when:function(){return S.vals.hyakki==="是（是要干嘛？）"}}),
@@ -826,16 +840,16 @@ st("fight68","68年后是否参与战斗","结局 / 68年后",D.fight68,{when:po
 st("rep68","68年后声望","结局 / 68年后",D.rep68,{when:post68Open})
 ];
 var LIB=[
-["穿越后的初始身份",D.identity],["由什么恐惧诞生的·咒灵",D.fear],["诞生时什么状态·咒灵",D.birth],["智力·咒灵",D.intel],["成长上限·咒灵",D.growth],["穿越后的时间点",D.time],["穿越后的地点",D.place],["穿越后的性别",D.gender],["穿越后的年龄",D.age],["性格",D.personality],["穿越后的颜值",D.face],["发色",D.hair],["瞳色",D.eye],["道德水平",D.moral],["爱好",D.hobby],["爱好对应的水平",collect(D.hobbyLevel)],["角色对主角的好感·对象",["天内理子","五条悟","夏油杰","乙骨忧太","祈本里香","虎杖悠仁","伏黑惠","真人","羂索","秤金次","日车宽见","鹿紫云一"]],["角色对主角的好感",D.bond],["主角对好感对象的看法",D.view],["生得术式判定",["有／无","咒灵固定2次"]],["术式来源",["自定义术式（75%）","原著术式（25%）"]],["原著术式池",D.originTech],["术式类型·自定义",D.techType],["术式风格·自定义",D.techStyle],["术式效果·自定义",D.techEffect],["术式咒力要求",D.techCost],["术式全方位威力",D.techPower],["咒力总量",D.energy],["咒力操纵",D.control],["体术水平",D.taijutsu],["基础体质",D.body],["咒力效率",D.eff],["天赋",D.talent],["高级技巧数量",D.advCount],["会哪个高级技巧",D.advList],["领域类型",D.domainType],["领域效果数量",D.domainFxCount],["领域效果",D.domainFx],["咒骸数量",D.corpseCount],["咒骸外形",D.corpseShape],["咒骸实力",D.corpsePower],["咒具数量",D.toolCount],["咒具类型",D.toolType],["咒具效果",D.toolEffect],["是否有特殊天赋",D.special],["等级评定",D.grade],["400年前·是否前往日本",D.go400],["400年前·遇见事件数",D.event400Count],["400年前·事件",D.event400],["遇见六眼·是否发生战斗",D.battleYesNo],["遇见鹿紫云一·是否使用幻兽琥珀",D.kashimoPhantom],["时间成长·到现代",D.timeGrowth],["现代·是否成长为完全体",D.modernFull],["完全体·能力成长",D.fullGrowth],["来到现代·阵营",D.faction],["羂索邀请",D.invite],["羂索邀请·是否答应",D.accept],["怀玉·是否参与",D.hidden],["0卷·是否参与",D.hyakki],["少年院·是否参与",D.mainEvent],["涩谷·是否参与",D.shibuya],["死灭回游·是否开启",D.cullingOpen],["死灭回游·是否参与",D.cullingJoin],["死灭回游·地点",D.cullingPlace],["死灭回游·对手数",D.cullingCount],["死灭回游·对手",D.cullingFoes],["咒骸制作成长",D.puppetGrowth],["领域展开累计次数",D.domainCount],["宿傩能否抢到十影",D.tenShadows],["决战阵营",D.finalFaction],["新宿决战·打法",D.shinjukuTactics],["是否插入五宿对决",D.insert],["初始胜率",D.winInitial],["出招数",D.fightMoveCount],["战斗盘·宿傩",D.sukunaMoves],["战斗盘·五条悟",D.gojoMoves],["战斗盘·主角",D.mcMoves],["领域对抗胜者",D.domainWinner],["领域对抗效果",D.domainResult],["战斗盘·胜负",D.battleWinner],["是否有人死亡",D.death],["伤势·宿傩",D.sukunaInjury],["魔虚罗是否存活",D.mahoragaAlive],["魔虚罗适应无下限",D.mahoragaAdapt],["魔虚罗适应主角术式",D.mahoragaAdapt],["伤势·主角",D.mcInjuryBattle],["主角成长",D.mcGrowthBattle],["主角咒骸是否存活",D.mcCorpseAlive],["伤势·五条",D.gojoInjuryBattle],["五条成长",D.gojoGrowthBattle],["再战高专",D.rematchHigh],["再战高专·少数不降",D.rematchFew],["咒灵主角胜·战后",D.afterCurse],["是否活到68年后",D.live68],["68年后·在哪里",D.where68],["68年后是否参与战斗",D.fight68],["68年后声望",D.rep68],
-["身份带来的因果",collect(BCH.identity)],["咒灵进食方式",BCH.curse],["时代带来的因果",collect(BCH.era)],["地点带来的势力与地形",collect(BCH.place)],["颜值带来的社会反应",collect(BCH.face)],["道德带来的立场",collect(BCH.moral)],["多术式副作用",BCH.tech],["领域代价与破绽",collect(BCH.domain)],["咒具与主人的关系",BCH.tool],["等级带来的责任",BCH.grade],["阵营任务",collect(BCH.faction)],["怀玉·立场",EV.yuhito.role],["怀玉·关键行动",collect(EV.yuhito.act)],["怀玉·结果",EV.yuhito.result],["0卷·立场",EV.zero.role],["0卷·关键行动",collect(EV.zero.act)],["0卷·结果",EV.zero.result],["少年院·立场",EV.school.role],["少年院·关键行动",collect(EV.school.act)],["少年院·结果",EV.school.result],["涩谷·立场",EV.shibuya.role],["涩谷·关键行动",collect(EV.shibuya.act)],["涩谷·结果",EV.shibuya.result],["死灭·角色",EV.culling.role],["死灭·关键行动",collect(EV.culling.act)],["死灭·结果",EV.culling.result],["新宿·立场",EV.shinjuku.role],["新宿·关键行动",collect(EV.shinjuku.act)],["新宿·结果",EV.shinjuku.result],["68年后·选择",EV.post68.role],["68年后·关键行动",collect(EV.post68.act)],["68年后·结果",EV.post68.result],["决战后的处置",BCH.battleAfter],["世界留下的东西",BCH.ending]
+["穿越后的初始身份",D.identity],["由什么恐惧诞生的·咒灵",D.fear],["诞生时什么状态·咒灵",D.birth],["智力·咒灵",D.intel],["成长上限·咒灵",D.growth],["穿越后的时间点",D.time],["穿越后的地点",D.place],["穿越后的性别",D.gender],["穿越后的年龄",D.age],["性格",D.personality],["穿越后的颜值",D.face],["发色",D.hair],["瞳色",D.eye],["道德水平",D.moral],["爱好",D.hobby],["爱好对应的水平",collect(D.hobbyLevel)],["角色对主角的好感·对象",["天内理子","五条悟","夏油杰","乙骨忧太","祈本里香","虎杖悠仁","伏黑惠","真人","羂索","秤金次","日车宽见","鹿紫云一","钉崎野蔷薇","禅院真希","狗卷棘","胖达","七海建人","东堂葵","伏黑甚尔"]],["角色对主角的好感",D.bond],["主角对好感对象的看法",D.view],["生得术式判定",["有／无","咒灵固定2次"]],["术式来源",["自定义术式（75%）","原著术式（25%）"]],["原著术式池",D.originTech],["术式类型·自定义",D.techType],["术式风格·自定义",D.techStyle],["术式效果·自定义",D.techEffect],["术式咒力要求",D.techCost],["术式全方位威力",D.techPower],["咒力总量",D.energy],["咒力操纵",D.control],["体术水平",D.taijutsu],["基础体质",D.body],["咒力效率",D.eff],["天赋",D.talent],["高级技巧数量",D.advCount],["会哪个高级技巧",D.advList],["领域类型",D.domainType],["领域效果数量",D.domainFxCount],["领域效果",D.domainFx],["咒骸数量",D.corpseCount],["咒骸外形",D.corpseShape],["咒骸实力",D.corpsePower],["咒具数量",D.toolCount],["咒具类型",D.toolType],["咒具分级",D.toolGrade],["咒具效果",D.toolEffect],["是否有特殊天赋",D.special],["特殊天赋的具体内容",D.specialTalent],["等级评定",D.grade],["400年前·是否前往日本",D.go400],["400年前·遇见事件数",D.event400Count],["400年前·事件",D.event400],["遇见六眼·是否发生战斗",D.battleYesNo],["遇见鹿紫云一·是否使用幻兽琥珀",D.kashimoPhantom],["时间成长·到现代",D.timeGrowth],["现代·是否成长为完全体",D.modernFull],["完全体·能力成长",D.fullGrowth],["来到现代·阵营",D.faction],["羂索邀请",D.invite],["羂索邀请·是否答应",D.accept],["怀玉·是否参与",D.hidden],["0卷·是否参与",D.hyakki],["少年院·是否参与",D.mainEvent],["涩谷·是否参与",D.shibuya],["死灭回游·是否开启",D.cullingOpen],["死灭回游·是否参与",D.cullingJoin],["死灭回游·地点",D.cullingPlace],["死灭回游·对手数",D.cullingCount],["死灭回游·对手",D.cullingFoes],["咒骸制作成长",D.puppetGrowth],["领域展开累计次数",D.domainCount],["宿傩能否抢到十影",D.tenShadows],["决战阵营",D.finalFaction],["新宿决战·打法",D.shinjukuTactics],["是否插入五宿对决",D.insert],["初始胜率",D.winInitial],["出招数",D.fightMoveCount],["战斗盘·宿傩",D.sukunaMoves],["战斗盘·五条悟",D.gojoMoves],["战斗盘·主角",D.mcMoves],["领域对抗胜者",D.domainWinner],["领域对抗效果",D.domainResult],["战斗盘·胜负",D.battleWinner],["是否有人死亡",D.death],["伤势·宿傩",D.sukunaInjury],["魔虚罗是否存活",D.mahoragaAlive],["魔虚罗适应无下限",D.mahoragaAdapt],["魔虚罗适应主角术式",D.mahoragaAdapt],["伤势·主角",D.mcInjuryBattle],["主角成长",D.mcGrowthBattle],["主角咒骸是否存活",D.mcCorpseAlive],["伤势·五条",D.gojoInjuryBattle],["五条成长",D.gojoGrowthBattle],["再战高专",D.rematchHigh],["再战高专·少数不降",D.rematchFew],["咒灵主角胜·战后",D.afterCurse],["是否活到68年后",D.live68],["68年后·在哪里",D.where68],["68年后是否参与战斗",D.fight68],["68年后声望",D.rep68],
+["身份带来的因果",collect(BCH.identity)],["咒灵进食方式",BCH.curse],["时代带来的因果",collect(BCH.era)],["地点带来的势力与地形",collect(BCH.place)],["颜值带来的社会反应",collect(BCH.face)],["道德带来的立场",collect(BCH.moral)],["多术式副作用",BCH.tech],["领域代价与破绽",collect(BCH.domain)],["咒具与主人的关系",BCH.tool],["等级带来的责任",BCH.grade],["阵营任务",collect(BCH.faction)],["怀玉·立场",EV.star.role],["怀玉·关键行动",collect(EV.star.act)],["怀玉·结果",EV.star.result],["0卷·立场",EV.zero.role],["0卷·关键行动",collect(EV.zero.act)],["0卷·结果",EV.zero.result],["少年院·立场",EV.school.role],["少年院·关键行动",collect(EV.school.act)],["少年院·结果",EV.school.result],["涩谷·立场",EV.shibuya.role],["涩谷·关键行动",collect(EV.shibuya.act)],["涩谷·结果",EV.shibuya.result],["死灭·角色",EV.culling.role],["死灭·关键行动",collect(EV.culling.act)],["死灭·结果",EV.culling.result],["新宿·立场",EV.shinjuku.role],["新宿·关键行动",collect(EV.shinjuku.act)],["新宿·结果",EV.shinjuku.result],["68年后·选择",EV.post68.role],["68年后·关键行动",collect(EV.post68.act)],["68年后·结果",EV.post68.result],["决战后的处置",BCH.battleAfter],["世界留下的东西",BCH.ending]
 ];
 
 var S={vals:{},hist:[],tech:[],adv:[],corpses:[],tools:[],events:[],domainFx:[],snaps:{},battleDone:false,postStarted:false,battle:null,debt:0,debtLog:[],bonus:0,mods:{},flags:{},branches:[],runId:0,generation:1,inherit:null,lineage:[],rankAwarded:{}};
-var Q=[],cur=null,currentOpts=[],picked=false,busy=false,mainRot=0,mainSel=-1,runToken=0;
+var Q=[],cur=null,currentOpts=[],picked=false,busy=false,mainRot=0,mainSel=-1,runToken=0,choiceMode=false;
 var viewWheel=document.getElementById('view-wheel'),viewBattle=document.getElementById('view-battle'),viewPanel=document.getElementById('view-panel');
 var wheel=document.getElementById('wheel'),wheelCtx=wheel.getContext('2d');
 var battlewheel=document.getElementById('battlewheel'),battleCtx=battlewheel.getContext('2d');
-var spinBtn=document.getElementById('spinBtn'),autoBtn=document.getElementById('autoBtn'),nextBtn=document.getElementById('nextBtn'),resultEl=document.getElementById('result');
+var spinBtn=document.getElementById('spinBtn'),autoBtn=document.getElementById('autoBtn'),nextBtn=document.getElementById('nextBtn'),resultEl=document.getElementById('result'),rewriteBtn=document.getElementById('rewriteBtn');
 var stageNo=document.getElementById('stageNo'),dimTitle=document.getElementById('dimTitle'),dimHint=document.getElementById('dimHint'),stageCount=document.getElementById('stageCount');
 var optionList=document.getElementById('optionList'),sideTitle=document.getElementById('sideTitle'),sideChapter=document.getElementById('sideChapter'),sideMemo=document.getElementById('sideMemo');
 var quickStats=document.getElementById('quickStats'),recentLog=document.getElementById('recentLog'),progressBar=document.getElementById('progressBar'),techDetail=document.getElementById('techDetail');
@@ -889,6 +903,16 @@ function isDead(){
   var v=S.vals||{};
   return v.injury==='死亡'||v.death==='是'||v.rematch_high==='负（死亡）'||(S.battle&&S.battle.mcDead);
 }
+function migrateVals(v){
+  v=(v&&typeof v==='object')?v:{};
+  if(v.yuhito_role!=null&&v.star_role==null)v.star_role=v.yuhito_role;
+  if(v.yuhito_act!=null&&v.star_act==null)v.star_act=v.yuhito_act;
+  if(v.yuhito_result!=null&&v.star_result==null)v.star_result=v.yuhito_result;
+  delete v.yuhito_role;delete v.yuhito_act;delete v.yuhito_result;
+  if(v.identity==='完全体')v.identity='咒灵·完全体';
+  if(v.identity==='咒物受肉')v.identity='受肉诞生（咒物）';
+  return v;
+}
 function start(opt){
   opt=(opt&&typeof opt==='object'&&opt.debt!==undefined)?opt:{};
   runToken++;Q=FLOW.map(function(x){return Object.assign({},x)});cur=null;picked=false;busy=false;techAiPending=false;clearTimeout(techAiTimer);
@@ -913,7 +937,7 @@ function renderSaves(){
 function loadSave(id){
   var x=readSaves().filter(function(a){return a.id===id})[0];if(!x)return;
   runToken++;Q=[];cur=null;picked=true;busy=false;B=null;
-  S={vals:JSON.parse(JSON.stringify(x.vals||{})),hist:JSON.parse(JSON.stringify(x.hist||[])),tech:JSON.parse(JSON.stringify(x.tech||[])),adv:JSON.parse(JSON.stringify(x.adv||[])),corpses:JSON.parse(JSON.stringify(x.corpses||[])),tools:JSON.parse(JSON.stringify(x.tools||[])),events:JSON.parse(JSON.stringify(x.events||[])),domainFx:JSON.parse(JSON.stringify(x.domainFx||[])),snaps:JSON.parse(JSON.stringify(x.snaps||{})),battleDone:!!x.battleDone,postStarted:!!x.postStarted,battle:x.battle?JSON.parse(JSON.stringify(x.battle)):null,mods:JSON.parse(JSON.stringify(x.mods||{})),flags:JSON.parse(JSON.stringify(x.flags||{})),debt:x.debt||0,debtLog:JSON.parse(JSON.stringify(x.debtLog||[])),bonus:x.bonus||0,runId:Date.now(),generation:x.gen||1,inherit:x.inherit?JSON.parse(JSON.stringify(x.inherit)):null,lineage:JSON.parse(JSON.stringify(x.lineage||[])),rankAwarded:JSON.parse(JSON.stringify(x.rankAwarded||{run:false,export:false,ai:false}))};
+  S={vals:migrateVals(JSON.parse(JSON.stringify(x.vals||{}))),hist:JSON.parse(JSON.stringify(x.hist||[])),tech:JSON.parse(JSON.stringify(x.tech||[])),adv:JSON.parse(JSON.stringify(x.adv||[])),corpses:JSON.parse(JSON.stringify(x.corpses||[])),tools:JSON.parse(JSON.stringify(x.tools||[])),events:JSON.parse(JSON.stringify(x.events||[])),domainFx:JSON.parse(JSON.stringify(x.domainFx||[])),snaps:JSON.parse(JSON.stringify(x.snaps||{})),battleDone:!!x.battleDone,postStarted:!!x.postStarted,battle:x.battle?JSON.parse(JSON.stringify(x.battle)):null,mods:JSON.parse(JSON.stringify(x.mods||{})),flags:JSON.parse(JSON.stringify(x.flags||{})),debt:x.debt||0,debtLog:JSON.parse(JSON.stringify(x.debtLog||[])),bonus:x.bonus||0,runId:Date.now(),generation:x.gen||1,inherit:x.inherit?JSON.parse(JSON.stringify(x.inherit)):null,lineage:JSON.parse(JSON.stringify(x.lineage||[])),rankAwarded:JSON.parse(JSON.stringify(x.rankAwarded||{run:false,export:false,ai:false}))};
   S.snaps.final=S.snaps.final||buildStats();mainRot=0;mainSel=-1;updateRankBadge();
   if(leftChip)leftChip.hidden=true;
   setView('panel');renderQuick();renderRecent();renderPanel();
@@ -926,12 +950,12 @@ function advance(){
   var s=nextValid();
   if(!s){if(!S.postStarted){Q=POST_FLOW.map(function(x){return Object.assign({},x)});S.postStarted=true;advance();return}openPanel();return}
   if(s.battle){enterBattle();return}
-  cur=s;picked=false;busy=false;currentOpts=getOpts(cur);renderStep();
+  cur=s;picked=false;busy=false;currentOpts=getOpts(cur);choiceMode=isChoiceStep(cur);if(choiceMode)currentOpts=choiceOptions(currentOpts);if(rewriteBtn)rewriteBtn.style.display='none';renderStep();
 }
 function stepLabel(s){return typeof s.label==='function'?s.label():s.label}
 function updateLeftChip(){
   if(!leftChip)return;
-  var k=cur&&cur.key||'',g=null,groups=[{re:/^adv_pick/,label:'高级技巧'},{re:/^domain_fx/,label:'领域效果'},{re:/^corpse_(shape|power)/,label:'咒骸'},{re:/^tool_(type|effect)/,label:'咒具'},{re:/^tech_(type|style|effect|cost|power)/,label:'术式'},{re:/^event400_pick/,label:'400年前事件'}];
+  var k=cur&&cur.key||'',g=null,groups=[{re:/^adv_pick/,label:'高级技巧'},{re:/^domain_fx/,label:'领域效果'},{re:/^corpse_(shape|power)/,label:'咒骸'},{re:/^tool_(type|grade|effect)/,label:'咒具'},{re:/^tech_(type|style|effect|cost|power)/,label:'术式'},{re:/^event400_pick/,label:'400年前事件'}];
   for(var i=0;i<groups.length;i++){if(groups[i].re.test(k)){g=groups[i];break}}
   if(!g){leftChip.hidden=true;return}
   var n=1;Q.forEach(function(s){if(s&&s.key&&g.re.test(s.key))n++});
@@ -949,11 +973,11 @@ function renderStep(){
   wheelCenter.innerHTML='点击<br>旋转';
   sideChapter.textContent=cur.ch||'CURRENT DIMENSION';
   sideTitle.textContent=stepLabel(cur);
-  sideMemo.textContent='本维度有 '+opts.length+' 个选项。轮盘只是抽取方式，结果会写入档案。';
-  optionList.innerHTML=opts.map(function(o){return '<span class="opt">'+escapeHtml(o)+'</span>'}).join('') || '<span class="opt">无选项</span>';
+  sideMemo.textContent=choiceMode?'这是高危抉择：从右侧三张牌里选一张，不再交给随机。':'本维度有 '+opts.length+' 个选项。轮盘只是抽取方式，结果会写入档案。';
+  optionList.innerHTML=choiceMode?opts.map(function(o,i){return '<button class="opt" data-choice="'+i+'">'+escapeHtml(o)+'</button>'}).join(''):opts.map(function(o){return '<span class="opt">'+escapeHtml(o)+'</span>'}).join('') || '<span class="opt">无选项</span>';
   renderQuick();renderRecent();
-  resultEl.innerHTML='<div class="rt">RESULT</div><div class="rv">等待命运</div><div class="rd">轮盘停下之前，一切都还不算数。</div>';
-  spinBtn.textContent='点击旋转';spinBtn.disabled=false;nextBtn.style.display='none';
+  resultEl.innerHTML=choiceMode?'<div class="rt">CHOICE / 三选一</div><div class="rv">请选一张牌</div><div class="rd">点右侧选项落定，这个维度不抽随机。</div>':'<div class="rt">RESULT</div><div class="rv">等待命运</div><div class="rd">轮盘停下之前，一切都还不算数。</div>';
+  spinBtn.textContent=choiceMode?'请在右侧三选一':'点击旋转';spinBtn.disabled=!!choiceMode;nextBtn.style.display='none';
   mainSel=-1;drawWheel(wheel,wheelCtx,opts,mainRot,-1);
 }
 function renderQuick(){
@@ -967,8 +991,8 @@ function renderRecent(){
 }
 function evApply(key,s,add,flag){
   var ev=key.split('_')[0],kind=key.slice(ev.length+1);
-  if(ev==='yuhito'){
-    if(kind==='role'){if(/护送|同行/.test(s)){add('rep',2);add('control',1);flag('星浆体护航')}else if(/替羂索/.test(s)){add('control',2);add('moral',-2);flag('羂索线')}else if(/阻拦/.test(s)){add('body',1);add('rep',1);flag('甚尔交手')}else{add('essence',1);flag('怀玉旁观')}}
+  if(ev==='star'){
+    if(kind==='role'){if(/护送|同行/.test(s)){add('rep',2);add('control',1);flag('星浆体护航')}else if(/替盘星教/.test(s)){add('control',2);add('moral',-2);flag('盘星教线')}else if(/阻拦/.test(s)){add('body',1);add('rep',1);flag('甚尔交手')}else{add('essence',1);flag('怀玉旁观')}}
     if(kind==='act'){if(/救|保护|藏|带走/.test(s)){add('rep',2);add('moral',1)}if(/反咬|背刺/.test(s)){add('control',2);add('moral',-1)}if(/咒具|咒物|手指/.test(s)){add('essence',2)}if(/离开|放他|放行/.test(s)){add('rep',-1)}}
     if(kind==='result'){if(/生还/.test(s)){add('rep',3);add('moral',2);flag('理子生还')}else if(/死亡/.test(s)){add('moral',-1);flag('五条暴走')}else if(/动摇/.test(s)){flag('夏油动摇')}else{add('rep',2)}}
   }
@@ -1011,7 +1035,7 @@ function applyChoice(step,val){
   function flag(x){if(flags.indexOf(x)<0)flags.push(x)}
   var key=step.branchKey||step.key,s=String(val);
   if(step.branchKey){
-    if(step.branchKey==='identity'){var idn=String(S.vals.identity||'');if(idn==='灵界来客'){add('essence',2);add('control',1);flag('灵界身份')}if(idn==='天与咒缚'){add('body',3);add('total',1);flag('天与咒缚')}if(idn==='式神使'){add('control',2);add('eff',1);flag('式神使')}if(idn==='死灭回游玩家'){add('total',2);add('rep',1);flag('玩家身份')}if(idn==='咒物受肉'){add('body',2);add('essence',1);flag('受肉身份')}}
+    if(step.branchKey==='identity'){var idn=String(S.vals.identity||'');if(idn==='灵界来客'){add('essence',2);add('control',1);flag('灵界身份')}if(idn==='天与咒缚'){add('body',3);add('total',1);flag('天与咒缚')}if(idn==='式神使'){add('control',2);add('eff',1);flag('式神使')}if(idn==='死灭回游玩家'){add('total',2);add('rep',1);flag('玩家身份')}}
     if(step.branchKey==='place'){var pn=String(S.vals.place||'');if(pn==='灵界'){add('essence',2);flag('灵界降临')}if(/美国|加拿大|英国|法国|德国|意大利|西班牙|葡萄牙|荷兰|瑞士|瑞典|挪威|芬兰|波兰|俄罗斯|土耳其|以色列/.test(pn)){add('rep',2);add('control',1);flag('现代强国')}if(/墨西哥|巴西|阿根廷|智利|秘鲁|南非|埃及|尼日利亚/.test(pn)){add('essence',2);flag('古老土地')}if(/印度|巴基斯坦|泰国|越南|菲律宾|印度尼西亚|马来西亚|新加坡|韩国|蒙古|沙特阿拉伯|伊朗/.test(pn)){add('control',2);flag('亚洲脉络')}if(/格陵兰|冰岛|新西兰/.test(pn)){add('body',2);flag('极地边境')}}
     if(step.branchKey==='era'){var tn=String(S.vals.time||'');if(tn==='灵界'){add('essence',2);flag('灵界法则')}if(tn==='怀玉'||tn==='剧情开始时期'){add('rep',1);flag('正篇时间')}if(tn==='江户时代'||tn==='明治维新时期'||tn==='大正时代'){add('control',1);flag('旧时代')}if(tn==='现代日常'){add('rep',1);flag('现代日常')}}
     if(/宿傩/.test(s)){add('total',3);add('rep',2);flag('宿傩标记')}
@@ -1059,7 +1083,7 @@ function applyChoice(step,val){
     if(/自由切换|双领域|领域/.test(s)){add('eff',2);add('control',1);flag('领域因果')}
     if(!notes.length&&!flags.length){add('essence',1);notes.push('世界线+1')}
   }else{
-    if(key==='identity'){if(s==='咒灵'||s==='九相图类'||s==='完全体'||s==='受肉诞生（咒物）'){add('total',3);add('moral',-2);flag('咒灵身份')}else if(s==='咒骸'){add('body',3);add('rep',-1);flag('咒骸身份')}else if(s==='咒术师'){add('control',1);add('rep',1)}else if(s==='高层及普通人'){add('rep',2);flag('高层背景')}else if(s==='诅咒师'){add('rep',-2);add('control',1);flag('诅咒师')}else if(s==='魂穿原著角色'){add('control',2);add('rep',1);flag('魂穿原著')}else{add('rep',-1)}}
+    if(key==='identity'){if(s==='咒灵'||s==='九相图类'||s==='咒灵·完全体'||s==='受肉诞生（咒物）'){add('total',3);add('moral',-2);flag('咒灵身份')}else if(s==='咒骸'){add('body',3);add('rep',-1);flag('咒骸身份')}else if(s==='咒术师'){add('control',1);add('rep',1)}else if(s==='高层及普通人'){add('rep',2);flag('高层背景')}else if(s==='诅咒师'){add('rep',-2);add('control',1);flag('诅咒师')}else if(s==='魂穿原著角色'){add('control',2);add('rep',1);flag('魂穿原著')}else{add('rep',-1)}}
     if(key==='time'){if(!notes.length&&!flags.length)notes.push('时间线已确定')}
     if(key==='faction'){if(s==='加入宿傩方'){add('total',4);add('moral',-3);flag('宿傩方')}else if(s==='加入高专方'){add('rep',3);add('moral',1);flag('高专方')}else{add('control',2);flag('第三方')}}
     if(key==='shibuya'){if(s==='是'){add('total',1);add('rep',2);flag('涩谷参战')}}
@@ -1085,13 +1109,13 @@ function applyChoice(step,val){
       if(/抢十影/.test(s)){add('total',2);add('moral',-2);flag('决战抢十影')}
       if(/保存实力/.test(s)){add('control',2);flag('决战观望')}
     }
-    if(/^(yuhito|zero|school|shibuya|culling|shinjuku|post68)_/.test(key))evApply(key,s,add,flag);
+    if(/^(star|zero|school|shibuya|culling|shinjuku|post68)_/.test(key))evApply(key,s,add,flag);
   }
   for(var k in mods){notes.push(axis[k]+(mods[k]>0?'+':'')+mods[k])}
   var fx={mods:mods,flags:flags,text:notes.join(' · ')||'无直接变化'};
   for(var mk in mods)S.mods[mk]=(S.mods[mk]||0)+mods[mk];
   flags.forEach(function(f){S.flags[f]=true});
-  if(step.branchKey||/^(yuhito|zero|school|shibuya|culling|shinjuku|post68)_/.test(step.key))S.branches.push({label:stepLabel(step),value:val,text:fx.text});
+  if(step.branchKey||/^(star|zero|school|shibuya|culling|shinjuku|post68)_/.test(step.key))S.branches.push({label:stepLabel(step),value:val,text:fx.text});
   return fx;
 }
 function injectTech(n){
@@ -1191,9 +1215,9 @@ function commit(step,val,quiet){
   if(step.slot==='corpse'&&step.idx!=null){S.corpses[step.idx]=S.corpses[step.idx]||{};S.corpses[step.idx][step.field]=val}
   if(step.slot==='tool'&&step.idx!=null){S.tools[step.idx]=S.tools[step.idx]||{};S.tools[step.idx][step.field]=val}
   if(step.key==='adv_count'){var n=parseInt(val)||0;S.adv=[];var q=[];for(var j=0;j<n;j++){q.push(st('adv_pick'+j,'会哪个高级技巧 #'+pad(j+1),'能力 / 技巧',function(){return advPool().filter(function(x){return S.adv.indexOf(x)<0})},{onPick:function(x){S.adv.push(x)}}))}Q.unshift.apply(Q,q)}
-  if(step.key==='domain_fx_count'){var n=parseInt(val)||0;S.domainFx=[];var q=[];for(var k=0;k<n;k++){q.push(st('domain_fx'+k,'领域效果 #'+pad(k+1),'能力 / 领域',function(){return D.domainFx.filter(function(x){return S.domainFx.indexOf(x)<0})},{onPick:function(x){S.domainFx.push(x)}}))}Q.unshift.apply(Q,q)}
+  if(step.key==='domain_fx_count'){var n=parseInt(val)||0;S.domainFx=[];var q=[];for(var k=0;k<n;k++){q.push(st('domain_fx'+k,'领域效果 #'+pad(k+1),'能力 / 领域',function(){return domainFxPool().filter(function(x){return S.domainFx.indexOf(x)<0})},{onPick:function(x){S.domainFx.push(x)}}))}Q.unshift.apply(Q,q)}
   if(step.key==='corpse_count'){var n=parseInt(val)||0;S.corpses=[];var q=[];for(var m=0;m<n;m++){q.push(st('corpse_shape'+m,'咒骸外形 #'+pad(m+1),'能力 / 咒骸',D.corpseShape,{slot:'corpse',idx:m,field:'shape'}));q.push(st('corpse_power'+m,'咒骸实力 #'+pad(m+1),'能力 / 咒骸',D.corpsePower,{slot:'corpse',idx:m,field:'power'}));}Q.unshift.apply(Q,q)}
-  if(step.key==='tool_count'){var n=parseInt(val)||0;S.tools=[];var q=[];for(var t=0;t<n;t++){q.push(st('tool_type'+t,'咒具类型 #'+pad(t+1),'能力 / 咒具',D.toolType,{slot:'tool',idx:t,field:'type'}));q.push(st('tool_effect'+t,'咒具效果 #'+pad(t+1),'能力 / 咒具',D.toolEffect,{slot:'tool',idx:t,field:'effect'}));}Q.unshift.apply(Q,q)}
+  if(step.key==='tool_count'){var n=parseInt(val)||0;S.tools=[];var q=[];for(var t=0;t<n;t++){q.push(st('tool_type'+t,'咒具类型 #'+pad(t+1),'能力 / 咒具',D.toolType,{slot:'tool',idx:t,field:'type'}));q.push(st('tool_grade'+t,'咒具分级 #'+pad(t+1),'能力 / 咒具',D.toolGrade,{slot:'tool',idx:t,field:'grade'}));q.push(st('tool_effect'+t,'咒具效果 #'+pad(t+1),'能力 / 咒具',D.toolEffect,{slot:'tool',idx:t,field:'effect'}));}Q.unshift.apply(Q,q)}
   if(step.key==='event400_count'){var n=parseInt(val)||0;S.events=[];var q=[];for(var e=0;e<n;e++){q.push(st('event400_pick'+e,'400年前·事件 #'+pad(e+1),'时间线 / 400年前',function(){return D.event400.filter(function(x){return S.events.indexOf(x)<0})},{onPick:function(x){S.events.push(x)},after:function(x){if(String(x).indexOf('六眼')>=0)Q.unshift(st('six_battle','遇见六眼·是否发生战斗','时间线 / 400年前',D.battleYesNo));if(String(x).indexOf('鹿紫云')>=0)Q.unshift(st('kashimo_phantom','鹿紫云一·是否使用幻兽琥珀','时间线 / 400年前',D.kashimoPhantom))}}))}Q.unshift.apply(Q,q)}
   if(step.after)step.after(val);
   if(step.onPick)step.onPick(val);
@@ -1217,7 +1241,7 @@ function pickIdx(step,opts){
   return opts.length-1;
 }
 function spinMain(){
-  if(busy||picked||!cur)return;
+  if(busy||picked||!cur||choiceMode)return;
   var opts=currentOpts;if(!opts.length)return;
   busy=true;spinBtn.disabled=true;nextBtn.style.display='none';
   var idx=pickIdx(cur,opts);
@@ -1230,7 +1254,7 @@ function spinMain(){
     if(tk!==runToken)return;
     var p=Math.min(1,(t-t0)/dur);var e=1-Math.pow(1-p,3);
     mainRot=start+(end-start)*e;drawWheel(wheel,wheelCtx,opts,mainRot,-1);
-    if(p<1)requestAnimationFrame(frame);else{mainRot=end;mainSel=idx;busy=false;picked=true;drawWheel(wheel,wheelCtx,opts,mainRot,idx);commit(cur,opts[idx]);showResult(opts[idx]);spinBtn.textContent='下一维度 →';spinBtn.disabled=false;nextBtn.style.display='inline-block';}
+    if(p<1)requestAnimationFrame(frame);else{mainRot=end;mainSel=idx;busy=false;picked=true;drawWheel(wheel,wheelCtx,opts,mainRot,idx);commit(cur,opts[idx]);showResult(opts[idx]);spinBtn.textContent='下一维度 →';spinBtn.disabled=false;nextBtn.style.display='inline-block';rewriteBtn.style.display=(S.rewrite&&S.rewrite[cur.key])?'none':'inline-block';}
   }
   requestAnimationFrame(frame);
 }
@@ -1239,6 +1263,26 @@ function showResult(val){
   var extra=fx?'<div class="delta"><div class="dt">BRANCH DELTA / 本次选择的变化</div><div class="dd">'+escapeHtml(fx.text)+'</div>'+(fx.flags.length?'<div class="dg">'+fx.flags.map(function(f){return '<span>'+escapeHtml(f)+'</span>'}).join('')+'</div>':'')+'</div>':'';
   resultEl.innerHTML='<div class="rt">RESULT / '+escapeHtml(cur.ch||'')+'</div><div class="rv red">'+escapeHtml(val)+'</div><div class="rd">按「下一维度」继续。若要直接看面板，点右上「自动抽完」。</div>'+extra;
   wheelCenter.innerHTML='命运<br>已定';
+}
+function chooseOption(i){
+  if(!choiceMode||!cur||picked)return;
+  var opts=currentOpts;var val=opts[i];if(val==null)return;
+  choiceMode=false;busy=false;picked=true;
+  commit(cur,val);showResult(val);
+  spinBtn.textContent='下一维度 →';spinBtn.disabled=false;nextBtn.style.display='inline-block';
+  rewriteBtn.style.display=(S.rewrite&&S.rewrite[cur.key])?'none':'inline-block';
+}
+function rewriteCurrent(){
+  if(!picked||!cur||busy)return;
+  S.rewrite=S.rewrite||{};
+  if(S.rewrite[cur.key]){uiToast('这个维度已经改写过了');return}
+  if((S.debt||0)<2){uiToast('因果债不足 2 点，先把命运走完再来改写');return}
+  S.debt-=2;
+  S.debtLog=(S.debtLog||[]);S.debtLog.push({key:cur.key,label:'改写命运',val:'-2',debt:-2});
+  S.rewrite[cur.key]=true;
+  picked=false;mainSel=-1;nextBtn.style.display='none';rewriteBtn.style.display='none';
+  spinBtn.textContent='点击旋转';resultEl.innerHTML='<div class="rt">REWRITE / 改写命运</div><div class="rv">因果债 -2</div><div class="rd">同一维度正在重新落点。</div>';
+  spinMain();
 }
 function randomOf(a){return a[Math.floor(Math.random()*a.length)]}
 function autoRun(){
@@ -1252,7 +1296,7 @@ function autoRun(){
     if(s.battle){S.battleDone=true;S.battle={skipped:true,summary:'跳过新宿决战'};Q=POST_FLOW.map(function(x){return Object.assign({},x)});S.postStarted=true;continue}
     var opts=getOpts(s);if(!opts.length)continue;commit(s,opts[pickIdx(s,opts)],true)
   }
-  S.snaps.final=buildStats();busy=false;cur=null;setView('panel');renderPanel()
+  S.snaps.final=buildStats();busy=false;choiceMode=false;cur=null;setView('panel');renderPanel()
 }
 function setView(v){
   viewWheel.style.display=v==='wheel'?'block':'none';
@@ -1273,8 +1317,8 @@ function renderPanel(){
   var tech=S.tech.length?S.tech.map(function(x){return x.name||((x.type||'?')+'·'+(x.effect||'?'))}).join('；'):'—';
   var domain=(v.domain_type||'—')+' / '+((S.domainFx&&S.domainFx.length)?S.domainFx.join('、'):'—');
   var corpses=S.corpses.length?S.corpses.map(function(x){return (x.shape||'?')+'·'+(x.power||'?')}).join('；'):'—';
-  var tools=S.tools.length?S.tools.map(function(x){return (x.type||'?')+'·'+(x.effect||'?')}).join('；'):'—';
-  var fields=[['身份',v.identity],['时间点',v.time],['地点',v.place],['年龄',v.age],['性别',v.gender],['颜值',v.face],['发色',v.hair],['瞳色',v.eye],['性格',v.personality],['爱好',v.hobby],['道德',v.moral],['好感对象',v.bond_who],['好感',v.bond],['对方看法',v.view],['等级',v.grade],['阵营',v.final_faction||v.faction],['术式',tech],['领域',domain],['咒骸',corpses],['咒具',tools],['68年后',v.rep68],['死亡',isDead()?'是':'—'],['因果债',(S.debt||0)+' 点（战斗 -'+debtPenalty()+'）'],['世代','第'+(S.generation||1)+'代'+(S.inherit?' · 继承 '+Object.keys(S.inherit).filter(function(k){return S.inherit[k]}).length+' 项':'')],['分支',String((S.branches||[]).length)]];
+  var tools=S.tools.length?S.tools.map(function(x){return (x.grade?x.grade+'·':'')+(x.type||'?')+'·'+(x.effect||'?')}).join('；'):'—';
+  var fields=[['身份',v.identity],['时间点',v.time],['地点',v.place],['年龄',v.age],['性别',v.gender],['颜值',v.face],['发色',v.hair],['瞳色',v.eye],['性格',v.personality],['爱好',v.hobby],['道德',v.moral],['好感对象',v.bond_who],['好感',v.bond],['对方看法',v.view],['等级',v.grade],['阵营',v.final_faction||v.faction],['术式',tech],['领域',domain],['咒骸',corpses],['咒具',tools],['特殊天赋',v.special_talent_pick],['68年后',v.rep68],['死亡',isDead()?'是':'—'],['因果债',(S.debt||0)+' 点（战斗 -'+debtPenalty()+'）'],['世代','第'+(S.generation||1)+'代'+(S.inherit?' · 继承 '+Object.keys(S.inherit).filter(function(k){return S.inherit[k]}).length+' 项':'')],['分支',String((S.branches||[]).length)]];
   document.getElementById('charFields').innerHTML=fields.map(function(f){return '<div class="field"><span>'+f[0]+'</span><b>'+escapeHtml(f[1]||'—')+'</b></div>'}).join('');
   var branches=(S.branches||[]).slice(-18).reverse();
   var flags=Object.keys(S.flags||{});
@@ -1371,7 +1415,7 @@ function statWeight(st){
 
 var B=null,bActor='mc',bRot=0,bBusy=false;
 function enterBattle(){
-  cur=null;if(leftChip)leftChip.hidden=true;
+  cur=null;choiceMode=false;if(leftChip)leftChip.hidden=true;
   if(S.battleDone){setView('battle');return}
   if(!S.vals.insert||String(S.vals.insert).indexOf('是')<0){S.battle={skipped:true,summary:'未插入五宿对决'};S.battleDone=true;S.postStarted=true;Q=POST_FLOW.map(function(x){return Object.assign({},x)});setView('wheel');advance();return}
   initBattle();setView('battle');
@@ -1498,7 +1542,7 @@ function copyFate(){
 function loadFateCode(){
   var code=prompt('粘贴命运码（WTZJJ04-XXXX-...）');if(!code)return;
   var p=parseFateCode(code);if(!p){alert('命运码无效或校验失败');return}
-  var v=p.v||{};
+  var v=migrateVals(p.v||{});
   if(!confirm('识别到：'+(v.identity||'未命名')+' · '+(v.grade||'未评级')+' · 因果债 '+(p.d||0)+'\n载入会替换当前这局，继续吗？'))return;
   runToken++;Q=[];cur=null;picked=true;busy=false;B=null;
   S={vals:v,tech:(p.t||[]).map(function(x){return {name:x[0]||'',type:x[1]||'',effect:x[2]||'',detail:x[3]||''}}),hist:[],adv:p.adv||[],corpses:p.cor||[],tools:p.too||[],events:p.evt||[],domainFx:p.dom||[],snaps:{},battleDone:false,postStarted:false,battle:null,debt:p.d||0,debtLog:[],bonus:p.b||0,mods:p.mo||{},flags:p.fl||{},branches:p.br||[],runId:Date.now(),generation:p.g||1,inherit:p.i||null,lineage:(p.li||[]).map(function(x){return {gen:x[0],name:x[1],grade:x[2],debt:x[3],ending:x[4]}}),rankAwarded:{run:false,export:false,ai:false},fateMemo:code};
@@ -1599,10 +1643,12 @@ function startChild(){
   start({generation:(S.generation||1)+1,inherit:inherit,debt:debt,lineage:lineage});
 }
 function copyReport(){copyText(reportText(),'文字战报已复制')}
+optionList.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-choice]'):null;if(b)chooseOption(parseInt(b.getAttribute('data-choice'),10))});
 spinBtn.addEventListener('click',function(){if(picked)advance();else spinMain()});
+rewriteBtn.addEventListener('click',rewriteCurrent);
 nextBtn.addEventListener('click',function(){advance()});
 autoBtn.addEventListener('click',autoRun);
-document.getElementById('skipBtn').addEventListener('click',function(){if(!cur)return;commit(cur,'未选择');picked=true;spinBtn.textContent='下一维度 →';nextBtn.style.display='inline-block';resultEl.innerHTML='<div class="rt">RESULT</div><div class="rv">未选择</div><div class="rd">这个维度被跳过了。</div>';renderQuick();renderRecent()});
+document.getElementById('skipBtn').addEventListener('click',function(){if(!cur)return;commit(cur,'未选择');picked=true;choiceMode=false;spinBtn.disabled=false;spinBtn.textContent='下一维度 →';nextBtn.style.display='inline-block';rewriteBtn.style.display='none';resultEl.innerHTML='<div class="rt">RESULT</div><div class="rv">未选择</div><div class="rd">这个维度被跳过了。</div>';renderQuick();renderRecent()});
 document.getElementById('resetBtn').addEventListener('click',resetAll);
 saveBtn.addEventListener('click',saveRun);
 savesBtn.addEventListener('click',function(){renderSaves();if(!saveDialog.open)saveDialog.showModal()});
