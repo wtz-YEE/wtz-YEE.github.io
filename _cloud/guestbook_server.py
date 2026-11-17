@@ -535,6 +535,7 @@ def _karma_add(rec, n):
 def _award(cu, pts=0, exp=0):
     us = _load(USER_FILE, {})
     rec = us.setdefault(cu, {})
+    _karma_get(rec)  # 先完成老用户迁移，避免随后 pts_day 变化造成双计
     rec["pts"] = int(rec.get("pts") or 0) + int(pts)
     rec["exp"] = int(rec.get("exp") or 0) + int(exp)
     d = _time.strftime("%Y-%m-%d")
