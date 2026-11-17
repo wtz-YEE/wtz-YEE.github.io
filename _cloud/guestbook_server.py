@@ -517,6 +517,11 @@ def _add_exp(us, cu, n):
 def _karma_get(rec):
     """当日因果：跨日清零；与积分余额分开，下注只冻结因果。"""
     today = _time.strftime("%Y-%m-%d")
+    if "karma" not in rec:
+        # 老用户首次接入：把今天已赚到的积分作为初始因果，避免全站突然无法下注。
+        rec["karma"] = (max(0, int(rec.get("pts_day") or 0))
+                        if str(rec.get("pts_day_date") or "") == today else 0)
+        rec["karma_date"] = today
     if str(rec.get("karma_date") or "") != today:
         rec["karma_date"] = today
         rec["karma"] = 0
