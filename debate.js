@@ -303,7 +303,7 @@ function postHTML(p,u){
   var ended=p.status==='closed'||!!p.winner;
   var pending=0,sh=0,sc=0;
   (p.args||[]).forEach(function(a){
-    if(!a.result&&!a.ai)pending++;
+    if(!a.result&&!a.ai&&a.ai_state!=='merged')pending++;
     if(a.result==='host')sh++;
     else if(a.result==='challenger')sc++;
   });
@@ -321,7 +321,11 @@ function postHTML(p,u){
     var opp=a.side==='host'?chCharBefore(p,a):(a.char||'');
     args+=argHTML(a,p.char,opp);
     if(!a.result&&!a.ai){
-      args+='<div class="db-aiwait"><span>MACHINE VERDICT</span><b>'+(a.ai_state==='error'?'AI 暂不可用，自动重试中':'AI 研判中…')+'</b></div>';
+      var waitTxt='AI 研判中…';
+      if(a.ai_state==='merged')waitTxt='已并入后续研判';
+      else if(a.ai_state==='cooldown')waitTxt=(a.ai_error||'AI 冷却中，稍后研判最新发言');
+      else if(a.ai_state==='error')waitTxt=(a.ai_error||'AI 暂不可用，自动重试中');
+      args+='<div class="db-aiwait"><span>MACHINE VERDICT</span><b>'+esc(waitTxt)+'</b></div>';
     }
   });
   var reply='';
@@ -534,9 +538,10 @@ function runAI(pid,aid){
   say('AI 正在研判本轮…',null);
   callApi('/debate_ai',{pid:pid,aid:aid}).then(function(j){
     if(j&&j.pending){
-      say('AI 研判中，稍后自动刷新…',null);
-      setTimeout(function(){load(true)},5000);
-      setTimeout(function(){load(true)},12000);
+      var wait=Math.max(5,Math.min(65,Math.round(+j.retry_in||5)+1));
+      say((j.msg||'AI 研判中')+'，约 '+wait+' 秒后刷新…',null);
+      setTimeout(function(){load(true)},Math.min(wait,12)*1000);
+      setTimeout(function(){load(true)},wait*1000);
       return;
     }
     if(!j||!j.ok){say('AI 研判不可用：'+((j&&j.msg)||'云端未连接'),false);return}

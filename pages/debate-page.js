@@ -212,7 +212,7 @@ function loadDebate(){
   if(S.loaded) return;
   S.loaded=true;
   var s=document.createElement('script');
-  s.src='../debate.js?v=36';
+  s.src='../debate.js?v=38';
   s.onerror=function(){
     S.loaded=false;
     var list=$('dbList');
