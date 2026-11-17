@@ -154,6 +154,16 @@ repeating-linear-gradient(90deg,transparent 0 22px,#f3f3f3 22px 23px) border-box
 .actor-tabs button{flex:1;border:0;border-right:1px solid #111;background:#fff;padding:7px 4px;font-size:11px}
 .actor-tabs button:last-child{border-right:0}
 .actor-tabs button.on{background:#111;color:#fff}
+.handbox{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+.handhint{font:9px/1.6 Consolas,monospace;color:var(--soft);margin:5px 0 0;letter-spacing:.04em}
+.hcard{border:1px solid #111;background:#fff;padding:7px 8px;min-width:120px;max-width:190px;text-align:left;cursor:pointer;flex:1 1 120px}
+.hcard:hover{background:#111;color:#fff}
+.hcard.on{background:#111;color:#fff}
+.hcard.domain{border-left:5px solid var(--red)}
+.hcard .hk{font:8px/1.4 Consolas,monospace;color:#888;letter-spacing:.08em}
+.hcard .hm{font:800 11px/1.45 "Noto Sans SC",sans-serif;margin-top:2px}
+.hcard .hv{font:10px/1.4 Consolas,monospace;color:var(--red);margin-top:3px}
+.hcard.on .hv,.hcard:hover .hv{color:#ffb3ba}
 .panelview{display:none}
 .panelview.on{display:block}
 .finalgrid{display:grid;grid-template-columns:1fr 1.15fr;gap:22px;align-items:start}
@@ -281,16 +291,17 @@ repeating-linear-gradient(90deg,transparent 0 22px,#f3f3f3 22px 23px) border-box
   </div>
 </section>
 <section id="view-battle" class="battle">
-  <div class="stagehead"><div class="no">F</div><div class="txt"><h3>新宿决战 · 三方混战</h3><p>五条悟、宿傩、主角。先抽招，再开领域，最后结算伤势与死亡。</p></div><div class="count">BATTLE / 03</div></div>
+  <div class="stagehead"><div class="no">F</div><div class="txt"><h3>新宿决战 · 三方混战</h3><p>五条悟、宿傩、主角。每回合 3 普通 + 1 领域，选 1 普通 + 1 领域出牌，领域 control 高者本回合收益翻倍。</p></div><div class="count">BATTLE / 03</div></div>
   <div class="progress"><i id="battleProgress" style="width:0"></i></div>
   <div class="fighters" id="fighters"></div>
   <div class="battle-grid">
     <div class="wheelbox">
       <div class="wheelmeta"><span>战斗盘 / BATTLE WHEEL</span><b id="battleActorLabel">主角</b></div>
       <div class="actor-tabs" id="actorTabs"><button class="on" data-actor="mc">主角</button><button data-actor="gojo">五条悟</button><button data-actor="sukuna">宿傩</button></div>
-      <div class="wheelwrap"><div class="pointer"></div><div class="wheelring"></div><canvas id="battlewheel"></canvas><div class="wcenter">抽<br>招</div></div>
-      <div class="spinrow"><button class="spin" id="rollMove">抽一招</button><button class="ghost" id="resolveRound">结算本回合</button><button class="ghost" id="endBattle">结束战斗 → 面板</button></div>
-      <div class="result" id="battleResult"><div class="rt">BATTLE LOG</div><div class="rv">等待开战</div><div class="rd">每个角色本回合可抽 3 招。</div></div>
+      <div class="wheelwrap"><div class="pointer"></div><div class="wheelring"></div><canvas id="battlewheel"></canvas><div class="wcenter">出<br>牌</div></div>
+      <div class="handbox" id="handBox"></div><div class="handhint" id="handHint">每回合 3 张普通牌 + 1 张领域牌；选 1 张普通、1 张领域，其余弃掉。</div>
+      <div class="spinrow"><button class="spin" id="rollMove">发一手牌</button><button class="ghost" id="resolveRound">结算本回合</button><button class="ghost" id="endBattle">结束战斗 → 面板</button></div>
+      <div class="result" id="battleResult"><div class="rt">BATTLE LOG</div><div class="rv">等待开战</div><div class="rd">每回合手牌 3 普通 + 1 领域；领域牌比 control，赢家本回合收益翻倍。</div></div>
     </div>
     <aside class="battle-side">
       <div class="panel"><div class="ph"><b>领域判定</b><span>DOMAIN</span></div><div class="body" id="domainBox"><div class="statline"><span>领域胜者</span><b>—</b></div><div class="statline"><span>领域效果</span><b>—</b></div><div class="statline"><span>回合胜者</span><b>—</b></div></div></div>
@@ -461,7 +472,7 @@ rep68:["EX（神话圣人）","SSS（近乎神圣）","SS（圣人般的存在�
 fightMoveCount:["1","2","3（单项SSS+1）","4（双项SSS+1）","5（三项SSS+1）","6（三项SSS+1）"],
 sukunaMoves:["领域展开·伏魔御厨子！（胜率+30）","召唤·嵌合兽（胜率+17）","召唤·魔虚罗（胜率+25）","黑闪1（再抽2次）","反转·修复（胜率+13）","解（胜率+9）","捌（胜率+15）","灶·开！（胜率+21）","射击（胜率+7）","抓（胜率+49）","杜·开！（胜率+2）","龙·隐（胜率+20）","黑闪（再抽2次）"],
 gojoMoves:["领域展开·无量空处！（胜率+30）","无下限·极之番！（胜率+40·给填概率上升）","虚式·茈（胜率+24）","无下限·瞬移（胜率+13）","术式反转·赫（胜率+20）","术式顺转·苍（胜率+14）","黑闪1（再抽2次）","射击·苍拳（胜率+11）","黑闪！（再抽2次）","黑闪·连击（再抽2次）","反转·修复（胜率+12）","无限制·芯！（胜率+35）"],
-mcMoves:["领域展开·封闭式！（胜率+25）","咒骸·特级（胜率+18）","咒灵·修复（胜率+12）","术式效果·攻击（胜率+14）","术式效果·辅助（胜率+11）","射击·咒具戒指（胜率+10）","领域展开·开放式！（胜率+35）","黑闪1（再抽2次）","黑闪·连击1（再抽1次，本回合胜率+50%）","2次（再抽2次）"],
+mcMoves:["领域展开·封闭式！（胜率+25）","咒骸·特级（胜率+18）","咒灵·修复（胜率+12）","术式效果·攻击（胜率+14）","术式效果·辅助（胜率+11）","射击·咒具戒指（胜率+10）","领域展开·开放式！（胜率+35）","黑闪1（再抽2次）","黑闪·连击1（再抽1次，本回合胜率+50%）","2次（再抽2次）","黑闪·极（胜率+22）"],
 domainWinner:["五条","宿傩","主角","不分胜负"],
 domainResult:["本回合领域胜率翻倍，对手领域胜率减半"],
 battleWinner:["五条胜","宿傩胜","主角胜"],
@@ -1690,7 +1701,9 @@ function renderPanel(){
 function battleSummaryHtml(){
   if(!S.battle)return '<div class="statline"><span>状态</span><b>未进入新宿决战</b></div>';
   if(S.battle.skipped)return '<div class="statline"><span>状态</span><b>跳过决战</b></div>';
-  return '<div class="statline"><span>回合</span><b>'+S.battle.round+'</b></div><div class="statline"><span>领域胜者</span><b>'+escapeHtml(S.battle.domainWinner||'—')+'</b></div><div class="statline"><span>回合胜者</span><b>'+escapeHtml(S.battle.roundWinner||'—')+'</b></div><div class="statline"><span>最终</span><b>'+escapeHtml(S.battle.final||'—')+'</b></div><div class="statline"><span>十维加权</span><b>'+((S.battle.mcWeighted!=null)?S.battle.mcWeighted:'—')+'</b></div><div class="statline"><span>因果债</span><b>'+(S.debt||0)+' 点 / 扣 '+((S.battle.debtPenalty!=null)?S.battle.debtPenalty:debtPenalty())+' 胜率</b></div>';
+  var rounds=(S.battle.rounds||[]).map(function(r){return '<div class="statline"><span>R'+r.round+' 出牌</span><b>'+escapeHtml(r.mc.played||'—')+(r.mc.domain?' ＋ '+escapeHtml(r.mc.domain):'')+'</b></div>'}).join('');
+  var done=(S.battle.rounds||[]).length;
+  return rounds+'<div class="statline"><span>回合</span><b>'+done+'</b></div><div class="statline"><span>领域胜者</span><b>'+escapeHtml(S.battle.domainWinner||'—')+'</b></div><div class="statline"><span>回合胜者</span><b>'+escapeHtml(S.battle.roundWinner||'—')+'</b></div><div class="statline"><span>最终</span><b>'+escapeHtml(S.battle.final||'—')+'</b></div><div class="statline"><span>十维加权</span><b>'+((S.battle.mcWeighted!=null)?S.battle.mcWeighted:'—')+'</b></div><div class="statline"><span>因果债</span><b>'+(S.debt||0)+' 点 / 扣 '+((S.battle.debtPenalty!=null)?S.battle.debtPenalty:debtPenalty())+' 胜率</b></div>';
 }
 function openPanel(){cur=null;if(leftChip)leftChip.hidden=true;S.snaps.final=buildStats();grantRank('run',1);setView('panel')}
 function resetAll(){if(!confirm('重开一局？当前记录会清空。'))return;start();setView('wheel')}
@@ -1773,80 +1786,167 @@ function initBattle(){
   if(B&&!B.skipped)return;
   var ini=S.vals.initial_win||'主角';
   var st=buildStats(),w=statWeight(st),pen=debtPenalty();
-  var mcScore=Math.max(5,Math.min(110,Math.round(18+w*.72)-pen+(ini==='主角'?6:0)));
+  var mcScore=Math.max(5,Math.min(110,Math.round(18+w*.5)-pen+(ini==='主角'?6:0)));
   var gojoScore=86+(ini==='五条'?6:0),sukunaScore=90+(ini==='宿傩'?6:0);
-  B={round:1,active:'mc',domainWinner:'',roundWinner:'',final:'',skipped:false,mcDead:false,mcWeighted:Math.round(w),debtPenalty:pen,log:[],actors:{
-    mc:{id:'mc',name:(S.generation>1?'第'+S.generation+'代 · ':'')+'主角',sub:(S.vals.identity||'咒灵')+' / '+(S.vals.grade||'—'),score:mcScore,moves:[],shots:0},
-    gojo:{id:'gojo',name:'五条悟',sub:'六眼 / 最强',score:gojoScore,moves:[],shots:0},
-    sukuna:{id:'sukuna',name:'宿傩',sub:'诅咒之王 / 十影',score:sukunaScore,moves:[],shots:0}
+  B={round:1,active:'mc',domainWinner:'',roundWinner:'',final:'',skipped:false,mcDead:false,mcWeighted:Math.round(w),debtPenalty:pen,log:[],rounds:[],actors:{
+    mc:{id:'mc',name:(S.generation>1?'第'+S.generation+'代 · ':'')+'主角',sub:(S.vals.identity||'咒灵')+' / '+(S.vals.grade||'—'),score:mcScore,moves:[],shots:0,control:st.control},
+    gojo:{id:'gojo',name:'五条悟',sub:'六眼 / 最强',score:gojoScore,moves:[],shots:0,control:90},
+    sukuna:{id:'sukuna',name:'宿傩',sub:'诅咒之王 / 十影',score:sukunaScore,moves:[],shots:0,control:92}
   }};
   B.log.push('初始胜率：主角 '+mcScore+'（十维加权 '+B.mcWeighted+'，因果债 -'+pen+'） / 五条 '+gojoScore+' / 宿傩 '+sukunaScore);
-  bActor='mc';renderFighters();renderDomain();renderBattleLog();bRot=0;drawWheel(battlewheel,battleCtx,getBattleOpts(),bRot,-1);
-  document.getElementById('battleResult').innerHTML='<div class="rt">BATTLE LOG</div><div class="rv">等待开战</div><div class="rd">十维加权已计入初始胜率；抽招还会按属性追加加成。</div>';
+  ['mc','gojo','sukuna'].forEach(function(id){drawHand(id)});
+  if(ensurePicks().battle.length===0)S.picks.battle=[];
+  bActor='mc';renderFighters();renderDomain();renderBattleLog();renderHand();bRot=0;drawWheel(battlewheel,battleCtx,getBattleOpts(),bRot,-1);
+  document.getElementById('battleResult').innerHTML='<div class="rt">BATTLE LOG</div><div class="rv">手牌已发</div><div class="rd">点一张普通牌 + 一张领域牌，再点「结算本回合」。属性越高，手牌质量越好。</div>';
 }
-function getBattleOpts(){if(!B)return[];return bActor==='mc'?D.mcMoves:bActor==='gojo'?D.gojoMoves:D.sukunaMoves}
+function getBattleOpts(){if(!B)return[];var a=B.actors[bActor];return (a&&(a.hand||[]).concat(a.domainHand||[]))||[]}
+function isDomainMove(m){return /领域|极之番|无量空处|伏魔御厨子/.test(String(m||''))}
+function moveBase(m){var re=/\+(\d+)/.exec(String(m||''));return re?parseInt(re[1],10):8}
+function moveStatPair(m){
+  var st=S.snaps.final||buildStats(),s=String(m||'');
+  if(/领域|封闭|开放|极之番|无量空处|伏魔御厨子/.test(s))return [st.control,st.total];
+  if(/黑闪|连击|拳|踢|体术|抓/.test(s))return [st.taijutsu,st.body];
+  if(/咒骸|咒灵|咒具|修复/.test(s))return [st.eff,st.talent];
+  if(/术式|攻击|辅助/.test(s))return [st.talent,st.eff];
+  return [st.total,st.talent];
+}
+function statPickIndex(arr,st){
+  var w=arr.map(function(m){var p=moveStatPair(m);var v=(p[0]+p[1])/2;return Math.max(.2,1+(v-50)/50*.8)});
+  var sum=0,i;for(i=0;i<w.length;i++)sum+=w[i];
+  var r=Math.random()*sum;
+  for(i=0;i<w.length;i++){r-=w[i];if(r<=0)return i}
+  return arr.length-1;
+}
+function poolOf(id){return id==='mc'?D.mcMoves:(id==='gojo'?D.gojoMoves:D.sukunaMoves)}
+function drawHand(id){
+  var a=B.actors[id],pool=poolOf(id);
+  var dom=pool.filter(isDomainMove),norm=pool.filter(function(m){return !isDomainMove(m)});
+  var st=(id==='mc')?(S.snaps.final||buildStats()):null;
+  var hand=[],used={};
+  for(var i=0;i<3&&hand.length<norm.length;i++){
+    var cand=norm.filter(function(m){return !used[m]});if(!cand.length)break;
+    var idx=st?statPickIndex(cand,st):Math.floor(Math.random()*cand.length);
+    used[cand[idx]]=1;hand.push(cand[idx]);
+  }
+  if(!hand.some(function(m){return moveBase(m)>=20})){
+    var strong=norm.filter(function(m){return moveBase(m)>=20&&!used[m]});
+    if(strong.length){hand[0]=strong[Math.floor(Math.random()*strong.length)];used[hand[0]]=1}
+  }
+  a.hand=hand;
+  a.domainHand=dom.length?[dom[Math.floor(Math.random()*dom.length)]]:[];
+  a.playNormal='';a.playDomain='';a.dropped=[];
+}
+function handCardHtml(m,i,kind,selected){
+  var gain=Math.round((moveBase(m)+(bActor==='mc'?moveStatBonus(m):0))*1.2);
+  return '<button class="hcard '+(kind==='domain'?'domain ':'')+(selected?'on ':'')+'" data-hand="'+kind+'" data-idx="'+i+'"><div class="hk">'+(kind==='domain'?'领域牌 / DOMAIN':'普通牌 / NORMAL')+'</div><div class="hm">'+escapeHtml(m)+'</div><div class="hv">胜率 +'+gain+'</div></button>';
+}
+function renderHand(){
+  var box=document.getElementById('handBox');if(!box)return;
+  if(!B){box.innerHTML='';return}
+  var a=B.actors[bActor]||B.actors.mc;
+  if(!a.hand){box.innerHTML='';return}
+  var html='';
+  html+=a.hand.map(function(m,i){return handCardHtml(m,i,'normal',a.playNormal===m)}).join('');
+  html+=(a.domainHand||[]).map(function(m,i){return handCardHtml(m,i,'domain',a.playDomain===m)}).join('');
+  box.innerHTML=html;
+  var hint=document.getElementById('handHint');
+  if(hint)hint.textContent=bActor==='mc'?('已选：'+(a.playNormal?'「'+a.playNormal+'」':'普通牌未选')+' + '+(a.playDomain?'「'+a.playDomain+'」':'领域牌未选')):('对手手牌（AI 自动出牌）：'+a.name);
+  var label=document.getElementById('battleActorLabel');if(label)label.textContent=B.actors[bActor].name;
+}
+function aiPick(id){
+  var a=B.actors[id];
+  var lead=a.score>Math.max(B.actors.gojo.score,B.actors.sukuna.score)||a.score>B.actors.mc.score;
+  var norm=(a.hand||[]).slice();
+  if(!norm.length)return '';
+  norm.sort(function(x,y){return moveBase(y)-moveBase(x)});
+  var pick=lead?norm[Math.min(1,norm.length-1)]:norm[0];
+  a.playNormal=pick;
+  a.playDomain=(a.domainHand||[])[0]||'';
+  return pick;
+}
+function chooseHand(kind,idx){
+  if(!B||bActor!=='mc')return;
+  var a=B.actors.mc;
+  if(kind==='domain'){var dm=(a.domainHand||[])[idx];if(!dm)return;a.playDomain=a.playDomain===dm?'':dm}
+  else{var nm=(a.hand||[])[idx];if(!nm)return;a.playNormal=a.playNormal===nm?'':nm}
+  renderHand();renderFighters();
+}
 function renderFighters(){
   if(!B)return;
   document.getElementById('battleProgress').style.width=Math.min(100,Math.round((B.round-1)/3*100))+'%';
   var box=document.getElementById('fighters'),arr=['sukuna','gojo','mc'];
   box.innerHTML=arr.map(function(id){
-    var a=B.actors[id];var rate=Math.min(100,Math.max(0,a.score));var cls=id==='sukuna'?'sukuna':id==='gojo'?'gojo':'mc';
-    return '<div class="fighter '+cls+'"><div class="nam">'+a.name+'</div><div class="sub">'+escapeHtml(a.sub)+'</div><div class="rate"><i style="width:'+rate+'%;background:'+(id==='gojo'?'#2c6fe4':id==='sukuna'?'#e11d2e':'#111')+'"></i></div><div class="rateval"><span>胜率 '+rate+'</span><span>出招 '+a.shots+'</span></div>'+(id==='mc'?'<div class="sub">十维加权 '+((B.mcWeighted!=null)?B.mcWeighted:'—')+' · 因果债 -'+((B.debtPenalty!=null)?B.debtPenalty:0)+'</div>':'')+'<div class="moves">'+(a.moves.length?a.moves.map(function(m){return '<span>'+escapeHtml(m)+'</span>'}).join(''):'<span style="color:#aaa">还没有抽招</span>')+'</div></div>';
+    var a=B.actors[id];var rate=Math.max(0,Math.min(100,Math.round(a.score/2)));var cls=id==='sukuna'?'sukuna':id==='gojo'?'gojo':'mc';
+    return '<div class="fighter '+cls+'"><div class="nam">'+a.name+'</div><div class="sub">'+escapeHtml(a.sub)+'</div><div class="rate"><i style="width:'+rate+'%;background:'+(id==='gojo'?'#2c6fe4':id==='sukuna'?'#e11d2e':'#111')+'"></i></div><div class="rateval"><span>战力 '+Math.round(a.score)+'</span><span>出招 '+a.shots+'</span></div>'+(id==='mc'?'<div class="sub">十维加权 '+((B.mcWeighted!=null)?B.mcWeighted:'—')+' · 因果债 -'+((B.debtPenalty!=null)?B.debtPenalty:0)+' · 领域 control '+a.control+'</div>':'<div class="sub">领域 control '+a.control+'</div>')+'<div class="moves">'+(a.moves.length?a.moves.slice(-3).map(function(m){return '<span>'+escapeHtml(m)+'</span>'}).join(''):'<span style="color:#aaa">还没有出牌</span>')+'</div></div>';
   }).join('');
 }
 function renderDomain(){
   var box=document.getElementById('domainBox');if(!B){box.innerHTML='';return}
-  box.innerHTML='<div class="statline"><span>领域胜者</span><b>'+escapeHtml(B.domainWinner||'—')+'</b></div><div class="statline"><span>领域效果</span><b>'+escapeHtml(B.domainWinner?'本回合领域胜率翻倍':'—')+'</b></div><div class="statline"><span>回合胜者</span><b>'+escapeHtml(B.roundWinner||'—')+'</b></div>';
+  box.innerHTML='<div class="statline"><span>领域胜者</span><b>'+escapeHtml(B.domainWinner||'—')+'</b></div><div class="statline"><span>领域效果</span><b>'+escapeHtml(B.domainWinner?'本回合该方收益翻倍':'—')+'</b></div><div class="statline"><span>回合胜者</span><b>'+escapeHtml(B.roundWinner||'—')+'</b></div>';
 }
 function renderBattleLog(){
   var box=document.getElementById('battleLog');if(!B){box.innerHTML='';return}
   box.innerHTML=B.log.slice(-14).reverse().map(function(x){return '<div>'+escapeHtml(x)+'</div>'}).join('')||'<div style="color:#888">等待开战</div>';
 }
 function battleResultText(t,s){
-  document.getElementById('battleResult').innerHTML='<div class="rt">BATTLE LOG</div><div class="rv '+(s?'red':'')+'">'+escapeHtml(t||'等待开战')+'</div><div class="rd">'+escapeHtml(s||'每个角色本回合可抽 3 招。')+'</div>';
+  document.getElementById('battleResult').innerHTML='<div class="rt">BATTLE LOG</div><div class="rv '+(s?'red':'')+'">'+escapeHtml(t||'等待开战')+'</div><div class="rd">'+escapeHtml(s||'每回合手牌 3 普通 + 1 领域；领域牌比 control，赢家本回合收益翻倍。')+'</div>';
 }
 function moveStatBonus(m){
-  var st=S.snaps.final||buildStats(),s=String(m||''),x,y;
-  if(/领域|封闭|开放|极之番/.test(s)){x=st.control;y=st.total}
-  else if(/黑闪|连击|拳|踢|体术|抓/.test(s)){x=st.taijutsu;y=st.body}
-  else if(/咒骸|咒灵|咒具|修复/.test(s)){x=st.eff;y=st.talent}
-  else if(/术式|攻击|辅助/.test(s)){x=st.talent;y=st.eff}
-  else{x=st.total;y=st.talent}
-  return Math.max(1,Math.round(((x+y)/2)*.1));
+  var p=moveStatPair(m);return Math.max(1,Math.round(((p[0]+p[1])/2)*.1));
 }
 function rollMove(){
   if(!B)initBattle();if(bBusy)return;
-  var opts=getBattleOpts();if(!opts.length)return;
-  var a=B.actors[bActor];var m=randomOf(opts);var bonus=0;var re=/\+(\d+)/.exec(m);if(re)bonus=parseInt(re[1]);
-  var sb=a.id==='mc'?moveStatBonus(m):0;bonus+=sb;
-  a.moves.push(m);a.shots++;a.score=Math.min(140,a.score+bonus);B.log.push('第'+B.round+'回合 · '+a.name+' 抽出「'+m+'」'+(bonus?' 胜率+'+bonus+(sb?'（属性 '+sb+'）':''):''));
-  renderFighters();renderBattleLog();battleResultText(a.name+' · '+m,'胜率 +'+bonus+(sb?'（十维属性追加 '+sb+'）':'')+'；当前 '+a.name+' 胜率 '+a.score);
-  var seq=['mc','gojo','sukuna'];var next=seq[(seq.indexOf(bActor)+1)%3];
-  if(a.shots>=3)bActor=next;
-  Array.prototype.forEach.call(document.querySelectorAll('#actorTabs button'),function(bt){bt.classList.toggle('on',bt.dataset.actor===bActor)});
-  document.getElementById('battleActorLabel').textContent=B.actors[bActor].name;
-  bRot+=Math.PI*2*2;drawWheel(battlewheel,battleCtx,getBattleOpts(),bRot,-1);
+  ['mc','gojo','sukuna'].forEach(function(id){drawHand(id)});
+  B.log.push('第'+B.round+'回合 · 三人都摸到新一手牌');
+  renderHand();renderFighters();renderBattleLog();
+  battleResultText('第'+B.round+'回合 · 手牌已刷新','点一张普通牌和一张领域牌；宿傩 / 五条会自动出牌。');
 }
 function resolveRound(){
-  if(!B)return;
-  var arr=['mc','gojo','sukuna'];var total=arr.reduce(function(s,id){return s+B.actors[id].score},0);
-  var pick=Math.random()*total,w=arr[0],acc=0;
-  for(var i=0;i<arr.length;i++){acc+=B.actors[arr[i]].score;if(pick<=acc){w=arr[i];break}}
-  B.domainWinner=B.actors[w].name;
-  B.log.push('领域对抗：'+B.domainWinner+' 胜出，本回合领域胜率翻倍');
-  var best=arr.slice().sort(function(a,b){return B.actors[b].score-B.actors[a].score})[0];
+  if(!B||B.done)return;
+  var arr=['mc','gojo','sukuna'],stats=S.snaps.final||buildStats();
+  arr.forEach(function(id){
+    var a=B.actors[id];
+    if(!a.playNormal)aiPick(id);
+    if(!a.playDomain)a.playDomain=(a.domainHand||[])[0]||'';
+  });
+  // 领域对抗：control + 领域牌加成 ×2
+  var cw='',cmax=-1,cscore={};
+  arr.forEach(function(id){
+    var a=B.actors[id],sc=a.control+moveBase(a.playDomain||'')*2;cscore[id]=sc;
+    if(sc>cmax){cmax=sc;cw=id}
+  });
+  B.domainWinner=B.actors[cw].name;
+  B.log.push('领域对抗：'+B.domainWinner+' 胜出（'+Math.round(cmax)+'），本回合收益翻倍');
+  var gains={};
+  arr.forEach(function(id){
+    var a=B.actors[id],m=a.playNormal||'',v=moveBase(m);
+    var g=Math.round((v+(id==='mc'?moveStatBonus(m):0))*1.2);if(id===cw)g=Math.round(g*2);
+    gains[id]=g;a.score+=g;a.shots++;
+    a.moves.push(m);
+    a.dropped=(a.hand||[]).filter(function(x){return x!==m});
+    B.log.push('第'+B.round+'回合 · '+a.name+' 出「'+m+'」'+(a.playDomain?'＋领域「'+a.playDomain+'」':'')+' 战力+'+g+(id===cw?'（领域翻倍）':''));
+    if(a.dropped.length)B.log.push(a.name+' 弃牌：'+a.dropped.join(' / '));
+  });
+  var best=arr.slice().sort(function(x,y){return B.actors[y].score-B.actors[x].score})[0];
   B.roundWinner=B.actors[best].name;
-  B.log.push('第'+B.round+'回合胜者：'+B.roundWinner);
-  renderFighters();renderDomain();renderBattleLog();
-  battleResultText('第'+B.round+'回合 · '+B.roundWinner+' 胜','领域：'+B.domainWinner+'。当前总胜率：五条 '+B.actors.gojo.score+' / 宿傩 '+B.actors.sukuna.score+' / 主角 '+B.actors.mc.score);
+  B.rounds.push({round:B.round,domain:B.domainWinner,winner:B.roundWinner,mc:{played:B.actors.mc.playNormal,domain:B.actors.mc.playDomain,dropped:B.actors.mc.dropped,gain:gains.mc},scores:{mc:Math.round(B.actors.mc.score),gojo:Math.round(B.actors.gojo.score),sukuna:Math.round(B.actors.sukuna.score)}});
+  ensurePicks().battle.push({round:B.round,played:[B.actors.mc.playNormal].concat(B.actors.mc.playDomain?[B.actors.mc.playDomain]:[]),dropped:(B.actors.mc.dropped||[]).slice()});
+  renderFighters();renderDomain();renderBattleLog();renderHand();
+  battleResultText('第'+B.round+'回合 · '+B.roundWinner+' 领先','领域：'+B.domainWinner+'。战力：主角 '+Math.round(B.actors.mc.score)+' / 五条 '+Math.round(B.actors.gojo.score)+' / 宿傩 '+Math.round(B.actors.sukuna.score));
   B.round++;
-  if(B.round>3||Math.random()<.38){
-    B.final=B.roundWinner+' 赢下新宿决战';
+  if(B.round>3){
+    var champ=arr.slice().sort(function(x,y){return B.actors[y].score-B.actors[x].score})[0];
+    B.final=B.actors[champ].name+' 赢下新宿决战';
     if(B.final.indexOf('主角')<0&&(S.debt||0)>=15){B.final+='｜因果债 '+(S.debt||0)+' 反噬';B.mcDead=true}
     if(B.final.indexOf('主角')<0&&(S.debt||0)<15&&S.vals.death==='是'){B.mcDead=true}
     B.done=true;
     B.log.push('决战结束：'+B.final);
     battleResultText(B.final,'点「结束战斗 → 面板」查看最终面板');
+  }else{
+    ['mc','gojo','sukuna'].forEach(function(id){drawHand(id)});
+    bActor='mc';
+    renderFighters();renderDomain();renderHand();drawWheel(battlewheel,battleCtx,getBattleOpts(),bRot,-1);
+    battleResultText('第'+B.round+'回合 · 新手牌','重新选 1 张普通牌 + 1 张领域牌，再结算。');
   }
 }
 function finishBattle(skip){
@@ -1967,7 +2067,7 @@ function exportReportCard(){
   else{var a2=document.createElement('a');a2.href=cv.toDataURL('image/png');a2.download=name;a2.click()}
 }
 function reportText(){
-  var v=S.vals;var domain=(v.domain_type||'—')+((S.domainFx&&S.domainFx.length)?'（'+S.domainFx.join('、')+'）':'');var lines=['【咒术转盘 第4期】','身份：'+(v.identity||'—'),'时间 / 地点：'+(v.time||'—')+' / '+(v.place||'—'),'颜值 / 道德：'+(v.face||'—')+' / '+(v.moral||'—'),'等级 / 阵营：'+(v.grade||'—')+' / '+(v.final_faction||v.faction||'—'),'因果债：'+(S.debt||0)+' 点（战斗 -'+debtPenalty()+' 胜率）','世代：第'+(S.generation||1)+'代','术式：'+(S.tech.length?S.tech.map(function(t){return t.name||((t.type||'?')+'·'+(t.effect||'?'))}).join('；'):'—'),'领域：'+domain,'术式详情：'+(S.tech.length?S.tech.map(function(t){return t.detail||t.desc||'待生成'}).join('；'):'—'),'结局：'+(v.after_curse||v.rep68||'—'),'68年后声望：'+(v.rep68||'—'),'命运码：'+reportCode(),'放弃的命运：'+(rejectedBrief()||'—'),'分支变化：'];S.branches.forEach(function(b){lines.push('- '+b.label+'：'+b.value+' → '+b.text)});(S.lineage||[]).forEach(function(x){lines.push('谱系：G'+x.gen+' '+x.name+' · '+x.grade+' · 债'+x.debt)});lines.push('','抽取记录：');
+  var v=S.vals;var domain=(v.domain_type||'—')+((S.domainFx&&S.domainFx.length)?'（'+S.domainFx.join('、')+'）':'');var lines=['【咒术转盘 第4期】','身份：'+(v.identity||'—'),'时间 / 地点：'+(v.time||'—')+' / '+(v.place||'—'),'颜值 / 道德：'+(v.face||'—')+' / '+(v.moral||'—'),'等级 / 阵营：'+(v.grade||'—')+' / '+(v.final_faction||v.faction||'—'),'因果债：'+(S.debt||0)+' 点（战斗 -'+debtPenalty()+' 胜率）','世代：第'+(S.generation||1)+'代','术式：'+(S.tech.length?S.tech.map(function(t){return t.name||((t.type||'?')+'·'+(t.effect||'?'))}).join('；'):'—'),'领域：'+domain,'术式详情：'+(S.tech.length?S.tech.map(function(t){return t.detail||t.desc||'待生成'}).join('；'):'—'),'结局：'+(v.after_curse||v.rep68||'—'),'68年后声望：'+(v.rep68||'—'),'命运码：'+reportCode(),'放弃的命运：'+(rejectedBrief()||'—'),'决战手牌：'+((S.picks&&S.picks.battle&&S.picks.battle.length)?S.picks.battle.map(function(r){return 'R'+r.round+' '+r.played.join('+')}).join('；'):'—'),'分支变化：'];S.branches.forEach(function(b){lines.push('- '+b.label+'：'+b.value+' → '+b.text)});(S.lineage||[]).forEach(function(x){lines.push('谱系：G'+x.gen+' '+x.name+' · '+x.grade+' · 债'+x.debt)});lines.push('','抽取记录：');
   S.hist.forEach(function(r){lines.push('- '+r.label+'：'+r.value)});return lines.join('\n');
 }
 function characterCard(){
@@ -1975,13 +2075,22 @@ function characterCard(){
   var domain=(v.domain_type||'—')+((S.domainFx&&S.domainFx.length)?'（'+S.domainFx.join('、')+'）':'');
   return '【咒术转盘角色卡】'+(S.generation>1?'第'+S.generation+'代·':'')+(v.identity||'未命名')+'；等级：'+(v.grade||'—')+'；术式：'+tech+'；领域：'+domain+'；因果债：'+(S.debt||0)+'；放弃：'+(rejectedBrief()||'—')+'；结局：'+(v.ending_branch||v.after_curse||v.rep68||'—');
 }
+function arcText(){
+  var p=ensurePicks(),bits=[];
+  ['identity','time','faction','shinjuku_tactic'].forEach(function(k){if(p[k]&&p[k].picked)bits.push(pickKeyLabel(k)+'='+p[k].picked)});
+  if(p.tech_seed)bits.push('术式构想='+p.tech_seed);
+  var rej=rejectedBrief();if(rej)bits.push('放弃='+rej);
+  bits.push('因果债='+(S.debt||0));
+  return bits.join('；').slice(0,300);
+}
+function arcCode(){try{return 'ARC1-'+b64e(JSON.stringify(compactPicks())).slice(0,280)}catch(e){return ''}}
 function debateLink(){
   var v=S.vals,tech=S.tech.length?S.tech.map(function(t){return t.name||((t.type||'?')+'·'+(t.effect||'?'))}).join('；'):'—';
   var domain=(v.domain_type||'—')+((S.domainFx&&S.domainFx.length)?'（'+S.domainFx.join('、')+'）':'');
   var target=v.final_faction==='宿傩方'?'宿傩':(v.final_faction==='高专方'?'五条悟':'五条悟');
-  var body=('我是'+(v.identity||'咒术师')+'，等级'+(v.grade||'未评级')+'。术式：'+tech+'。领域：'+domain+'。因果债 '+(S.debt||0)+' 点。'+(v.ending_branch||v.after_curse||'')).slice(0,260);
+  var body=('我是'+(v.identity||'咒术师')+'，等级'+(v.grade||'未评级')+'。术式：'+tech+'。领域：'+domain+'。因果债 '+(S.debt||0)+' 点。'+(v.ending_branch||v.after_curse||'')+'。抉择：'+arcText()).slice(0,300);
   var card=characterCard().slice(0,600);
-  return 'debate.html?char='+encodeURIComponent((v.identity||'无名咒术师').slice(0,24))+'&target='+encodeURIComponent(target)+'&body='+encodeURIComponent(body)+'&card='+encodeURIComponent(card);
+  return 'debate.html?char='+encodeURIComponent((v.identity||'无名咒术师').slice(0,24))+'&target='+encodeURIComponent(target)+'&body='+encodeURIComponent(body)+'&card='+encodeURIComponent(card)+'&code='+encodeURIComponent(arcCode())+'&arc='+encodeURIComponent(arcText());
 }
 function startChild(){
   if(!isDead()){alert('只有死亡结局才能开启子代');return}
@@ -2030,7 +2139,8 @@ document.getElementById('rollMove').addEventListener('click',rollMove);
 document.getElementById('resolveRound').addEventListener('click',resolveRound);
 document.getElementById('endBattle').addEventListener('click',function(){finishBattle()});
 document.getElementById('battleSkip').addEventListener('click',function(){finishBattle('跳过决战')});
-Array.prototype.forEach.call(document.querySelectorAll('#actorTabs button'),function(bt){bt.addEventListener('click',function(){bActor=bt.dataset.actor;Array.prototype.forEach.call(document.querySelectorAll('#actorTabs button'),function(x){x.classList.toggle('on',x===bt)});document.getElementById('battleActorLabel').textContent=B?B.actors[bActor].name:'主角';if(B)drawWheel(battlewheel,battleCtx,getBattleOpts(),bRot,-1)})});
+document.getElementById('handBox').addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-hand]'):null;if(!b)return;chooseHand(b.getAttribute('data-hand'),parseInt(b.getAttribute('data-idx'),10))});
+Array.prototype.forEach.call(document.querySelectorAll('#actorTabs button'),function(bt){bt.addEventListener('click',function(){bActor=bt.dataset.actor;Array.prototype.forEach.call(document.querySelectorAll('#actorTabs button'),function(x){x.classList.toggle('on',x===bt)});document.getElementById('battleActorLabel').textContent=B?B.actors[bActor].name:'主角';renderHand();if(B)drawWheel(battlewheel,battleCtx,getBattleOpts(),bRot,-1)})});
 Array.prototype.forEach.call(document.querySelectorAll('#mainTabs button'),function(bt){bt.addEventListener('click',function(){var v=bt.dataset.view;if(v==='battle'&&!B)initBattle();setView(v)})});
 Array.prototype.forEach.call(document.querySelectorAll('.dock button'),function(bt){bt.addEventListener('click',function(){var v=bt.dataset.dock;if(v==='lib')openLib();else if(v==='log')openLog();else if(v==='help'){if(!helpDialog.open)helpDialog.showModal()}else setView(v)})});
 document.getElementById('closeLib').addEventListener('click',function(){libDialog.close()});

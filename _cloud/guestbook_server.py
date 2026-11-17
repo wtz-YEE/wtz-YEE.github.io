@@ -3355,6 +3355,8 @@ def api_debate_add():
     target = str(p.get("target") or "").strip()[:30]
     body = str(p.get("body") or "").strip()[:300]
     card = str(p.get("card") or "").strip()[:600]
+    code = str(p.get("code") or "").strip()[:300]
+    arc = str(p.get("arc") or "").strip()[:300]
     if not char or not target:
         return jsonify({"ok": False, "msg": "角色和挑战目标不能为空"})
     with DEBATE_LOCK:
@@ -3363,7 +3365,7 @@ def api_debate_add():
             d["posts"] = []
         pid = "db" + str(int(_time.time() * 1000)) + str(_random.random())[2:7]
         post = {"id": pid, "user": cu, "char": char, "target": target,
-                "body": body, "card": card, "time": _now(), "status": "open", "args": [],
+                "body": body, "card": card, "code": code, "arc": arc, "time": _now(), "status": "open", "args": [],
                 "winner": "", "score_host": 0, "score_ch": 0,
                 "challenger": "", "settled": False, "ai_spar": False,
                 "market": {"open_at": _now(), "close_at": "", "pool_host": 0, "pool_ch": 0,
@@ -3790,6 +3792,7 @@ def _debate_ai_snap(post, arg):
         "target": post.get("target") or "",
         "host_body": host_text,
         "host_card": post.get("card") or "",
+        "host_arc": post.get("arc") or post.get("code") or "",
         "ch_char": (challenger or {}).get("char") or "挑战者",
         "ch_text": (challenger or {}).get("text") or "（尚未发言）",
         "history": "\n".join(history[-6:])[-1200:]
@@ -3806,6 +3809,7 @@ def _debate_ai_request(cfg, snap):
     user = (
         "【发布者角色】" + str(snap.get("host_char") or "") + "\n"
         "【发布者角色卡】" + (str(snap.get("host_card") or "") or "（未提供）") + "\n"
+        "【发布者人物弧光】" + (str(snap.get("host_arc") or "") or "（未提供）") + "\n"
         "【挑战目标】" + str(snap.get("target") or "") + "\n"
         "【发布者本轮发言】" + (str(snap.get("host_body") or "") or "（尚未发言）") + "\n"
         "【挑战者角色】" + str(snap.get("ch_char") or "挑战者") + "\n"
