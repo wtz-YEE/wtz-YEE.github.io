@@ -15,10 +15,18 @@ PORT = int(os.environ.get('WTZ_MONITOR_PORT') or 8702)
 CNW = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 OPS = []
 _SNAP = {'d': None, 'lock': threading.Lock()}
+SYSTEM32 = os.path.join(os.environ.get('SystemRoot', r'C:\Windows'), 'System32')
+PS_DIR = os.path.join(SYSTEM32, 'WindowsPowerShell', 'v1.0')
+
+def _env():
+    e = dict(os.environ)
+    e['PATH'] = SYSTEM32 + os.pathsep + PS_DIR + os.pathsep + e.get('PATH', '')
+    return e
 
 def sh(cmd, t=8):
     try:
-        r = subprocess.run(cmd, shell=True, capture_output=True, timeout=t, encoding='gbk', errors='replace')
+        r = subprocess.run(cmd, shell=True, capture_output=True, timeout=t,
+                           encoding='gbk', errors='replace', env=_env())
         return r.stdout or ''
     except Exception:
         return ''
@@ -83,6 +91,12 @@ def read_tail(path, n=4000):
         return ''
 
 def read_addr(addrfile):
+    try:
+        p = paths.addrfile(addrfile)
+        if os.path.exists(p):
+            return open(p, encoding='utf-8').read().strip()
+    except Exception:
+        pass
     for base in (BASE, os.path.dirname(BASE)):
         p = os.path.join(base, addrfile)
         if os.path.exists(p):
@@ -319,8 +333,33 @@ def guard_start():
     return 'OK'
 
 def tunnel_restart():
-    subprocess.Popen([sys.executable, os.path.join(BASE, 'start_tunnels.py')], creationflags=CNW)
-    return 'OK'
+    py = sys.executable
+    st = os.path.join(BASE, 'start_tunnels.py')
+    gu = os.path.join(BASE, 'get_url.py')
+    try:
+        subprocess.run([py, st, '--force'], capture_output=True, timeout=35)
+    except Exception as ex:
+        return 'RESTART_FAIL ' + str(ex)[:80]
+    time.sleep(3)
+    url = ''
+    ok = False
+    deadline = time.time() + 45
+    while time.time() < deadline:
+        try:
+            left = max(8, min(20, int(deadline - time.time())))
+            subprocess.run([py, gu], capture_output=True, timeout=left)
+        except Exception:
+            pass
+        url = read_addr('cloud.txt').strip()
+        if url:
+            ok = probe_https(url, '/health')
+        if ok:
+            break
+        time.sleep(2)
+    _PROBE.clear()
+    if url:
+        return 'RESTARTED ' + url + ('' if ok else ' （等待隧道就绪）')
+    return 'RESTARTED_NO_URL'
 
 def action(q):
     op = q.get('op', '')
@@ -357,8 +396,8 @@ def action(q):
         return {'ok': True, 'msg': m}
     if op == 'tunnel_restart':
         m = tunnel_restart()
-        OPS.append([time.strftime('%H:%M:%S'), '重启隧道'])
-        return {'ok': True, 'msg': m}
+        OPS.append([time.strftime('%H:%M:%S'), '重启隧道 → ' + m])
+        return {'ok': m.startswith('RESTARTED') and 'NO_URL' not in m, 'msg': m}
     return {'ok': False, 'msg': 'unknown op'}
 
 class H(BaseHTTPRequestHandler):

@@ -66,6 +66,13 @@ def read_text(p):
     except Exception:
         return ''
 
+def write_text(p, s):
+    try:
+        with open(p, 'w', encoding='utf-8') as f:
+            f.write(s)
+    except Exception:
+        pass
+
 def push_github(remote_file, content):
     try:
         tf = os.path.join(BASE, '_ci_' + str(int(time.time() * 1000)) + '.txt')
@@ -123,6 +130,11 @@ def main():
                         f.write(u + '\n')
                 except Exception:
                     pass
+            # 兼容旧守护脚本与监视面板：同步写入旧的地址文件名
+            for mirror in (os.path.join(REPO, '云端地址.txt'), os.path.join(BASE, 'cloud.txt')):
+                if os.path.exists(mirror) or mirror.endswith('cloud.txt'):
+                    if read_text(mirror).strip() != u.strip():
+                        write_text(mirror, u + '\n')
             if svc.get('push'):
                 push_github(svc.get('remote_file', svc['addrfile']), u + '\n')
         res.append(svc['name'] + '=' + (u or 'NONE'))

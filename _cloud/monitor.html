@@ -112,7 +112,8 @@ pre{background:#07090C;border:1px solid #151D26;border-radius:6px;padding:10px;f
 <script>
 var iv=5,tm=null,cur='guard';
 function $(id){return document.getElementById(id)}
-function toast(s){var t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show')},2200)}
+function toast(s,ms){var t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show')},ms||2200)}
+var actBusy=false;
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function restart(){if(tm)clearInterval(tm);if(iv>0)tm=setInterval(load,iv*1000)}
 function fmtMem(kb){return kb>1048576?(kb/1048576).toFixed(1)+' GB':kb>1024?(kb/1024).toFixed(1)+' MB':kb+' KB'}
@@ -170,12 +171,19 @@ function render(d){
   d.ops.forEach(function(o){var tr=document.createElement('tr');tr.innerHTML='<td>'+esc(o[0])+'</td><td>'+esc(o[1])+'</td>';ot.appendChild(tr)});
 }
 async function act(op,svc,c){
+  if(actBusy){toast('上一个操作还在执行，请稍候');return}
   if(c&&!confirm('确定要执行「'+op+(svc?' '+svc:'')+'」吗？'))return;
+  actBusy=true;
+  var slow=op==='tunnel_restart';
+  if(slow) toast('正在重启隧道，请稍候…（最长约 45 秒）',60000);
+  var btns=document.querySelectorAll('button');btns.forEach(function(b){b.disabled=true});
   var u='/api/action?op='+op+(svc?'&svc='+encodeURIComponent(svc):'');
   try{
     var r=await fetch(u);var d=await r.json();
     toast(op+' → '+d.msg);
   }catch(e){toast('操作失败')}
+  btns.forEach(function(b){b.disabled=false});
+  actBusy=false;
   setTimeout(load,1200);
 }
 function showLog(n){cur=n;$('tb-guard').className=n==='guard'?'on':'';$('tb-sync').className=n==='sync'?'on':'';loadLog()}

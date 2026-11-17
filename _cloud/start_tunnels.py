@@ -67,9 +67,12 @@ def tunnels_alive(cfg):
 
 def main():
     cfg = load_cfg()
-    if tunnels_alive(cfg):
+    force = '--force' in sys.argv
+    if not force and tunnels_alive(cfg):
         print('ALIVE_SKIP', flush=True)
         return 0
+    if force:
+        print('FORCE_RESTART', flush=True)
     try:
         os.makedirs(LOGDIR, exist_ok=True)
     except Exception:
@@ -78,7 +81,11 @@ def main():
     if not cp:
         print('NO_CPOLAR', flush=True)
         return 1
-    subprocess.run(['taskkill', '/f', '/im', 'cpolar.exe'], capture_output=True)
+    tk = os.path.join(os.environ.get('SystemRoot', r'C:\Windows'), 'System32', 'taskkill.exe')
+    try:
+        subprocess.run([tk, '/f', '/im', 'cpolar.exe'], capture_output=True, timeout=10)
+    except Exception:
+        pass
     time.sleep(2)
     for svc in cfg:
         if not svc.get('enabled', True):
